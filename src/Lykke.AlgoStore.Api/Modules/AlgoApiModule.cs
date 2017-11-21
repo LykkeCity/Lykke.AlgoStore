@@ -40,12 +40,6 @@ namespace Lykke.AlgoStore.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            builder.RegisterType<StartupManager>()
-                .As<IStartupManager>();
-
-            builder.RegisterType<ShutdownManager>()
-                .As<IShutdownManager>();
-
             // TODO: Add your dependencies here
 
             builder.Populate(_services);

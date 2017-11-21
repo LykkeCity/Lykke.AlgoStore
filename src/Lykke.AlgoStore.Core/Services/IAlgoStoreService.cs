@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Lykke.AlgoStore.Core.Services
 {
-    class IAlgoManager
+    public interface IAlgoStoreService
     {
     }
 }
