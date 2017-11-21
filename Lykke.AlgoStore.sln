@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Instrastructure", "1. Instrastructure", "{CC2067D7-1971-47BB-B491-5649EA3C18B2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Repositories", "2. Repositories", "{BF745453-B940-470E-81BC-43FB67703D4E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{6CA74DE0-A357-4934-9D8B-FEA3F0A2D690}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Client", "3. Client", "{C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4. Tests", "4. Tests", "{8F9036B1-5106-4C69-B2D2-B78EE52687A0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Client", "client\Lykke.AlgoStore.Client\Lykke.AlgoStore.Client.csproj", "{15AE6AF4-3A38-4AD5-B1C5-A588593A1694}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Core", "src\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj", "{FD19EE34-3455-4B69-8542-8CBEC57B409D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Services", "src\Lykke.AlgoStore.Services\Lykke.AlgoStore.Services.csproj", "{7867FA61-6637-46BA-B689-9AC7B13DBC53}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.AzureRepositories", "src\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj", "{60845089-A7FE-4C4A-9107-B640C0B0D241}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Tests", "tests\Lykke.AlgoStore.Tests\Lykke.AlgoStore.Tests.csproj", "{DD46D9BF-5839-40E0-AC0B-99902DEE7EED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Api", "src\Lykke.AlgoStore.Api\Lykke.AlgoStore.Api.csproj", "{44F5F1EB-6E3A-4175-AAE4-5B749A710279}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExternalClient", "ExternalClient", "{88436D79-8254-4BCB-9BD8-C85B898B85EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.AlgoStore.DockerClient", "ExternalClient\Lykke.AlgoStore.DockerClient\Lykke.AlgoStore.DockerClient.csproj", "{F936DBD9-90B5-4D1B-B24E-2BA936026A92}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15AE6AF4-3A38-4AD5-B1C5-A588593A1694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15AE6AF4-3A38-4AD5-B1C5-A588593A1694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15AE6AF4-3A38-4AD5-B1C5-A588593A1694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15AE6AF4-3A38-4AD5-B1C5-A588593A1694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD19EE34-3455-4B69-8542-8CBEC57B409D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD19EE34-3455-4B69-8542-8CBEC57B409D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD19EE34-3455-4B69-8542-8CBEC57B409D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD19EE34-3455-4B69-8542-8CBEC57B409D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7867FA61-6637-46BA-B689-9AC7B13DBC53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7867FA61-6637-46BA-B689-9AC7B13DBC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7867FA61-6637-46BA-B689-9AC7B13DBC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7867FA61-6637-46BA-B689-9AC7B13DBC53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60845089-A7FE-4C4A-9107-B640C0B0D241}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60845089-A7FE-4C4A-9107-B640C0B0D241}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60845089-A7FE-4C4A-9107-B640C0B0D241}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60845089-A7FE-4C4A-9107-B640C0B0D241}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD46D9BF-5839-40E0-AC0B-99902DEE7EED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD46D9BF-5839-40E0-AC0B-99902DEE7EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD46D9BF-5839-40E0-AC0B-99902DEE7EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD46D9BF-5839-40E0-AC0B-99902DEE7EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44F5F1EB-6E3A-4175-AAE4-5B749A710279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44F5F1EB-6E3A-4175-AAE4-5B749A710279}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44F5F1EB-6E3A-4175-AAE4-5B749A710279}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44F5F1EB-6E3A-4175-AAE4-5B749A710279}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F936DBD9-90B5-4D1B-B24E-2BA936026A92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F936DBD9-90B5-4D1B-B24E-2BA936026A92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F936DBD9-90B5-4D1B-B24E-2BA936026A92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F936DBD9-90B5-4D1B-B24E-2BA936026A92}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{15AE6AF4-3A38-4AD5-B1C5-A588593A1694} = {C9A2CFDE-EA32-4946-B679-7CE6EFA816B8}
+		{FD19EE34-3455-4B69-8542-8CBEC57B409D} = {CC2067D7-1971-47BB-B491-5649EA3C18B2}
+		{7867FA61-6637-46BA-B689-9AC7B13DBC53} = {CC2067D7-1971-47BB-B491-5649EA3C18B2}
+		{60845089-A7FE-4C4A-9107-B640C0B0D241} = {BF745453-B940-470E-81BC-43FB67703D4E}
+		{DD46D9BF-5839-40E0-AC0B-99902DEE7EED} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
+		{F936DBD9-90B5-4D1B-B24E-2BA936026A92} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EE0A40C2-41F2-4866-AC12-70AD03074AE7}
+	EndGlobalSection
+EndGlobal
