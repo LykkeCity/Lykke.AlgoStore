@@ -11,8 +11,4 @@
     <PackageReference Include="Lykke.Common" Version="3.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Domain\" />
-  </ItemGroup>
-
 </Project>

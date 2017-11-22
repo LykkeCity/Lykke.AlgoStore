@@ -11,4 +11,8 @@
     <PackageReference Include="Lykke.AzureStorage" Version="3.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
+  </ItemGroup>
+
 </Project>
