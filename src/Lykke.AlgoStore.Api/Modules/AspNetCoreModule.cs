@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Microsoft.AspNetCore.Http;
 
-namespace Lykke.AlgoStore.Modules
+namespace Lykke.AlgoStore.Api.Modules
 {
     public class AspNetCoreModule : Module
     {

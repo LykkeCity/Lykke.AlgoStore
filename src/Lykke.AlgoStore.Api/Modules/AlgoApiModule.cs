@@ -7,7 +7,7 @@ using Lykke.AlgoStore.Services;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lykke.AlgoStore.Modules
+namespace Lykke.AlgoStore.Api.Modules
 {
     public class AlgoApiModule : Module
     {
