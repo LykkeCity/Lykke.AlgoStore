@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/AlgoManagement")]
+    [Route("api/[controller]")]
     public class AlgoManagementController : Controller
     {
     }
