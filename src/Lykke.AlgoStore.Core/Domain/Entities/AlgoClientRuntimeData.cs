@@ -2,9 +2,10 @@
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {
-    public class ClientAlgoMetaData
+    public class AlgoClientRuntimeData
     {
         public string ClientId { get; set; }
-        public List<AlgoMetaData> AlgosData { get; set; }
+        public string AlgoId { get; set; }
+        public List<AlgoRuntimeData> RuntimeData { get; set; }
     }
 }

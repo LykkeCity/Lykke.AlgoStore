@@ -1,12 +1,9 @@
-﻿using Lykke.AlgoStore.Core.Identity;
+﻿using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using Lykke.AlgoStore.Core.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Infrastructure.Authentication
 {
@@ -14,7 +11,7 @@ namespace Lykke.AlgoStore.Infrastructure.Authentication
     {
         private readonly ILykkePrincipal _lykkePrincipal;
 
-        public LykkeAuthHandler(IOptionsMonitor<LykkeAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, ILykkePrincipal lykkePrincipal) 
+        public LykkeAuthHandler(IOptionsMonitor<LykkeAuthOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock, ILykkePrincipal lykkePrincipal)
             : base(options, logger, encoder, clock)
         {
             _lykkePrincipal = lykkePrincipal;

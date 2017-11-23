@@ -1,9 +1,12 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
+using Lykke.AlgoStore.Api.Infrastructure.Context;
+using Lykke.AlgoStore.Core.Identity;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.Services;
+using Lykke.AlgoStore.Services.Identity;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +43,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            // TODO: Add your dependencies here
+            builder.RegisterType<RequestContext>().As<IRequestContext>().InstancePerLifetimeScope();
+            builder.RegisterType<LykkePrincipal>().As<ILykkePrincipal>().InstancePerLifetimeScope();
 
             builder.Populate(_services);
         }

@@ -13,7 +13,7 @@ namespace Lykke.AlgoStore.Infrastructure
         public static IContainer RegisterAlgoApiModules(IServiceCollection services, IReloadingManager<AlgoApiSettings> settings, ILog log)
         {
             var builder = new ContainerBuilder();
-            
+
             builder.RegisterModule(new AlgoApiModule(settings, log));
             builder.RegisterModule(new AlgoRepositoryModule(settings, log));
             builder.RegisterModule(new AspNetCoreModule());

@@ -1,17 +1,16 @@
-﻿using Lykke.AlgoStore.AzureRepositories.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Utils;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
-    internal static class ClientAlgoMetaDataMapper
+    internal static class AlgoClientMetaDataMapper
     {
-        public static List<ClientAlgoMetaDataEntity> ToEntity(this ClientAlgoMetaData metadata)
+        public static List<AlgoClientMetaDataEntity> ToEntity(this AlgoClientMetaData metadata)
         {
-            var result = new List<ClientAlgoMetaDataEntity>();
+            var result = new List<AlgoClientMetaDataEntity>();
 
             if (string.IsNullOrWhiteSpace(metadata.ClientId) || metadata.AlgosData.IsNullOrEmptyCollection())
                 return result;
@@ -20,21 +19,21 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             foreach (AlgoMetaData algoData in metadata.AlgosData)
             {
-                result.Add(new ClientAlgoMetaDataEntity
-                {
-                    PartitionKey = clientId,
-                    RowKey = algoData.Id,
-                    AlgoDataId = algoData.AlgoDataId,
-                    Description = algoData.Description,
-                    Name = algoData.Name
-                });
+                var res = new AlgoClientMetaDataEntity();
+
+                res.PartitionKey = clientId;
+                res.RowKey = algoData.Id ?? Guid.NewGuid().ToString();
+                res.Description = algoData.Description;
+                res.Name = algoData.Name;
+
+                result.Add(res);
             }
 
             return result;
         }
-        public static ClientAlgoMetaData ToModel(this IEnumerable<ClientAlgoMetaDataEntity> entities)
+        public static AlgoClientMetaData ToModel(this IEnumerable<AlgoClientMetaDataEntity> entities)
         {
-            var result = new ClientAlgoMetaData { AlgosData = new List<AlgoMetaData>()};
+            var result = new AlgoClientMetaData { AlgosData = new List<AlgoMetaData>() };
 
             if (entities.IsNullOrEmptyEnumerable())
                 return result;
@@ -59,12 +58,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             return result;
         }
 
-        private static AlgoMetaData ToAlgoMetaData(this ClientAlgoMetaDataEntity entity)
+        private static AlgoMetaData ToAlgoMetaData(this AlgoClientMetaDataEntity entity)
         {
             return new AlgoMetaData
             {
                 Id = entity.RowKey,
-                AlgoDataId = entity.AlgoDataId,
                 Description = entity.Description,
                 Name = entity.Name
             };
