@@ -22,7 +22,7 @@ namespace Lykke.AlgoStore.Api.Modules
         {
             builder.RegisterInstance(_log).SingleInstance();
 
-            builder.RegisterInstance<IAlgoClientMetaDataRepository>(new AlgoClientMetaDataRepository(_settings.ConnectionString(x => x.Db.TableStorageConnectionString), _log));
+            builder.RegisterInstance<IAlgoMetaDataRepository>(new AlgoMetaDataRepository(_settings.ConnectionString(x => x.Db.TableStorageConnectionString), _log));
         }
     }
 }

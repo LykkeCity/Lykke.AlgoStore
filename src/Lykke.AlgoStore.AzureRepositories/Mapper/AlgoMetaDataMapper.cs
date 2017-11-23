@@ -5,23 +5,24 @@ using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
-    internal static class AlgoClientMetaDataMapper
+    internal static class AlgoMetaDataMapper
     {
-        public static List<AlgoClientMetaDataEntity> ToEntity(this AlgoClientMetaData metadata)
+        public static List<AlgoMetaDataEntity> ToEntity(this AlgoClientMetaData data, string partitionKey)
         {
-            var result = new List<AlgoClientMetaDataEntity>();
+            var result = new List<AlgoMetaDataEntity>();
 
-            if (string.IsNullOrWhiteSpace(metadata.ClientId) || metadata.AlgosData.IsNullOrEmptyCollection())
+            if (string.IsNullOrWhiteSpace(data.ClientId) || data.AlgoMetaData.IsNullOrEmptyCollection())
                 return result;
 
-            var clientId = metadata.ClientId;
+            var clientId = data.ClientId;
 
-            foreach (AlgoMetaData algoData in metadata.AlgosData)
+            foreach (AlgoMetaData algoData in data.AlgoMetaData)
             {
-                var res = new AlgoClientMetaDataEntity();
+                var res = new AlgoMetaDataEntity();
 
-                res.PartitionKey = clientId;
-                res.RowKey = algoData.Id;
+                res.PartitionKey = partitionKey;
+                res.RowKey = algoData.ClientAlgoId;
+                res.ClientId = clientId;
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
 
@@ -30,9 +31,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             return result;
         }
-        public static AlgoClientMetaData ToModel(this IEnumerable<AlgoClientMetaDataEntity> entities)
+        public static AlgoClientMetaData ToModel(this IEnumerable<AlgoMetaDataEntity> entities)
         {
-            var result = new AlgoClientMetaData { AlgosData = new List<AlgoMetaData>() };
+            var result = new AlgoClientMetaData { AlgoMetaData = new List<AlgoMetaData>() };
 
             if (entities.IsNullOrEmptyEnumerable())
                 return result;
@@ -42,8 +43,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
-                result.ClientId = current.PartitionKey;
-                result.AlgosData.Add(current.ToAlgoMetaData());
+                result.ClientId = current.ClientId;
+                result.AlgoMetaData.Add(current.ToAlgoMetaData());
             }
             else
                 return result;
@@ -51,17 +52,17 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
-                result.AlgosData.Add(current.ToAlgoMetaData());
+                result.AlgoMetaData.Add(current.ToAlgoMetaData());
             }
 
             return result;
         }
 
-        private static AlgoMetaData ToAlgoMetaData(this AlgoClientMetaDataEntity entity)
+        private static AlgoMetaData ToAlgoMetaData(this AlgoMetaDataEntity entity)
         {
             return new AlgoMetaData
             {
-                Id = entity.RowKey,
+                ClientAlgoId = entity.RowKey,
                 Description = entity.Description,
                 Name = entity.Name
             };

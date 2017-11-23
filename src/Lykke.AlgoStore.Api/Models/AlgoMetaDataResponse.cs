@@ -2,7 +2,7 @@
 
 namespace Lykke.AlgoStore.Api.Models
 {
-    public class AlgoClientMetaDataResponse
+    public class AlgoMetaDataResponse
     {
         public List<AlgoMetaDataModel> AlgoMetaData { get; set; }
     }

@@ -2,7 +2,7 @@
 {
     public class AlgoMetaData
     {
-        public string Id { get; set; }
+        public string ClientAlgoId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }

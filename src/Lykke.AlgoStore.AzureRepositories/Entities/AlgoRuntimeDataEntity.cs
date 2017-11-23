@@ -2,8 +2,11 @@
 
 namespace Lykke.AlgoStore.AzureRepositories.Entities
 {
-    public class AlgoRuntimeEntity : TableEntity
+    public class AlgoRuntimeDataEntity : TableEntity
     {
+        public string ClientAlgoId { get; set; }
+        public string Version { get; set; }
+
         public string AssetId { get; set; }
         public string AssetName { get; set; }
         public int AssetAccuracy { get; set; }
@@ -13,8 +16,5 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
 
         public string TradingAmountAssetId { get; set; }
         public double TradingAmountAmount { get; set; }
-
-        public string AlgoId { get; set; }
-        public string TemplateId { get; set; }
     }
 }

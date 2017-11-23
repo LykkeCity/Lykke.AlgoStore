@@ -9,10 +9,10 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreClientDataService : IAlgoStoreClientDataService
     {
-        private readonly IAlgoClientMetaDataRepository _metaDataRepository;
+        private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoDataRepository _algoDataRepository;
 
-        public AlgoStoreClientDataService(IAlgoClientMetaDataRepository metaDataRepository, IAlgoDataRepository algoDataRepository)
+        public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository, IAlgoDataRepository algoDataRepository)
         {
             _metaDataRepository = metaDataRepository;
             _algoDataRepository = algoDataRepository;
@@ -25,12 +25,12 @@ namespace Lykke.AlgoStore.Services
 
         public async Task DeleteClientMetadata(string clientId, AlgoMetaData data)
         {
-            await _algoDataRepository.DeleteAlgoData(clientId, data.Id);
+            await _algoDataRepository.DeleteAlgoData(data.ClientAlgoId);
 
             var clientData = new AlgoClientMetaData
             {
                 ClientId = clientId,
-                AlgosData = new List<AlgoMetaData> { data }
+                AlgoMetaData = new List<AlgoMetaData> { data }
             };
             await _metaDataRepository.DeleteClientMetaData(clientData);
         }
@@ -39,17 +39,17 @@ namespace Lykke.AlgoStore.Services
         {
             var id = Guid.NewGuid().ToString();
 
-            if (string.IsNullOrWhiteSpace(data.Id))
-                data.Id = id;
+            if (string.IsNullOrWhiteSpace(data.ClientAlgoId))
+                data.ClientAlgoId = id;
 
             var clientData = new AlgoClientMetaData
             {
                 ClientId = clientId,
-                AlgosData = new List<AlgoMetaData> { data }
+                AlgoMetaData = new List<AlgoMetaData> { data }
             };
             await _metaDataRepository.SaveClientMetaData(clientData);
 
-            return await _metaDataRepository.GetClientMetaData(clientId, id);
+            return await _metaDataRepository.GetClientMetaData(id);
         }
     }
 }

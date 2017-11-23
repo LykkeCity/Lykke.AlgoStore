@@ -12,7 +12,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class AlgoDataRepository : IAlgoDataRepository
     {
-        private const string AlgoDataTableName = "AlgoData";
+        private const string PartitionKey = "AlgoData";
+        private const string TableName = "AlgoDataTable";
 
         private readonly INoSQLTableStorage<AlgoDataEntity> _table;
         private readonly IReloadingManager<string> _connectionStringManager;
@@ -22,24 +23,24 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             _log = log;
             _connectionStringManager = connectionStringManager;
-            _table = AzureTableStorage<AlgoDataEntity>.Create(connectionStringManager, AlgoDataTableName, _log);
+            _table = AzureTableStorage<AlgoDataEntity>.Create(connectionStringManager, TableName, _log);
         }
 
-        public async Task<AlgoData> GetAlgoData(string clientId, string algoId)
+        public async Task<AlgoData> GetAlgoData(string algoId)
         {
-            var entity = await _table.GetDataAsync(clientId, algoId);
+            var entity = await _table.GetDataAsync(PartitionKey, algoId);
 
             return entity.ToModel();
         }
         public async Task SaveAlgoData(AlgoData metaData)
         {
-            var enitity = metaData.ToEntity();
+            var enitity = metaData.ToEntity(PartitionKey);
 
             await _table.InsertOrMergeAsync(enitity);
         }
-        public async Task<bool> DeleteAlgoData(string clientId, string algoId)
+        public async Task<bool> DeleteAlgoData(string algoId)
         {
-            var entity = await _table.DeleteAsync(clientId, algoId);
+            var entity = await _table.DeleteAsync(PartitionKey, algoId);
             return entity != null;
         }
     }

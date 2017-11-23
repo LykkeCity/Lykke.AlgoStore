@@ -7,7 +7,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
     public static class AlgoRuntimeDataMapper
     {
-        public static AlgoClientRuntimeData ToModel(this IEnumerable<AlgoRuntimeEntity> entities)
+        public static AlgoClientRuntimeData ToModel(this IEnumerable<AlgoRuntimeDataEntity> entities)
         {
             var result = new AlgoClientRuntimeData { RuntimeData = new List<AlgoRuntimeData>() };
 
@@ -19,8 +19,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
-                result.ClientId = current.PartitionKey;
-                result.AlgoId = current.AlgoId;
+                result.ClientAlgoId = current.ClientAlgoId;
                 result.RuntimeData.Add(current.ToRuntimeData());
             }
             else
@@ -34,26 +33,26 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             return result;
         }
-        public static List<AlgoRuntimeEntity> ToEntity(this AlgoClientRuntimeData data)
+        public static List<AlgoRuntimeDataEntity> ToEntity(this AlgoClientRuntimeData data, string partitionKey)
         {
-            var result = new List<AlgoRuntimeEntity>();
+            var result = new List<AlgoRuntimeDataEntity>();
 
-            if (string.IsNullOrWhiteSpace(data.ClientId) || data.RuntimeData.IsNullOrEmptyCollection())
+            if (data.RuntimeData.IsNullOrEmptyCollection())
                 return result;
 
-            var clientId = data.ClientId;
-            var algoId = data.AlgoId;
+            var algoId = data.ClientAlgoId;
 
             foreach (AlgoRuntimeData runtimeData in data.RuntimeData)
             {
                 if (runtimeData.Asset == null || runtimeData.TradingAmount == null)
                     continue;
 
-                var res = new AlgoRuntimeEntity();
-                res.PartitionKey = clientId;
-                res.AlgoId = algoId;
+                var res = new AlgoRuntimeDataEntity();
+                res.PartitionKey = partitionKey;
+                res.ClientAlgoId = algoId;
 
                 res.RowKey = runtimeData.ImageId;
+                res.Version = runtimeData.Version;
 
                 res.AssetAccuracy = runtimeData.Asset.Accuracy;
                 res.AssetBaseAssetId = runtimeData.Asset.BaseAssetId;
@@ -62,7 +61,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 res.AssetName = runtimeData.Asset.Name;
                 res.AssetQuotingAssetId = runtimeData.Asset.QuotingAssetId;
 
-                res.TemplateId = runtimeData.TemplateId;
 
                 res.TradingAmountAmount = runtimeData.TradingAmount.Amount;
                 res.TradingAmountAssetId = runtimeData.TradingAmount.AssetId;
@@ -73,18 +71,18 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             return result;
         }
 
-        private static AlgoRuntimeData ToRuntimeData(this AlgoRuntimeEntity entity)
+        private static AlgoRuntimeData ToRuntimeData(this AlgoRuntimeDataEntity entity)
         {
             var result = new AlgoRuntimeData();
 
             result.ImageId = entity.RowKey;
-            result.TemplateId = entity.TemplateId;
             result.Asset = entity.ToTradingAssetData();
             result.TradingAmount = entity.ToTradingAmountData();
+            result.Version = entity.Version;
 
             return result;
         }
-        private static TradingAssetData ToTradingAssetData(this AlgoRuntimeEntity entity)
+        private static TradingAssetData ToTradingAssetData(this AlgoRuntimeDataEntity entity)
         {
             var result = new TradingAssetData();
 
@@ -97,7 +95,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             return result;
         }
-        private static TradingAmountData ToTradingAmountData(this AlgoRuntimeEntity entity)
+        private static TradingAmountData ToTradingAmountData(this AlgoRuntimeDataEntity entity)
         {
             var result = new TradingAmountData();
 

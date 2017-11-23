@@ -5,12 +5,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
     public static class AlgoDataMapper
     {
-        public static AlgoDataEntity ToEntity(this AlgoData algoData)
+        public static AlgoDataEntity ToEntity(this AlgoData data, string partitionKey)
         {
             var result = new AlgoDataEntity();
-            result.PartitionKey = algoData.ClientId;
-            result.RowKey = algoData.Id;
-            result.Source = algoData.Source;
+            result.PartitionKey = partitionKey;
+            result.RowKey = data.ClientAlgoId;
+            result.TemplateId = data.TemplateId;
+            result.Source = data.Source;
 
             return result;
         }
@@ -18,8 +19,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         public static AlgoData ToModel(this AlgoDataEntity entity)
         {
             var result = new AlgoData();
-            result.ClientId = entity.PartitionKey;
-            result.Id = entity.RowKey;
+            result.ClientAlgoId = entity.RowKey;
+            result.TemplateId = entity.TemplateId;
             result.Source = entity.Source;
 
             return result;

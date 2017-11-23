@@ -29,16 +29,16 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpGet]
         [SwaggerOperation("GetAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoClientMetaDataResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
             var data = await _clientDataService.GetClientMetadata(User.GetClientId());
 
-            var response = new AlgoClientMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel>() };
+            var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel>() };
 
-            if (data != null && !data.AlgosData.IsNullOrEmptyCollection())
+            if (data != null && !data.AlgoMetaData.IsNullOrEmptyCollection())
             {
-                foreach (var metadata in data.AlgosData)
+                foreach (var metadata in data.AlgoMetaData)
                 {
                     response.AlgoMetaData.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
                 }
@@ -53,7 +53,7 @@ namespace Lykke.AlgoStore.Controllers
             var data = Mapper.Map<AlgoMetaData>(model);
 
             var clientData = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
-            var response = new AlgoClientMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(clientData) } };
+            var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(clientData) } };
 
             return Ok(response);
         }
