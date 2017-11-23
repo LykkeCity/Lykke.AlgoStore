@@ -6,6 +6,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
     {
         public string ClientId { get; set; }
         public string AlgoId { get; set; }
+        public string SolutionVersion { get; set; }
         public List<AlgoRuntimeData> RuntimeData { get; set; }
     }
 }

@@ -5,8 +5,9 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
     public interface IAlgoClientMetaDataRepository
     {
-        Task<AlgoClientMetaData> GetClientMetaData(string clientId);
+        Task<AlgoClientMetaData> GetAllClientMetaData(string clientId);
+        Task<AlgoClientMetaData> GetClientMetaData(string clientId, string id);
         Task SaveClientMetaData(AlgoClientMetaData metaData);
-        Task<bool> DeleteClientMetaData(string clientId, string clientMetadataId);
+        Task DeleteClientMetaData(AlgoClientMetaData metaData);
     }
 }

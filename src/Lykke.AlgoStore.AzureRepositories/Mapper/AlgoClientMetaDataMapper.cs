@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Utils;
@@ -22,7 +21,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 var res = new AlgoClientMetaDataEntity();
 
                 res.PartitionKey = clientId;
-                res.RowKey = algoData.Id ?? Guid.NewGuid().ToString();
+                res.RowKey = algoData.Id;
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
 

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Lykke.AlgoStore.Api.Models;
+using Lykke.AlgoStore.Core.Domain.Entities;
 
 namespace Lykke.AlgoStore.Infrastructure
 {
@@ -6,6 +8,9 @@ namespace Lykke.AlgoStore.Infrastructure
     {
         public AutoMapperProfile()
         {
+            CreateMap<AlgoMetaData, AlgoMetaDataModel>();
+            CreateMap<AlgoMetaDataModel, AlgoMetaData>();
+
             //CreateMap<ApiRequests.AuthRequestModel, AuthModel>()
             //    .ForMember(dest => dest.UserAgent, opt => opt.Ignore())
             //    .ForMember(dest => dest.Ip, opt => opt.Ignore());

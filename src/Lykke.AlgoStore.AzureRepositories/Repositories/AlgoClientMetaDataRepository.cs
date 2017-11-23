@@ -25,11 +25,17 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = AzureTableStorage<AlgoClientMetaDataEntity>.Create(connectionStringManager, ClientAlgoMetaDataTableName, _log);
         }
 
-        public async Task<AlgoClientMetaData> GetClientMetaData(string clientId)
+        public async Task<AlgoClientMetaData> GetAllClientMetaData(string clientId)
         {
             var entities = await _table.GetDataAsync(clientId);
 
             return entities.ToModel();
+        }
+        public async Task<AlgoClientMetaData> GetClientMetaData(string clientId, string id)
+        {
+            var entitiy = await _table.GetDataAsync(clientId, id);
+
+            return new AlgoClientMetaDataEntity[1] { entitiy }.ToModel();
         }
         public async Task SaveClientMetaData(AlgoClientMetaData metaData)
         {
@@ -37,10 +43,10 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             await _table.InsertOrMergeBatchAsync(enitites);
         }
-        public async Task<bool> DeleteClientMetaData(string clientId, string clientMetadataId)
+        public async Task DeleteClientMetaData(AlgoClientMetaData metaData)
         {
-            var entity = await _table.DeleteAsync(clientId, clientMetadataId);
-            return entity != null;
+            var entities = metaData.ToEntity();
+            await _table.DeleteAsync(entities);
         }
     }
 }
