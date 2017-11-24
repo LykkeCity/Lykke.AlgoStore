@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
@@ -10,16 +11,27 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         {
             var result = new List<AlgoTemplateData>();
 
+            if (entities.IsNullOrEmptyEnumerable())
+                return result;
+
+            foreach (var entity in entities)
+            {
+                result.Add(entity.ToModel());
+            }
+
             return result;
         }
-
         public static AlgoTemplateData ToModel(this AlgoTemplateDataEntity entity)
         {
             var result = new AlgoTemplateData();
 
-            result.Id = entity.RowKey;
+            result.TemplateId = entity.RowKey;
+            result.LanguageId = entity.LanguageId;
             result.Description = entity.Description;
             result.Source = entity.Source;
+            result.Version = entity.Version;
+            result.Branch = entity.Branch;
+            result.Build = entity.Build;
 
             return result;
         }
