@@ -10,6 +10,16 @@ namespace Lykke.AlgoStore.Infrastructure
         {
             CreateMap<AlgoMetaData, AlgoMetaDataModel>();
             CreateMap<AlgoMetaDataModel, AlgoMetaData>();
+            CreateMap<AlgoTemplateModel, AlgoTemplateData>();
+            CreateMap<AlgoTemplateData, AlgoTemplateModel>();
+            CreateMap<AlgoData, AlgoDataModel>();
+            CreateMap<AlgoDataModel, AlgoData>();
+            CreateMap<TradingAssetDataModel, TradingAssetData>();
+            CreateMap<TradingAssetData, TradingAssetDataModel>();
+            CreateMap<TradingAmountDataModel, TradingAmountData>();
+            CreateMap<TradingAmountData, TradingAmountDataModel>();
+            CreateMap<AlgoRuntimeDataModel, AlgoRuntimeData>();
+            CreateMap<AlgoRuntimeData, AlgoRuntimeDataModel>();
 
             //CreateMap<ApiRequests.AuthRequestModel, AuthModel>()
             //    .ForMember(dest => dest.UserAgent, opt => opt.Ignore())

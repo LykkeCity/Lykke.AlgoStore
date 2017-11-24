@@ -29,7 +29,7 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpGet("/algoMetadata")]
         [SwaggerOperation("GetAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoMetaDataResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoMetaDataModel>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
             var result = await _clientDataService.GetClientMetadata(User.GetClientId());
@@ -39,13 +39,13 @@ namespace Lykke.AlgoStore.Controllers
 
             var data = result.Data;
 
-            var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel>() };
+            var response = new AlgoMetaDataResponse<List<AlgoMetaDataModel>> { Data = new List<AlgoMetaDataModel>() };
 
             if (data != null && !data.AlgoMetaData.IsNullOrEmptyCollection())
             {
                 foreach (var metadata in data.AlgoMetaData)
                 {
-                    response.AlgoMetaData.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
+                    response.Data.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
                 }
             }
 
@@ -54,7 +54,7 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpPost("/algoMetadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoMetaDataResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoMetaDataModel>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
@@ -64,7 +64,7 @@ namespace Lykke.AlgoStore.Controllers
             if (result.HasError)
                 return result.ResultError.ToHttpStatusCode();
 
-            var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(result.Data) } };
+            var response = new AlgoMetaDataResponse<List<AlgoMetaDataModel>> { Data = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(result.Data) } };
 
             return Ok(response);
         }
@@ -82,6 +82,75 @@ namespace Lykke.AlgoStore.Controllers
                 return result.ResultError.ToHttpStatusCode();
 
             return Ok();
+        }
+
+        [HttpGet("/template")]
+        [SwaggerOperation("GetTemplates")]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoTemplateModel>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetTemplates(string languageId)
+        {
+            var result = await _clientDataService.GetTemplate(languageId);
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
+
+            var data = result.Data;
+
+            var response = new AlgoMetaDataResponse<List<AlgoTemplateModel>> { Data = new List<AlgoTemplateModel>() };
+
+            if (data != null && !data.IsNullOrEmptyCollection())
+            {
+                foreach (var template in data)
+                {
+                    response.Data.Add(Mapper.Map<AlgoTemplateModel>(template));
+                }
+            }
+
+            return Ok(response);
+        }
+
+        [HttpGet("/source")]
+        [SwaggerOperation("GetSource")]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse<AlgoDataModel>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetSource(string clientAlgoId)
+        {
+            var result = await _clientDataService.GetSource(clientAlgoId);
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
+
+            var response = new AlgoMetaDataResponse<AlgoDataModel> { Data = Mapper.Map<AlgoDataModel>(result.Data) };
+
+            return Ok(response);
+        }
+
+        [HttpPost("/source")]
+        [SwaggerOperation("SaveSource")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<IActionResult> SaveSource(AlgoDataModel model)
+        {
+            var data = Mapper.Map<AlgoData>(model);
+            var result = await _clientDataService.SaveSource(data);
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
+
+            return Ok();
+        }
+
+        [HttpGet("/runtimeData")]
+        [SwaggerOperation("GetRuntimeData")]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoRuntimeDataModel>>), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetRuntimeData(string clientAlgoId)
+        {
+            var result = await _clientDataService.GetRuntimeData(clientAlgoId);
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
+
+            var response = new AlgoMetaDataResponse<List<AlgoRuntimeDataModel>> { Data = Mapper.Map< List < AlgoRuntimeData > , List <AlgoRuntimeDataModel>>(result.Data.RuntimeData) };
+
+            return Ok(response);
         }
     }
 }

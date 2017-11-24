@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace Lykke.AlgoStore.Api.Models
+﻿namespace Lykke.AlgoStore.Api.Models
 {
-    public class AlgoMetaDataResponse
+    public class AlgoMetaDataResponse<T>
     {
-        public List<AlgoMetaDataModel> AlgoMetaData { get; set; }
+        public T Data { get; set; }
     }
 }

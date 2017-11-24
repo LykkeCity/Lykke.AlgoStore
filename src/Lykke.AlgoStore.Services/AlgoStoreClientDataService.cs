@@ -16,16 +16,19 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
+        private readonly IAlgoTemplateDataRepository _templateDataRepository;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
+            IAlgoTemplateDataRepository templateDataRepository,
             ILog log)
         {
             _metaDataRepository = metaDataRepository;
             _dataRepository = dataRepository;
             _runtimeDataRepository = runtimeDataRepository;
+            _templateDataRepository = templateDataRepository;
             _log = log;
         }
 
@@ -103,6 +106,72 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
+        public async Task<BaseDataServiceResult<List<AlgoTemplateData>>> GetTemplate(string languageId)
+        {
+            var result = new BaseDataServiceResult<List<AlgoTemplateData>> { Data = new List<AlgoTemplateData>() };
 
+            try
+            {
+                result.Data = await _templateDataRepository.GetTemplatesByLanguage(languageId);
+            }
+            catch (Exception ex)
+            {
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+            }
+
+            return result;
+        }
+
+        public async Task<BaseDataServiceResult<AlgoData>> GetSource(string clientAlgoId)
+        {
+            var result = new BaseDataServiceResult<AlgoData>();
+
+            try
+            {
+                result.Data = await _dataRepository.GetAlgoData(clientAlgoId);
+            }
+            catch (Exception ex)
+            {
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+            }
+
+            return result;
+        }
+
+        public async Task<BaseServiceResult> SaveSource(AlgoData data)
+        {
+            var result = new BaseDataServiceResult<AlgoData>();
+
+            try
+            {
+                await _dataRepository.SaveAlgoData(data);
+            }
+            catch (Exception ex)
+            {
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+            }
+
+            return result;
+        }
+
+        public async Task<BaseDataServiceResult<AlgoClientRuntimeData>> GetRuntimeData(string clientAlgoId)
+        {
+            var result = new BaseDataServiceResult<AlgoClientRuntimeData>();
+
+            try
+            {
+                result.Data = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(clientAlgoId);
+            }
+            catch (Exception ex)
+            {
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+            }
+
+            return result;
+        }
     }
 }
