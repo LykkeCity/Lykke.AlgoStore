@@ -10,5 +10,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
         public string Version { get; set; }
         public string Branch { get; set; }
         public string Build { get; set; }
+        public bool IsActive { get; set; }
     }
 }
