@@ -23,6 +23,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         }
         public static AlgoTemplateData ToModel(this AlgoTemplateDataEntity entity)
         {
+            if (entity == null)
+                return null;
+
             var result = new AlgoTemplateData();
 
             result.TemplateId = entity.RowKey;

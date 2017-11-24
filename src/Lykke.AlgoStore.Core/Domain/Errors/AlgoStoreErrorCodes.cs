@@ -4,6 +4,11 @@
     {
         None = 0,
 
-        Unhandled = 1
+        Unhandled = 1,
+
+        //Data
+        RuntimeSettingsExists = 500
+
+
     }
 }

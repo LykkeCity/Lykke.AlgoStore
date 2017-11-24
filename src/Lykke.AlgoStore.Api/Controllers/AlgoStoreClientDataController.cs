@@ -15,7 +15,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/clientData")]
     public class AlgoClientDataController : Controller
     {
         private readonly ILog _log;
@@ -27,7 +27,7 @@ namespace Lykke.AlgoStore.Controllers
             _clientDataService = clientDataService;
         }
 
-        [HttpGet]
+        [HttpGet("/algoMetadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoMetaDataResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAlgoMetadata()
@@ -52,7 +52,9 @@ namespace Lykke.AlgoStore.Controllers
             return Ok(response);
         }
 
-        [HttpPost]
+        [HttpPost("/algoMetadata")]
+        [SwaggerOperation("SaveAlgoMetadata")]
+        [ProducesResponseType(typeof(AlgoMetaDataResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
@@ -67,12 +69,14 @@ namespace Lykke.AlgoStore.Controllers
             return Ok(response);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
+        [HttpPost("/algoMetadata/cascadeDelete")]
+        [SwaggerOperation("DeleteAlgoMetadata")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<IActionResult> CascadeDeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var result = await _clientDataService.DeleteClientMetadata(User.GetClientId(), data);
+            var result = await _clientDataService.CascadeDeleteClientMetadata(User.GetClientId(), data);
 
             if (result.HasError)
                 return result.ResultError.ToHttpStatusCode();

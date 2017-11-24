@@ -11,7 +11,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         {
             var result = new List<AlgoMetaDataEntity>();
 
-            if (string.IsNullOrWhiteSpace(data.ClientId) || data.AlgoMetaData.IsNullOrEmptyCollection())
+            if ((data == null) || data.AlgoMetaData.IsNullOrEmptyCollection())
                 return result;
 
             var clientId = data.ClientId;
@@ -35,7 +35,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         {
             var result = new AlgoClientMetaData { AlgoMetaData = new List<AlgoMetaData>() };
 
-            if (entities.IsNullOrEmptyEnumerable())
+            if ((entities == null) || entities.IsNullOrEmptyEnumerable())
                 return result;
 
             var enumerator = entities.GetEnumerator();
@@ -43,6 +43,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
+                if (current == null)
+                    return result;
+
                 result.ClientId = current.ClientId;
                 result.AlgoMetaData.Add(current.ToAlgoMetaData());
             }
@@ -52,6 +55,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
+                if (current == null)
+                    continue;
+
                 result.AlgoMetaData.Add(current.ToAlgoMetaData());
             }
 

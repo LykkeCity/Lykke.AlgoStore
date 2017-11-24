@@ -11,7 +11,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         {
             var result = new AlgoClientRuntimeData { RuntimeData = new List<AlgoRuntimeData>() };
 
-            if (entities.IsNullOrEmptyEnumerable())
+            if ((entities == null) || entities.IsNullOrEmptyEnumerable())
                 return result;
 
             var enumerator = entities.GetEnumerator();
@@ -19,6 +19,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
+                if (current == null)
+                    return result;
+
                 result.ClientAlgoId = current.ClientAlgoId;
                 result.RuntimeData.Add(current.ToRuntimeData());
             }
@@ -28,6 +31,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
+                if (current == null)
+                    continue;
+
                 result.RuntimeData.Add(current.ToRuntimeData());
             }
 
@@ -37,14 +43,14 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         {
             var result = new List<AlgoRuntimeDataEntity>();
 
-            if (data.RuntimeData.IsNullOrEmptyCollection())
+            if ((data == null) || data.RuntimeData.IsNullOrEmptyCollection())
                 return result;
 
             var algoId = data.ClientAlgoId;
 
             foreach (AlgoRuntimeData runtimeData in data.RuntimeData)
             {
-                if (runtimeData.Asset == null || runtimeData.TradingAmount == null)
+                if ((runtimeData == null) || (runtimeData.Asset == null) || (runtimeData.TradingAmount == null))
                     continue;
 
                 var res = new AlgoRuntimeDataEntity();
@@ -73,6 +79,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
         private static AlgoRuntimeData ToRuntimeData(this AlgoRuntimeDataEntity entity)
         {
+            if (entity == null)
+                return null;
+
             var result = new AlgoRuntimeData();
 
             result.ImageId = entity.RowKey;
@@ -84,6 +93,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         }
         private static TradingAssetData ToTradingAssetData(this AlgoRuntimeDataEntity entity)
         {
+            if (entity == null)
+                return null;
+
             var result = new TradingAssetData();
 
             result.Accuracy = entity.AssetAccuracy;
@@ -97,6 +109,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         }
         private static TradingAmountData ToTradingAmountData(this AlgoRuntimeDataEntity entity)
         {
+            if (entity == null)
+                return null;
+
             var result = new TradingAmountData();
 
             result.AssetId = entity.TradingAmountAssetId;

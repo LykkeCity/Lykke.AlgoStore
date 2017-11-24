@@ -7,6 +7,6 @@ namespace Lykke.AlgoStore.Core.Services
     {
         Task<BaseDataServiceResult<AlgoClientMetaData>> GetClientMetadata(string clientId);
         Task<BaseDataServiceResult<AlgoClientMetaData>> SaveClientMetadata(string clientId, AlgoMetaData data);
-        Task<BaseServiceResult> DeleteClientMetadata(string clientId, AlgoMetaData data);
+        Task<BaseServiceResult> CascadeDeleteClientMetadata(string clientId, AlgoMetaData data);
     }
 }

@@ -17,5 +17,18 @@ namespace Lykke.AlgoStore.Core.Services
                 return (ResultError != null) && (ResultError.ErrorCode != AlgoStoreErrorCodes.None);
             }
         }
+
+        public static BaseServiceResult CreateFromError(AlgoStoreErrorCodes errorCode)
+        {
+            return CreateFromError(errorCode, string.Empty);
+        }
+
+        public static BaseServiceResult CreateFromError(AlgoStoreErrorCodes errorCode, string message)
+        {
+            var result = new BaseServiceResult();
+            result.ResultError.ErrorCode = errorCode;
+            result.ResultError.Description = message;
+            return result;
+        }
     }
 }

@@ -14,13 +14,18 @@ namespace Lykke.AlgoStore.Services
     {
         private const string ComponentName = "AlgoStoreClientDataService";
         private readonly IAlgoMetaDataRepository _metaDataRepository;
-        private readonly IAlgoDataRepository _algoDataRepository;
+        private readonly IAlgoDataRepository _dataRepository;
+        private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly ILog _log;
 
-        public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository, IAlgoDataRepository algoDataRepository, ILog log)
+        public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
+            IAlgoDataRepository dataRepository,
+            IAlgoRuntimeDataRepository runtimeDataRepository,
+            ILog log)
         {
             _metaDataRepository = metaDataRepository;
-            _algoDataRepository = algoDataRepository;
+            _dataRepository = dataRepository;
+            _runtimeDataRepository = runtimeDataRepository;
             _log = log;
         }
 
@@ -41,13 +46,17 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
-        public async Task<BaseServiceResult> DeleteClientMetadata(string clientId, AlgoMetaData data)
+        public async Task<BaseServiceResult> CascadeDeleteClientMetadata(string clientId, AlgoMetaData data)
         {
             var result = new BaseServiceResult();
 
             try
             {
-                await _algoDataRepository.DeleteAlgoData(data.ClientAlgoId);
+                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
+                if (runtimeData != null)
+                    return BaseServiceResult.CreateFromError(AlgoStoreErrorCodes.RuntimeSettingsExists);
+
+                await _dataRepository.DeleteAlgoData(data.ClientAlgoId);
 
                 var clientData = new AlgoClientMetaData
                 {
