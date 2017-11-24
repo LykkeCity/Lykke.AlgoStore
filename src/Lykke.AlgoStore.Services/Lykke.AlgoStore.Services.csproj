@@ -25,4 +25,9 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Validation\" />
+  </ItemGroup>
+
 </Project>

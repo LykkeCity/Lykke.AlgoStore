@@ -32,7 +32,12 @@ namespace Lykke.AlgoStore.Controllers
         [ProducesResponseType(typeof(AlgoMetaDataResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
-            var data = await _clientDataService.GetClientMetadata(User.GetClientId());
+            var result = await _clientDataService.GetClientMetadata(User.GetClientId());
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
+
+            var data = result.Data;
 
             var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel>() };
 
@@ -52,8 +57,12 @@ namespace Lykke.AlgoStore.Controllers
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var clientData = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
-            var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(clientData) } };
+            var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
+
+            var response = new AlgoMetaDataResponse { AlgoMetaData = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(result.Data) } };
 
             return Ok(response);
         }
@@ -63,7 +72,10 @@ namespace Lykke.AlgoStore.Controllers
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            await _clientDataService.DeleteClientMetadata(User.GetClientId(), data);
+            var result = await _clientDataService.DeleteClientMetadata(User.GetClientId(), data);
+
+            if (result.HasError)
+                return result.ResultError.ToHttpStatusCode();
 
             return Ok();
         }
