@@ -25,6 +25,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 res.ClientId = clientId;
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
+                res.TemplateId = algoData.TemplateId;
 
                 result.Add(res);
             }
@@ -66,12 +67,14 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
         private static AlgoMetaData ToAlgoMetaData(this AlgoMetaDataEntity entity)
         {
-            return new AlgoMetaData
-            {
-                ClientAlgoId = entity.RowKey,
-                Description = entity.Description,
-                Name = entity.Name
-            };
+            var result = new AlgoMetaData();
+
+            result.ClientAlgoId = entity.RowKey;
+            result.Description = entity.Description;
+            result.Name = entity.Name;
+            result.TemplateId = entity.TemplateId;
+
+            return result;
         }
     }
 }
