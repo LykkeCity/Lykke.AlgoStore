@@ -42,8 +42,10 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait(); //await?
                 result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+               
+                //set message, description
             }
 
             return result;
@@ -59,7 +61,9 @@ namespace Lykke.AlgoStore.Services
                 if (runtimeData != null)
                     return BaseServiceResult.CreateFromError(AlgoStoreErrorCodes.RuntimeSettingsExists);
 
-                await _dataRepository.DeleteAlgoData(data.ClientAlgoId);
+                await _dataRepository.DeleteAlgoData(data.ClientAlgoId); // returns boolean should we continue if false?
+
+                //transaction - i know it doesnt come out of the box with NoSql db
 
                 var clientData = new AlgoClientMetaData
                 {
@@ -93,7 +97,7 @@ namespace Lykke.AlgoStore.Services
                     ClientId = clientId,
                     AlgoMetaData = new List<AlgoMetaData> { data }
                 };
-                await _metaDataRepository.SaveClientMetaData(clientData);
+                await _metaDataRepository.SaveClientMetaData(clientData); //return the saved data to save the call below?
 
                 result.Data = await _metaDataRepository.GetClientMetaData(id);
             }

@@ -140,6 +140,7 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpGet("/runtimeData")]
         [SwaggerOperation("GetRuntimeData")]
+        //[ProducesResponseType(typeof(ErrResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoRuntimeDataModel>>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetRuntimeData(string clientAlgoId)
         {
@@ -151,6 +152,8 @@ namespace Lykke.AlgoStore.Controllers
             var response = new AlgoMetaDataResponse<List<AlgoRuntimeDataModel>> { Data = Mapper.Map< List < AlgoRuntimeData > , List <AlgoRuntimeDataModel>>(result.Data.RuntimeData) };
 
             return Ok(response);
+
+            // return  BadRequest(new ErrResponse())
         }
     }
 }

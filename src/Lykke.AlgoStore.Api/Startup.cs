@@ -91,13 +91,13 @@ namespace Lykke.Service.LykkeService
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware(Const.AppName, ex => new {Message = "Technical problem"});
+                app.UseLykkeMiddleware(Const.AppName, ex => new {Message = "Technical problem"}); // same purpose as below?
 
                 app.UseAuthentication();
 
                 app.UseMvc();
 
-                app.UseMiddleware<GlobalErrorHandlerMiddleware>(Const.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);
+                app.UseMiddleware<GlobalErrorHandlerMiddleware>(Const.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);// same purpose as above?
 
                 app.UseSwagger();
                 app.UseSwaggerUI(x =>

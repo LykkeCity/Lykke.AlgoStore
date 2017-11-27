@@ -39,6 +39,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if ((entities == null) || entities.IsNullOrEmptyEnumerable())
                 return result;
 
+            //foreach and assign result.ClientId = current.ClientId on every itteration or out of the loop ?
+
             var enumerator = entities.GetEnumerator();
             enumerator.Reset();
             if (enumerator.MoveNext())

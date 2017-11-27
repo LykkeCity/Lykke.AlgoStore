@@ -16,14 +16,14 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         private const string TableName = "AlgoRuntimeDataTable";
 
         private readonly INoSQLTableStorage<AlgoRuntimeDataEntity> _table;
-        private readonly IReloadingManager<string> _connectionStringManager;
+        private readonly IReloadingManager<string> _connectionStringManager; //i think we dont need this
         private readonly ILog _log;
 
         public AlgoRuntimeDataRepository(IReloadingManager<string> connectionStringManager, ILog log)
         {
             _log = log;
             _connectionStringManager = connectionStringManager;
-            _table = AzureTableStorage<AlgoRuntimeDataEntity>.Create(connectionStringManager, TableName, _log);
+            _table = AzureTableStorage<AlgoRuntimeDataEntity>.Create(connectionStringManager, TableName, _log); 
         }
 
         public async Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string imageId)

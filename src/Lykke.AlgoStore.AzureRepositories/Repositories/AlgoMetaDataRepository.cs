@@ -42,7 +42,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var enitites = metaData.ToEntity(PartitionKey);
 
-            await _table.InsertOrMergeBatchAsync(enitites);
+            await _table.InsertOrMergeBatchAsync(enitites); //return the saved data to save the call to read it later to verify success
+
         }
         public async Task DeleteClientMetaData(AlgoClientMetaData metaData)
         {
