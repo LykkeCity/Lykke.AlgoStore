@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
 using Common.Log;
@@ -35,17 +34,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return new AlgoMetaDataEntity[1] { entitiy }.ToModel();
         }
-        public async Task<AlgoClientMetaData> SaveAlgoMetaData(AlgoClientMetaData metaData)
+        public async Task SaveAlgoMetaData(AlgoClientMetaData metaData)
         {
             var enitites = metaData.ToEntity(PartitionKey);
 
             await _table.InsertOrMergeBatchAsync(enitites);
-
-            var keys = enitites.Select(e => e.RowKey).ToArray();
-
-            var result = await _table.GetDataAsync(PartitionKey, keys);
-
-            return result.ToModel();
         }
         public async Task DeleteAlgoMetaData(AlgoClientMetaData metaData)
         {

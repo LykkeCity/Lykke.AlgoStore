@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
 using Common.Log;
@@ -37,17 +36,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             return entities.ToModel();
         }
 
-        public async Task<AlgoClientRuntimeData> SaveAlgoRuntimeData(AlgoClientRuntimeData data)
+        public async Task SaveAlgoRuntimeData(AlgoClientRuntimeData data)
         {
             var enitites = data.ToEntity(PartitionKey);
 
             await _table.InsertOrMergeBatchAsync(enitites);
-
-            var keys = enitites.Select(e => e.RowKey).ToArray();
-
-            var result = await _table.GetDataAsync(PartitionKey, keys);
-
-            return result.ToModel();
         }
 
         public async Task<bool> DeleteAlgoRuntimeData(string imageId)

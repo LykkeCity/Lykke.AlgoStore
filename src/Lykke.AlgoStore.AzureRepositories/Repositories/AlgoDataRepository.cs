@@ -28,13 +28,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return entity.ToModel();
         }
-        public async Task<AlgoData> SaveAlgoData(AlgoData metaData)
+        public async Task SaveAlgoData(AlgoData metaData)
         {
             var enitity = metaData.ToEntity(PartitionKey);
 
             await _table.InsertOrMergeAsync(enitity);
-
-            return await GetAlgoData(enitity.RowKey);
         }
         public async Task<bool> DeleteAlgoData(string algoId)
         {
