@@ -15,7 +15,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/clientData")]
+    [Route("api/v001/clientData")]
     public class AlgoClientDataController : Controller
     {
         private readonly ILog _log;
@@ -37,12 +37,7 @@ namespace Lykke.AlgoStore.Controllers
             var response = new List<AlgoMetaDataModel>();
 
             if (result != null && !result.AlgoMetaData.IsNullOrEmptyCollection())
-            {
-                foreach (var metadata in result.AlgoMetaData)
-                {
-                    response.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
-                }
-            }
+                response = Mapper.Map<List<AlgoMetaDataModel>>(result);
 
             return Ok(response);
         }
