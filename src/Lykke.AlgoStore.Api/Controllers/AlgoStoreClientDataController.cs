@@ -34,15 +34,10 @@ namespace Lykke.AlgoStore.Controllers
         {
             var result = await _clientDataService.GetClientMetadata(User.GetClientId());
 
-            var response = new List<AlgoMetaDataModel>();
+            if (result == null)
+                return NotFound(); //TODO: Custom messages
 
-            if (result != null && !result.AlgoMetaData.IsNullOrEmptyCollection())
-            {
-                foreach (var metadata in result.AlgoMetaData)
-                {
-                    response.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
-                }
-            }
+            var response = Mapper.Map<IList<AlgoMetaDataModel>>(result);
 
             return Ok(response);
         }
