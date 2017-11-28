@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
 using Common.Log;
@@ -16,14 +17,10 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         private const string TableName = "AlgoRuntimeDataTable";
 
         private readonly INoSQLTableStorage<AlgoRuntimeDataEntity> _table;
-        private readonly IReloadingManager<string> _connectionStringManager; //i think we dont need this
-        private readonly ILog _log;
 
         public AlgoRuntimeDataRepository(IReloadingManager<string> connectionStringManager, ILog log)
         {
-            _log = log;
-            _connectionStringManager = connectionStringManager;
-            _table = AzureTableStorage<AlgoRuntimeDataEntity>.Create(connectionStringManager, TableName, _log); 
+            _table = AzureTableStorage<AlgoRuntimeDataEntity>.Create(connectionStringManager, TableName, log);
         }
 
         public async Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string imageId)
@@ -40,11 +37,17 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             return entities.ToModel();
         }
 
-        public async Task SaveAlgoRuntimeData(AlgoClientRuntimeData data)
+        public async Task<AlgoClientRuntimeData> SaveAlgoRuntimeData(AlgoClientRuntimeData data)
         {
             var enitites = data.ToEntity(PartitionKey);
 
             await _table.InsertOrMergeBatchAsync(enitites);
+
+            var keys = enitites.Select(e => e.RowKey).ToArray();
+
+            var result = await _table.GetDataAsync(PartitionKey, keys);
+
+            return result.ToModel();
         }
 
         public async Task<bool> DeleteAlgoRuntimeData(string imageId)

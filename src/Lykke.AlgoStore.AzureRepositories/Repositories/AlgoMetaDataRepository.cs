@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
 using Common.Log;
@@ -16,36 +17,37 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         private const string TableName = "AlgoMetaDataTable";
 
         private readonly INoSQLTableStorage<AlgoMetaDataEntity> _table;
-        private readonly IReloadingManager<string> _connectionStringManager;
-        private readonly ILog _log;
 
         public AlgoMetaDataRepository(IReloadingManager<string> connectionStringManager, ILog log)
         {
-            _log = log;
-            _connectionStringManager = connectionStringManager;
-            _table = AzureTableStorage<AlgoMetaDataEntity>.Create(connectionStringManager, TableName, _log);
+            _table = AzureTableStorage<AlgoMetaDataEntity>.Create(connectionStringManager, TableName, log);
         }
 
-        public async Task<AlgoClientMetaData> GetAllClientMetaData(string clientId)
+        public async Task<AlgoClientMetaData> GetAllClientAlgoMetaData(string clientId)
         {
             var entities = await _table.GetDataAsync(PartitionKey, data => data.ClientId == clientId);
 
             return entities.ToModel();
         }
-        public async Task<AlgoClientMetaData> GetClientMetaData(string id)
+        public async Task<AlgoClientMetaData> GetAlgoMetaData(string id)
         {
             var entitiy = await _table.GetDataAsync(PartitionKey, id);
 
             return new AlgoMetaDataEntity[1] { entitiy }.ToModel();
         }
-        public async Task SaveClientMetaData(AlgoClientMetaData metaData)
+        public async Task<AlgoClientMetaData> SaveAlgoMetaData(AlgoClientMetaData metaData)
         {
             var enitites = metaData.ToEntity(PartitionKey);
 
-            await _table.InsertOrMergeBatchAsync(enitites); //return the saved data to save the call to read it later to verify success
+            await _table.InsertOrMergeBatchAsync(enitites);
 
+            var keys = enitites.Select(e => e.RowKey).ToArray();
+
+            var result = await _table.GetDataAsync(PartitionKey, keys);
+
+            return result.ToModel();
         }
-        public async Task DeleteClientMetaData(AlgoClientMetaData metaData)
+        public async Task DeleteAlgoMetaData(AlgoClientMetaData metaData)
         {
             var entities = metaData.ToEntity(PartitionKey);
             await _table.DeleteAsync(entities);

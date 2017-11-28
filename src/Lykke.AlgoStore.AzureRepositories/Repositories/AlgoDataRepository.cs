@@ -16,14 +16,10 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         private const string TableName = "AlgoDataTable";
 
         private readonly INoSQLTableStorage<AlgoDataEntity> _table;
-        private readonly IReloadingManager<string> _connectionStringManager;
-        private readonly ILog _log;
 
         public AlgoDataRepository(IReloadingManager<string> connectionStringManager, ILog log)
         {
-            _log = log;
-            _connectionStringManager = connectionStringManager;
-            _table = AzureTableStorage<AlgoDataEntity>.Create(connectionStringManager, TableName, _log);
+            _table = AzureTableStorage<AlgoDataEntity>.Create(connectionStringManager, TableName, log);
         }
 
         public async Task<AlgoData> GetAlgoData(string algoId)
@@ -32,11 +28,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return entity.ToModel();
         }
-        public async Task SaveAlgoData(AlgoData metaData)
+        public async Task<AlgoData> SaveAlgoData(AlgoData metaData)
         {
             var enitity = metaData.ToEntity(PartitionKey);
 
             await _table.InsertOrMergeAsync(enitity);
+
+            return await GetAlgoData(enitity.RowKey);
         }
         public async Task<bool> DeleteAlgoData(string algoId)
         {

@@ -14,27 +14,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if ((entities == null) || entities.IsNullOrEmptyEnumerable())
                 return result;
 
-            var enumerator = entities.GetEnumerator();
-            enumerator.Reset();
-            if (enumerator.MoveNext())
+            foreach (var algoEntity in entities)
             {
-                var current = enumerator.Current;
-                if (current == null)
-                    return result;
-
-                result.ClientAlgoId = current.ClientAlgoId;
-                result.RuntimeData.Add(current.ToRuntimeData());
-            }
-            else
-                return result;
-
-            while (enumerator.MoveNext())
-            {
-                var current = enumerator.Current;
-                if (current == null)
+                if (algoEntity == null)
                     continue;
 
-                result.RuntimeData.Add(current.ToRuntimeData());
+                result.ClientAlgoId = algoEntity.ClientAlgoId;
+                result.RuntimeData.Add(algoEntity.ToRuntimeData());
             }
 
             return result;

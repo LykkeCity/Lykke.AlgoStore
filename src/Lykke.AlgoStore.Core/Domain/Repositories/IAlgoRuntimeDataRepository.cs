@@ -7,7 +7,7 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
     {
         Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string imageId);
         Task<AlgoClientRuntimeData> GetAlgoRuntimeDataByAlgo(string algoId);
-        Task SaveAlgoRuntimeData(AlgoClientRuntimeData data);
+        Task<AlgoClientRuntimeData> SaveAlgoRuntimeData(AlgoClientRuntimeData data);
         Task<bool> DeleteAlgoRuntimeData(string algoId);
     }
 }
