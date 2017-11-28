@@ -49,14 +49,14 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpPost("/algoMetadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
-        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
             var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
 
-            var response = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(result) };
+            var response = Mapper.Map<AlgoMetaDataModel>(result);
 
             return Ok(response);
         }
