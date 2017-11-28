@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Core.Settings;
 
 namespace Lykke.Service.LykkeService
 {
@@ -61,7 +62,7 @@ namespace Lykke.Service.LykkeService
 
                 services.AddLykkeAuthentication();
 
-                var appSettings = Configuration.LoadSettings<AlgoApiSettings>();
+                var appSettings = Configuration.LoadSettings<AppSettings>();
                 Log = LogManager.CreateLogWithSlack(services, appSettings);
 
                 ApplicationContainer = ContainerManager.RegisterAlgoApiModules(services, appSettings, Log);
@@ -79,6 +80,12 @@ namespace Lykke.Service.LykkeService
         {
             try
             {
+                app.UseCors(builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                });
                 app.Use(next => context =>
                 {
                     context.Request.EnableRewind();
@@ -95,9 +102,10 @@ namespace Lykke.Service.LykkeService
 
                 app.UseAuthentication();
 
+                app.UseLykkeMiddleware(Const.AppName, ex => new { Message = "Technical problem" });
                 app.UseMvc();
 
-                app.UseMiddleware<GlobalErrorHandlerMiddleware>(Const.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);// same purpose as above?
+                //app.UseMiddleware<GlobalErrorHandlerMiddleware>(Const.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);
 
                 app.UseSwagger();
                 app.UseSwaggerUI(x =>

@@ -2,6 +2,7 @@
 using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.Services;
 using Lykke.SettingsReader;
@@ -11,12 +12,12 @@ namespace Lykke.AlgoStore.Api.Modules
 {
     public class AlgoApiModule : Module
     {
-        private readonly IReloadingManager<AlgoApiSettings> _settings;
+        private readonly IReloadingManager<AppSettings> _settings;
         private readonly ILog _log;
         // NOTE: you can remove it if you don't need to use IServiceCollection extensions to register service specific dependencies
         private readonly IServiceCollection _services;
 
-        public AlgoApiModule(IReloadingManager<AlgoApiSettings> settings, ILog log)
+        public AlgoApiModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
             _log = log;

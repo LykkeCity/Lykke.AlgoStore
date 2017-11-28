@@ -8,6 +8,11 @@ namespace Lykke.AlgoStore.Infrastructure
     {
         public AutoMapperProfile()
         {
+        CreateMap<AlgoMetaData, AlgoMetaDataModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ClientAlgoId));
+
+            CreateMap<AlgoMetaDataModel, AlgoMetaData>()
+                .ForMember(dest => dest.ClientAlgoId, opt => opt.MapFrom(src => src.Id));
             CreateMap<AlgoMetaData, AlgoMetaDataModel>();
             CreateMap<AlgoMetaDataModel, AlgoMetaData>();
             CreateMap<AlgoTemplateModel, AlgoTemplateData>();
