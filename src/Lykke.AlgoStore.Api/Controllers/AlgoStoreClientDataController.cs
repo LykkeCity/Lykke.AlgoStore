@@ -37,7 +37,7 @@ namespace Lykke.AlgoStore.Controllers
             var response = new List<AlgoMetaDataModel>();
 
             if (result != null && !result.AlgoMetaData.IsNullOrEmptyCollection())
-                response = Mapper.Map<List<AlgoMetaDataModel>>(result);
+                response = Mapper.Map<List<AlgoMetaDataModel>>(result.AlgoMetaData);
 
             return Ok(response);
         }
