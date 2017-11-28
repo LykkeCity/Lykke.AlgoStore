@@ -32,39 +32,22 @@ namespace Lykke.AlgoStore.Services
             _log = log;
         }
 
-        public async Task<BaseDataServiceResult<AlgoClientMetaData>> GetClientMetadata(string clientId)
+        public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
         {
-            var result = new BaseDataServiceResult<AlgoClientMetaData>();
-
             try
             {
-                result.Data = await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
+                return await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait(); //await?
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
-
-                //set message, description
+                throw HandleException(ex);
             }
-
-            return result;
         }
 
-        public async Task<BaseServiceResult> CascadeDeleteClientMetadata(string clientId, AlgoMetaData data)
+        public async Task CascadeDeleteClientMetadata(string clientId, AlgoMetaData data)
         {
-            var result = new BaseServiceResult();
-
             try
             {
-                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
-                if (runtimeData != null)
-                    return BaseServiceResult.CreateFromError(AlgoStoreErrorCodes.RuntimeSettingsExists);
-
-                await _dataRepository.DeleteAlgoData(data.ClientAlgoId); // returns boolean should we continue if false?
-
-                //transaction - i know it doesnt come out of the box with NoSql db
-
                 var clientData = new AlgoClientMetaData
                 {
                     ClientId = clientId,
@@ -74,17 +57,12 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+                throw HandleException(ex);
             }
-
-            return result;
         }
 
-        public async Task<BaseDataServiceResult<AlgoClientMetaData>> SaveClientMetadata(string clientId, AlgoMetaData data)
+        public async Task<AlgoClientMetaData> SaveClientMetadata(string clientId, AlgoMetaData data)
         {
-            var result = new BaseDataServiceResult<AlgoClientMetaData>();
-
             try
             {
                 var id = Guid.NewGuid().ToString();
@@ -97,85 +75,74 @@ namespace Lykke.AlgoStore.Services
                     ClientId = clientId,
                     AlgoMetaData = new List<AlgoMetaData> { data }
                 };
-                await _metaDataRepository.SaveAlgoMetaData(clientData); //return the saved data to save the call below?
+                await _metaDataRepository.SaveAlgoMetaData(clientData);
 
-                result.Data = await _metaDataRepository.GetAllClientAlgoMetaData(id);
+                return await _metaDataRepository.GetAlgoMetaData(id);
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+                throw HandleException(ex);
             }
-
-            return result;
         }
 
-        public async Task<BaseDataServiceResult<List<AlgoTemplateData>>> GetTemplate(string languageId)
+        public async Task<List<AlgoTemplateData>> GetTemplate(string languageId)
         {
-            var result = new BaseDataServiceResult<List<AlgoTemplateData>> { Data = new List<AlgoTemplateData>() };
-
             try
             {
-                result.Data = await _templateDataRepository.GetTemplatesByLanguage(languageId);
+                return await _templateDataRepository.GetTemplatesByLanguage(languageId);
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+                throw HandleException(ex);
             }
-
-            return result;
         }
 
-        public async Task<BaseDataServiceResult<AlgoData>> GetSource(string clientAlgoId)
+        public async Task<AlgoData> GetSource(string clientAlgoId)
         {
-            var result = new BaseDataServiceResult<AlgoData>();
-
             try
             {
-                result.Data = await _dataRepository.GetAlgoData(clientAlgoId);
+                return await _dataRepository.GetAlgoData(clientAlgoId);
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+                throw HandleException(ex);
             }
-
-            return result;
         }
 
-        public async Task<BaseServiceResult> SaveSource(AlgoData data)
+        public async Task SaveSource(AlgoData data)
         {
-            var result = new BaseDataServiceResult<AlgoData>();
-
             try
             {
                 await _dataRepository.SaveAlgoData(data);
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+                throw HandleException(ex);
             }
-
-            return result;
         }
 
-        public async Task<BaseDataServiceResult<AlgoClientRuntimeData>> GetRuntimeData(string clientAlgoId)
+        public async Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId)
         {
-            var result = new BaseDataServiceResult<AlgoClientRuntimeData>();
-
             try
             {
-                result.Data = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(clientAlgoId);
+                return await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(clientAlgoId);
             }
             catch (Exception ex)
             {
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
+                throw HandleException(ex);
             }
+        }
 
-            return result;
+        private AlgoStoreException HandleException(Exception ex)
+        {
+            var exception = ex as AlgoStoreException;
+
+            if (exception == null)
+                exception = new AlgoStoreException(AlgoStoreErrorCodes.Unhandled, ex);
+
+            _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, exception).Wait();
+
+            return exception;
         }
     }
 }

@@ -29,23 +29,18 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpGet("/algoMetadata")]
         [SwaggerOperation("GetAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoMetaDataModel>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
             var result = await _clientDataService.GetClientMetadata(User.GetClientId());
 
-            if (result.HasError)
-                return result.ResultError.ToHttpStatusCode();
+            var response = new List<AlgoMetaDataModel>();
 
-            var data = result.Data;
-
-            var response = new AlgoMetaDataResponse<List<AlgoMetaDataModel>> { Data = new List<AlgoMetaDataModel>() };
-
-            if (data != null && !data.AlgoMetaData.IsNullOrEmptyCollection())
+            if (result != null && !result.AlgoMetaData.IsNullOrEmptyCollection())
             {
-                foreach (var metadata in data.AlgoMetaData)
+                foreach (var metadata in result.AlgoMetaData)
                 {
-                    response.Data.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
+                    response.Add(Mapper.Map<AlgoMetaDataModel>(metadata));
                 }
             }
 
@@ -54,17 +49,14 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpPost("/algoMetadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoMetaDataResponse<List<AlgoMetaDataModel>>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
             var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
 
-            if (result.HasError)
-                return result.ResultError.ToHttpStatusCode();
-
-            var response = new AlgoMetaDataResponse<List<AlgoMetaDataModel>> { Data = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(result.Data) } };
+            var response = new List<AlgoMetaDataModel> { Mapper.Map<AlgoMetaDataModel>(result) };
 
             return Ok(response);
         }
@@ -76,10 +68,7 @@ namespace Lykke.AlgoStore.Controllers
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var result = await _clientDataService.CascadeDeleteClientMetadata(User.GetClientId(), data);
-
-            if (result.HasError)
-                return result.ResultError.ToHttpStatusCode();
+            await _clientDataService.CascadeDeleteClientMetadata(User.GetClientId(), data);
 
             return Ok();
         }

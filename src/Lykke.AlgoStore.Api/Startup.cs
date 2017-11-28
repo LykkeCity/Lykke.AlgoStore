@@ -1,22 +1,20 @@
-﻿using Autofac;
+﻿using System;
+using System.Threading.Tasks;
+using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
 using Common.Log;
-using Lykke.Common.ApiLibrary.Middleware;
-using Lykke.Common.ApiLibrary.Swagger;
-using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.Core.Settings.ServiceSettings;
+using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.Infrastructure;
 using Lykke.AlgoStore.Infrastructure.Authentication;
+using Lykke.Common.ApiLibrary.Middleware;
+using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.SettingsReader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
-using Lykke.AlgoStore.Core.Settings;
 
 namespace Lykke.Service.LykkeService
 {
@@ -98,14 +96,11 @@ namespace Lykke.Service.LykkeService
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseLykkeMiddleware(Const.AppName, ex => new {Message = "Technical problem"}); // same purpose as below?
+                app.UseMiddleware<GlobalErrorHandlerMiddleware>(Const.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);
 
                 app.UseAuthentication();
 
-                app.UseLykkeMiddleware(Const.AppName, ex => new { Message = "Technical problem" });
                 app.UseMvc();
-
-                //app.UseMiddleware<GlobalErrorHandlerMiddleware>(Const.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);
 
                 app.UseSwagger();
                 app.UseSwaggerUI(x =>
@@ -145,12 +140,12 @@ namespace Lykke.Service.LykkeService
             try
             {
                 // NOTE: Service can't recieve and process requests here, so you can destroy all resources
-                
+
                 if (Log != null)
                 {
                     await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");
                 }
-                
+
                 ApplicationContainer.Dispose();
             }
             catch (Exception ex)

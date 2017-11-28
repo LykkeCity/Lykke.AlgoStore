@@ -7,7 +7,10 @@
         Unhandled = 1,
 
         //Data
-        RuntimeSettingsExists = 500
+        RuntimeSettingsExists = 500,
+        UnableToDeleteData = 501,
+
+        //Validation - 1000
 
 
     }

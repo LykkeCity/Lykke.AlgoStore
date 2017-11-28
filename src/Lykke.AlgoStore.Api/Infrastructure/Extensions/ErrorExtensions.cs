@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,15 +7,29 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
 {
     public static class ErrorExtensions
     {
-        public static ObjectResult ToHttpStatusCode(this AlgoStoreError error)
+        public static ObjectResult ToHttpStatusCode(this AlgoStoreException error)
         {
+            var errorModel = new ErrorModel
+            {
+                ErrorCode = (int)error.ErrorCode,
+                ErrorDescription = error.ErrorCode.ToString("g"),
+                ErrorMessage = error.ErrorMessage
+            };
+
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+
             switch (error.ErrorCode)
             {
                 default:
-                    //return new BadRequestObjectResult((int)HttpStatusCode.InternalServerError,  new object());
-                    return new BadRequestObjectResult( new object()); //new ErrorResponse where we set http code and message?
+                    statusCode = HttpStatusCode.InternalServerError;
+                    break;
 
             }
+
+            var result = new ObjectResult(errorModel);
+            result.StatusCode = (int)statusCode;
+
+            return result;
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
+using Lykke.AlgoStore.Core.Domain.Errors;
 
 namespace Lykke.AlgoStore.Infrastructure
 {
@@ -15,7 +17,12 @@ namespace Lykke.AlgoStore.Infrastructure
 
         public object CreateErrorResponse(Exception ex)
         {
-            return ex;
+            var exception = ex as AlgoStoreException;
+
+            if (exception == null)
+                exception = new AlgoStoreException(AlgoStoreErrorCodes.Unhandled, ex);
+
+            return exception.ToHttpStatusCode();
         }
     }
 }
