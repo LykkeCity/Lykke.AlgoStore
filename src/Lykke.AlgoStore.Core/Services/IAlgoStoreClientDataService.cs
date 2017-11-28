@@ -13,5 +13,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoData> GetSource(string clientAlgoId);
         Task SaveSource(AlgoData data);
         Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId);
+        Task SaveAlgoAsString(string key, string data);
     }
 }

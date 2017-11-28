@@ -67,5 +67,18 @@ namespace Lykke.AlgoStore.Controllers
 
             return Ok();
         }
+
+        [HttpGet("/algoMetadata/upload/binary")]
+        [SwaggerOperation("UploadBinaryFile")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [AllowAnonymous]
+        public async Task<IActionResult> UploadBinaryFile()
+        {
+            //var data = Mapper.Map<AlgoMetaData>(model);
+
+            await _clientDataService.SaveAlgoAsString("test",  "testdata");
+
+            return Ok();
+        }
     }
 }

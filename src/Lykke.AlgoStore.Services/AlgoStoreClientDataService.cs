@@ -17,19 +17,27 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly IAlgoTemplateDataRepository _templateDataRepository;
+        private readonly IAlgoBaseRepository _blobRepository;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IAlgoTemplateDataRepository templateDataRepository,
+            IAlgoBaseRepository blobRepository,
             ILog log)
         {
             _metaDataRepository = metaDataRepository;
             _dataRepository = dataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _templateDataRepository = templateDataRepository;
+            _blobRepository = blobRepository;
             _log = log;
+        }
+
+        public async Task SaveAlgoAsString(string key, string data)
+        {
+            await _blobRepository.SaveBlobAsStringAsync(key, data);
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
