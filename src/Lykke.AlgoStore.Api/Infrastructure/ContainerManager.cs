@@ -11,7 +11,7 @@ namespace Lykke.AlgoStore.Infrastructure
 {
     internal static class ContainerManager
     {
-        public static IContainer RegisterAlgoApiModules(IServiceCollection services, IReloadingManager<AlgoApiSettings> settings, ILog log)
+        public static IContainer RegisterAlgoApiModules(IServiceCollection services, IReloadingManager<AppSettings> settings, ILog log)
         {
             var builder = new ContainerBuilder();
 

@@ -11,7 +11,7 @@ namespace Lykke.AlgoStore.Infrastructure
 {
     internal static class LogManager
     {
-        public static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AlgoApiSettings> settings)
+        public static ILog CreateLogWithSlack(IServiceCollection services, IReloadingManager<AppSettings> settings)
         {
             var consoleLogger = new LogToConsole();
             var aggregateLogger = new AggregateLogger();

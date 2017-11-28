@@ -38,13 +38,13 @@ namespace Lykke.AlgoStore.Services
 
             try
             {
-                result.Data = await _metaDataRepository.GetAllClientMetaData(clientId);
+                result.Data = await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
             }
             catch (Exception ex)
             {
                 _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait(); //await?
                 result.ResultError.ErrorCode = AlgoStoreErrorCodes.Unhandled;
-               
+
                 //set message, description
             }
 
@@ -70,7 +70,7 @@ namespace Lykke.AlgoStore.Services
                     ClientId = clientId,
                     AlgoMetaData = new List<AlgoMetaData> { data }
                 };
-                await _metaDataRepository.DeleteClientMetaData(clientData);
+                await _metaDataRepository.DeleteAlgoMetaData(clientData);
             }
             catch (Exception ex)
             {
@@ -97,9 +97,9 @@ namespace Lykke.AlgoStore.Services
                     ClientId = clientId,
                     AlgoMetaData = new List<AlgoMetaData> { data }
                 };
-                await _metaDataRepository.SaveClientMetaData(clientData); //return the saved data to save the call below?
+                await _metaDataRepository.SaveAlgoMetaData(clientData); //return the saved data to save the call below?
 
-                result.Data = await _metaDataRepository.GetClientMetaData(id);
+                result.Data = await _metaDataRepository.GetAllClientAlgoMetaData(id);
             }
             catch (Exception ex)
             {
