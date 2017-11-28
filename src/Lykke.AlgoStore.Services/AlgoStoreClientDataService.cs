@@ -7,6 +7,7 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Services.Validation;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -36,6 +37,9 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+
                 return await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
             }
             catch (Exception ex)
@@ -48,6 +52,12 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+
+                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                    throw exception;
+
                 var clientData = new AlgoClientMetaData
                 {
                     ClientId = clientId,
@@ -65,10 +75,16 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+
                 var id = Guid.NewGuid().ToString();
 
                 if (string.IsNullOrWhiteSpace(data.ClientAlgoId))
                     data.ClientAlgoId = id;
+
+                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                    throw exception;
 
                 var clientData = new AlgoClientMetaData
                 {
@@ -140,7 +156,11 @@ namespace Lykke.AlgoStore.Services
             if (exception == null)
                 exception = new AlgoStoreException(AlgoStoreErrorCodes.Unhandled, ex);
 
-            _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, exception).Wait();
+            var validationException = exception as AlgoStoreAggregateException;
+            if (validationException != null)
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, validationException.ToBaseException()).Wait();
+            else
+                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, exception).Wait();
 
             return exception;
         }

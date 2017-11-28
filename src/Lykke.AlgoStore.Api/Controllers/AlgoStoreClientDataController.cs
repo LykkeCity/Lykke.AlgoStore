@@ -59,7 +59,7 @@ namespace Lykke.AlgoStore.Controllers
         [HttpPost("/algoMetadata/cascadeDelete")]
         [SwaggerOperation("DeleteAlgoMetadata")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> CascadeDeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
+        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
