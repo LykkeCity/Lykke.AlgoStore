@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Core.Services
 {
@@ -13,5 +14,7 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoData> GetSource(string clientAlgoId);
         Task SaveSource(AlgoData data);
         Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId);
+        Task SaveAlgoAsString(string key, string data);
+        Task SaveAlgoAsBinary(string key, IFormFile data);
     }
 }

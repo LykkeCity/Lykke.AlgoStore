@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -7,6 +8,7 @@ using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
+using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -17,17 +19,34 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly IAlgoTemplateDataRepository _templateDataRepository;
+        private readonly IAlgoBaseRepository _blobRepository;
+        private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IAlgoTemplateDataRepository templateDataRepository,
+            IAlgoBaseRepository blobRepository,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _dataRepository = dataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _templateDataRepository = templateDataRepository;
+            _blobRepository = blobRepository;
+        }
+
+        public async Task SaveAlgoAsString(string key, string data)
+        {
+            await _blobRepository.SaveBlobAsStringAsync(key, data);
+        }
+        public async Task SaveAlgoAsBinary(string key, IFormFile data)
+        {
+            using (var stream = new MemoryStream())
+            {
+                await data.CopyToAsync(stream);
+                await _blobRepository.SaveBlobAsByteArrayAsync(key, stream.ToArray());
+            }
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
