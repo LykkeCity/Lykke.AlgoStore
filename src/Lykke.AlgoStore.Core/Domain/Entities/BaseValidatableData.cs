@@ -13,6 +13,8 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         protected virtual IEnumerable<ValidationResult> ValidateInternal(ValidationContext validationContext)
         {
             var results = new List<ValidationResult>();
+            if (validationContext != null)
+                return results;
 
             bool isValid = Validator.TryValidateObject(
                 this,
