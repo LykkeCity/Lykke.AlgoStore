@@ -27,9 +27,6 @@ namespace Lykke.AlgoStore.Controllers
         public async Task<IActionResult> DeployImage([FromBody]DeployImageModel model)
         {
             var data = Mapper.Map<DeployImageData>(model);
-            // TODO Add mapper config
-
-            data.ClientId = User.GetClientId();
 
             var result = await _service.DeployImage(data);
 

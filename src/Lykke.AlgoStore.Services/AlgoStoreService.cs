@@ -1,11 +1,14 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
+using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DockerClient;
+using Lykke.AlgoStore.DeploymentApiClient;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -13,12 +16,19 @@ namespace Lykke.AlgoStore.Services
     {
         private const string ComponentName = "AlgoStoreService";
 
-        private readonly IExternalClient _externalClient;
+        private readonly IApiDocumentation _deploymentApiClient;
+        private readonly IAlgoBlobRepository<byte[]> _algoBlobRepository;
+        private readonly IAlgoMetaDataRepository _algoMetaDataRepository;
 
-        public AlgoStoreService(IExternalClient externalClient, ILog log) : base(log)
+        public AlgoStoreService(
+            IApiDocumentation externalClient, 
+            ILog log,
+            IAlgoBlobRepository<byte[]> algoBlobRepository,
+            IAlgoMetaDataRepository algoMetaDataRepository) : base(log)
         {
-            _externalClient = externalClient;
-            // TODO add blob repo interface
+            _deploymentApiClient = externalClient;
+            _algoBlobRepository = algoBlobRepository;
+            _algoMetaDataRepository = algoMetaDataRepository;
         }
 
         public async Task<bool> DeployImage(DeployImageData data)
@@ -28,7 +38,22 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
 
-                return await _externalClient.UploadImage(data.Data);
+                var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
+                var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
+                var algoMetaData = algo?.AlgoMetaData.FirstOrDefault();
+                
+                //What now???
+                //if (blob == null || algoMetaData == null)
+
+                var stream = new MemoryStream(blob);
+
+                var deployResponse = await _deploymentApiClient
+                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, algoMetaData.ClientAlgoId,
+                        algoMetaData.Name);
+
+                //TODO: Check if we need to save response to AlgoRuntimeData for example
+
+                return true;
             }
             catch (Exception ex)
             {

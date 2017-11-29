@@ -2,7 +2,6 @@
 {
     public class DeployImageModel
     {
-        public string ImageId { get; set; }
-        public byte[] Data { get; set; }
+        public string AlgoId { get; set; }
     }
 }
