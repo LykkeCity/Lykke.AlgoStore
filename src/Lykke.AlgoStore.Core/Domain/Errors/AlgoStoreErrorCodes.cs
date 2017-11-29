@@ -5,13 +5,14 @@
         None = 0,
 
         Unhandled = 1,
+        InternalError = 2,
 
         //Data
         RuntimeSettingsExists = 500,
         UnableToDeleteData = 501,
 
         //Validation - 1000
-
+        ValidationError = 1000,
 
     }
 }
