@@ -11,6 +11,8 @@ using Lykke.AlgoStore.Core.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Lykke.AlgoStore.Controllers
 {
@@ -68,16 +70,13 @@ namespace Lykke.AlgoStore.Controllers
             return Ok();
         }
 
-        [HttpGet("/algoMetadata/upload/binary")]
+        [HttpPost("/algo/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [AllowAnonymous]
-        public async Task<IActionResult> UploadBinaryFile()
+        public async Task<IActionResult> UploadBinaryFile(IFormFile data, string algoId)
         {
-            //var data = Mapper.Map<AlgoMetaData>(model);
-
-            await _clientDataService.SaveAlgoAsString("test",  "testdata");
-
+            await _clientDataService.SaveAlgoAsBinary(algoId, data);
             return Ok();
         }
     }

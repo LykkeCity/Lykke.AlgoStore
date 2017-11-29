@@ -7,6 +7,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -38,6 +40,14 @@ namespace Lykke.AlgoStore.Services
         public async Task SaveAlgoAsString(string key, string data)
         {
             await _blobRepository.SaveBlobAsStringAsync(key, data);
+        }
+        public async Task SaveAlgoAsBinary(string key, IFormFile data)
+        {
+            using (var stream = new MemoryStream())
+            {
+                await data.CopyToAsync(stream);
+                await _blobRepository.SaveBlobAsByteArrayAsync(key, stream.ToArray());
+            }
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
