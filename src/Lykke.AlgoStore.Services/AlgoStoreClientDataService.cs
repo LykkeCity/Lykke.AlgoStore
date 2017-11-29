@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Log;
-using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
@@ -11,26 +10,24 @@ using Lykke.AlgoStore.Services.Validation;
 
 namespace Lykke.AlgoStore.Services
 {
-    public class AlgoStoreClientDataService : IAlgoStoreClientDataService
+    public class AlgoStoreClientDataService : BaseAlgoStoreService, IAlgoStoreClientDataService
     {
         private const string ComponentName = "AlgoStoreClientDataService";
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly IAlgoTemplateDataRepository _templateDataRepository;
-        private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IAlgoTemplateDataRepository templateDataRepository,
-            ILog log)
+            ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _dataRepository = dataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _templateDataRepository = templateDataRepository;
-            _log = log;
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
@@ -44,7 +41,7 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
         }
 
@@ -67,7 +64,7 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
         }
 
@@ -97,7 +94,7 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
         }
 
@@ -109,7 +106,7 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
         }
 
@@ -121,7 +118,7 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
         }
 
@@ -133,7 +130,7 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
         }
 
@@ -145,24 +142,8 @@ namespace Lykke.AlgoStore.Services
             }
             catch (Exception ex)
             {
-                throw HandleException(ex);
+                throw HandleException(ex, ComponentName);
             }
-        }
-
-        private AlgoStoreException HandleException(Exception ex)
-        {
-            var exception = ex as AlgoStoreException;
-
-            if (exception == null)
-                exception = new AlgoStoreException(AlgoStoreErrorCodes.Unhandled, ex);
-
-            var validationException = exception as AlgoStoreAggregateException;
-            if (validationException != null)
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, validationException.ToBaseException()).Wait();
-            else
-                _log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, exception).Wait();
-
-            return exception;
         }
     }
 }
