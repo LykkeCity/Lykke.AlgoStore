@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 
-namespace Lykke.AlgoStore.Services.Validation
+namespace Lykke.AlgoStore.Core.Validation
 {
     public static class ValidationExtensions
     {

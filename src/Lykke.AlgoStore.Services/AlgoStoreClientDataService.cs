@@ -6,7 +6,7 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.Services.Validation;
+using Lykke.AlgoStore.Core.Validation;
 
 namespace Lykke.AlgoStore.Services
 {
