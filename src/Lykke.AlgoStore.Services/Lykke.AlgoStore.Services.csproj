@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ExternalClient\Lykke.AlgoStore.DockerClient\Lykke.AlgoStore.DockerClient.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
   </ItemGroup>
 
