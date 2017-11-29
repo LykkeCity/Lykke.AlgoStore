@@ -26,6 +26,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
                 res.TemplateId = algoData.TemplateId;
+                res.ETag = "*";
 
                 result.Add(res);
             }
