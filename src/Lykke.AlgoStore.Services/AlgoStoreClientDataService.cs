@@ -41,12 +41,14 @@ namespace Lykke.AlgoStore.Services
         {
             await _blobRepository.SaveBlobAsStringAsync(key, data);
         }
-        public async Task SaveAlgoAsBinary(string key, IFormFile data)
+        public async Task SaveAlgoAsBinary(/*string key, IFormFile data*/UploadAlgoBinaryData dataModel)
         {
+            //validate dataModel
+
             using (var stream = new MemoryStream())
             {
-                await data.CopyToAsync(stream);
-                await _blobRepository.SaveBlobAsByteArrayAsync(key, stream.ToArray());
+                await dataModel.Data.CopyToAsync(stream);
+                await _blobRepository.SaveBlobAsByteArrayAsync(dataModel.AlgoId, stream.ToArray());
             }
         }
 

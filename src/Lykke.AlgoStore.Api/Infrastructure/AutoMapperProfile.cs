@@ -14,6 +14,7 @@ namespace Lykke.AlgoStore.Infrastructure
             CreateMap<AlgoMetaDataModel, AlgoMetaData>()
                 .ForMember(dest => dest.ClientAlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.TemplateId, opt => opt.Ignore());
+            CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
         }
     }
 }
