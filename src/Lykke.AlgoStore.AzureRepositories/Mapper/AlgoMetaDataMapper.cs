@@ -5,7 +5,7 @@ using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
-    internal static class AlgoMetaDataMapper
+    public static class AlgoMetaDataMapper
     {
         public static List<AlgoMetaDataEntity> ToEntity(this AlgoClientMetaData data, string partitionKey)
         {
