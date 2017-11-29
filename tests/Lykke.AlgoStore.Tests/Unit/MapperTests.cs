@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 return fixture.Build<AlgoMetaDataEntity>()
                     .With(entity => entity.PartitionKey, PartitionKey)
-                    .Without(entity => entity.ETag)
+                    .With(entity => entity.ETag, "*")
                     .Without(entity => entity.Timestamp)
                     .Create();
             }
