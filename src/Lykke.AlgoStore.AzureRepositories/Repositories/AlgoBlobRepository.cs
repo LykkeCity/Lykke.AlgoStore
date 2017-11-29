@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
-    public class AlgoBlobRepository : IAlgoBaseRepository
+    public class AlgoBlobRepository : IAlgoBlobBaseRepository
     {
         private IAlgoBlobRepository<byte[]> _byteRepo;
         private IAlgoBlobRepository<string> _stringRepo;

@@ -19,14 +19,14 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly IAlgoTemplateDataRepository _templateDataRepository;
-        private readonly IAlgoBaseRepository _blobRepository;
+        private readonly IAlgoBlobBaseRepository _blobRepository;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IAlgoTemplateDataRepository templateDataRepository,
-            IAlgoBaseRepository blobRepository,
+            IAlgoBlobBaseRepository blobRepository,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
@@ -36,19 +36,50 @@ namespace Lykke.AlgoStore.Services
             _blobRepository = blobRepository;
         }
 
-        public async Task SaveAlgoAsString(string key, string data)
+        public async Task SaveAlgoAsString(string algoId, string data)
         {
-            await _blobRepository.SaveBlobAsStringAsync(key, data);
-        }
-        public async Task SaveAlgoAsBinary(/*string key, IFormFile data*/UploadAlgoBinaryData dataModel)
-        {
-            //validate dataModel
-
-            using (var stream = new MemoryStream())
+            try
             {
-                await dataModel.Data.CopyToAsync(stream);
-                await _blobRepository.SaveBlobAsByteArrayAsync(dataModel.AlgoId, stream.ToArray());
+                if(String.IsNullOrEmpty(algoId) || String.IsNullOrEmpty(data))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Specified algo id and/or algo string are empty! ");
+                }
+                var algo = await _dataRepository.GetAlgoData(algoId);
+                if (algo == null)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {algoId} is not found! ");
+                }
+                await _blobRepository.SaveBlobAsStringAsync(algoId, data);
+
             }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }            
+        }
+        public async Task SaveAlgoAsBinary(UploadAlgoBinaryData dataModel)
+        {
+            try
+            {
+                if (!dataModel.ValidateData(out AlgoStoreAggregateException exception))
+                    throw exception;
+
+                var algo = await _dataRepository.GetAlgoData(dataModel.AlgoId);
+                if(algo == null)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    await dataModel.Data.CopyToAsync(stream);
+                    await _blobRepository.SaveBlobAsByteArrayAsync(dataModel.AlgoId, stream.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }           
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)

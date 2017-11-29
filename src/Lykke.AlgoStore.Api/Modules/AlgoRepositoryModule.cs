@@ -30,12 +30,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance<IAlgoBlobRepository<string>>(new AlgoBlobStringRepository(_settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString)));
 
 
-            builder.RegisterType<AlgoBlobRepository>().As<IAlgoBaseRepository>().UsingConstructor(typeof(IAlgoBlobRepository<byte[]>), typeof(IAlgoBlobRepository<string>));
-
-
-            //builder.RegisterType<AlgoBlobRepository>().As<IAlgoBaseRepository>();
-
-
+            builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobBaseRepository>().UsingConstructor(typeof(IAlgoBlobRepository<byte[]>), typeof(IAlgoBlobRepository<string>));
         }
     }
 }
