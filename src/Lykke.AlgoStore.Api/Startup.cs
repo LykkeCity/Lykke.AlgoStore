@@ -30,7 +30,6 @@ namespace Lykke.Service.LykkeService
             Mapper.Initialize(cfg =>
             {
                 cfg.AddProfiles(typeof(AutoMapperProfile));
-                cfg.AddProfiles(typeof(Lykke.AlgoStore.AzureRepositories.Mapper.AutoMapperProfile));
             });
 
             Mapper.AssertConfigurationIsValid();

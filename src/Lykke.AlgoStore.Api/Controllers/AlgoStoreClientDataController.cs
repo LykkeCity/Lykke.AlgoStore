@@ -35,11 +35,10 @@ namespace Lykke.AlgoStore.Controllers
         public async Task<IActionResult> GetAlgoMetadata()
         {
             var result = await _clientDataService.GetClientMetadata(User.GetClientId());
+            if (result == null || result.AlgoMetaData.IsNullOrEmptyCollection())
+                return NotFound();
 
-            var response = new List<AlgoMetaDataModel>();
-
-            if (result != null && !result.AlgoMetaData.IsNullOrEmptyCollection())
-                response = Mapper.Map<List<AlgoMetaDataModel>>(result.AlgoMetaData);
+            var response = Mapper.Map<List<AlgoMetaDataModel>>(result.AlgoMetaData);
 
             return Ok(response);
         }
@@ -61,13 +60,13 @@ namespace Lykke.AlgoStore.Controllers
         [HttpPost("/algoMetadata/cascadeDelete")]
         [SwaggerOperation("DeleteAlgoMetadata")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> CascadeDeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
+        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
 
             await _clientDataService.CascadeDeleteClientMetadata(User.GetClientId(), data);
 
-            return Ok();
+            return NoContent();
         }
 
         [HttpPost("/algo/upload/binary")]

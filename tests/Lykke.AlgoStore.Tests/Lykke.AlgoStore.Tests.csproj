@@ -8,10 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoFixture" Version="4.0.0-rc1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="Moq" Version="4.7.145" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.AlgoStore.Services\Lykke.AlgoStore.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
