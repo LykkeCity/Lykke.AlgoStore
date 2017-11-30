@@ -1,12 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.AlgoStore.Controllers
 {
@@ -23,7 +26,10 @@ namespace Lykke.AlgoStore.Controllers
             _service = service;
         }
 
-        [HttpPost("/deploy")]
+        [HttpPost("deploy")]
+        [SwaggerOperation("DeployAlgo")]
+        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeployImage([FromBody]DeployImageModel model)
         {
             var data = Mapper.Map<DeployImageData>(model);
