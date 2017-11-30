@@ -17,7 +17,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             };
 
             var aggregate = error as AlgoStoreAggregateException;
-            if (error != null)
+            if (aggregate != null)
                 errorModel.ModelErrors = aggregate.Errors;
 
             HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
@@ -26,6 +26,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             {
                 case AlgoStoreErrorCodes.ValidationError:
                     statusCode = HttpStatusCode.BadRequest;
+                    break;
+                case AlgoStoreErrorCodes.AlgoNotFound:
+                    statusCode = HttpStatusCode.NotFound;
                     break;
                 default:
                     statusCode = HttpStatusCode.InternalServerError;

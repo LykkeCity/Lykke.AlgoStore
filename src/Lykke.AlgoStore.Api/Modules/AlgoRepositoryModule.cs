@@ -27,15 +27,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance<IAlgoRuntimeDataRepository>(new AlgoRuntimeDataRepository(_settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString), _log));
             builder.RegisterInstance<IAlgoTemplateDataRepository>(new AlgoTemplateDataRepository(_settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString), _log));
             builder.RegisterInstance<IAlgoBlobRepository<byte[]>>(new AlgoBlobBinaryRepository(_settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString)));
-            builder.RegisterInstance<IAlgoBlobRepository<string>>(new AlgoBlobStringRepository(_settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString)));
-
-
-            builder.RegisterType<AlgoBlobRepository>().As<IAlgoBaseRepository>().UsingConstructor(typeof(IAlgoBlobRepository<byte[]>), typeof(IAlgoBlobRepository<string>));
-
-
-            //builder.RegisterType<AlgoBlobRepository>().As<IAlgoBaseRepository>();
-
-
+            builder.RegisterInstance<IAlgoBlobRepository<string>>(new AlgoBlobStringRepository(_settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString)));            
         }
     }
 }

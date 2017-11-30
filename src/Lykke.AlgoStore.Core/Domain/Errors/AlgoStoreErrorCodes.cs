@@ -10,6 +10,7 @@
         //Data
         RuntimeSettingsExists = 500,
         UnableToDeleteData = 501,
+        AlgoNotFound = 502,
 
         //Validation - 1000
         ValidationError = 1000,
