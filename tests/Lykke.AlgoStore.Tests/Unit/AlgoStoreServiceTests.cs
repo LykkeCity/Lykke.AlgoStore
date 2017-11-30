@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.Services;
@@ -30,6 +31,41 @@ namespace Lykke.AlgoStore.Tests.Unit
             var response = When_Invoke_DeployImage(service, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldNotBe_Empty(response);
+        }
+
+        [Fact]
+        public void DeployImage_Throws_Exception()
+        {
+            var data = Given_DeployImageData();
+
+            var repo = Given_Error_AlgoMetaDataRepositoryMock();
+            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo);
+
+            Exception exception;
+            var response = When_Invoke_DeployImage(service, data, out exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
+        {
+            var aggr = exception as AggregateException;
+            Assert.NotNull(aggr?.InnerExceptions[0]);
+
+            var serviceException = aggr?.InnerExceptions[0] as AlgoStoreException;
+            Assert.NotNull(serviceException);
+        }
+
+        private static IAlgoMetaDataRepository Given_Error_AlgoMetaDataRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoMetaDataRepository>();
+
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+
+            return result.Object;
         }
 
         private static void Then_Response_ShouldNotBe_Empty(bool response) => Assert.True(response);
