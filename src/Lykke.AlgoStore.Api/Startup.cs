@@ -56,6 +56,7 @@ namespace Lykke.Service.LykkeService
                 services.AddSwaggerGen(options =>
                 {
                     options.DefaultLykkeConfiguration(Const.ApiVersion, Const.AppName);
+                    options.OperationFilter<ApiKeyHeaderOperationFilter>();
                 });
 
                 services.AddLykkeAuthentication();

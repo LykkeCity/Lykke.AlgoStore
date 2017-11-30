@@ -7,12 +7,13 @@ using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.AlgoStore.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/v001/[controller]")]
     public class AlgoStoreManagementController : Controller
     {
