@@ -38,21 +38,19 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
 
-                var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
-
-                if (blob == null)
+                if (!await _algoBlobRepository.BlobExists(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No blob for provided id");
 
-                var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
-
-                if (algo == null)
+                if(!await _algoMetaDataRepository.ExistsAlgoMetaData(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No algo for provided id");
 
+                var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
                 var algoMetaData = algo.AlgoMetaData.FirstOrDefault();
 
                 if (algoMetaData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No algo meta data for provided id");
 
+                var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
                 var stream = new MemoryStream(blob);
 
                 var deployResponse = await _deploymentApiClient
