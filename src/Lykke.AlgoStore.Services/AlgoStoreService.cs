@@ -39,19 +39,26 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
+
+                if (blob == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No blob for provided id");
+
                 var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
-                var algoMetaData = algo?.AlgoMetaData.FirstOrDefault();
-                
-                //What now???
-                //if (blob == null || algoMetaData == null)
+
+                if (algo == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No algo for provided id");
+
+                var algoMetaData = algo.AlgoMetaData.FirstOrDefault();
+
+                if (algoMetaData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No algo meta data for provided id");
 
                 var stream = new MemoryStream(blob);
 
                 var deployResponse = await _deploymentApiClient
-                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, algoMetaData.ClientAlgoId,
-                        algoMetaData.Name);
+                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, algoMetaData.ClientAlgoId, algoMetaData.Name);
 
-                //TODO: Check if we need to save response to AlgoRuntimeData for example
+                //REMARK: Check with Nikolay if we need to save response (to AlgoRuntimeData for example)
 
                 return true;
             }
