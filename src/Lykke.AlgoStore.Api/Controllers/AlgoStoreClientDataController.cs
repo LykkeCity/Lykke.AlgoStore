@@ -30,6 +30,7 @@ namespace Lykke.AlgoStore.Controllers
         [HttpGet("/algoMetadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
             var result = await _clientDataService.GetClientMetadata(User.GetClientId());
@@ -44,6 +45,7 @@ namespace Lykke.AlgoStore.Controllers
         [HttpPost("/algoMetadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
