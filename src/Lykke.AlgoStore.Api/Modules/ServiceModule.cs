@@ -3,6 +3,7 @@ using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
+using Lykke.AlgoStore.DockerClient;
 using Lykke.AlgoStore.Services;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
@@ -26,8 +27,8 @@ namespace Lykke.AlgoStore.Api.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            RegisterLocalServices(builder);
             RegisterExternalServices(builder);
+            RegisterLocalServices(builder);
 
             builder.Populate(_services);
         }
@@ -38,6 +39,10 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<ClientSessionsClient>()
                 .As<IClientSessionsClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.Services.SessionServiceUrl);
+
+            builder.RegisterType<ExternalClient>()
+                .As<IExternalClient>()
+                .SingleInstance();
         }
 
         private static void RegisterLocalServices(ContainerBuilder builder)
@@ -48,6 +53,9 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoStoreClientDataService>()
                 .As<IAlgoStoreClientDataService>()
+                .SingleInstance();
+            builder.RegisterType<AlgoStoreService>()
+                .As<IAlgoStoreService>()
                 .SingleInstance();
         }
     }
