@@ -82,7 +82,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(IAlgoMetaDataRepository repo)
         {
-            return new AlgoStoreClientDataService(repo, null, null, null, null, new LogMock());
+            return new AlgoStoreClientDataService(repo, null, null, null, null, null, new LogMock());
         }
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)
         {

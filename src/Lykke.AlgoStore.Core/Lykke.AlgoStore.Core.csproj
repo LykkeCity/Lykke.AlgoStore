@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="3.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.1" />
   </ItemGroup>

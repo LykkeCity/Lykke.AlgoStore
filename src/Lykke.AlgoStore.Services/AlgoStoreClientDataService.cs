@@ -19,28 +19,56 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly IAlgoTemplateDataRepository _templateDataRepository;
-        private readonly IAlgoBlobBaseRepository _blobRepository;
+        private readonly IAlgoBlobRepository<byte[]> _blobBinaryRepository;
+        private readonly IAlgoBlobRepository<string> _blobStringRepository;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IAlgoTemplateDataRepository templateDataRepository,
-            IAlgoBlobBaseRepository blobRepository,
+            IAlgoBlobRepository<byte[]> blobBinaryRepository,
+            IAlgoBlobRepository<string> blobStringRepository,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _dataRepository = dataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _templateDataRepository = templateDataRepository;
-            _blobRepository = blobRepository;
+            _blobBinaryRepository = blobBinaryRepository;
+            _blobStringRepository = blobStringRepository;
+            _log = log;
+        }
+
+        public async Task DeleteAlgoBlobBinaryAsync(string algoId)
+        {
+            try
+            {
+                await _blobBinaryRepository.DeleteBlobAsync(algoId);
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }
+        }
+
+        public async Task DeleteAlgoBlobStringAsync(string algoId)
+        {
+            try
+            {
+                await _blobStringRepository.DeleteBlobAsync(algoId);
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }
         }
 
         public async Task SaveAlgoAsString(string algoId, string data)
         {
             try
             {
-                if(String.IsNullOrEmpty(algoId) || String.IsNullOrEmpty(data))
+                if(String.IsNullOrWhiteSpace(algoId) || String.IsNullOrWhiteSpace(data))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Specified algo id and/or algo string are empty! ");
                 }
@@ -49,7 +77,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {algoId} is not found! ");
                 }
-                await _blobRepository.SaveBlobAsStringAsync(algoId, data);
+                await _blobStringRepository.SaveBlobAsync(algoId, data);
 
             }
             catch (Exception ex)
@@ -73,7 +101,7 @@ namespace Lykke.AlgoStore.Services
                 using (var stream = new MemoryStream())
                 {
                     await dataModel.Data.CopyToAsync(stream);
-                    await _blobRepository.SaveBlobAsByteArrayAsync(dataModel.AlgoId, stream.ToArray());
+                    await _blobBinaryRepository.SaveBlobAsync(dataModel.AlgoId, stream.ToArray());
                 }
             }
             catch (Exception ex)
