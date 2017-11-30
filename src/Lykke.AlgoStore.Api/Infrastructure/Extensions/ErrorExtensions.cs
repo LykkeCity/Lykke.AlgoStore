@@ -13,7 +13,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             {
                 ErrorCode = (int)error.ErrorCode,
                 ErrorDescription = error.ErrorCode.ToString("g"),
-                ErrorMessage = error.ErrorMessage
+                ErrorMessage = error.Message
             };
 
             var aggregate = error as AlgoStoreAggregateException;

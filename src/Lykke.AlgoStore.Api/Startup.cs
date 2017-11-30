@@ -124,8 +124,6 @@ namespace Lykke.Service.LykkeService
         {
             try
             {
-                // NOTE: Service not yet recieve and process requests here
-
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
@@ -139,8 +137,6 @@ namespace Lykke.Service.LykkeService
         {
             try
             {
-                // NOTE: Service can't recieve and process requests here, so you can destroy all resources
-
                 if (Log != null)
                 {
                     await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Terminating");

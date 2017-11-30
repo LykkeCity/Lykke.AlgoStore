@@ -21,7 +21,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoMetaDataRepository _algoMetaDataRepository;
 
         public AlgoStoreService(
-            IApiDocumentation externalClient, 
+            IApiDocumentation externalClient,
             ILog log,
             IAlgoBlobRepository<byte[]> algoBlobRepository,
             IAlgoMetaDataRepository algoMetaDataRepository) : base(log)
@@ -39,16 +39,16 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 if (!await _algoBlobRepository.BlobExists(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No blob for provided id");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoBinaryDataNotFound, "No blob for provided id");
 
-                if(!await _algoMetaDataRepository.ExistsAlgoMetaData(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No algo for provided id");
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
                 var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
                 var algoMetaData = algo.AlgoMetaData.FirstOrDefault();
 
                 if (algoMetaData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "No algo meta data for provided id");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo meta data for provided id");
 
                 var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
                 var stream = new MemoryStream(blob);

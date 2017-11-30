@@ -1,15 +1,13 @@
-﻿using AzureStorage;
+﻿using System.Text;
+using System.Threading.Tasks;
+using AzureStorage;
 using AzureStorage.Blob;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.SettingsReader;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
-    public class AlgoBlobStringRepository : IAlgoBlobRepository<string> //mock with AzureStorage.Blob.AzureBlobInMemory
+    public class AlgoBlobStringRepository : IAlgoBlobRepository<string>
     {
         private const string BlobContainer = "algo-store-string";
         private readonly IBlobStorage _storage;

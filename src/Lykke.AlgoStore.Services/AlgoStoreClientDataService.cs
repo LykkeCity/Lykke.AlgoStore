@@ -8,7 +8,6 @@ using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
-using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -68,7 +67,7 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
-                if(String.IsNullOrWhiteSpace(algoId) || String.IsNullOrWhiteSpace(data))
+                if (String.IsNullOrWhiteSpace(algoId) || String.IsNullOrWhiteSpace(data))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Specified algo id and/or algo string are empty! ");
                 }
@@ -83,7 +82,7 @@ namespace Lykke.AlgoStore.Services
             catch (Exception ex)
             {
                 throw HandleException(ex, ComponentName);
-            }            
+            }
         }
         public async Task SaveAlgoAsBinary(UploadAlgoBinaryData dataModel)
         {
@@ -93,7 +92,7 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 var algo = await _dataRepository.GetAlgoData(dataModel.AlgoId);
-                if(algo == null)
+                if (algo == null)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
                 }
@@ -107,7 +106,7 @@ namespace Lykke.AlgoStore.Services
             catch (Exception ex)
             {
                 throw HandleException(ex, ComponentName);
-            }           
+            }
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
@@ -134,6 +133,12 @@ namespace Lykke.AlgoStore.Services
 
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
+
+                if (!await _metaDataRepository.ExistsAlgoMetaData(data.ClientAlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {data.ClientAlgoId}");
+
+                if (await _blobBinaryRepository.BlobExists(data.ClientAlgoId))
+                    await _blobBinaryRepository.DeleteBlobAsync(data.ClientAlgoId);
 
                 var clientData = new AlgoClientMetaData
                 {

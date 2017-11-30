@@ -11,8 +11,6 @@ using Lykke.AlgoStore.Core.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 
 namespace Lykke.AlgoStore.Controllers
 {
@@ -51,6 +49,8 @@ namespace Lykke.AlgoStore.Controllers
             var data = Mapper.Map<AlgoMetaData>(model);
 
             var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
+            if (result == null)
+                return NotFound();
 
             var response = Mapper.Map<AlgoMetaDataModel>(result);
 
@@ -59,7 +59,7 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpPost("/algoMetadata/cascadeDelete")]
         [SwaggerOperation("DeleteAlgoMetadata")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
@@ -71,14 +71,14 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpPost("/algo/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model )
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model)
         {
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
 
             await _clientDataService.SaveAlgoAsBinary(data);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

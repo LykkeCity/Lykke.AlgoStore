@@ -1,16 +1,13 @@
-﻿using AzureStorage;
+﻿using System.IO;
+using System.Threading.Tasks;
+using AzureStorage;
 using AzureStorage.Blob;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.SettingsReader;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
-    public class AlgoBlobBinaryRepository : IAlgoBlobRepository<byte[]>  //mock with AzureStorage.Blob.AzureBlobInMemory
+    public class AlgoBlobBinaryRepository : IAlgoBlobRepository<byte[]>
     {
         private const string BlobContainer = "algo-store-binary";
         private readonly IBlobStorage _storage;
@@ -32,7 +29,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<byte[]> GetBlobAsync(string blobKey)
         {
-            var stream  = await _storage.GetAsync(BlobContainer, blobKey);
+            var stream = await _storage.GetAsync(BlobContainer, blobKey);
             using (MemoryStream ms = new MemoryStream())
             {
                 stream.CopyTo(ms);
@@ -41,7 +38,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         }
         public async Task SaveBlobAsync(string blobKey, byte[] blobData)
         {
-           await _storage.SaveBlobAsync(BlobContainer, blobKey, blobData);
-        }      
+            await _storage.SaveBlobAsync(BlobContainer, blobKey, blobData);
+        }
     }
 }
