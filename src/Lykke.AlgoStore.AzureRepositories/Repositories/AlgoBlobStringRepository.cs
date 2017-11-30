@@ -19,6 +19,16 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _storage = AzureBlobStorage.Create(connectionStringManager);
         }
 
+        public async Task<bool> BlobExists(string blobKey)
+        {
+            return await _storage.HasBlobAsync(BlobContainer, blobKey);
+        }
+
+        public async Task DeleteBlobAsync(string blobKey)
+        {
+            await _storage.DelBlobAsync(BlobContainer, blobKey);
+        }
+
         public async Task<string> GetBlobAsync(string blobKey)
         {
             return await _storage.GetAsTextAsync(BlobContainer, blobKey);

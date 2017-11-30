@@ -13,7 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.AlgoStore.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/v001/[controller]")]
     public class AlgoStoreManagementController : Controller
     {
@@ -33,6 +33,7 @@ namespace Lykke.AlgoStore.Controllers
         public async Task<IActionResult> DeployImage([FromBody]DeployImageModel model)
         {
             var data = Mapper.Map<DeployImageData>(model);
+            data.ClientId = User.GetClientId();
 
             var result = await _service.DeployImage(data);
 

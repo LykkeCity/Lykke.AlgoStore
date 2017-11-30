@@ -56,7 +56,7 @@ namespace Lykke.AlgoStore.Services
                 var stream = new MemoryStream(blob);
 
                 var deployResponse = await _deploymentApiClient
-                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, algoMetaData.ClientAlgoId, algoMetaData.Name);
+                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, data.ClientId, algoMetaData.ClientAlgoId);
 
                 //REMARK: Check with Nikolay if we need to save response (to AlgoRuntimeData for example)
 

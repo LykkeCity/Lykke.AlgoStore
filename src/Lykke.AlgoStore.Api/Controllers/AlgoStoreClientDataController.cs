@@ -72,10 +72,12 @@ namespace Lykke.AlgoStore.Controllers
         [HttpPost("/algo/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
-        [AllowAnonymous]
-        public async Task<IActionResult> UploadBinaryFile(IFormFile data, string algoId)
+        public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model )
         {
-            await _clientDataService.SaveAlgoAsBinary(algoId, data);
+            var data = Mapper.Map<UploadAlgoBinaryData>(model);
+
+            await _clientDataService.SaveAlgoAsBinary(data);
+
             return Ok();
         }
     }
