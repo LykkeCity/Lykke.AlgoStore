@@ -28,6 +28,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
                     statusCode = HttpStatusCode.BadRequest;
                     break;
                 case AlgoStoreErrorCodes.AlgoNotFound:
+                case AlgoStoreErrorCodes.AlgoBinaryDataNotFound:
                     statusCode = HttpStatusCode.NotFound;
                     break;
                 default:
