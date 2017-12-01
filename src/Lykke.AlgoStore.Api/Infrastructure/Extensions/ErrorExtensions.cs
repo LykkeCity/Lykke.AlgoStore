@@ -9,18 +9,20 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
     {
         public static ObjectResult ToHttpStatusCode(this AlgoStoreException error)
         {
-            var errorModel = new ErrorModel
-            {
-                ErrorCode = (int)error.ErrorCode,
-                ErrorDescription = error.ErrorCode.ToString("g"),
-                ErrorMessage = error.Message
-            };
+            var errorResponse = new BaseErrorResponse();
 
             var aggregate = error as AlgoStoreAggregateException;
             if (aggregate != null)
-                errorModel.ModelErrors = aggregate.Errors;
+            {
+                errorResponse = new ErrorResponse();
+                ((ErrorResponse)errorResponse).ModelErrors = aggregate.Errors;
+            }
 
-            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            errorResponse.ErrorCode = (int)error.ErrorCode;
+            errorResponse.ErrorDescription = error.ErrorCode.ToString("g");
+            errorResponse.ErrorMessage = error.Message;
+
+            var statusCode = HttpStatusCode.InternalServerError;
 
             switch (error.ErrorCode)
             {
@@ -37,7 +39,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
 
             }
 
-            var result = new ObjectResult(errorModel);
+            var result = new ObjectResult(errorResponse);
             result.StatusCode = (int)statusCode;
 
             return result;

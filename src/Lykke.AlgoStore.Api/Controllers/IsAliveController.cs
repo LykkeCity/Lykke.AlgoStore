@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ namespace Lykke.AlgoStore.Controllers
             {
                 return StatusCode(
                     (int)HttpStatusCode.InternalServerError,
-                    ErrorResponse.Create($"Service is unhealthy: {healthViloationMessage}"));
+                    new ErrorResponse { ErrorMessage = $"Service is unhealthy: {healthViloationMessage}" });
             }
 
             // NOTE: Feel free to extend IsAliveResponse, to display job-specific indicators

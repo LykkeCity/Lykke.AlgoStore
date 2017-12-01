@@ -13,7 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/v001/[controller]")]
+    [Route("api/v001/management")]
     public class AlgoStoreManagementController : Controller
     {
         private readonly ILog _log;
@@ -25,11 +25,12 @@ namespace Lykke.AlgoStore.Controllers
             _service = service;
         }
 
-        [HttpPost("deploy")]
-        [SwaggerOperation("DeployAlgo")]
+        [HttpPost("deploy/binary")]
+        [SwaggerOperation("DeployBinaryImage")]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorModel), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeployImage([FromBody]DeployImageModel model)
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeployBinaryImage([FromBody]DeployImageModel model)
         {
             var data = Mapper.Map<DeployImageData>(model);
             data.ClientId = User.GetClientId();
