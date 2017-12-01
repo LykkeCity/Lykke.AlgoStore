@@ -9,16 +9,91 @@ using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Moq;
 using Xunit;
+using Autofac;
+using System.Text;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoStoreClientDataServiceTests
     {
+        private static IContainer _ioc;
+        private static string blobKey = "TestKey";
+        private static string alogId = "AlgoId123";
+        private static string blobAlgoString = "testString";
+        private static byte[] blobBytes = Encoding.Unicode.GetBytes(blobKey);
+        private static IAlgoBlobRepository<byte[]> _binaryRepo;
+        private static IAlgoBlobRepository<string> _stringRepo;
+
+        public AlgoStoreClientDataServiceTests()
+        {
+            SetUp();
+        }
+
+        private void SetUp()
+        {
+            var ioc = new ContainerBuilder();
+            ioc.BindAzureReposInMemForTests();
+            _ioc = ioc.Build();
+            _binaryRepo = _ioc.Resolve<IAlgoBlobRepository<byte[]>>();
+            _stringRepo = _ioc.Resolve<IAlgoBlobRepository<string>>();
+        }
+
+        [Fact]
+        public void SaveAlgoAsBinary_Test()
+        {
+            var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var algoDataRepo = Given_Correct_AlgoDataRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, algoDataRepo);
+            var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
+            When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
+            ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId);
+        }
+
+        private UploadAlgoBinaryData Given_UploadAlgoBinaryData_Model()
+        {
+            var binaryFile = new Mock<IFormFile>();
+            binaryFile.Setup(s => s.OpenReadStream()).Returns(new MemoryStream(blobBytes));
+            var model = new UploadAlgoBinaryData { AlgoId = alogId, Data = binaryFile.Object };
+            return model;
+        }
+
+        [Fact]
+        public void SaveAlgoAsString_Test()
+        {
+            var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var algoDataRepo = Given_Correct_AlgoDataRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, algoDataRepo);
+
+            When_Invoke_SaveAlgoAsString(service);
+            ThenAlgo_StringShouldExist();
+        }
+
+        private static void When_Invoke_SaveAlgoAsString(AlgoStoreClientDataService service)
+        {
+            service.SaveAlgoAsString(alogId, blobAlgoString).Wait();
+        }
+        private static void ThenAlgo_StringShouldExist()
+        {
+            var blob = _stringRepo.GetBlobAsync(alogId).Result;
+            Assert.True(blob == blobAlgoString);
+        }
+        private static void When_Invoke_SaveAlgoAsBinary(AlgoStoreClientDataService service, UploadAlgoBinaryData model)
+        {
+            service.SaveAlgoAsBinary(model).Wait();
+        }
+        private static void ThenAlgo_Binary_ShouldExist(string algoId)
+        {
+            var blobExists = _binaryRepo.BlobExists(algoId).Result;
+            Assert.True(blobExists);
+        }
+       
         [Fact]
         public void GetClientMetadata_Returns_Data()
         {
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo);
+            var service = Given_AlgoStoreClientDataService(repo, null);
             Exception exception;
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -28,7 +103,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetClientMetadata_Throws_Exception()
         {
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo);
+            var service = Given_AlgoStoreClientDataService(repo, null);
             Exception exception;
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -40,7 +115,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
             var data = Given_AlgoClientMetaData(clientId);
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo);
+            var service = Given_AlgoStoreClientDataService(repo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -51,7 +126,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
             var data = Given_AlgoClientMetaData(clientId);
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo);
+            var service = Given_AlgoStoreClientDataService(repo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -62,7 +137,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
             var data = Given_AlgoClientMetaData(clientId);
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo);
+            var service = Given_AlgoStoreClientDataService(repo, null);
             Exception exception;
             When_Invoke_SaveClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -73,16 +148,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
             var data = Given_AlgoClientMetaData(clientId);
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo);
+            var service = Given_AlgoStoreClientDataService(repo, null);
             Exception exception;
             When_Invoke_SaveClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
 
-        private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(IAlgoMetaDataRepository repo)
+        private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(IAlgoMetaDataRepository repoMetaData, IAlgoDataRepository repoAlgoData )
         {
-            return new AlgoStoreClientDataService(repo, null, null, null, null, null, new LogMock());
+            return new AlgoStoreClientDataService(repoMetaData, repoAlgoData, null, null, _binaryRepo , _stringRepo, new LogMock());
         }
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)
         {
@@ -146,6 +221,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             var serviceException = temp as AlgoStoreException;
             Assert.NotNull(serviceException);
         }
+
+        private static IAlgoDataRepository Given_Correct_AlgoDataRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoDataRepository>();
+            result.Setup(repo => repo.SaveAlgoData(It.IsAny<AlgoData>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.GetAlgoData(It.Is<string>(s=>s.Equals(alogId)))).Returns((string alogId) => { return Task.FromResult(fixture.Build<AlgoData>().With(a => a.ClientAlgoId, alogId).Create()); });
+
+            return result.Object;
+        }
+
         private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
