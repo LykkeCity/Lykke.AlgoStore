@@ -4,6 +4,7 @@ using AutoFixture;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -14,40 +15,58 @@ namespace Lykke.AlgoStore.Tests.Unit
         private const string PartitionKey = "PartitionKey";
 
         #region Data Generation
-        public static class MockedAlgoClientMetaData
+        public static class MockedData
         {
-            public static IEnumerable<object[]> TestAlgoClientMetaData()
+            public static IEnumerable<object[]> GetAlgoClientMetaData()
+            {
+                return TestData<AlgoClientMetaData>();
+            }
+            public static IEnumerable<object[]> GetAlgoClientRuntimeData()
+            {
+                return TestData<AlgoClientRuntimeData>();
+            }
+
+            private static IEnumerable<object[]> TestData<T>()
             {
                 int numberOfElements = 10;
                 var fixture = new Fixture();
-                var mock = Enumerable.Repeat(new object[1] { fixture.Build<AlgoClientMetaData>().Create() }, numberOfElements).ToList();
+                var mock = Enumerable.Repeat(new object[1] { fixture.Build<T>().Create() }, numberOfElements).ToList();
                 return mock;
             }
         }
-        public static class MockedAlgoMetaDataEntity
+        public static class MockedEntity
         {
-            public static IEnumerable<object[]> TestAlgoMetaDataEntity()
+            public static IEnumerable<object[]> GetAlgoMetaDataEntity()
+            {
+                return TestEntity<AlgoMetaDataEntity>();
+            }
+            public static IEnumerable<object[]> GetAlgoRuntimeDataEntity()
+            {
+                return TestEntity<AlgoRuntimeDataEntity>();
+            }
+
+            private static IEnumerable<object[]> TestEntity<T>() where T : TableEntity
             {
                 int numberOfElements = 10;
                 var fixture = new Fixture();
-                var mock = Enumerable.Repeat(new object[1] { CreateData(fixture) }, numberOfElements).ToList();
+                var mock = Enumerable.Repeat(new object[1] { CreateData<T>(fixture) }, numberOfElements).ToList();
                 return mock;
             }
-
-            private static AlgoMetaDataEntity CreateData(Fixture fixture)
+            private static T CreateData<T>(Fixture fixture) where T : TableEntity
             {
-                return fixture.Build<AlgoMetaDataEntity>()
+                return fixture.Build<T>()
                     .With(entity => entity.PartitionKey, PartitionKey)
                     .With(entity => entity.ETag, "*")
                     .Without(entity => entity.Timestamp)
                     .Create();
             }
         }
+
         #endregion
 
         [Theory]
-        [MemberData(nameof(MockedAlgoClientMetaData.TestAlgoClientMetaData), MemberType = typeof(MockedAlgoClientMetaData))]
-        public void Mapper_ToEntity_Test(AlgoClientMetaData data)
+        [MemberData(nameof(MockedData.GetAlgoClientMetaData), MemberType = typeof(MockedData))]
+        public void Mapper_AlgoClientMetaData_ToEntity_Test(AlgoClientMetaData data)
         {
             AlgoClientMetaData metadata = data;
 
@@ -58,8 +77,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Theory]
-        [MemberData(nameof(MockedAlgoMetaDataEntity.TestAlgoMetaDataEntity), MemberType = typeof(MockedAlgoMetaDataEntity))]
-        public void Mapper_ToModel_Test(AlgoMetaDataEntity data)
+        [MemberData(nameof(MockedEntity.GetAlgoMetaDataEntity), MemberType = typeof(MockedEntity))]
+        public void Mapper_AlgoMetaDataEntity_ToModel_Test(AlgoMetaDataEntity data)
         {
             AlgoMetaDataEntity entity = data;
 
@@ -70,11 +89,45 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Entity_ShouldBe_Equal(entity, result[0]);
         }
 
+        [Theory]
+        [MemberData(nameof(MockedData.GetAlgoClientRuntimeData), MemberType = typeof(MockedData))]
+        public void Mapper_AlgoClientRuntimeData_ToEntity_Test(AlgoClientRuntimeData data)
+        {
+            AlgoClientRuntimeData metadata = data;
+
+            var entities = When_Invoke_ToEntity(data);
+            var result = When_Invoke_ToModel(entities);
+
+            Then_Data_ShouldBe_Equal(metadata, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(MockedEntity.GetAlgoRuntimeDataEntity), MemberType = typeof(MockedEntity))]
+        public void Mapper_AlgoRuntimeDataEntity_ToModel_Test(AlgoRuntimeDataEntity data)
+        {
+            AlgoRuntimeDataEntity entity = data;
+
+            var model = When_Invoke_ToModel(new List<AlgoRuntimeDataEntity> { entity });
+            var result = When_Invoke_ToEntity(model);
+
+
+            Then_Entity_ShouldBe_Equal(entity, result[0]);
+        }
+
+
         private static List<AlgoMetaDataEntity> When_Invoke_ToEntity(AlgoClientMetaData data)
         {
             return data.ToEntity(PartitionKey);
         }
+        private static List<AlgoRuntimeDataEntity> When_Invoke_ToEntity(AlgoClientRuntimeData data)
+        {
+            return data.ToEntity(PartitionKey);
+        }
         private static AlgoClientMetaData When_Invoke_ToModel(List<AlgoMetaDataEntity> entities)
+        {
+            return entities.ToModel();
+        }
+        private static AlgoClientRuntimeData When_Invoke_ToModel(List<AlgoRuntimeDataEntity> entities)
         {
             return entities.ToModel();
         }
@@ -85,7 +138,21 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             Assert.Equal(serializedFirst, serializedSecond);
         }
+        private static void Then_Data_ShouldBe_Equal(AlgoClientRuntimeData first, AlgoClientRuntimeData second)
+        {
+            string serializedFirst = JsonConvert.SerializeObject(first);
+            string serializedSecond = JsonConvert.SerializeObject(second);
+
+            Assert.Equal(serializedFirst, serializedSecond);
+        }
         private static void Then_Entity_ShouldBe_Equal(AlgoMetaDataEntity first, AlgoMetaDataEntity second)
+        {
+            string serializedFirst = JsonConvert.SerializeObject(first);
+            string serializedSecond = JsonConvert.SerializeObject(second);
+
+            Assert.Equal(serializedFirst, serializedSecond);
+        }
+        private static void Then_Entity_ShouldBe_Equal(AlgoRuntimeDataEntity first, AlgoRuntimeDataEntity second)
         {
             string serializedFirst = JsonConvert.SerializeObject(first);
             string serializedSecond = JsonConvert.SerializeObject(second);
