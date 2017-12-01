@@ -49,7 +49,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var saved = repository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId).Result;
             Assert.NotNull(saved);
-        }        
+        }
         private static void Then_Result_ShouldNotBe_Null(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
             var saved = repository.GetAlgoRuntimeData(data.RuntimeData[0].ImageId).Result;
@@ -61,7 +61,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var reloadingMock = new Mock<IReloadingManager<string>>();
             reloadingMock
                 .Setup(x => x.Reload())
-                .Returns(() => Task.FromResult("DefaultEndpointsProtocol=https;AccountName=lkedevmain;AccountKey=l0W0CaoNiRZQIqJ536sIScSV5fUuQmPYRQYohj/UjO7+ZVdpUiEsRLtQMxD+1szNuAeJ351ndkOsdWFzWBXmdw=="));
+                .Returns(() => Task.FromResult("DefaultEndpointsProtocol=https;AccountName=algostoredev;AccountKey=d2VaBHrf8h8t622KvLeTPGwRP4Dxz9DTPeBT9H3zmjcQprQ1e+Z6Sx9RDqJc+zKwlSO900fzYF2Dg6oUBVDe1w=="));
             return reloadingMock.Object;
         }
 
