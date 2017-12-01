@@ -34,12 +34,27 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Fact]
-        public void DeployImage_Throws_Exception()
+        public void DeployImage_WithInvalidAlgoMetaDataRepo_Throws_Exception()
         {
             var data = Given_DeployImageData();
 
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo);
+
+            Exception exception;
+            var response = When_Invoke_DeployImage(service, data, out exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Fact]
+        public void DeployImage_WithInvalidAlgoBlobRepo_Throws_Exception()
+        {
+            var data = Given_DeployImageData();
+
+            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var blobRepo = Given_Error_AlgoBlobRepositoryMock();
             var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo);
 
@@ -117,6 +132,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoBlobRepository<byte[]>>();
 
             result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
+
+            return result.Object;
+        }
+
+        private static IAlgoBlobRepository<byte[]> Given_Error_AlgoBlobRepositoryMock()
+        {
+            var result = new Mock<IAlgoBlobRepository<byte[]>>();
+
+            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(false));
 
             return result.Object;
         }
