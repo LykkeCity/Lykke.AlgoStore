@@ -49,6 +49,21 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Fact]
+        public void DeployImage_WithPartialyCorrectAlgoMetaDataRepo_Throws_Exception()
+        {
+            var data = Given_DeployImageData();
+
+            var repo = Given_PartiallyCorrect_AlgoMetaDataRepositoryMock();
+            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo);
+
+            Exception exception;
+            var response = When_Invoke_DeployImage(service, data, out exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Fact]
         public void DeployImage_WithInvalidAlgoBlobRepo_Throws_Exception()
         {
             var data = Given_DeployImageData();
@@ -162,6 +177,26 @@ namespace Lykke.AlgoStore.Tests.Unit
                         .With(a => a.ClientAlgoId, id)
                         .Create();
                     res.AlgoMetaData.Add(data);
+
+                    return Task.FromResult(res);
+                });
+
+            return result.Object;
+        }
+
+        private static IAlgoMetaDataRepository Given_PartiallyCorrect_AlgoMetaDataRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoMetaDataRepository>();
+
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
+
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>()))
+                .Returns((string id) =>
+                {
+                    var res = new AlgoClientMetaData();
+                    res.ClientId = Guid.NewGuid().ToString();
+                    res.AlgoMetaData = null;
 
                     return Task.FromResult(res);
                 });
