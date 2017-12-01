@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,16 +20,19 @@ namespace Lykke.AlgoStore.Services
         private readonly IApiDocumentation _deploymentApiClient;
         private readonly IAlgoBlobRepository<byte[]> _algoBlobRepository;
         private readonly IAlgoMetaDataRepository _algoMetaDataRepository;
+        private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
 
         public AlgoStoreService(
             IApiDocumentation externalClient,
             ILog log,
             IAlgoBlobRepository<byte[]> algoBlobRepository,
-            IAlgoMetaDataRepository algoMetaDataRepository) : base(log)
+            IAlgoMetaDataRepository algoMetaDataRepository,
+            IAlgoRuntimeDataRepository algoRuntimeDataRepository) : base(log)
         {
             _deploymentApiClient = externalClient;
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
+            _algoRuntimeDataRepository = algoRuntimeDataRepository;
         }
 
         public async Task<bool> DeployImage(DeployImageData data)
@@ -56,7 +60,11 @@ namespace Lykke.AlgoStore.Services
                 var deployResponse = await _deploymentApiClient
                     .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, data.ClientId, algoMetaData.ClientAlgoId);
 
-                //REMARK: Check with Nikolay if we need to save response (to AlgoRuntimeData for example)
+                var runtimeData = new AlgoClientRuntimeData();
+                runtimeData.ClientAlgoId = data.AlgoId;
+                runtimeData.RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData { ImageId = deployResponse.Body.Id.ToString() } };
+
+                await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
 
                 return true;
             }
