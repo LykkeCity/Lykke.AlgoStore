@@ -7,6 +7,7 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 
 namespace Lykke.AlgoStore.Services
@@ -134,8 +135,17 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
 
+                // TODO Add check if it is running
+
                 if (!await _metaDataRepository.ExistsAlgoMetaData(data.ClientAlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {data.ClientAlgoId}");
+
+                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
+                if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
+                {
+                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(runtimeData.RuntimeData[0].ImageId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for {data.ClientAlgoId}");
+                }
 
                 if (await _blobBinaryRepository.BlobExists(data.ClientAlgoId))
                     await _blobBinaryRepository.DeleteBlobAsync(data.ClientAlgoId);
