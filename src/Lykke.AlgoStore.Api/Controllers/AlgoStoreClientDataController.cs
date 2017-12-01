@@ -15,7 +15,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/v001/clientData")]
+    [Route("api/v1/clientData")]
     public class AlgoClientDataController : Controller
     {
         private readonly ILog _log;
