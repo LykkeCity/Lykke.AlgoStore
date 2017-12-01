@@ -6,7 +6,6 @@ using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -14,7 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/v001/[controller]")]
+    [Route("api/v1/management")]
     public class AlgoStoreManagementController : Controller
     {
         private readonly ILog _log;
@@ -26,11 +25,12 @@ namespace Lykke.AlgoStore.Controllers
             _service = service;
         }
 
-        [HttpPost("deploy")]
-        [SwaggerOperation("DeployAlgo")]
+        [HttpPost("deploy/binary")]
+        [SwaggerOperation("DeployBinaryImage")]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeployImage([FromBody]DeployImageModel model)
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeployBinaryImage([FromBody]DeployImageModel model)
         {
             var data = Mapper.Map<DeployImageData>(model);
             data.ClientId = User.GetClientId();
