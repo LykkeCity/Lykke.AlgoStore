@@ -49,7 +49,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
                 var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
-                var algoMetaData = algo.AlgoMetaData.FirstOrDefault();
+                var algoMetaData = algo.AlgoMetaData?.FirstOrDefault();
 
                 if (algoMetaData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo meta data for provided id");

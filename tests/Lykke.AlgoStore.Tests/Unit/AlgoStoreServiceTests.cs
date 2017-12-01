@@ -37,12 +37,44 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Fact]
-        public void DeployImage_Throws_Exception()
+        public void DeployImage_WithInvalidAlgoMetaDataRepo_Throws_Exception()
         {
             var data = Given_DeployImageData();
 
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
+
+            Exception exception;
+            var response = When_Invoke_DeployImage(service, data, out exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Fact]
+        public void DeployImage_WithPartialyCorrectAlgoMetaDataRepo_Throws_Exception()
+        {
+            var data = Given_DeployImageData();
+
+            var repo = Given_PartiallyCorrect_AlgoMetaDataRepositoryMock();
+            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
+
+            Exception exception;
+            var response = When_Invoke_DeployImage(service, data, out exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Fact]
+        public void DeployImage_WithInvalidAlgoBlobRepo_Throws_Exception()
+        {
+            var data = Given_DeployImageData();
+
+            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var blobRepo = Given_Error_AlgoBlobRepositoryMock();
             var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
@@ -140,6 +172,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
+        private static IAlgoBlobRepository<byte[]> Given_Error_AlgoBlobRepositoryMock()
+        {
+            var result = new Mock<IAlgoBlobRepository<byte[]>>();
+
+            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(false));
+
+            return result.Object;
+        }
+
         private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
@@ -157,6 +198,26 @@ namespace Lykke.AlgoStore.Tests.Unit
                         .With(a => a.ClientAlgoId, id)
                         .Create();
                     res.AlgoMetaData.Add(data);
+
+                    return Task.FromResult(res);
+                });
+
+            return result.Object;
+        }
+
+        private static IAlgoMetaDataRepository Given_PartiallyCorrect_AlgoMetaDataRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoMetaDataRepository>();
+
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
+
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>()))
+                .Returns((string id) =>
+                {
+                    var res = new AlgoClientMetaData();
+                    res.ClientId = Guid.NewGuid().ToString();
+                    res.AlgoMetaData = null;
 
                     return Task.FromResult(res);
                 });
