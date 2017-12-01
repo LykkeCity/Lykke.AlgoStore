@@ -46,7 +46,6 @@ namespace Lykke.AlgoStore.Controllers
         [HttpPost("metadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
@@ -54,8 +53,6 @@ namespace Lykke.AlgoStore.Controllers
             var data = Mapper.Map<AlgoMetaData>(model);
 
             var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
-            if (result == null)
-                return NotFound();
 
             var response = Mapper.Map<AlgoMetaDataModel>(result);
 
@@ -65,6 +62,7 @@ namespace Lykke.AlgoStore.Controllers
         [HttpPost("metadata/cascadeDelete")]
         [SwaggerOperation("CascadeDeleteAlgoMetadata")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)

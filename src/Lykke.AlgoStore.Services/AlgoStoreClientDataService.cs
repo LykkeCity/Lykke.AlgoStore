@@ -185,7 +185,11 @@ namespace Lykke.AlgoStore.Services
                 };
                 await _metaDataRepository.SaveAlgoMetaData(clientData);
 
-                return await _metaDataRepository.GetAlgoMetaData(id);
+                var res = await _metaDataRepository.GetAlgoMetaData(id);
+                if (res == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot save data for {clientId} id: {data.ClientAlgoId}");
+
+                return res;
             }
             catch (Exception ex)
             {
