@@ -60,7 +60,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_PartiallyCorrect_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
-            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
 
             Exception exception;
             var response = When_Invoke_DeployImage(service, data, out exception);
@@ -75,7 +76,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Error_AlgoBlobRepositoryMock();
             var deploymentApiClient = Given_Correct_DeploymentApiClientMock();
-            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
 
             Exception exception;
             var response = When_Invoke_DeployImage(service, data, out exception);
