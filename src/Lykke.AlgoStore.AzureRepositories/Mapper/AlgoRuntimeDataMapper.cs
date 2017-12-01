@@ -45,6 +45,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
                 res.RowKey = runtimeData.ImageId;
                 res.Version = runtimeData.Version;
+                res.ETag = "*";
 
                 if (runtimeData.Asset != null)
                 {
@@ -92,7 +93,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Accuracy = entity.AssetAccuracy;
             result.BaseAssetId = entity.AssetBaseAssetId;
             result.Id = entity.AssetId;
-            result.InvertedAccuracy = entity.AssetAccuracy;
+            result.InvertedAccuracy = entity.AssetInvertedAccuracy;
             result.Name = entity.AssetName;
             result.QuotingAssetId = entity.AssetQuotingAssetId;
 
