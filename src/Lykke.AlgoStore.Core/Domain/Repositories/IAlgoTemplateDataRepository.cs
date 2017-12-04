@@ -4,8 +4,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 
 namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
-    public interface IAlgoTemplateDataRepository
-    {
-        Task<List<AlgoTemplateData>> GetTemplatesByLanguage(string languageId);
-    }
+    //public interface IAlgoTemplateDataRepository
+    //{
+    //    Task<List<AlgoTemplateData>> GetTemplatesByLanguage(string languageId);
+    //}
 }

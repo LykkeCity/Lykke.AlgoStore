@@ -12,9 +12,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         private const string BlobContainer = "algo-store-binary";
         private readonly IBlobStorage _storage;
 
-        public AlgoBlobBinaryRepository(IReloadingManager<string> connectionStringManager)
+        public AlgoBlobBinaryRepository(IBlobStorage storage)
         {
-            _storage = AzureBlobStorage.Create(connectionStringManager);
+            _storage = storage;
         }
 
         public async Task<bool> BlobExists(string blobKey)

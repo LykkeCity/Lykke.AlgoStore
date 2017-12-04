@@ -11,7 +11,8 @@ using Lykke.SettingsReader;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
-    public class AlgoTemplateDataRepository : IAlgoTemplateDataRepository
+    //Reserved for future use
+    public class AlgoTemplateDataRepository
     {
         private const string PartitionKey = "AlgoTemplateData";
         private const string TableName = "AlgoTemplateDataTable";
