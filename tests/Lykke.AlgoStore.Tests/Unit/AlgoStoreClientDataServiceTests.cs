@@ -212,7 +212,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(
             IAlgoMetaDataRepository repo,
             IAlgoBlobRepository blobRepo,
-            IAlgoRuntimeDataRepository runtimeDataRepository,
+            IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IDeploymentApiReadOnlyClient externalClient)
         {
             return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, externalClient, new LogMock());
@@ -331,11 +331,10 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             return new AlgoBlobRepository(new AzureBlobInMemory());
         }
-        private static IAlgoRuntimeDataRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
+        private static IAlgoRuntimeDataReadOnlyRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAlgoRuntimeDataRepository>();
-            result.Setup(repo => repo.DeleteAlgoRuntimeData(It.IsAny<string>())).Returns(Task.FromResult(true));
+            var result = new Mock<IAlgoRuntimeDataReadOnlyRepository>();
             result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>()))
                 .Returns((string imageId) =>
                 {
@@ -362,7 +361,6 @@ namespace Lykke.AlgoStore.Tests.Unit
 
                     return Task.FromResult(res);
                 });
-            result.Setup(repo => repo.SaveAlgoRuntimeData(It.IsAny<AlgoClientRuntimeData>())).Returns(Task.CompletedTask);
 
             return result.Object;
         }
@@ -388,14 +386,12 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        private static IAlgoRuntimeDataRepository Given_Error_AlgoRuntimeDataRepositoryMock()
+        private static IAlgoRuntimeDataReadOnlyRepository Given_Error_AlgoRuntimeDataRepositoryMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAlgoRuntimeDataRepository>();
-            result.Setup(repo => repo.DeleteAlgoRuntimeData(It.IsAny<string>())).ThrowsAsync(new Exception("Delete"));
+            var result = new Mock<IAlgoRuntimeDataReadOnlyRepository>();
             result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
             result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>())).ThrowsAsync(new Exception("GetByAlgo"));
-            result.Setup(repo => repo.SaveAlgoRuntimeData(It.IsAny<AlgoClientRuntimeData>())).ThrowsAsync(new Exception("Save"));
 
             return result.Object;
         }
