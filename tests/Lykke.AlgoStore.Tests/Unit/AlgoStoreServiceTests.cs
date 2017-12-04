@@ -93,10 +93,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.NotNull(serviceException);
         }
 
-        private static IAlgoMetaDataRepository Given_Error_AlgoMetaDataRepositoryMock()
+        private static IAlgoMetaDataReadOnlyRepository Given_Error_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAlgoMetaDataRepository>();
+            var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
             result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
             result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
@@ -125,8 +125,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
             IApiDocumentation deploymentApiClient,
-            IAlgoBlobRepository blobRepo,
-            IAlgoMetaDataRepository repo,
+            IAlgoBlobReadOnlyRepository blobRepo,
+            IAlgoMetaDataReadOnlyRepository repo,
             IAlgoRuntimeDataRepository runtimeDataRepository)
         {
             return new AlgoStoreService(deploymentApiClient, new LogMock(), blobRepo, repo, runtimeDataRepository);
@@ -155,7 +155,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoBlobRepository Given_Correct_AlgoBlobRepositoryMock()
+        private static IAlgoBlobReadOnlyRepository Given_Correct_AlgoBlobRepositoryMock()
         {
             var result = new Mock<IAlgoBlobRepository>();
 
@@ -172,7 +172,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoBlobRepository Given_Error_AlgoBlobRepositoryMock()
+        private static IAlgoBlobReadOnlyRepository Given_Error_AlgoBlobRepositoryMock()
         {
             var result = new Mock<IAlgoBlobRepository>();
 
@@ -181,10 +181,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock()
+        private static IAlgoMetaDataReadOnlyRepository Given_Correct_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAlgoMetaDataRepository>();
+            var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
             result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
 
@@ -205,10 +205,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoMetaDataRepository Given_PartiallyCorrect_AlgoMetaDataRepositoryMock()
+        private static IAlgoMetaDataReadOnlyRepository Given_PartiallyCorrect_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAlgoMetaDataRepository>();
+            var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
             result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
 
