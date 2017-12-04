@@ -45,5 +45,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             var entities = metaData.ToEntity(PartitionKey);
             await _table.DeleteAsync(entities);
         }
+        public async Task<bool> ExistsAlgoMetaData(string id)
+        {
+            var entity = new AlgoMetaDataEntity();
+            entity.PartitionKey = PartitionKey;
+            entity.RowKey = id;
+
+            return await _table.RecordExistsAsync(entity);
+        }
     }
 }

@@ -11,13 +11,11 @@ using Lykke.AlgoStore.Core.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 
 namespace Lykke.AlgoStore.Controllers
 {
     [Authorize]
-    [Route("api/v001/clientData")]
+    [Route("api/v1/clientData")]
     public class AlgoClientDataController : Controller
     {
         private readonly ILog _log;
@@ -29,9 +27,11 @@ namespace Lykke.AlgoStore.Controllers
             _clientDataService = clientDataService;
         }
 
-        [HttpGet("/algoMetadata")]
+        [HttpGet("metadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
             var result = await _clientDataService.GetClientMetadata(User.GetClientId());
@@ -43,9 +43,11 @@ namespace Lykke.AlgoStore.Controllers
             return Ok(response);
         }
 
-        [HttpPost("/algoMetadata")]
+        [HttpPost("metadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
@@ -57,9 +59,12 @@ namespace Lykke.AlgoStore.Controllers
             return Ok(response);
         }
 
-        [HttpPost("/algoMetadata/cascadeDelete")]
-        [SwaggerOperation("DeleteAlgoMetadata")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [HttpPost("metadata/cascadeDelete")]
+        [SwaggerOperation("CascadeDeleteAlgoMetadata")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
@@ -69,16 +74,18 @@ namespace Lykke.AlgoStore.Controllers
             return NoContent();
         }
 
-        [HttpPost("/algo/upload/binary")]
+        [HttpPost("imageData/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model )
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model)
         {
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
 
             await _clientDataService.SaveAlgoAsBinary(data);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

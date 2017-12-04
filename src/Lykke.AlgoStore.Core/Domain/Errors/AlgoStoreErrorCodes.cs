@@ -11,6 +11,7 @@
         RuntimeSettingsExists = 500,
         UnableToDeleteData = 501,
         AlgoNotFound = 502,
+        AlgoBinaryDataNotFound = 503,
 
         //Validation - 1000
         ValidationError = 1000,

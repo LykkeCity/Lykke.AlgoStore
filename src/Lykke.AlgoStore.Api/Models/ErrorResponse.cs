@@ -4,24 +4,16 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Lykke.AlgoStore.Models
+namespace Lykke.AlgoStore.Api.Models
 {
-    public class ErrorResponse
+    public class ErrorResponse : BaseErrorResponse
     {
-        public string ErrorMessage { get; }
-
-        public Dictionary<string, List<string>> ModelErrors { get; }
-
-        private ErrorResponse() :
-            this(null)
+        public ErrorResponse()
         {
-        }
-
-        private ErrorResponse(string errorMessage)
-        {
-            ErrorMessage = errorMessage;
             ModelErrors = new Dictionary<string, List<string>>();
         }
+
+        public Dictionary<string, List<string>> ModelErrors { get; set; }
 
         public ErrorResponse AddModelError(string key, string message)
         {
@@ -80,11 +72,6 @@ namespace Lykke.AlgoStore.Models
             }
 
             return response;
-        }
-
-        public static ErrorResponse Create(string message)
-        {
-            return new ErrorResponse(message);
         }
     }
 }

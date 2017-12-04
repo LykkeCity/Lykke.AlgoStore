@@ -3,5 +3,6 @@
     public class ServiceSettings
     {
         public string SessionServiceUrl { get; set; }
+        public string DeploymentApiServiceUrl { get; set; }
     }
 }

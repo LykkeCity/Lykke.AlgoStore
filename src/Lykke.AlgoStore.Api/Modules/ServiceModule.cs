@@ -3,7 +3,7 @@ using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
-using Lykke.AlgoStore.DockerClient;
+using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.Services;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
@@ -40,8 +40,9 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IClientSessionsClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.Services.SessionServiceUrl);
 
-            builder.RegisterType<ExternalClient>()
-                .As<IExternalClient>()
+            builder.RegisterType<ApiDocumentation>()
+                .As<IApiDocumentation>()
+                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
                 .SingleInstance();
         }
 

@@ -36,7 +36,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             foreach (AlgoRuntimeData runtimeData in data.RuntimeData)
             {
-                if ((runtimeData == null) || (runtimeData.Asset == null) || (runtimeData.TradingAmount == null))
+                if (runtimeData == null)
                     continue;
 
                 var res = new AlgoRuntimeDataEntity();
@@ -45,17 +45,23 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
                 res.RowKey = runtimeData.ImageId;
                 res.Version = runtimeData.Version;
+                res.ETag = "*";
 
-                res.AssetAccuracy = runtimeData.Asset.Accuracy;
-                res.AssetBaseAssetId = runtimeData.Asset.BaseAssetId;
-                res.AssetId = runtimeData.Asset.Id;
-                res.AssetInvertedAccuracy = runtimeData.Asset.InvertedAccuracy;
-                res.AssetName = runtimeData.Asset.Name;
-                res.AssetQuotingAssetId = runtimeData.Asset.QuotingAssetId;
+                if (runtimeData.Asset != null)
+                {
+                    res.AssetAccuracy = runtimeData.Asset.Accuracy;
+                    res.AssetBaseAssetId = runtimeData.Asset.BaseAssetId;
+                    res.AssetId = runtimeData.Asset.Id;
+                    res.AssetInvertedAccuracy = runtimeData.Asset.InvertedAccuracy;
+                    res.AssetName = runtimeData.Asset.Name;
+                    res.AssetQuotingAssetId = runtimeData.Asset.QuotingAssetId;
+                }
 
-
-                res.TradingAmountAmount = runtimeData.TradingAmount.Amount;
-                res.TradingAmountAssetId = runtimeData.TradingAmount.AssetId;
+                if (runtimeData.TradingAmount != null)
+                {
+                    res.TradingAmountAmount = runtimeData.TradingAmount.Amount;
+                    res.TradingAmountAssetId = runtimeData.TradingAmount.AssetId;
+                }
 
                 result.Add(res);
             }
@@ -87,7 +93,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Accuracy = entity.AssetAccuracy;
             result.BaseAssetId = entity.AssetBaseAssetId;
             result.Id = entity.AssetId;
-            result.InvertedAccuracy = entity.AssetAccuracy;
+            result.InvertedAccuracy = entity.AssetInvertedAccuracy;
             result.Name = entity.AssetName;
             result.QuotingAssetId = entity.AssetQuotingAssetId;
 
