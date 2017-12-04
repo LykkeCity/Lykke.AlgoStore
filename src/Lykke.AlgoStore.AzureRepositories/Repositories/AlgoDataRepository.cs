@@ -10,7 +10,8 @@ using Lykke.SettingsReader;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
-    public class AlgoDataRepository : IAlgoDataRepository
+    //Reserved for future use
+    public class AlgoDataRepository
     {
         private const string PartitionKey = "AlgoData";
         private const string TableName = "AlgoDataTable";

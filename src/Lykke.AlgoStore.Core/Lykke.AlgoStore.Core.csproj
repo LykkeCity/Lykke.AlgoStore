@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
+    <Compile Remove="Domain\Repositories\IAlgoDataRepository.cs" />
+    <Compile Remove="Domain\Repositories\IAlgoTemplateDataRepository.cs" />
+    <Compile Remove="DoNotUseAttribure.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -16,25 +16,19 @@ namespace Lykke.AlgoStore.Services
     {
         private const string ComponentName = "AlgoStoreClientDataService";
         private readonly IAlgoMetaDataRepository _metaDataRepository;
-        private readonly IAlgoDataRepository _dataRepository;
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
-        private readonly IAlgoTemplateDataRepository _templateDataRepository;
         private readonly IAlgoBlobRepository<byte[]> _blobBinaryRepository;
         private readonly IAlgoBlobRepository<string> _blobStringRepository;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
-            IAlgoDataRepository dataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
-            IAlgoTemplateDataRepository templateDataRepository,
             IAlgoBlobRepository<byte[]> blobBinaryRepository,
             IAlgoBlobRepository<string> blobStringRepository,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
-            _dataRepository = dataRepository;
             _runtimeDataRepository = runtimeDataRepository;
-            _templateDataRepository = templateDataRepository;
             _blobBinaryRepository = blobBinaryRepository;
             _blobStringRepository = blobStringRepository;
             _log = log;
@@ -72,7 +66,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Specified algo id and/or algo string are empty! ");
                 }
-                var algo = await _dataRepository.GetAlgoData(algoId);
+                var algo = await _metaDataRepository.GetAlgoMetaData(algoId);
                 if (algo == null)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {algoId} is not found! ");
@@ -92,7 +86,7 @@ namespace Lykke.AlgoStore.Services
                 if (!dataModel.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
 
-                var algo = await _dataRepository.GetAlgoData(dataModel.AlgoId);
+                var algo = await _metaDataRepository.GetAlgoMetaData(dataModel.AlgoId);
                 if(algo == null)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
@@ -177,43 +171,7 @@ namespace Lykke.AlgoStore.Services
                 throw HandleException(ex, ComponentName);
             }
         }
-
-        public async Task<List<AlgoTemplateData>> GetTemplate(string languageId)
-        {
-            try
-            {
-                return await _templateDataRepository.GetTemplatesByLanguage(languageId);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
-        public async Task<AlgoData> GetSource(string clientAlgoId)
-        {
-            try
-            {
-                return await _dataRepository.GetAlgoData(clientAlgoId);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
-        public async Task SaveSource(AlgoData data)
-        {
-            try
-            {
-                await _dataRepository.SaveAlgoData(data);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
+        
         public async Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId)
         {
             try
