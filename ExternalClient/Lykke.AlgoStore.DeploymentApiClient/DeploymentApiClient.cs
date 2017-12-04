@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Microsoft.Rest;
@@ -12,6 +13,17 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         public DeploymentApiClient(IApiDocumentation externalClient)
         {
             _externalClient = externalClient;
+        }
+
+        public async Task<string> BuildAlgoImageFromBinary(byte[] data, string algoUsername, string algoName)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                var response = await _externalClient
+                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, algoUsername, algoName);
+
+                return response.Body.Id.ToString();
+            }
         }
 
         public async Task<AlgoRuntimeStatuses> GetAlgoTestStatus(long id)

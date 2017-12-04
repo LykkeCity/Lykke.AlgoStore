@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
@@ -17,19 +16,19 @@ namespace Lykke.AlgoStore.Services
     {
         private const string ComponentName = "AlgoStoreService";
 
-        private readonly IApiDocumentation _deploymentApiClient;
+        private readonly IDeploymentApiClient _externalClient;
         private readonly IAlgoBlobRepository<byte[]> _algoBlobRepository;
         private readonly IAlgoMetaDataRepository _algoMetaDataRepository;
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
 
         public AlgoStoreService(
-            IApiDocumentation externalClient,
+            IDeploymentApiClient externalClient,
             ILog log,
             IAlgoBlobRepository<byte[]> algoBlobRepository,
             IAlgoMetaDataRepository algoMetaDataRepository,
             IAlgoRuntimeDataRepository algoRuntimeDataRepository) : base(log)
         {
-            _deploymentApiClient = externalClient;
+            _externalClient = externalClient;
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
             _algoRuntimeDataRepository = algoRuntimeDataRepository;
@@ -55,14 +54,15 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo meta data for provided id");
 
                 var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
-                var stream = new MemoryStream(blob);
 
-                var deployResponse = await _deploymentApiClient
-                    .BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(stream, data.ClientId, algoMetaData.ClientAlgoId);
+                var response =
+                    await _externalClient.BuildAlgoImageFromBinary(blob, data.ClientId, algoMetaData.ClientAlgoId);
 
-                var runtimeData = new AlgoClientRuntimeData();
-                runtimeData.ClientAlgoId = data.AlgoId;
-                runtimeData.RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData { ImageId = deployResponse.Body.Id.ToString() } };
+                var runtimeData = new AlgoClientRuntimeData
+                {
+                    ClientAlgoId = data.AlgoId,
+                    RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData { ImageId = response } }
+                };
 
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
 

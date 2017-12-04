@@ -124,7 +124,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
-            IApiDocumentation deploymentApiClient,
+            IDeploymentApiClient deploymentApiClient,
             IAlgoBlobRepository<byte[]> blobRepo,
             IAlgoMetaDataRepository repo,
             IAlgoRuntimeDataRepository runtimeDataRepository)
@@ -139,18 +139,18 @@ namespace Lykke.AlgoStore.Tests.Unit
             return fixture.Build<DeployImageData>().Create();
         }
 
-        private static IApiDocumentation Given_Correct_DeploymentApiClientMock()
+        private static IDeploymentApiClient Given_Correct_DeploymentApiClientMock()
         {
-            var result = new Mock<IApiDocumentation>();
+            var result = new Mock<IDeploymentApiClient>();
 
             result.Setup(
-                client => client.BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(
-                    It.IsAny<Stream>(),
+                client => client.BuildAlgoImageFromBinary(
+                    It.IsAny<byte[]>(),
                     It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Dictionary<string, List<string>>>(),
-                    It.IsAny<CancellationToken>())).
-                    ReturnsAsync(new HttpOperationResponse<Algo> { Body = new Algo { Id = 1 } });
+                    It.IsAny<string>()
+                )
+            )
+            .ReturnsAsync("1");
 
             return result.Object;
         }
