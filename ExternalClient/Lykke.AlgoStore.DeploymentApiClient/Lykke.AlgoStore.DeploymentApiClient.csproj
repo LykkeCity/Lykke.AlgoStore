@@ -13,8 +13,8 @@
     <RepositoryUrl>https://github.com/LykkeCity/Lykke.Service.LykkeService.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Lykke</PackageTags>
-    <AssemblyName>Lykke.AlgoStore.Client</AssemblyName>
-    <RootNamespace>Lykke.AlgoStore.Client</RootNamespace>
+    <AssemblyName>Lykke.AlgoStore.DeploymentApiClient</AssemblyName>
+    <RootNamespace>Lykke.AlgoStore.DeploymentApiClient</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="AutorestClient\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

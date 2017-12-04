@@ -9,6 +9,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -19,18 +21,21 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
         private readonly IAlgoBlobRepository<byte[]> _blobBinaryRepository;
         private readonly IAlgoBlobRepository<string> _blobStringRepository;
+        private readonly IDeploymentApiReadOnlyClient _externalClient;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IAlgoBlobRepository<byte[]> blobBinaryRepository,
             IAlgoBlobRepository<string> blobStringRepository,
+            IDeploymentApiReadOnlyClient externalClient,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobBinaryRepository = blobBinaryRepository;
             _blobStringRepository = blobStringRepository;
+            _externalClient = externalClient;
             _log = log;
         }
 
@@ -129,15 +134,22 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
 
-                // TODO Add check if it is running
-
                 if (!await _metaDataRepository.ExistsAlgoMetaData(data.ClientAlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {data.ClientAlgoId}");
 
                 var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
                 if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
                 {
-                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(runtimeData.RuntimeData[0].ImageId))
+                    string strImageId = runtimeData.RuntimeData[0].ImageId;
+                    long imageId;
+                    if (!long.TryParse(strImageId, out imageId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"ImageId is not long {runtimeData.RuntimeData[0].ImageId}");
+
+                    var response = await _externalClient.GetAlgoTestStatus(imageId);
+                    if (response != AlgoRuntimeStatuses.NotFound)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image {runtimeData.RuntimeData[0].ImageId} is still {response.ToString("g")}");
+
+                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(imageId.ToString()))
                         throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for {data.ClientAlgoId}");
                 }
 
