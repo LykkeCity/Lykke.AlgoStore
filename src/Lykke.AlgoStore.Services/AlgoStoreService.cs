@@ -18,15 +18,15 @@ namespace Lykke.AlgoStore.Services
         private const string ComponentName = "AlgoStoreService";
 
         private readonly IApiDocumentation _deploymentApiClient;
-        private readonly IAlgoBlobRepository<byte[]> _algoBlobRepository;
-        private readonly IAlgoMetaDataRepository _algoMetaDataRepository;
+        private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
+        private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
 
         public AlgoStoreService(
             IApiDocumentation externalClient,
             ILog log,
-            IAlgoBlobRepository<byte[]> algoBlobRepository,
-            IAlgoMetaDataRepository algoMetaDataRepository,
+            IAlgoBlobReadOnlyRepository algoBlobRepository,
+            IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
             IAlgoRuntimeDataRepository algoRuntimeDataRepository) : base(log)
         {
             _deploymentApiClient = externalClient;

@@ -7,27 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Xunit;
+using Lykke.AlgoStore.AzureRepositories.Repositories;
+using AzureStorage.Blob;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoBlobRepositoryTests
     {
-        private IContainer _ioc;
         private static string blobKey = "TestKey";
         private static byte[] blobBytes = Encoding.Unicode.GetBytes(blobKey);
-
-        public AlgoBlobRepositoryTests()
-        {
-            SetUp();
-        }
-
-        private void SetUp()
-        {
-            var ioc = new ContainerBuilder();
-            ioc.Register(x => new LogToMemory()).As<ILog>();
-            ioc.BindAzureReposInMemForTests();
-            _ioc = ioc.Build();
-        }
 
         [RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
         public void Blob_Large_Binary_Save_Test()
@@ -39,7 +27,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_DeleteBinary(repo, blobKey);
         }
 
-        private void Then_DeleteBinary(IAlgoBlobRepository<byte[]> repo, string blobKey)
+        private void Then_DeleteBinary(IAlgoBlobRepository repo, string blobKey)
         {
             repo.DeleteBlobAsync(blobKey).Wait();
             Assert.False(repo.BlobExists(blobKey).Result);
@@ -77,49 +65,44 @@ namespace Lykke.AlgoStore.Tests.Unit
             return b;
         }
 
-        private void Then_BinaryFile_ShouldNotExist(IAlgoBlobRepository<byte[]> repo, string blobKey)
+        private void Then_BinaryFile_ShouldNotExist(IAlgoBlobRepository repo, string blobKey)
         {
             var exists = repo.BlobExists(blobKey).Result;
             Assert.False(exists);
         }
 
-        private IAlgoBlobRepository<byte[]> Given_AlgoBinary_InMemory_Storage_Repository()
+        private IAlgoBlobRepository Given_AlgoBinary_InMemory_Storage_Repository()
         {
-            return _ioc.ResolveNamed<IAlgoBlobRepository<byte[]>>("InMemoryRepo");
+            return new AlgoBlobRepository(new AzureBlobInMemory());
         }
 
-        private IAlgoBlobRepository<byte[]> Given_Algo_RealBlob_Starage_Repository()
+        private IAlgoBlobRepository Given_Algo_RealBlob_Starage_Repository()
         {
-            return _ioc.ResolveNamed<IAlgoBlobRepository<byte[]>>("RealStorageRepo"); 
-        }
-
-        private IAlgoBlobRepository<string> Given_AlgoString_Repository()
-        {
-            return _ioc.Resolve<IAlgoBlobRepository<string>>();
+            return new AlgoBlobRepository(AzureBlobStorage.Create(SettingsMock.GetSettings()));
         }
         
-        private void When_Invoke_Save_BinaryFile(IAlgoBlobRepository<byte[]> repository, string key, byte[] bytes)
+        private void When_Invoke_Save_BinaryFile(IAlgoBlobRepository repository, string key, byte[] bytes)
         {
             repository.SaveBlobAsync(key, bytes).Wait();
         }
 
-        private void And_TryDelete_BinaryFile(IAlgoBlobRepository<byte[]> repository, string key)
+        private void And_TryDelete_BinaryFile(IAlgoBlobRepository repository, string key)
         {
             repository.DeleteBlobAsync(key).Wait();
         }
-        private void Then_BinaryFile_ShouldBe(IAlgoBlobRepository<byte[]> repository, string key, byte[] bytes)
+        private void Then_BinaryFile_ShouldBe(IAlgoBlobRepository repository, string key, byte[] bytes)
         {
             var saved = repository.GetBlobAsync(key).Result;
             Assert.True(saved.SequenceEqual(bytes));
         }
 
-        private void Then_BinaryFile_ShouldExist(IAlgoBlobRepository<byte[]> repository, string key)
+        private void Then_BinaryFile_ShouldExist(IAlgoBlobRepository repository, string key)
         {
             var saved = repository.BlobExists(key).Result;
             Assert.True(saved);
         }
 
-        private void And_BinaryFileToString_ShouldBe(IAlgoBlobRepository<byte[]> repository, string key)
+        private void And_BinaryFileToString_ShouldBe(IAlgoBlobRepository repository, string key)
         {
             var saved = repository.GetBlobAsync(key).Result;
             Assert.True(Encoding.Unicode.GetString(saved) == key);

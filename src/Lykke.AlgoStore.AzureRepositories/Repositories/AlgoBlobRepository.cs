@@ -1,40 +1,50 @@
-﻿using Lykke.AlgoStore.Core.Domain.Repositories;
-using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using AzureStorage;
+using Lykke.AlgoStore.Core.Domain.Repositories;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
-    //public class AlgoBlobRepository : IAlgoBlobBaseRepository
-    //{
-    //    private IAlgoBlobRepository<byte[]> _byteRepo;
-    //    private IAlgoBlobRepository<string> _stringRepo;
+    public class AlgoBlobRepository : IAlgoBlobRepository
+    {
+        private const string BlobContainer = "algo-store-binary";
+        private readonly IBlobStorage _storage;
 
-    //    public AlgoBlobRepository(IAlgoBlobRepository<byte[]> byteRepo, IAlgoBlobRepository<string> stringRepo )
-    //    {
-    //        _byteRepo = byteRepo;
-    //        _stringRepo = stringRepo;
-    //    }
+        public AlgoBlobRepository(IBlobStorage storage)
+        {
+            _storage = storage;
+        }
 
-    //    public async Task<byte[]> GetBlobAsByteArrayAsync(string blobKey)
-    //    {
-    //        return await _byteRepo.GetBlobAsync(blobKey);
-    //    }
+        public async Task<bool> BlobExists(string blobKey)
+        {
+            return await _storage.HasBlobAsync(BlobContainer, blobKey);
+        }
+        public async Task<byte[]> GetBlobAsync(string blobKey)
+        {
+            var stream = await _storage.GetAsync(BlobContainer, blobKey);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+        public async Task<string> GetBlobStringAsync(string blobKey)
+        {
+            return await _storage.GetAsTextAsync(BlobContainer, blobKey);
+        }
 
-    //    public async Task<string> GetBlobAsTextAsync(string blobKey)
-    //    {
-    //        return await _stringRepo.GetBlobAsync(blobKey);
-    //    }
-
-    //    public async Task SaveBlobAsByteArrayAsync(string blobKey, byte[] blobData)
-    //    {
-    //        await _byteRepo.SaveBlobAsync(blobKey, blobData);
-    //    }
-
-    //    public async Task SaveBlobAsStringAsync(string blobKey, string blobData)
-    //    {
-    //        await _stringRepo.SaveBlobAsync(blobKey, blobData);
-    //    }        
-    //}
+        public async Task DeleteBlobAsync(string blobKey)
+        {
+            await _storage.DelBlobAsync(BlobContainer, blobKey);
+        }
+        public async Task SaveBlobAsync(string blobKey, byte[] blobData)
+        {
+            await _storage.SaveBlobAsync(BlobContainer, blobKey, blobData);
+        }
+        public async Task SaveBlobAsync(string blobKey, string blobString)
+        {
+            await _storage.SaveBlobAsync(BlobContainer, blobKey, Encoding.UTF8.GetBytes(blobString));
+        }
+    }
 }

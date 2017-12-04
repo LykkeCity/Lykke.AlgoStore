@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
+using AzureStorage.Tables;
+using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -39,7 +41,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoRuntimeDataRepository Given_AlgoRuntimeData_Repository()
         {
-            return new AlgoRuntimeDataRepository(GetSettings(), new LogMock());
+            return new AlgoRuntimeDataRepository(AzureTableStorage<AlgoRuntimeDataEntity>.Create(SettingsMock.GetSettings(), AlgoRuntimeDataRepository.TableName, new LogMock()));
         }
         private static void When_Invoke_Save(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
@@ -54,15 +56,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var saved = repository.GetAlgoRuntimeData(data.RuntimeData[0].ImageId).Result;
             Assert.NotNull(saved);
-        }
-
-        private static IReloadingManager<string> GetSettings()
-        {
-            var reloadingMock = new Mock<IReloadingManager<string>>();
-            reloadingMock
-                .Setup(x => x.Reload())
-                .Returns(() => Task.FromResult("DefaultEndpointsProtocol=https;AccountName=algostoredev;AccountKey=d2VaBHrf8h8t622KvLeTPGwRP4Dxz9DTPeBT9H3zmjcQprQ1e+Z6Sx9RDqJc+zKwlSO900fzYF2Dg6oUBVDe1w=="));
-            return reloadingMock.Object;
         }
 
         private void SetUp()

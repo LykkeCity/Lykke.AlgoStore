@@ -125,7 +125,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
             IApiDocumentation deploymentApiClient,
-            IAlgoBlobRepository<byte[]> blobRepo,
+            IAlgoBlobRepository blobRepo,
             IAlgoMetaDataRepository repo,
             IAlgoRuntimeDataRepository runtimeDataRepository)
         {
@@ -155,9 +155,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoBlobRepository<byte[]> Given_Correct_AlgoBlobRepositoryMock()
+        private static IAlgoBlobRepository Given_Correct_AlgoBlobRepositoryMock()
         {
-            var result = new Mock<IAlgoBlobRepository<byte[]>>();
+            var result = new Mock<IAlgoBlobRepository>();
 
             result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
 
@@ -172,9 +172,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoBlobRepository<byte[]> Given_Error_AlgoBlobRepositoryMock()
+        private static IAlgoBlobRepository Given_Error_AlgoBlobRepositoryMock()
         {
-            var result = new Mock<IAlgoBlobRepository<byte[]>>();
+            var result = new Mock<IAlgoBlobRepository>();
 
             result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(false));
 
