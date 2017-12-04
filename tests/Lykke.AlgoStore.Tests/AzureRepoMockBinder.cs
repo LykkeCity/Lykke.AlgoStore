@@ -2,9 +2,12 @@
 using AzureStorage.Blob;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.SettingsReader;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Tests
 {
@@ -12,8 +15,17 @@ namespace Lykke.AlgoStore.Tests
     {
         public static void BindAzureReposInMemForTests(this ContainerBuilder ioc)
         {
-            ioc.RegisterInstance<IAlgoBlobRepository<byte[]>>(new AlgoBlobBinaryRepository(new AzureBlobInMemory()));
+            ioc.RegisterInstance<IAlgoBlobRepository<byte[]>>(new AlgoBlobBinaryRepository(new AzureBlobInMemory())).Named<IAlgoBlobRepository<byte[]>>("InMemoryRepo");
             ioc.RegisterInstance<IAlgoBlobRepository<string>>(new AlgoBlobStringRepository(new AzureBlobInMemory()));
+
+            var reloadingMock = new Mock<IReloadingManager<string>>();
+            reloadingMock
+                .Setup(x => x.Reload())
+                .Returns(() => Task.FromResult("DefaultEndpointsProtocol=https;AccountName=lkedevmain;AccountKey=l0W0CaoNiRZQIqJ536sIScSV5fUuQmPYRQYohj/UjO7+ZVdpUiEsRLtQMxD+1szNuAeJ351ndkOsdWFzWBXmdw=="));
+
+            ioc.RegisterInstance(reloadingMock.Object);
+
+            ioc.RegisterInstance<IAlgoBlobRepository<byte[]>>(new AlgoBlobBinaryRepository(AzureBlobStorage.Create(reloadingMock.Object.ConnectionString(x => x))) ).Named<IAlgoBlobRepository<byte[]>>("RealStorageRepo");
         }
     }
 }

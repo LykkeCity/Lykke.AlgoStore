@@ -37,7 +37,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var ioc = new ContainerBuilder();
             ioc.BindAzureReposInMemForTests();
             _ioc = ioc.Build();
-            _binaryRepo = _ioc.Resolve<IAlgoBlobRepository<byte[]>>();
+            _binaryRepo = _ioc.ResolveNamed<IAlgoBlobRepository<byte[]>>("InMemoryRepo");
             _stringRepo = _ioc.Resolve<IAlgoBlobRepository<string>>();
         }
 
