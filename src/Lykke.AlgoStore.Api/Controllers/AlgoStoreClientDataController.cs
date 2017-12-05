@@ -79,7 +79,7 @@ namespace Lykke.AlgoStore.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model)
+        public async Task<IActionResult> UploadBinaryFile([FromBody]UploadAlgoBinaryModel model)
         {
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
 
