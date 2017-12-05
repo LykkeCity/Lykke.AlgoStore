@@ -281,16 +281,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.NotNull(serviceException);
         }
 
-        private static AlgoDataRepository Given_Correct_AlgoDataRepositoryMock()
-        {
-            var fixture = new Fixture();
-            var result = new Mock<AlgoDataRepository>();
-            result.Setup(repo => repo.SaveAlgoData(It.IsAny<AlgoData>())).Returns(Task.CompletedTask);
-            result.Setup(repo => repo.GetAlgoData(It.Is<string>(s => s.Equals(alogId)))).Returns((string alogId) => { return Task.FromResult(fixture.Build<AlgoData>().With(a => a.ClientAlgoId, alogId).Create()); });
-
-            return result.Object;
-        }
-
         private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
