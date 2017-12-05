@@ -9,8 +9,6 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
-using Lykke.AlgoStore.DeploymentApiClient.Models;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -20,19 +18,16 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
-        private readonly IDeploymentApiReadOnlyClient _externalClient;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
-            IDeploymentApiReadOnlyClient externalClient,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
-            _externalClient = externalClient;
             _log = log;
         }
 
@@ -137,14 +132,8 @@ namespace Lykke.AlgoStore.Services
                 var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
                 if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
                 {
-                    string strImageId = runtimeData.RuntimeData[0].ImageId;
-                    long imageId;
-                    if (!long.TryParse(strImageId, out imageId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"ImageId is not long {runtimeData.RuntimeData[0].ImageId}");
-
-                    var response = await _externalClient.GetAlgoTestStatus(imageId);
-                    if (response != AlgoRuntimeStatuses.NotFound)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image {runtimeData.RuntimeData[0].ImageId} is still {response.ToString("g")}");
+                    // runtime data should be deleted when image is deleted with external client. So just throw
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete data. Image {runtimeData.RuntimeData[0].ImageId} is still running");
                 }
 
                 if (await _blobRepository.BlobExists(data.ClientAlgoId))
