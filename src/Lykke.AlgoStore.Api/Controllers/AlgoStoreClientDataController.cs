@@ -54,7 +54,7 @@ namespace Lykke.AlgoStore.Controllers
 
             var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
 
-            var response = Mapper.Map<AlgoMetaDataModel>(result);
+            var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
 
             return Ok(response);
         }
