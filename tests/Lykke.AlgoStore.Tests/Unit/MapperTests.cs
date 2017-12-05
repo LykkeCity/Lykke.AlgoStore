@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AutoFixture;
 using Lykke.AlgoStore.AzureRepositories.Entities;
@@ -19,11 +20,28 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             public static IEnumerable<object[]> GetAlgoClientMetaData()
             {
-                return TestData<AlgoClientMetaData>();
+                int numberOfElements = 10;
+                var fixture = new Fixture();
+                var mock = Enumerable.Repeat(new object[1]
+                {
+                   new AlgoClientMetaData
+                   {
+                       ClientId = Guid.NewGuid().ToString(),
+                       AlgoMetaData = new List<AlgoMetaData>
+                       {
+                           fixture.Build<AlgoMetaData>().With(data => data.Date, DateTime.MinValue.ToString("yyyy-MM-dd HH:mm:ss")).Create()
+                       }
+                   }
+                }
+                , numberOfElements).ToList();
+                return mock;
             }
             public static IEnumerable<object[]> GetAlgoClientRuntimeData()
             {
-                return TestData<AlgoClientRuntimeData>();
+                int numberOfElements = 10;
+                var fixture = new Fixture();
+                var mock = Enumerable.Repeat(new object[1] { fixture.Build<AlgoClientRuntimeData>().Create() }, numberOfElements).ToList();
+                return mock;
             }
 
             private static IEnumerable<object[]> TestData<T>()
