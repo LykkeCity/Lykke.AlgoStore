@@ -60,6 +60,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Description = entity.Description;
             result.Name = entity.Name;
             result.TemplateId = entity.TemplateId;
+            result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");
 
             return result;
         }
