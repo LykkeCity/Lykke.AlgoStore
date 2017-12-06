@@ -4,6 +4,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
 using Common.Log;
+using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.Infrastructure;
 using Lykke.AlgoStore.Infrastructure.Authentication;
@@ -52,6 +53,8 @@ namespace Lykke.Service.LykkeService
                         options.SerializerSettings.ContractResolver =
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                     });
+
+                services.AddScoped<ValidateMimeMultipartContentFilter>();
 
                 services.AddSwaggerGen(options =>
                 {

@@ -4,6 +4,7 @@ using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
@@ -24,7 +25,15 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entities = await _table.GetDataAsync(PartitionKey, data => data.ClientId == clientId);
 
-            return entities.ToModel();
+            var result = entities.ToModel();
+
+            if (!result.AlgoMetaData.IsNullOrEmptyCollection())
+            {
+                result.AlgoMetaData.Sort();
+                result.AlgoMetaData.Reverse();
+            }
+
+            return result;
         }
         public async Task<AlgoClientMetaData> GetAlgoMetaData(string id)
         {

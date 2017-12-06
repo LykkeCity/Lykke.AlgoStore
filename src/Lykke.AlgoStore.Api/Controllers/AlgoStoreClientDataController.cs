@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -54,7 +55,7 @@ namespace Lykke.AlgoStore.Controllers
 
             var result = await _clientDataService.SaveClientMetadata(User.GetClientId(), data);
 
-            var response = Mapper.Map<AlgoMetaDataModel>(result);
+            var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
 
             return Ok(response);
         }
@@ -79,6 +80,7 @@ namespace Lykke.AlgoStore.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        [ServiceFilter(typeof(ValidateMimeMultipartContentFilter))]
         public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model)
         {
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
