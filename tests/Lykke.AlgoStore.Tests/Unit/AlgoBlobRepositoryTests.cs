@@ -21,15 +21,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             SetUp();
         }
 
-        private void SetUp()
-        {
-            var ioc = new ContainerBuilder();
-            ioc.Register(x => new LogToMemory()).As<ILog>();
-            ioc.BindAzureReposInMemForTests();
-            _ioc = ioc.Build();
-        }
-
-        //[RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
         [Conditional("DEBUG")]
         public void Blob_Large_Binary_Save_Test()
         {
@@ -38,12 +29,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_Save_BinaryFile(repo, blobKey, largeByteArray);
             Then_BinaryFile_ShouldBe(repo, blobKey, largeByteArray);
             Then_DeleteBinary(repo, blobKey);
-        }
-
-        private void Then_DeleteBinary(IAlgoBlobRepository<byte[]> repo, string blobKey)
-        {
-            repo.DeleteBlobAsync(blobKey).Wait();
-            Assert.False(repo.BlobExists(blobKey).Result);
         }
 
         [Test]
@@ -70,6 +55,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_BinaryFile_ShouldNotExist(repo, blobKey);
         }
 
+        #region Private Methods
+
+        private void SetUp()
+        {
+            var ioc = new ContainerBuilder();
+            ioc.Register(x => new LogToMemory()).As<ILog>();
+            ioc.BindAzureReposInMemForTests();
+            _ioc = ioc.Build();
+        }
+
+        private void Then_DeleteBinary(IAlgoBlobRepository<byte[]> repo, string blobKey)
+        {
+            repo.DeleteBlobAsync(blobKey).Wait();
+            Assert.False(repo.BlobExists(blobKey).Result);
+        }
+
         private byte[] Give_Large_Byte_Array()
         {
             Random rnd = new Random();
@@ -91,14 +92,14 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private IAlgoBlobRepository<byte[]> Given_Algo_RealBlob_Starage_Repository()
         {
-            return _ioc.ResolveNamed<IAlgoBlobRepository<byte[]>>("RealStorageRepo"); 
+            return _ioc.ResolveNamed<IAlgoBlobRepository<byte[]>>("RealStorageRepo");
         }
 
         private IAlgoBlobRepository<string> Given_AlgoString_Repository()
         {
             return _ioc.Resolve<IAlgoBlobRepository<string>>();
         }
-        
+
         private void When_Invoke_Save_BinaryFile(IAlgoBlobRepository<byte[]> repository, string key, byte[] bytes)
         {
             repository.SaveBlobAsync(key, bytes).Wait();
@@ -126,6 +127,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.True(Encoding.Unicode.GetString(saved) == key);
         }
 
-       
+        #endregion
     }
 }

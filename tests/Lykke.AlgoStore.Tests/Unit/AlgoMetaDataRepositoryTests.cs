@@ -29,7 +29,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
 
-        //[RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
         [Conditional("DEBUG")]
         public void AlgoMetaData_Save_Test()
         {
@@ -37,7 +36,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_Save(repo, _entity);
             Then_Data_ShouldBe_Saved(repo, _entity);
         }
-        //[RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
+
         [Conditional("DEBUG")]
         public void AlgoMetaData_GetAll_Test()
         {
@@ -47,10 +46,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Result_ShouldNotBe_Null(all);
         }
 
+        #region Private Methods
+
         private static AlgoMetaDataRepository Given_AlgoMetaData_Repository()
         {
             return new AlgoMetaDataRepository(GetSettings(), new LogMock());
         }
+
         private static void When_Invoke_Save(AlgoMetaDataRepository repository, AlgoClientMetaData data)
         {
             repository.SaveAlgoMetaData(data).Wait();
@@ -60,10 +62,12 @@ namespace Lykke.AlgoStore.Tests.Unit
             var saved = repository.GetAlgoMetaData(data.AlgoMetaData[0].ClientAlgoId).Result;
             Assert.NotNull(saved);
         }
+
         private static AlgoClientMetaData When_Ivoke_GetAll(AlgoMetaDataRepository repository, string clientId)
         {
             return repository.GetAllClientAlgoMetaData(clientId).Result;
         }
+
         private static void Then_Result_ShouldNotBe_Null(AlgoClientMetaData data)
         {
             Assert.NotNull(data);
@@ -86,13 +90,14 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             _entity.AlgoMetaData.Add(_fixture.Build<AlgoMetaData>().Create());
         }
+
         private void CleanUp()
         {
             var repo = Given_AlgoMetaData_Repository();
             repo.DeleteAlgoMetaData(_entity).Wait();
             _entity = null;
-        }
+        } 
 
-
+        #endregion
     }
 }

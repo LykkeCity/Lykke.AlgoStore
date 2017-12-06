@@ -71,25 +71,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             ThenAlgo_StringShouldExist();
         }
 
-        private static void When_Invoke_SaveAlgoAsString(AlgoStoreClientDataService service)
-        {
-            service.SaveAlgoAsString(alogId, blobAlgoString).Wait();
-        }
-        private static void ThenAlgo_StringShouldExist()
-        {
-            var blob = _stringRepo.GetBlobAsync(alogId).Result;
-            Assert.True(blob == blobAlgoString);
-        }
-        private static void When_Invoke_SaveAlgoAsBinary(AlgoStoreClientDataService service, UploadAlgoBinaryData model)
-        {
-            service.SaveAlgoAsBinary(model).Wait();
-        }
-        private static void ThenAlgo_Binary_ShouldExist(string algoId)
-        {
-            var blobExists = _binaryRepo.BlobExists(algoId).Result;
-            Assert.True(blobExists);
-        }
-
         [Test]
         public void GetClientMetadata_Returns_Data()
         {
@@ -101,6 +82,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
         }
+
         [Test]
         public void GetClientMetadata_Throws_Exception()
         {
@@ -112,6 +94,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
         }
+
         [Test]
         public void CascadeDeleteClientMetadata_Returns_Ok()
         {
@@ -126,6 +109,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
         }
+
         [Test]
         public void CascadeDeleteClientMetadata_Returns_ImageExists()
         {
@@ -140,6 +124,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
+
         [Test]
         public void CascadeDeleteClientMetadata_Throws_Exception()
         {
@@ -154,6 +139,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
+
         [Test]
         public void CascadeDeleteClientMetadata_Blob_Throws_Exception()
         {
@@ -168,6 +154,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
+
         [Test]
         public void CascadeDeleteClientMetadata_Runtime_Throws_Exception()
         {
@@ -182,6 +169,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
+
         [Test]
         public void CascadeDeleteClientMetadata_ExternalClient_Throws_Exception()
         {
@@ -196,6 +184,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
+
         [Test]
         public void SaveClientMetadata_Returns_Ok()
         {
@@ -208,6 +197,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_SaveClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
         }
+
         [Test]
         public void SaveClientMetadata_Throws_Exception()
         {
@@ -221,6 +211,29 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
+        #region Private Methods
+
+        private static void When_Invoke_SaveAlgoAsString(AlgoStoreClientDataService service)
+        {
+            service.SaveAlgoAsString(alogId, blobAlgoString).Wait();
+        }
+
+        private static void ThenAlgo_StringShouldExist()
+        {
+            var blob = _stringRepo.GetBlobAsync(alogId).Result;
+            Assert.True(blob == blobAlgoString);
+        }
+
+        private static void When_Invoke_SaveAlgoAsBinary(AlgoStoreClientDataService service, UploadAlgoBinaryData model)
+        {
+            service.SaveAlgoAsBinary(model).Wait();
+        }
+
+        private static void ThenAlgo_Binary_ShouldExist(string algoId)
+        {
+            var blobExists = _binaryRepo.BlobExists(algoId).Result;
+            Assert.True(blobExists);
+        }
 
         private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(
             IAlgoMetaDataRepository repo,
@@ -245,6 +258,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 return null;
             }
         }
+
         private static void When_Invoke_CascadeDeleteClientMetadata(AlgoStoreClientDataService service, string clientId, AlgoMetaData data, out Exception exception)
         {
             exception = null;
@@ -257,6 +271,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 exception = ex;
             }
         }
+
         private static void When_Invoke_SaveClientMetadata(AlgoStoreClientDataService service, string clientId, AlgoMetaData data, out Exception exception)
         {
             exception = null;
@@ -269,19 +284,23 @@ namespace Lykke.AlgoStore.Tests.Unit
                 exception = ex;
             }
         }
+
         private static void Then_Data_ShouldNotBe_Empty(AlgoClientMetaData data)
         {
             Assert.NotNull(data);
             Assert.IsNotEmpty(data.AlgoMetaData);
         }
+
         private static void Then_Data_ShouldBe_Empty(AlgoClientMetaData data)
         {
             Assert.Null(data);
         }
+
         private static void Then_Exception_ShouldBe_Null(Exception exception)
         {
             Assert.Null(exception);
         }
+
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
         {
             Exception temp = exception;
@@ -331,6 +350,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoBlobRepository<byte[]> Given_Correct_AlgoBlobRepositoryMock()
         {
             var fixture = new Fixture();
@@ -341,6 +361,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoRuntimeDataRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
         {
             var fixture = new Fixture();
@@ -376,6 +397,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoMetaDataRepository Given_Error_AlgoMetaDataRepositoryMock()
         {
             var fixture = new Fixture();
@@ -388,6 +410,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoBlobRepository<byte[]> Given_Error_AlgoBlobRepositoryMock()
         {
             var fixture = new Fixture();
@@ -398,6 +421,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoRuntimeDataRepository Given_Error_AlgoRuntimeDataRepositoryMock()
         {
             var fixture = new Fixture();
@@ -409,7 +433,14 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        public static IDeploymentApiReadOnlyClient Given_Correct_ExternalClient_WithStatus(AlgoRuntimeStatuses status)
+
+        private static AlgoMetaData Given_AlgoClientMetaData(string clientId)
+        {
+            var fixture = new Fixture();
+            return fixture.Build<AlgoMetaData>().Create();
+        } 
+
+        private static IDeploymentApiReadOnlyClient Given_Correct_ExternalClient_WithStatus(AlgoRuntimeStatuses status)
         {
             var fixture = new Fixture();
             var result = new Mock<IDeploymentApiReadOnlyClient>();
@@ -417,7 +448,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        public static IDeploymentApiReadOnlyClient Given_Error_ExternalClient()
+
+        private static IDeploymentApiReadOnlyClient Given_Error_ExternalClient()
         {
             var fixture = new Fixture();
             var result = new Mock<IDeploymentApiReadOnlyClient>();
@@ -425,10 +457,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        private static AlgoMetaData Given_AlgoClientMetaData(string clientId)
-        {
-            var fixture = new Fixture();
-            return fixture.Build<AlgoMetaData>().Create();
-        }
+
+        #endregion
     }
 }

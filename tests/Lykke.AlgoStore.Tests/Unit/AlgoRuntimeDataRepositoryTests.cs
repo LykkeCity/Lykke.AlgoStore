@@ -28,8 +28,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             CleanUp();
         }
 
-
-        //[RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
         [Conditional("DEBUG")]
         public void AlgoRuntimeData_Save_Test()
         {
@@ -39,19 +37,24 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Result_ShouldNotBe_Null(repo, _entity);
         }
 
+        #region Private Methods
+
         private static AlgoRuntimeDataRepository Given_AlgoRuntimeData_Repository()
         {
             return new AlgoRuntimeDataRepository(GetSettings(), new LogMock());
         }
+
         private static void When_Invoke_Save(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
             repository.SaveAlgoRuntimeData(data).Wait();
         }
+
         private static void Then_Data_ShouldBe_Saved(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
             var saved = repository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId).Result;
             Assert.NotNull(saved);
         }
+
         private static void Then_Result_ShouldNotBe_Null(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
             var saved = repository.GetAlgoRuntimeData(data.RuntimeData[0].ImageId).Result;
@@ -75,13 +78,14 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             _entity.RuntimeData.Add(_fixture.Build<AlgoRuntimeData>().Create());
         }
+
         private void CleanUp()
         {
             var repo = Given_AlgoRuntimeData_Repository();
             repo.DeleteAlgoRuntimeData(_entity.RuntimeData[0].ImageId).Wait();
             _entity = null;
-        }
+        } 
 
-
+        #endregion
     }
 }

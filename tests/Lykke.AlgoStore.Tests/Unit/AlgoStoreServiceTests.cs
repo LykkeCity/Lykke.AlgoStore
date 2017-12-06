@@ -80,6 +80,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
+        #region Private Methods
+
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
         {
             var aggr = exception as AggregateException;
@@ -159,6 +161,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoRuntimeDataRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
         {
             var result = new Mock<IAlgoRuntimeDataRepository>();
@@ -219,6 +222,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
 
             return result.Object;
-        }
+        } 
+
+        #endregion
     }
 }
