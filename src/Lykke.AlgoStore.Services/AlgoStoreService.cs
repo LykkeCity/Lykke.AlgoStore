@@ -7,8 +7,10 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -67,6 +69,50 @@ namespace Lykke.AlgoStore.Services
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
 
                 return true;
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }
+        }
+
+        public async Task<bool> StartTestImage(string algoId)
+        {
+            try
+            {
+                if (!algoId.ValidateRequiredString("algoId", out AlgoStoreAggregateException exception))
+                    throw exception;
+
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
+                if (runtimeData == null || runtimeData.RuntimeData.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"No runtime data for algo id {algoId}");
+
+                var imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber();
+                if (imageId < 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
+
+                var status = await _externalClient.GetAlgoTestStatus(imageId);
+                bool result;
+                switch (status)
+                {
+                    case AlgoRuntimeStatuses.NotFound:
+                        if (!await _externalClient.CreateTestAlgo(imageId, algoId))
+                            throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot Create Test for algo {algoId} and image {imageId}");
+                        result = await _externalClient.StartTestAlgo(imageId);
+                        break;
+                    case AlgoRuntimeStatuses.Created:
+                    case AlgoRuntimeStatuses.Paused:
+                    case AlgoRuntimeStatuses.Stopped:
+                        result = await _externalClient.StartTestAlgo(imageId);
+                        break;
+                    default:
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot start image! it is in status {status}");
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
