@@ -14,18 +14,22 @@ namespace Lykke.AlgoStore.Tests.Unit
     {
         private const string ClientId = "{066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D}";
 
-        private Fixture _fixture = new Fixture();
-        private AlgoClientMetaData _entity = null;
-        private static bool _entitySaved = false;
+        private readonly Fixture _fixture = new Fixture();
+        private AlgoClientMetaData _entity;
+        private static bool _entitySaved;
 
         [SetUp]
         public void SetUp()
         {
-            _entity = new AlgoClientMetaData();
-            _entity.ClientId = ClientId;
-            _entity.AlgoMetaData = new List<AlgoMetaData>();
+            _entity = new AlgoClientMetaData
+            {
+                ClientId = ClientId,
+                AlgoMetaData = new List<AlgoMetaData>
+                {
+                    _fixture.Build<AlgoMetaData>().Create()
+                }
+            };
 
-            _entity.AlgoMetaData.Add(_fixture.Build<AlgoMetaData>().Create());
         }
 
         [TearDown]

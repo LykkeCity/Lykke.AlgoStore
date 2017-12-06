@@ -201,7 +201,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         #region Private Methods
 
-        private UploadAlgoBinaryData Given_UploadAlgoBinaryData_Model()
+        private static UploadAlgoBinaryData Given_UploadAlgoBinaryData_Model()
         {
             var binaryFile = new Mock<IFormFile>();
             binaryFile.Setup(s => s.OpenReadStream()).Returns(new MemoryStream(blobBytes));
