@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AutoFixture;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
@@ -7,7 +8,7 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.SettingsReader;
 using Moq;
-using Xunit;
+using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -28,7 +29,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
 
-        [RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
+        //[RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
+        [Conditional("DEBUG")]
         public void AlgoRuntimeData_Save_Test()
         {
             var repo = Given_AlgoRuntimeData_Repository();

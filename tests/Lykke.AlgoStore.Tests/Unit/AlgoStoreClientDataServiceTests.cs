@@ -15,7 +15,7 @@ using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Xunit;
+using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -43,7 +43,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             _stringRepo = _ioc.Resolve<IAlgoBlobRepository<string>>();
         }
 
-        [Fact]
+        [Test]
         public void SaveAlgoAsBinary_Test()
         {
             var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
@@ -61,7 +61,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return model;
         }
 
-        [Fact]
+        [Test]
         public void SaveAlgoAsString_Test()
         {
             var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
@@ -90,7 +90,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.True(blobExists);
         }
 
-        [Fact]
+        [Test]
         public void GetClientMetadata_Returns_Data()
         {
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
@@ -101,7 +101,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
         }
-        [Fact]
+        [Test]
         public void GetClientMetadata_Throws_Exception()
         {
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
@@ -112,7 +112,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
         }
-        [Fact]
+        [Test]
         public void CascadeDeleteClientMetadata_Returns_Ok()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -126,7 +126,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
         }
-        [Fact]
+        [Test]
         public void CascadeDeleteClientMetadata_Returns_ImageExists()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -140,7 +140,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
-        [Fact]
+        [Test]
         public void CascadeDeleteClientMetadata_Throws_Exception()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -154,7 +154,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
-        [Fact]
+        [Test]
         public void CascadeDeleteClientMetadata_Blob_Throws_Exception()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -168,7 +168,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
-        [Fact]
+        [Test]
         public void CascadeDeleteClientMetadata_Runtime_Throws_Exception()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -182,7 +182,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
-        [Fact]
+        [Test]
         public void CascadeDeleteClientMetadata_ExternalClient_Throws_Exception()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -196,7 +196,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
-        [Fact]
+        [Test]
         public void SaveClientMetadata_Returns_Ok()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -208,7 +208,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_SaveClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
         }
-        [Fact]
+        [Test]
         public void SaveClientMetadata_Throws_Exception()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -272,7 +272,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Data_ShouldNotBe_Empty(AlgoClientMetaData data)
         {
             Assert.NotNull(data);
-            Assert.NotEmpty(data.AlgoMetaData);
+            Assert.IsNotEmpty(data.AlgoMetaData);
         }
         private static void Then_Data_ShouldBe_Empty(AlgoClientMetaData data)
         {

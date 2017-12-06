@@ -3,10 +3,10 @@ using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Xunit;
+using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -29,7 +29,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             _ioc = ioc.Build();
         }
 
-        [RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
+        //[RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
+        [Conditional("DEBUG")]
         public void Blob_Large_Binary_Save_Test()
         {
             var repo = Given_Algo_RealBlob_Starage_Repository();
@@ -45,7 +46,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.False(repo.BlobExists(blobKey).Result);
         }
 
-        [Fact]
+        [Test]
         public void BlobBinary_Save_Test()
         {
             var repo = Given_AlgoBinary_InMemory_Storage_Repository();
@@ -53,14 +54,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_BinaryFile_ShouldBe(repo, blobKey, blobBytes);
             And_BinaryFileToString_ShouldBe(repo, blobKey);
         }
-        [Fact]
+        [Test]
         public void BlobBinary_Exists_Test()
         {
             var repo = Given_AlgoBinary_InMemory_Storage_Repository();
             When_Invoke_Save_BinaryFile(repo, blobKey, blobBytes);
             Then_BinaryFile_ShouldBe(repo, blobKey, blobBytes);
         }
-        [Fact]
+        [Test]
         public void BlobBinary_Delete_Test()
         {
             var repo = Given_AlgoBinary_InMemory_Storage_Repository();
