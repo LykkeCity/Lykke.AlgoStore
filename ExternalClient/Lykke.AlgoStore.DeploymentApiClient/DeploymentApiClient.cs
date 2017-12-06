@@ -26,6 +26,26 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             }
         }
 
+        public async Task<bool> CreateTestAlgo(long imageId, string algoId)
+        {
+            var response = await _externalClient.TestAlgoUsingPUTWithHttpMessagesAsync(imageId, algoId);
+
+            if ((response.Response.StatusCode == HttpStatusCode.OK)
+                && response.Body != null)
+                return true;
+
+            return false;
+        }
+        public async Task<bool> StartTestAlgo(long imageId)
+        {
+            var response = await _externalClient.StartUsingPUTWithHttpMessagesAsync(imageId);
+
+            if (response.Response.StatusCode == HttpStatusCode.OK)
+                return true;
+
+            return false;
+        }
+
         public async Task<AlgoRuntimeStatuses> GetAlgoTestStatus(long id)
         {
             HttpOperationResponse<string> response = await _externalClient.GetTestAlgoStatusUsingGETWithHttpMessagesAsync(id);
