@@ -39,8 +39,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             _entity = null;
         }
 
-        [RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
-        [Test]
+        [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void AlgoRuntimeData_Save_Test()
         {
             var repo = Given_AlgoRuntimeData_Repository();

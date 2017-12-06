@@ -24,8 +24,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             _ioc = ioc.Build();
         }
 
-        [RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
-        [Test]
+        [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void Blob_Large_Binary_Save_Test()
         {
             var repo = Given_Algo_RealBlob_Starage_Repository();
