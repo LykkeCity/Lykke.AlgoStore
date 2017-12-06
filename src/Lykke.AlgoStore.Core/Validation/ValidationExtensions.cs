@@ -7,6 +7,8 @@ namespace Lykke.AlgoStore.Core.Validation
 {
     public static class ValidationExtensions
     {
+        private const string Error_Pattern_Required = "{0} is required";
+
         public static bool ValidateData(this BaseValidatableData data, out AlgoStoreAggregateException exception)
         {
             exception = null;
@@ -25,6 +27,19 @@ namespace Lykke.AlgoStore.Core.Validation
             }
 
             return exception.Errors.Count == 0;
+        }
+
+        public static bool ValidateRequiredString(this string data, string memberName, out AlgoStoreAggregateException exception)
+        {
+            exception = null;
+
+            if (!string.IsNullOrWhiteSpace(data))
+                return true;
+
+            exception = new AlgoStoreAggregateException(AlgoStoreErrorCodes.ValidationError);
+            exception.Errors.Add(string.Format(Error_Pattern_Required, memberName), new List<string> { memberName });
+
+            return false;
         }
     }
 }
