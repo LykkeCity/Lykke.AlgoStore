@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
@@ -12,23 +10,37 @@ using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
-    public class AlgoRuntimeDataRepositoryTests : IDisposable
+    public class AlgoRuntimeDataRepositoryTests
     {
         private const string ClientAlgoId = "{F5385D58-137B-4E3D-BD75-E577A8EB38AA}";
 
         private Fixture _fixture = new Fixture();
         private AlgoClientRuntimeData _entity = null;
+        private static bool _entitySaved = false;
 
-        public AlgoRuntimeDataRepositoryTests()
+        [SetUp]
+        public void SetUp()
         {
-            SetUp();
-        }
-        public void Dispose()
-        {
-            CleanUp();
+            _entity = new AlgoClientRuntimeData();
+            _entity.ClientAlgoId = ClientAlgoId;
+            _entity.RuntimeData = new List<AlgoRuntimeData>();
+
+            _entity.RuntimeData.Add(_fixture.Build<AlgoRuntimeData>().Create());
         }
 
-        [Conditional("DEBUG")]
+        [TearDown]
+        public void CleanUp()
+        {
+            var repo = Given_AlgoRuntimeData_Repository();
+
+            if (_entitySaved)
+                repo.DeleteAlgoRuntimeData(_entity.RuntimeData[0].ImageId).Wait();
+
+            _entity = null;
+        }
+
+        [RunnableInDebugOnly("Should run manually only. Manipulate data in Table Storage")]
+        [Test]
         public void AlgoRuntimeData_Save_Test()
         {
             var repo = Given_AlgoRuntimeData_Repository();
@@ -47,6 +59,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void When_Invoke_Save(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
             repository.SaveAlgoRuntimeData(data).Wait();
+            _entitySaved = true;
         }
 
         private static void Then_Data_ShouldBe_Saved(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
@@ -69,22 +82,6 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .Returns(() => Task.FromResult("DefaultEndpointsProtocol=https;AccountName=algostoredev;AccountKey=d2VaBHrf8h8t622KvLeTPGwRP4Dxz9DTPeBT9H3zmjcQprQ1e+Z6Sx9RDqJc+zKwlSO900fzYF2Dg6oUBVDe1w=="));
             return reloadingMock.Object;
         }
-
-        private void SetUp()
-        {
-            _entity = new AlgoClientRuntimeData();
-            _entity.ClientAlgoId = ClientAlgoId;
-            _entity.RuntimeData = new List<AlgoRuntimeData>();
-
-            _entity.RuntimeData.Add(_fixture.Build<AlgoRuntimeData>().Create());
-        }
-
-        private void CleanUp()
-        {
-            var repo = Given_AlgoRuntimeData_Repository();
-            repo.DeleteAlgoRuntimeData(_entity.RuntimeData[0].ImageId).Wait();
-            _entity = null;
-        } 
 
         #endregion
     }

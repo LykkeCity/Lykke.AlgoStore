@@ -39,6 +39,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var mock = Enumerable.Repeat(new object[1] { CreateData<T>(fixture) }, numberOfElements).ToList();
             return mock;
         }
+
         private static T CreateData<T>(Fixture fixture) where T : TableEntity
         {
             return fixture.Build<T>()

@@ -29,12 +29,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static IAlgoBlobRepository<byte[]> _binaryRepo;
         private static IAlgoBlobRepository<string> _stringRepo;
 
-        public AlgoStoreClientDataServiceTests()
-        {
-            SetUp();
-        }
-
-        private void SetUp()
+        [SetUp]
+        public void SetUp()
         {
             var ioc = new ContainerBuilder();
             ioc.BindAzureReposInMemForTests();
@@ -51,14 +47,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId);
-        }
-
-        private UploadAlgoBinaryData Given_UploadAlgoBinaryData_Model()
-        {
-            var binaryFile = new Mock<IFormFile>();
-            binaryFile.Setup(s => s.OpenReadStream()).Returns(new MemoryStream(blobBytes));
-            var model = new UploadAlgoBinaryData { AlgoId = alogId, Data = binaryFile.Object };
-            return model;
         }
 
         [Test]
@@ -212,6 +200,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         #region Private Methods
+
+        private UploadAlgoBinaryData Given_UploadAlgoBinaryData_Model()
+        {
+            var binaryFile = new Mock<IFormFile>();
+            binaryFile.Setup(s => s.OpenReadStream()).Returns(new MemoryStream(blobBytes));
+            var model = new UploadAlgoBinaryData { AlgoId = alogId, Data = binaryFile.Object };
+            return model;
+        }
 
         private static void When_Invoke_SaveAlgoAsString(AlgoStoreClientDataService service)
         {
