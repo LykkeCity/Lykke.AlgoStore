@@ -31,7 +31,10 @@ namespace Lykke.AlgoStore.Tests.Unit
                             ClientId = Guid.NewGuid().ToString(),
                             AlgoMetaData = new List<AlgoMetaData>
                             {
-                                fixture.Build<AlgoMetaData>().With(data => data.Date, DateTime.MinValue.ToString("yyyy-MM-dd HH:mm:ss")).Create()
+                                fixture.Build<AlgoMetaData>()
+                                .With(data => data.Date, DateTime.MinValue.ToString("yyyy-MM-dd HH:mm:ss"))
+                                .Without(data => data.Status)
+                                .Create()
                             }
                         }
                     }, 
