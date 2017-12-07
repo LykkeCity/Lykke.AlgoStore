@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
+using AzureStorage.Tables;
+using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -52,7 +54,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoRuntimeDataRepository Given_AlgoRuntimeData_Repository()
         {
-            return new AlgoRuntimeDataRepository(GetSettings(), new LogMock());
+            return new AlgoRuntimeDataRepository(AzureTableStorage<AlgoRuntimeDataEntity>.Create(SettingsMock.GetSettings(), AlgoRuntimeDataRepository.TableName, new LogMock()));
         }
 
         private static void When_Invoke_Save(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)

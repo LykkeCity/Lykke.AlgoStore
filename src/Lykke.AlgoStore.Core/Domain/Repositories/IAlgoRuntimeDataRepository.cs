@@ -3,10 +3,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 
 namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
-    public interface IAlgoRuntimeDataRepository
+    public interface IAlgoRuntimeDataRepository : IAlgoRuntimeDataReadOnlyRepository
     {
-        Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string imageId);
-        Task<AlgoClientRuntimeData> GetAlgoRuntimeDataByAlgo(string algoId);
         Task SaveAlgoRuntimeData(AlgoClientRuntimeData data);
         Task<bool> DeleteAlgoRuntimeData(string algoId);
     }

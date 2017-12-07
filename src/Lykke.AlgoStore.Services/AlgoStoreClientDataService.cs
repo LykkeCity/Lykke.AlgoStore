@@ -9,8 +9,6 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
-using Lykke.AlgoStore.DeploymentApiClient.Models;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -18,24 +16,18 @@ namespace Lykke.AlgoStore.Services
     {
         private const string ComponentName = "AlgoStoreClientDataService";
         private readonly IAlgoMetaDataRepository _metaDataRepository;
-        private readonly IAlgoRuntimeDataRepository _runtimeDataRepository;
-        private readonly IAlgoBlobRepository<byte[]> _blobBinaryRepository;
-        private readonly IAlgoBlobRepository<string> _blobStringRepository;
-        private readonly IDeploymentApiReadOnlyClient _externalClient;
+        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
+        private readonly IAlgoBlobRepository _blobRepository;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
-            IAlgoRuntimeDataRepository runtimeDataRepository,
-            IAlgoBlobRepository<byte[]> blobBinaryRepository,
-            IAlgoBlobRepository<string> blobStringRepository,
-            IDeploymentApiReadOnlyClient externalClient,
+            IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
+            IAlgoBlobRepository blobRepository,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
-            _blobBinaryRepository = blobBinaryRepository;
-            _blobStringRepository = blobStringRepository;
-            _externalClient = externalClient;
+            _blobRepository = blobRepository;
             _log = log;
         }
 
@@ -43,7 +35,7 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
-                await _blobBinaryRepository.DeleteBlobAsync(algoId);
+                await _blobRepository.DeleteBlobAsync(algoId);
             }
             catch (Exception ex)
             {
@@ -55,7 +47,7 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
-                await _blobStringRepository.DeleteBlobAsync(algoId);
+                await _blobRepository.DeleteBlobAsync(algoId);
             }
             catch (Exception ex)
             {
@@ -76,7 +68,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {algoId} is not found! ");
                 }
-                await _blobStringRepository.SaveBlobAsync(algoId, data);
+                await _blobRepository.SaveBlobAsync(algoId, data);
 
             }
             catch (Exception ex)
@@ -92,7 +84,7 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 var algo = await _metaDataRepository.GetAlgoMetaData(dataModel.AlgoId);
-                if(algo == null)
+                if (algo == null)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
                 }
@@ -100,7 +92,7 @@ namespace Lykke.AlgoStore.Services
                 using (var stream = new MemoryStream())
                 {
                     await dataModel.Data.CopyToAsync(stream);
-                    await _blobBinaryRepository.SaveBlobAsync(dataModel.AlgoId, stream.ToArray());
+                    await _blobRepository.SaveBlobAsync(dataModel.AlgoId, stream.ToArray());
                 }
             }
             catch (Exception ex)
@@ -140,21 +132,12 @@ namespace Lykke.AlgoStore.Services
                 var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
                 if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
                 {
-                    string strImageId = runtimeData.RuntimeData[0].ImageId;
-                    long imageId;
-                    if (!long.TryParse(strImageId, out imageId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"ImageId is not long {runtimeData.RuntimeData[0].ImageId}");
-
-                    var response = await _externalClient.GetAlgoTestStatus(imageId);
-                    if (response != AlgoRuntimeStatuses.NotFound)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image {runtimeData.RuntimeData[0].ImageId} is still {response.ToString("g")}");
-
-                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(imageId.ToString()))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for {data.ClientAlgoId}");
+                    // runtime data should be deleted when image is deleted with external client. So just throw
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete data. Image {runtimeData.RuntimeData[0].ImageId} is still running");
                 }
 
-                if (await _blobBinaryRepository.BlobExists(data.ClientAlgoId))
-                    await _blobBinaryRepository.DeleteBlobAsync(data.ClientAlgoId);
+                if (await _blobRepository.BlobExists(data.ClientAlgoId))
+                    await _blobRepository.DeleteBlobAsync(data.ClientAlgoId);
 
                 var clientData = new AlgoClientMetaData
                 {
@@ -202,7 +185,7 @@ namespace Lykke.AlgoStore.Services
                 throw HandleException(ex, ComponentName);
             }
         }
-        
+
         public async Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId)
         {
             try

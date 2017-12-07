@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
-    public interface IAlgoBlobRepository<T>
+    public interface IAlgoBlobRepository : IAlgoBlobReadOnlyRepository
     {
-        Task<T> GetBlobAsync(string blobKey);
-        Task SaveBlobAsync(string blobKey, T blobData);
+        Task SaveBlobAsync(string blobKey, string blobString);
+        Task SaveBlobAsync(string blobKey, byte[] blobData);
         Task DeleteBlobAsync(string blobKey);
-        Task<bool> BlobExists(string blobKey);
     }
 }
