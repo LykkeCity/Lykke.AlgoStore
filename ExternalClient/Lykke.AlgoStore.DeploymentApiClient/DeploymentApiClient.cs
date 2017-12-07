@@ -40,10 +40,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         {
             var response = await _externalClient.StartUsingPUTWithHttpMessagesAsync(imageId);
 
-            if (response.Response.StatusCode == HttpStatusCode.OK)
-                return true;
-
-            return false;
+            return response.Response.StatusCode == HttpStatusCode.OK;
         }
 
         public async Task<AlgoRuntimeStatuses> GetAlgoTestStatus(long id)
@@ -72,6 +69,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         }
         private static AlgoRuntimeStatuses MapToStatusEnum(string status)
         {
+            if (string.IsNullOrWhiteSpace(status))
+                return AlgoRuntimeStatuses.NotFound;
+
             switch (status.ToUpper())
             {
                 case "RUNNING":
