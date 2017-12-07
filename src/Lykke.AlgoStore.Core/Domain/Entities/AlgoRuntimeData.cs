@@ -6,5 +6,12 @@
         public string Version { get; set; }
         public TradingAssetData Asset { get; set; }
         public TradingAmountData TradingAmount { get; set; }
+        public long GetImageIdAsNumber()
+        {
+            long imageId = 0;
+            if (long.TryParse(ImageId, out imageId))
+                return imageId;
+            return 0;
+        }
     }
 }
