@@ -9,6 +9,8 @@ using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +31,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepository = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null);
+            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null);
             var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
@@ -40,7 +42,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepository = Given_AlgoBinary_InMemory_Storage_Repository();
-            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null);
+            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null);
 
             When_Invoke_SaveAlgoAsString(service);
             ThenAlgo_StringShouldExist(blobRepository);
@@ -51,7 +53,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, deploymentClient);
             Exception exception;
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -63,7 +67,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null);
+            var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, deploymentClient);
             Exception exception;
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -78,7 +83,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -92,7 +97,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -106,7 +111,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -120,7 +125,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Error_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -134,7 +139,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Error_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
             Exception exception;
             When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -147,7 +152,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientMetaData(clientId);
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null);
             Exception exception;
             When_Invoke_SaveClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -160,7 +165,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientMetaData(clientId);
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null);
             Exception exception;
             When_Invoke_SaveClientMetadata(service, clientId, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -201,9 +206,10 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(
             IAlgoMetaDataRepository repo,
             IAlgoBlobRepository blobRepo,
-            IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository)
+            IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
+            IDeploymentApiReadOnlyClient deploymentClient)
         {
-            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, new LogMock());
+            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, new LogMock());
         }
 
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)
@@ -402,7 +408,16 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var fixture = new Fixture();
             return fixture.Build<AlgoMetaData>().Create();
-        } 
+        }
+
+        private static IDeploymentApiReadOnlyClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IDeploymentApiReadOnlyClient>();
+            result.Setup(repo => repo.GetAlgoTestStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
+
+            return result.Object;
+        }
 
         #endregion
     }
