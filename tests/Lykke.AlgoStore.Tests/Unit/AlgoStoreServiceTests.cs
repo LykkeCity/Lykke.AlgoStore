@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.DeploymentApiClient;
-using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
-using Microsoft.Rest;
 using Moq;
-using Xunit;
+using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoStoreServiceTests
     {
-        [Fact]
+        [Test]
         public void DeployImage_Returns_True()
         {
             var data = Given_DeployImageData();
@@ -36,7 +32,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Response_ShouldNotBe_Empty(response);
         }
 
-        [Fact]
+        [Test]
         public void DeployImage_WithInvalidAlgoMetaDataRepo_Throws_Exception()
         {
             var data = Given_DeployImageData();
@@ -52,7 +48,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
-        [Fact]
+        [Test]
         public void DeployImage_WithPartialyCorrectAlgoMetaDataRepo_Throws_Exception()
         {
             var data = Given_DeployImageData();
@@ -68,7 +64,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
-        [Fact]
+        [Test]
         public void DeployImage_WithInvalidAlgoBlobRepo_Throws_Exception()
         {
             var data = Given_DeployImageData();
@@ -83,6 +79,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var response = When_Invoke_DeployImage(service, data, out exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
+
+        #region Private Methods
 
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
         {
@@ -163,6 +161,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoRuntimeDataRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
         {
             var result = new Mock<IAlgoRuntimeDataRepository>();
@@ -223,6 +222,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
 
             return result.Object;
-        }
+        } 
+
+        #endregion
     }
 }
