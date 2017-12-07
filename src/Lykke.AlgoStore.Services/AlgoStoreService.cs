@@ -76,7 +76,7 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task<bool> StartTestImage(ManageImageData data)
+        public async Task<string> StartTestImage(ManageImageData data)
         {
             try
             {
@@ -114,7 +114,11 @@ namespace Lykke.AlgoStore.Services
                         throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot start image! it is in status {status}");
                 }
 
-                return result;
+                var statusResult = AlgoRuntimeStatuses.Uknown;
+                if (result)
+                    statusResult = AlgoRuntimeStatuses.Started;
+
+                return statusResult.ToUpperText();
             }
             catch (Exception ex)
             {

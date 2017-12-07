@@ -42,7 +42,7 @@ namespace Lykke.AlgoStore.Controllers
 
         [HttpPost("test/start")]
         [SwaggerOperation("DeployBinaryImage")]
-        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> StartTest([FromBody]ManageImageModel model)

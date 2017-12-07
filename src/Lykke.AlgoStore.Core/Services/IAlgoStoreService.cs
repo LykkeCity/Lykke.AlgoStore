@@ -6,6 +6,6 @@ namespace Lykke.AlgoStore.Core.Services
     public interface IAlgoStoreService
     {
         Task<bool> DeployImage(ManageImageData data);
-        Task<bool> StartTestImage(ManageImageData data);
+        Task<string> StartTestImage(ManageImageData data);
     }
 }
