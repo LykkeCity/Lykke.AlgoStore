@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
@@ -11,6 +12,7 @@ using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -97,26 +99,27 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
 
                 var status = await _externalClient.GetAlgoTestStatus(imageId);
-                bool result;
+
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+
+                var statusResult = AlgoRuntimeStatuses.Uknown;
                 switch (status)
                 {
                     case ClientAlgoRuntimeStatuses.NotFound:
-                        if (!await _externalClient.CreateTestAlgo(imageId, algoId))
-                            throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot Create Test for algo {algoId} and image {imageId}");
-                        result = await _externalClient.StartTestAlgo(imageId);
+                        if (await _externalClient.CreateTestAlgo(imageId, algoId) &&
+                            await _externalClient.StartTestAlgo(imageId))
+                            statusResult = AlgoRuntimeStatuses.Started;
                         break;
                     case ClientAlgoRuntimeStatuses.Created:
                     case ClientAlgoRuntimeStatuses.Paused:
                     case ClientAlgoRuntimeStatuses.Stopped:
-                        result = await _externalClient.StartTestAlgo(imageId);
+                        if (await _externalClient.StartTestAlgo(imageId))
+                            statusResult = AlgoRuntimeStatuses.Started;
                         break;
                     default:
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot start image! it is in status {status}");
+                        statusResult = status.ToModel();
+                        break;
                 }
-
-                var statusResult = AlgoRuntimeStatuses.Uknown;
-                if (result)
-                    statusResult = AlgoRuntimeStatuses.Started;
 
                 return statusResult.ToUpperText();
             }
