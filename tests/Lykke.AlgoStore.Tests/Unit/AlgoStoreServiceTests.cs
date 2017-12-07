@@ -18,7 +18,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class AlgoStoreServiceTests
     {
         #region Data Generation
-        private static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StatusesData
+        private static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StartStatusData
         {
             get
             {
@@ -31,6 +31,26 @@ namespace Lykke.AlgoStore.Tests.Unit
 
                     new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Running, AlgoRuntimeStatuses.Started),
 
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Forbidden, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.InternalError, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Success, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Unauthorized, AlgoRuntimeStatuses.Uknown),
+                };
+            }
+        }
+        private static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StopStatusData
+        {
+            get
+            {
+                return new List<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>>
+                {
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Running, AlgoRuntimeStatuses.Stopped),
+
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Stopped, AlgoRuntimeStatuses.Stopped),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Created, AlgoRuntimeStatuses.Deployed),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Paused, AlgoRuntimeStatuses.Paused),
+
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.NotFound, AlgoRuntimeStatuses.Uknown),
                     new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Forbidden, AlgoRuntimeStatuses.Uknown),
                     new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.InternalError, AlgoRuntimeStatuses.Uknown),
                     new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Success, AlgoRuntimeStatuses.Uknown),
@@ -105,7 +125,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
-        [TestCaseSource("StatusesData")]
+        [TestCaseSource("StartStatusData")]
         public void StartTestImage_Returns_CorrectStatus(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
         {
             var data = Given_ManageImageData();
@@ -118,7 +138,23 @@ namespace Lykke.AlgoStore.Tests.Unit
             Exception exception;
             var response = When_Invoke_StartTest(service, data, out exception);
             Then_Exception_ShouldBe_Null(exception);
-            Then_Response_ShouldNotBe_ExpectedStatus(response, statuses.Item2);
+            Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
+        }
+
+        [TestCaseSource("StopStatusData")]
+        public void StopTestImage_Returns_CorrectStatus(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
+        {
+            var data = Given_ManageImageData();
+
+            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock_WithStatus(statuses.Item1);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, repo, runtimeRepo);
+
+            Exception exception;
+            var response = When_Invoke_StopTest(service, data, out exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
         }
 
         #region Private Methods
@@ -200,6 +236,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(client => client.GetAlgoTestStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
             result.Setup(client => client.CreateTestAlgo(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult(true));
             result.Setup(client => client.StartTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
+            result.Setup(client => client.StopTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }
@@ -303,9 +340,24 @@ namespace Lykke.AlgoStore.Tests.Unit
             return string.Empty;
         }
 
-        private static void Then_Response_ShouldNotBe_ExpectedStatus(string response, AlgoRuntimeStatuses expectedStatus)
+        private static void Then_Response_ShouldBe_ExpectedStatus(string response, AlgoRuntimeStatuses expectedStatus)
         {
             Assert.AreEqual(response, expectedStatus.ToUpperText());
+        }
+
+        private static string When_Invoke_StopTest(AlgoStoreService service, ManageImageData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.StopTestImage(data).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            return string.Empty;
         }
 
         #endregion

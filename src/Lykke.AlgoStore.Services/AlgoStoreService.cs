@@ -128,5 +128,49 @@ namespace Lykke.AlgoStore.Services
                 throw HandleException(ex, ComponentName);
             }
         }
+
+        public async Task<string> StopTestImage(ManageImageData data)
+        {
+            try
+            {
+                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                    throw exception;
+
+                string algoId = data.AlgoId;
+
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
+                if (runtimeData == null || runtimeData.RuntimeData.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"No runtime data for algo id {algoId}");
+
+                var imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber();
+                if (imageId < 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
+
+                var status = await _externalClient.GetAlgoTestStatus(imageId);
+
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+
+                var statusResult = AlgoRuntimeStatuses.Uknown;
+                switch (status)
+                {
+                    case ClientAlgoRuntimeStatuses.Running:
+                        if (await _externalClient.StopTestAlgo(imageId))
+                            statusResult = AlgoRuntimeStatuses.Stopped;
+                        break;
+                    default:
+                        statusResult = status.ToModel();
+                        break;
+                }
+
+                return statusResult.ToUpperText();
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }
+        }
     }
 }
