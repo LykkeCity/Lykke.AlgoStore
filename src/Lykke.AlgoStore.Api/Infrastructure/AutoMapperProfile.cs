@@ -17,7 +17,7 @@ namespace Lykke.AlgoStore.Infrastructure
                 .ForMember(dest => dest.TemplateId, opt => opt.Ignore());
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
 
-            CreateMap<DeployImageData, DeployImageModel>().ReverseMap();
+            CreateMap<ManageImageData, ManageImageModel>().ReverseMap();
         }
     }
 }

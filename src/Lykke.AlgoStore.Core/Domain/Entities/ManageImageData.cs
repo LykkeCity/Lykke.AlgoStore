@@ -2,7 +2,7 @@
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {
-    public class DeployImageData : BaseValidatableData
+    public class ManageImageData : BaseValidatableData
     {
         [Required]
         public string AlgoId { get; set; }

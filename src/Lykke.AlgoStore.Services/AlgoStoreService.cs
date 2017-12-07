@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -34,7 +38,7 @@ namespace Lykke.AlgoStore.Services
             _algoRuntimeDataRepository = algoRuntimeDataRepository;
         }
 
-        public async Task<bool> DeployImage(DeployImageData data)
+        public async Task<bool> DeployImage(ManageImageData data)
         {
             try
             {
@@ -67,6 +71,57 @@ namespace Lykke.AlgoStore.Services
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
 
                 return true;
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }
+        }
+
+        public async Task<string> StartTestImage(ManageImageData data)
+        {
+            try
+            {
+                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                    throw exception;
+
+                string algoId = data.AlgoId;
+
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
+                if (runtimeData == null || runtimeData.RuntimeData.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"No runtime data for algo id {algoId}");
+
+                var imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber();
+                if (imageId < 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
+
+                var status = await _externalClient.GetAlgoTestStatus(imageId);
+
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+
+                var statusResult = AlgoRuntimeStatuses.Uknown;
+                switch (status)
+                {
+                    case ClientAlgoRuntimeStatuses.NotFound:
+                        if (await _externalClient.CreateTestAlgo(imageId, algoId) &&
+                            await _externalClient.StartTestAlgo(imageId))
+                            statusResult = AlgoRuntimeStatuses.Started;
+                        break;
+                    case ClientAlgoRuntimeStatuses.Created:
+                    case ClientAlgoRuntimeStatuses.Paused:
+                    case ClientAlgoRuntimeStatuses.Stopped:
+                        if (await _externalClient.StartTestAlgo(imageId))
+                            statusResult = AlgoRuntimeStatuses.Started;
+                        break;
+                    default:
+                        statusResult = status.ToModel();
+                        break;
+                }
+
+                return statusResult.ToUpperText();
             }
             catch (Exception ex)
             {

@@ -30,12 +30,27 @@ namespace Lykke.AlgoStore.Controllers
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeployBinaryImage([FromBody]DeployImageModel model)
+        public async Task<IActionResult> DeployBinaryImage([FromBody]ManageImageModel model)
         {
-            var data = Mapper.Map<DeployImageData>(model);
+            var data = Mapper.Map<ManageImageData>(model);
             data.ClientId = User.GetClientId();
 
             var result = await _service.DeployImage(data);
+
+            return Ok(result);
+        }
+
+        [HttpPost("test/start")]
+        [SwaggerOperation("DeployBinaryImage")]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> StartTest([FromBody]ManageImageModel model)
+        {
+            var data = Mapper.Map<ManageImageData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = await _service.StartTestImage(data);
 
             return Ok(result);
         }
