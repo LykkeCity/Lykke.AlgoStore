@@ -108,7 +108,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_Exception_ShouldBe_Null(Exception exception) => Assert.Null(exception);
 
-        private static bool When_Invoke_DeployImage(AlgoStoreService service, DeployImageData data, out Exception exception)
+        private static bool When_Invoke_DeployImage(AlgoStoreService service, ManageImageData data, out Exception exception)
         {
             exception = null;
             try
@@ -132,11 +132,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             return new AlgoStoreService(deploymentApiClient, new LogMock(), blobRepo, repo, runtimeDataRepository);
         }
 
-        private static DeployImageData Given_DeployImageData()
+        private static ManageImageData Given_DeployImageData()
         {
             var fixture = new Fixture();
 
-            return fixture.Build<DeployImageData>().Create();
+            return fixture.Build<ManageImageData>().Create();
         }
 
         private static IDeploymentApiClient Given_Correct_DeploymentApiClientMock()

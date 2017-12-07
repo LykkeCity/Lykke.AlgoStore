@@ -36,7 +36,7 @@ namespace Lykke.AlgoStore.Services
             _algoRuntimeDataRepository = algoRuntimeDataRepository;
         }
 
-        public async Task<bool> DeployImage(DeployImageData data)
+        public async Task<bool> DeployImage(ManageImageData data)
         {
             try
             {
@@ -76,12 +76,14 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task<bool> StartTestImage(string algoId)
+        public async Task<bool> StartTestImage(ManageImageData data)
         {
             try
             {
-                if (!algoId.ValidateRequiredString("algoId", out AlgoStoreAggregateException exception))
+                if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
+
+                string algoId = data.AlgoId;
 
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaData(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
