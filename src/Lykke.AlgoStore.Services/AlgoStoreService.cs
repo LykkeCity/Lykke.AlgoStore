@@ -100,14 +100,14 @@ namespace Lykke.AlgoStore.Services
                 bool result;
                 switch (status)
                 {
-                    case AlgoRuntimeStatuses.NotFound:
+                    case ClientAlgoRuntimeStatuses.NotFound:
                         if (!await _externalClient.CreateTestAlgo(imageId, algoId))
                             throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot Create Test for algo {algoId} and image {imageId}");
                         result = await _externalClient.StartTestAlgo(imageId);
                         break;
-                    case AlgoRuntimeStatuses.Created:
-                    case AlgoRuntimeStatuses.Paused:
-                    case AlgoRuntimeStatuses.Stopped:
+                    case ClientAlgoRuntimeStatuses.Created:
+                    case ClientAlgoRuntimeStatuses.Paused:
+                    case ClientAlgoRuntimeStatuses.Stopped:
                         result = await _externalClient.StartTestAlgo(imageId);
                         break;
                     default:

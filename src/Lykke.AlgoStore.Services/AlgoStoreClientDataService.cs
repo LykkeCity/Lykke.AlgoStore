@@ -9,6 +9,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -18,16 +20,19 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
+        private readonly IDeploymentApiReadOnlyClient _deploymentClient;
         private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
+            IDeploymentApiReadOnlyClient deploymentClient,
             ILog log) : base(log)
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
+            _deploymentClient = deploymentClient;
             _log = log;
         }
 
@@ -108,7 +113,29 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
 
-                return await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
+                var algos = await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
+
+                if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
+                    return algos;
+
+                foreach (var metadata in algos.AlgoMetaData)
+                {
+                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(metadata.ClientAlgoId);
+                    long imageId;
+                    if (runtimeData == null || 
+                        runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
+                        (imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber()) < 1)
+                    {
+                        metadata.Status = AlgoRuntimeStatuses.Uknown.ToUpperText();
+                        // TODO Skip?!?
+                        continue;
+                    }
+
+                    var status = await _deploymentClient.GetAlgoTestStatus(imageId);
+                    metadata.Status = status.ToModel().ToUpperText();
+                }
+
+                return algos;
             }
             catch (Exception ex)
             {

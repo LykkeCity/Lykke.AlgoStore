@@ -12,6 +12,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         public string Description { get; set; }
         public string TemplateId { get; set; }
         public string Date { get; set; }
+        public string Status { get; set; }
 
         public int CompareTo(AlgoMetaData other)
         {
