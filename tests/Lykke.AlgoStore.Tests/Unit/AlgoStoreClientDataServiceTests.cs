@@ -9,6 +9,7 @@ using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services;
@@ -25,6 +26,27 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static string alogId = "AlgoId123";
         private static string blobAlgoString = "testString";
         private static byte[] blobBytes = Encoding.Unicode.GetBytes(blobKey);
+
+        #region Data Generation
+        private static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StatusesData
+        {
+            get
+            {
+                return new List<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>>
+                {
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Created, AlgoRuntimeStatuses.Deployed),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Forbidden, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.InternalError, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.NotFound, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Paused, AlgoRuntimeStatuses.Paused),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Running, AlgoRuntimeStatuses.Started),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Stopped, AlgoRuntimeStatuses.Stopped),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Success, AlgoRuntimeStatuses.Uknown),
+                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Unauthorized, AlgoRuntimeStatuses.Uknown),
+                };
+            }
+        }
+        #endregion
 
         [Test]
         public void SaveAlgoAsBinary_Test()
@@ -48,8 +70,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             ThenAlgo_StringShouldExist(blobRepository);
         }
 
+        [TestCaseSource("StatusesData")]
+        public void GetClientMetadata_Returns_Data(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
+        {
+            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var deploymentClient = Given_Correct_DeploymentApiClientMock(statuses.Item1);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, deploymentClient);
+            Exception exception;
+            var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(data);
+            Then_Data_ShouldBe_WithCorrectStatus(data, statuses.Item2);
+        }
         [Test]
-        public void GetClientMetadata_Returns_Data()
+        public void GetClientMetadata_Returns_DataWithStatus()
         {
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
@@ -256,6 +292,10 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             Assert.NotNull(data);
             Assert.IsNotEmpty(data.AlgoMetaData);
+        }
+        private static void Then_Data_ShouldBe_WithCorrectStatus(AlgoClientMetaData data, AlgoRuntimeStatuses status)
+        {
+            Assert.AreEqual(data.AlgoMetaData[0].Status, status.ToUpperText());
         }
 
         private static void Then_Data_ShouldBe_Empty(AlgoClientMetaData data)
