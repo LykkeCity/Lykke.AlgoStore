@@ -5,8 +5,6 @@ using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Tests.Infrastructure;
-using Lykke.SettingsReader;
-using Moq;
 using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -39,7 +37,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_AlgoMetaData_Repository();
 
             if (_entitySaved)
+            {
                 repo.DeleteAlgoMetaData(_entity).Wait();
+                _entitySaved = false;
+            }
 
             _entity = null;
         }

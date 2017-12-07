@@ -36,7 +36,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_AlgoRuntimeData_Repository();
 
             if (_entitySaved)
+            {
                 repo.DeleteAlgoRuntimeData(_entity.RuntimeData[0].ImageId).Wait();
+                _entitySaved = false;
+            }
 
             _entity = null;
         }
