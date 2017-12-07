@@ -1,6 +1,6 @@
 ﻿namespace Lykke.AlgoStore.DeploymentApiClient.Models
 {
-    public enum AlgoRuntimeStatuses
+    public enum ClientAlgoRuntimeStatuses
     {
         Success = 0,
         InternalError,

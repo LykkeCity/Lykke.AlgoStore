@@ -26,7 +26,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             }
         }
 
-        public async Task<AlgoRuntimeStatuses> GetAlgoTestStatus(long id)
+        public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestStatus(long id)
         {
             HttpOperationResponse<string> response = await _externalClient.GetTestAlgoStatusUsingGETWithHttpMessagesAsync(id);
 
@@ -36,34 +36,34 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             return MapToStatusEnum(response.Body);
         }
 
-        private static AlgoRuntimeStatuses MapToStatusEnum(HttpStatusCode statusCode)
+        private static ClientAlgoRuntimeStatuses MapToStatusEnum(HttpStatusCode statusCode)
         {
             switch (statusCode)
             {
                 case HttpStatusCode.NotFound:
-                    return AlgoRuntimeStatuses.NotFound;
+                    return ClientAlgoRuntimeStatuses.NotFound;
                 case HttpStatusCode.Forbidden:
-                    return AlgoRuntimeStatuses.Forbidden;
+                    return ClientAlgoRuntimeStatuses.Forbidden;
                 case HttpStatusCode.Unauthorized:
-                    return AlgoRuntimeStatuses.Unauthorized;
+                    return ClientAlgoRuntimeStatuses.Unauthorized;
                 default:
-                    return AlgoRuntimeStatuses.InternalError;
+                    return ClientAlgoRuntimeStatuses.InternalError;
             }
         }
-        private static AlgoRuntimeStatuses MapToStatusEnum(string status)
+        private static ClientAlgoRuntimeStatuses MapToStatusEnum(string status)
         {
             switch (status.ToUpper())
             {
                 case "RUNNING":
-                    return AlgoRuntimeStatuses.Running;
+                    return ClientAlgoRuntimeStatuses.Running;
                 case "STOPPED":
-                    return AlgoRuntimeStatuses.Stopped;
+                    return ClientAlgoRuntimeStatuses.Stopped;
                 case "PAUSED":
-                    return AlgoRuntimeStatuses.Paused;
+                    return ClientAlgoRuntimeStatuses.Paused;
                 case "CREATED":
-                    return AlgoRuntimeStatuses.Created;
+                    return ClientAlgoRuntimeStatuses.Created;
                 default:
-                    return AlgoRuntimeStatuses.Success;
+                    return ClientAlgoRuntimeStatuses.Success;
             }
         }
     }
