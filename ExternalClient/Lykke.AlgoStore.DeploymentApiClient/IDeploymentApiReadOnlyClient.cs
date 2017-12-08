@@ -9,5 +9,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         Task<bool> DeleteAlgo(long imageId);
         Task<bool> StopTestAlgo(long imageId);
         Task<bool> DeleteTestAlgo(long imageId);
+        Task<string> GetTestAlgoLog(long imageId);
     }
 }

@@ -8,6 +8,5 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
         Task<bool> CreateTestAlgo(long imageId, string algoId);
         Task<bool> StartTestAlgo(long imageId);
-        Task<string> GetTestAlgoLog(long imageId);
     }
 }
