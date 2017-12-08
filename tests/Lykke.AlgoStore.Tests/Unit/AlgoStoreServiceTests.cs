@@ -157,6 +157,23 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
         }
 
+        [Test]
+        public void GetLog_Returns_Ok()
+        {
+            const string expectedLog = "TestLog";
+
+            var data = Given_ManageImageData();
+
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock_WithLog(expectedLog);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, null, runtimeRepo);
+
+            Exception exception;
+            var response = When_Invoke_GetLog(service, data, out exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Response_ShouldBe_ExpectedLog(response, expectedLog);
+        }
+
         #region Private Methods
 
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
@@ -198,6 +215,21 @@ namespace Lykke.AlgoStore.Tests.Unit
             return false;
         }
 
+        private static string When_Invoke_GetLog(AlgoStoreService service, ManageImageData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetTestLog(data).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            return string.Empty;
+        }
+
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
             IDeploymentApiClient deploymentApiClient,
             IAlgoBlobReadOnlyRepository blobRepo,
@@ -237,6 +269,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(client => client.CreateTestAlgo(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult(true));
             result.Setup(client => client.StartTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
             result.Setup(client => client.StopTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
+
+            return result.Object;
+        }
+        private static IDeploymentApiClient Given_Correct_DeploymentApiClientMock_WithLog(string log)
+        {
+            var result = new Mock<IDeploymentApiClient>();
+
+            result.Setup(client => client.GetTestAlgoLog(It.IsAny<long>())).Returns(Task.FromResult(log));
 
             return result.Object;
         }
@@ -358,6 +398,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
 
             return string.Empty;
+        }
+
+        private static void Then_Response_ShouldBe_ExpectedLog(string response, string expectedLog)
+        {
+            Assert.AreEqual(response, expectedLog);
         }
 
         #endregion

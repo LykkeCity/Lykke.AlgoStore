@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Core.Services
 {
