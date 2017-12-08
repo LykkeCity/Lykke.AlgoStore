@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
@@ -10,6 +11,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
@@ -122,7 +124,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(metadata.ClientAlgoId);
                     long imageId;
-                    if (runtimeData == null || 
+                    if (runtimeData == null ||
                         runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
                         (imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber()) < 1)
                     {
@@ -159,19 +161,15 @@ namespace Lykke.AlgoStore.Services
                 var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId);
                 if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
                 {
-                    // runtime data should be deleted when image is deleted with external client. So just throw
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete data. Image {runtimeData.RuntimeData[0].ImageId} is still running");
+                    var imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber();
+                    if (imageId < 1)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {data.ClientAlgoId}");
+
+                    if (!await DeleteImage(imageId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {data.ClientAlgoId} imageId {imageId}");
                 }
 
-                if (await _blobRepository.BlobExists(data.ClientAlgoId))
-                    await _blobRepository.DeleteBlobAsync(data.ClientAlgoId);
-
-                var clientData = new AlgoClientMetaData
-                {
-                    ClientId = clientId,
-                    AlgoMetaData = new List<AlgoMetaData> { data }
-                };
-                await _metaDataRepository.DeleteAlgoMetaData(clientData);
+                await DeleteMetadata(clientId, data);
             }
             catch (Exception ex)
             {
@@ -223,6 +221,42 @@ namespace Lykke.AlgoStore.Services
             {
                 throw HandleException(ex, ComponentName);
             }
+        }
+
+        private async Task DeleteMetadata(string clientId, AlgoMetaData data)
+        {
+            if (await _blobRepository.BlobExists(data.ClientAlgoId))
+                await _blobRepository.DeleteBlobAsync(data.ClientAlgoId);
+
+            var clientData = new AlgoClientMetaData
+            {
+                ClientId = clientId,
+                AlgoMetaData = new List<AlgoMetaData> { data }
+            };
+            await _metaDataRepository.DeleteAlgoMetaData(clientData);
+        }
+
+        private async Task<bool> DeleteImage(long imageId)
+        {
+            var status = await _deploymentClient.GetAlgoTestStatus(imageId);
+
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+
+            bool result = true;
+
+            if (status == ClientAlgoRuntimeStatuses.Paused ||
+                status == ClientAlgoRuntimeStatuses.Running)
+                result = await _deploymentClient.StopTestAlgo(imageId);
+
+            if (result &&
+                (status == ClientAlgoRuntimeStatuses.Stopped ||
+                status == ClientAlgoRuntimeStatuses.Created))
+                result = await _deploymentClient.DeleteTestAlgo(imageId);
+
+            if (result)
+                result = await _deploymentClient.DeleteAlgo(imageId);
+
+            return result;
         }
     }
 }

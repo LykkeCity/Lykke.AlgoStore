@@ -25,6 +25,12 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 return response.Body.Id.ToString();
             }
         }
+        public async Task<bool> DeleteAlgo(long imageId)
+        {
+            var response = await _externalClient.RemoveALgoUsingDELETEWithHttpMessagesAsync(imageId);
+
+            return response.Response.StatusCode == HttpStatusCode.OK;
+        }
 
         public async Task<bool> CreateTestAlgo(long imageId, string algoId)
         {
@@ -45,6 +51,12 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         public async Task<bool> StopTestAlgo(long imageId)
         {
             var response = await _externalClient.StopTestAlgoUsingPUTWithHttpMessagesAsync(imageId);
+
+            return response.Response.StatusCode == HttpStatusCode.OK;
+        }
+        public async Task<bool> DeleteTestAlgo(long imageId)
+        {
+            var response = await _externalClient.DeleteTestAlgoUsingDELETEWithHttpMessagesAsync(imageId);
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
