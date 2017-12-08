@@ -223,25 +223,6 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task<string> GetTestLog(string clientAlgoId)
-        {
-            try
-            {
-                long imageId;
-                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(clientAlgoId);
-                if ((runtimeData == null) ||
-                    runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
-                    (imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber()) < 1)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {clientAlgoId}");
-
-                return await _deploymentClient.GetTestAlgoLog(imageId);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
         private async Task DeleteMetadata(string clientId, AlgoMetaData data)
         {
             if (await _blobRepository.BlobExists(data.ClientAlgoId))

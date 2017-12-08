@@ -11,6 +11,5 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId);
         Task SaveAlgoAsString(string key, string data);
         Task SaveAlgoAsBinary(UploadAlgoBinaryData dataModel);
-        Task<string> GetTestLog(string clientAlgoId);
     }
 }
