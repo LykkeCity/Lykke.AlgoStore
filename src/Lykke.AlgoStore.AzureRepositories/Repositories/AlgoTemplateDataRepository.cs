@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
 using AzureStorage.Tables;
@@ -27,7 +28,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entities = await _table.GetDataAsync(PartitionKey, entity => entity.LanguageId == languageId && entity.IsActive);
 
-            return entities.ToModel();
+            return entities.ToList().ToModel();
         }
     }
 }

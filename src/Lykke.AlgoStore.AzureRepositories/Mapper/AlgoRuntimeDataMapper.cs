@@ -7,11 +7,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
     public static class AlgoRuntimeDataMapper
     {
-        public static AlgoClientRuntimeData ToModel(this IEnumerable<AlgoRuntimeDataEntity> entities)
+        public static AlgoClientRuntimeData ToModel(this ICollection<AlgoRuntimeDataEntity> entities)
         {
             var result = new AlgoClientRuntimeData { RuntimeData = new List<AlgoRuntimeData>() };
 
-            if ((entities == null) || entities.IsNullOrEmptyEnumerable())
+            if ((entities == null) || entities.IsNullOrEmptyCollection())
                 return result;
 
             foreach (var algoEntity in entities)

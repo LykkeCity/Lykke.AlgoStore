@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Utils;
@@ -13,8 +14,8 @@ namespace Lykke.AlgoStore.Core.Validation
         {
             exception = null;
 
-            var validationResult = data.Validate(null);
-            if (validationResult.IsNullOrEmptyEnumerable())
+            var validationResult = data.Validate(null).ToList();
+            if (validationResult.IsNullOrEmptyCollection())
                 return true;
 
             exception = new AlgoStoreAggregateException(AlgoStoreErrorCodes.ValidationError);

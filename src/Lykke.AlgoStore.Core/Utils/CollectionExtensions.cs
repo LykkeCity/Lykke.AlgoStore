@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 
 namespace Lykke.AlgoStore.Core.Utils
 {
     public static class CollectionExtensions
     {
-        public static bool IsNullOrEmptyCollection(this ICollection collection)
+        public static bool IsNullOrEmptyCollection<T>(this ICollection<T> collection)
         {
             if (collection == null)
                 return true;
@@ -13,22 +13,6 @@ namespace Lykke.AlgoStore.Core.Utils
                 return true;
 
             return false;
-        }
-
-        public static bool IsNullOrEmptyEnumerable(this IEnumerable enumerable)
-        {
-            if (enumerable == null)
-                return true;
-
-            var enumerator = enumerable.GetEnumerator();
-            enumerator.Reset();
-            if (enumerator.MoveNext())
-            {
-                enumerator.Reset();
-                return false;
-            }
-
-            return true;
         }
     }
 }

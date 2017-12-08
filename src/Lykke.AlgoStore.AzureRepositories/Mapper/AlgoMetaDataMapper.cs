@@ -33,11 +33,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             return result;
         }
-        public static AlgoClientMetaData ToModel(this IEnumerable<AlgoMetaDataEntity> entities)
+        public static AlgoClientMetaData ToModel(this ICollection<AlgoMetaDataEntity> entities)
         {
             var result = new AlgoClientMetaData { AlgoMetaData = new List<AlgoMetaData>() };
 
-            if ((entities == null) || entities.IsNullOrEmptyEnumerable())
+            if ((entities == null) || entities.IsNullOrEmptyCollection())
                 return result;
 
             foreach (var algoEntity in entities)

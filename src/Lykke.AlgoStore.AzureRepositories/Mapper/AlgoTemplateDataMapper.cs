@@ -7,11 +7,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
     public static class AlgoTemplateDataMapper
     {
-        public static List<AlgoTemplateData> ToModel(this IEnumerable<AlgoTemplateDataEntity> entities)
+        public static List<AlgoTemplateData> ToModel(this ICollection<AlgoTemplateDataEntity> entities)
         {
             var result = new List<AlgoTemplateData>();
 
-            if (entities.IsNullOrEmptyEnumerable())
+            if (entities.IsNullOrEmptyCollection())
                 return result;
 
             foreach (var entity in entities)

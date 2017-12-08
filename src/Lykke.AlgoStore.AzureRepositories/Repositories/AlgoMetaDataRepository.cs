@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
@@ -25,7 +26,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entities = await _table.GetDataAsync(PartitionKey, data => data.ClientId == clientId);
 
-            var result = entities.ToModel();
+            var result = entities.ToList().ToModel();
 
             if (!result.AlgoMetaData.IsNullOrEmptyCollection())
             {
