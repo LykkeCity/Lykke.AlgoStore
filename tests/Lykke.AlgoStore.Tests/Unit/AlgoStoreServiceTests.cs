@@ -71,8 +71,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_DeployImage(service, data, out exception);
+            var response = When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldNotBe_Empty(response);
         }
@@ -88,8 +87,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_DeployImage(service, data, out exception);
+            When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -104,8 +102,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_DeployImage(service, data, out exception);
+            When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -120,8 +117,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, blobRepo, repo, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_DeployImage(service, data, out exception);
+            When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -135,8 +131,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, repo, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_StartTest(service, data, out exception);
+            var response = When_Invoke_StartTest(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
         }
@@ -151,8 +146,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, repo, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_StopTest(service, data, out exception);
+            var response = When_Invoke_StopTest(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
         }
@@ -168,8 +162,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, null, runtimeRepo);
 
-            Exception exception;
-            var response = When_Invoke_GetLog(service, data, out exception);
+            var response = When_Invoke_GetLog(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldBe_ExpectedLog(response, expectedLog);
         }
@@ -179,15 +172,15 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
         {
             var aggr = exception as AggregateException;
-            Assert.NotNull(aggr?.InnerExceptions[0]);
+            Assert.NotNull(aggr);
+            Assert.NotNull(aggr.InnerExceptions[0]);
 
-            var serviceException = aggr?.InnerExceptions[0] as AlgoStoreException;
+            var serviceException = aggr.InnerExceptions[0] as AlgoStoreException;
             Assert.NotNull(serviceException);
         }
 
         private static IAlgoMetaDataReadOnlyRepository Given_Error_AlgoMetaDataRepositoryMock()
         {
-            var fixture = new Fixture();
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
             result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
@@ -347,7 +340,6 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static IAlgoMetaDataReadOnlyRepository Given_PartiallyCorrect_AlgoMetaDataRepositoryMock()
         {
-            var fixture = new Fixture();
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
             result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));

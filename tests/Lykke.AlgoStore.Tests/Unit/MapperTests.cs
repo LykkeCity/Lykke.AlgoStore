@@ -24,7 +24,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 var numberOfElements = 10;
                 var fixture = new Fixture();
 
-                var mock = Enumerable.Repeat(new object[1]
+                var mock = Enumerable.Repeat(new object[]
                     {
                         new AlgoClientMetaData
                         {
@@ -37,7 +37,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                                 .Create()
                             }
                         }
-                    }, 
+                    },
                     numberOfElements
                 ).ToList();
 
@@ -51,7 +51,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 var numberOfElements = 10;
                 var fixture = new Fixture();
-                var mock = Enumerable.Repeat(new object[1] { fixture.Build<AlgoClientRuntimeData>().Create() }, numberOfElements).ToList();
+                var mock = Enumerable.Repeat(new object[] { fixture.Build<AlgoClientRuntimeData>().Create() }, numberOfElements).ToList();
                 return mock;
             }
         }
@@ -64,7 +64,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             int numberOfElements = 10;
             var fixture = new Fixture();
-            var mock = Enumerable.Repeat(new object[1] { CreateData<T>(fixture) }, numberOfElements).ToList();
+            var mock = Enumerable.Repeat(new object[] { CreateData<T>(fixture) }, numberOfElements).ToList();
             return mock;
         }
 
@@ -178,7 +178,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             string serializedSecond = JsonConvert.SerializeObject(second);
 
             Assert.AreEqual(serializedFirst, serializedSecond);
-        } 
+        }
 
         #endregion
     }

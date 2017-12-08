@@ -1,55 +1,52 @@
-﻿using Autofac;
-using Common.Log;
-using Lykke.AlgoStore.Core.Domain.Repositories;
-using System;
+﻿using System;
 using System.Linq;
 using System.Text;
 using AzureStorage.Blob;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
-using Lykke.AlgoStore.Tests.Infrastructure;
+using Lykke.AlgoStore.Core.Domain.Repositories;
 using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoBlobRepositoryTests
     {
-        private static string blobKey = "TestKey";
-        private static byte[] blobBytes = Encoding.Unicode.GetBytes(blobKey);
+        private static readonly string BlobKey = "TestKey";
+        private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
 
         [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void Blob_Large_Binary_Save_Test()
         {
             var repo = Given_Algo_RealBlob_Starage_Repository();
             var largeByteArray = Give_Large_Byte_Array();
-            When_Invoke_Save_BinaryFile(repo, blobKey, largeByteArray);
-            Then_BinaryFile_ShouldBe(repo, blobKey, largeByteArray);
-            Then_DeleteBinary(repo, blobKey);
+            When_Invoke_Save_BinaryFile(repo, BlobKey, largeByteArray);
+            Then_BinaryFile_ShouldBe(repo, BlobKey, largeByteArray);
+            Then_DeleteBinary(repo, BlobKey);
         }
 
         [Test]
         public void BlobBinary_Save_Test()
         {
             var repo = Given_AlgoBinary_InMemory_Storage_Repository();
-            When_Invoke_Save_BinaryFile(repo, blobKey, blobBytes);
-            Then_BinaryFile_ShouldBe(repo, blobKey, blobBytes);
-            And_BinaryFileToString_ShouldBe(repo, blobKey);
+            When_Invoke_Save_BinaryFile(repo, BlobKey, BlobBytes);
+            Then_BinaryFile_ShouldBe(repo, BlobKey, BlobBytes);
+            And_BinaryFileToString_ShouldBe(repo, BlobKey);
         }
 
         [Test]
         public void BlobBinary_Exists_Test()
         {
             var repo = Given_AlgoBinary_InMemory_Storage_Repository();
-            When_Invoke_Save_BinaryFile(repo, blobKey, blobBytes);
-            Then_BinaryFile_ShouldBe(repo, blobKey, blobBytes);
+            When_Invoke_Save_BinaryFile(repo, BlobKey, BlobBytes);
+            Then_BinaryFile_ShouldBe(repo, BlobKey, BlobBytes);
         }
 
         [Test]
         public void BlobBinary_Delete_Test()
         {
             var repo = Given_AlgoBinary_InMemory_Storage_Repository();
-            When_Invoke_Save_BinaryFile(repo, blobKey, blobBytes);
-            And_TryDelete_BinaryFile(repo, blobKey);
-            Then_BinaryFile_ShouldNotExist(repo, blobKey);
+            When_Invoke_Save_BinaryFile(repo, BlobKey, BlobBytes);
+            And_TryDelete_BinaryFile(repo, BlobKey);
+            Then_BinaryFile_ShouldNotExist(repo, BlobKey);
         }
 
         #region Private Methods
@@ -98,12 +95,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var saved = repository.GetBlobAsync(key).Result;
             Assert.True(saved.SequenceEqual(bytes));
-        }
-
-        private static void Then_BinaryFile_ShouldExist(IAlgoBlobRepository repository, string key)
-        {
-            var saved = repository.BlobExists(key).Result;
-            Assert.True(saved);
         }
 
         private static void And_BinaryFileToString_ShouldBe(IAlgoBlobRepository repository, string key)
