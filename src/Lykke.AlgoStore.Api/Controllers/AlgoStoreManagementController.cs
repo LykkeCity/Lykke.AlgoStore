@@ -69,5 +69,20 @@ namespace Lykke.AlgoStore.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("test/log")]
+        [SwaggerOperation("GetTestLog")]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetTestLog([FromBody]ManageImageModel model)
+        {
+            var data = Mapper.Map<ManageImageData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = await _service.GetTestLog(data);
+
+            return Ok(result);
+        }
     }
 }
