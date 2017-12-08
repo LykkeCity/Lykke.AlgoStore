@@ -24,7 +24,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entity = await _table.GetDataAsync(PartitionKey, imageId);
 
-            return new AlgoRuntimeDataEntity[1] { entity }.ToModel();
+            return new[] { entity }.ToModel();
         }
         public async Task<AlgoClientRuntimeData> GetAlgoRuntimeDataByAlgo(string algoId)
         {

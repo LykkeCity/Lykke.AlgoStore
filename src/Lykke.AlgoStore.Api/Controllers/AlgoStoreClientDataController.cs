@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Lykke.AlgoStore.Controllers
+namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
     [Route("api/v1/clientData")]

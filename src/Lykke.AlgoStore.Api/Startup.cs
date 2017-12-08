@@ -5,9 +5,8 @@ using Autofac.Extensions.DependencyInjection;
 using AutoMapper;
 using Common.Log;
 using Lykke.AlgoStore.Api.Infrastructure;
+using Lykke.AlgoStore.Api.Infrastructure.Authentication;
 using Lykke.AlgoStore.Core.Settings;
-using Lykke.AlgoStore.Infrastructure;
-using Lykke.AlgoStore.Infrastructure.Authentication;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.SettingsReader;
@@ -17,7 +16,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lykke.Service.LykkeService
+namespace Lykke.AlgoStore.Api
 {
     public class Startup
     {

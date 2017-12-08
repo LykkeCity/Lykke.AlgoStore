@@ -23,7 +23,6 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
-        private readonly ILog _log;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
@@ -35,7 +34,6 @@ namespace Lykke.AlgoStore.Services
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
             _deploymentClient = deploymentClient;
-            _log = log;
         }
 
         public async Task DeleteAlgoBlobBinaryAsync(string algoId)
@@ -68,7 +66,7 @@ namespace Lykke.AlgoStore.Services
             {
                 if (String.IsNullOrWhiteSpace(algoId) || String.IsNullOrWhiteSpace(data))
                 {
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Specified algo id and/or algo string are empty! ");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Specified algo id and/or algo string are empty! ");
                 }
                 var algo = await _metaDataRepository.GetAlgoMetaData(algoId);
                 if (algo == null)

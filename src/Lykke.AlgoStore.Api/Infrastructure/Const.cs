@@ -1,4 +1,4 @@
-﻿namespace Lykke.AlgoStore.Infrastructure
+﻿namespace Lykke.AlgoStore.Api.Infrastructure
 {
     internal static class Const
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Lykke.AlgoStore.Api.Infrastructure.Context
+namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
 {
     public static class HttpRequestExtensions
     {

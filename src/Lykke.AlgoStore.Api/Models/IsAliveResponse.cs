@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lykke.AlgoStore.Models
+namespace Lykke.AlgoStore.Api.Models
 {
     public class IsAliveResponse
     {

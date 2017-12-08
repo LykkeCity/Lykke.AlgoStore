@@ -16,7 +16,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
             if (validationContext != null)
                 return results;
 
-            bool isValid = Validator.TryValidateObject(
+            Validator.TryValidateObject(
                 this,
                 new ValidationContext(this, null, null),
                 results,

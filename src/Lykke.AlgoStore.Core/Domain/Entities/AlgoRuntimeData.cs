@@ -8,8 +8,7 @@
         public TradingAmountData TradingAmount { get; set; }
         public long GetImageIdAsNumber()
         {
-            long imageId = 0;
-            if (long.TryParse(ImageId, out imageId))
+            if (long.TryParse(ImageId, out var imageId))
                 return imageId;
             return 0;
         }

@@ -2,12 +2,11 @@
 using Common.Log;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.Logs;
-using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.SettingsReader;
 using Lykke.SlackNotification.AzureQueue;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lykke.AlgoStore.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure
 {
     internal static class LogManager
     {

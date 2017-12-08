@@ -4,7 +4,7 @@ using Lykke.AlgoStore.Core.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Lykke.AlgoStore.Api.Infrastructure.Context
+namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
 {
     public static class HttpContextExtensions
     {

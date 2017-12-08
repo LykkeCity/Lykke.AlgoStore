@@ -22,7 +22,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             errorResponse.ErrorDescription = error.ErrorCode.ToString("g");
             errorResponse.ErrorMessage = error.Message;
 
-            var statusCode = HttpStatusCode.InternalServerError;
+            HttpStatusCode statusCode;
 
             switch (error.ErrorCode)
             {

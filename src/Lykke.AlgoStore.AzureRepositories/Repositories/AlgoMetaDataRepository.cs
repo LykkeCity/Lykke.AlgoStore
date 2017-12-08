@@ -39,7 +39,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entitiy = await _table.GetDataAsync(PartitionKey, id);
 
-            return new AlgoMetaDataEntity[1] { entitiy }.ToModel();
+            return new[] { entitiy }.ToModel();
         }
         public async Task<bool> ExistsAlgoMetaData(string id)
         {

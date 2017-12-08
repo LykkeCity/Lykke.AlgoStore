@@ -2,7 +2,7 @@
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Core.Domain.Errors;
 
-namespace Lykke.AlgoStore.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure
 {
     internal class ExceptionManager
     {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lykke.AlgoStore.Infrastructure.Authentication
+namespace Lykke.AlgoStore.Api.Infrastructure.Authentication
 {
     public static class AuthenticationExtensions
     {

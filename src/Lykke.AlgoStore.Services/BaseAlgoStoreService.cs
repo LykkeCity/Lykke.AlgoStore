@@ -12,7 +12,7 @@ namespace Lykke.AlgoStore.Services
             Log = log;
         }
 
-        public ILog Log { get; private set; }
+        public ILog Log { get; }
 
         protected AlgoStoreException HandleException(Exception ex, string componentName)
         {

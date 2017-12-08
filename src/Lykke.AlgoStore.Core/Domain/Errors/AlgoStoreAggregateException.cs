@@ -47,7 +47,7 @@ namespace Lykke.AlgoStore.Core.Domain.Errors
                 }
             }
 
-            return new AlgoStoreException(this.ErrorCode, sb.ToString());
+            return new AlgoStoreException(ErrorCode, sb.ToString());
         }
     }
 }

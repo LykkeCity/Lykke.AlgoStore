@@ -24,7 +24,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
             if (string.IsNullOrWhiteSpace(other.Date))
                 return 1;
 
-            return Date.CompareTo(other.Date);
+            return String.Compare(Date, other.Date, StringComparison.Ordinal);
 
         }
     }

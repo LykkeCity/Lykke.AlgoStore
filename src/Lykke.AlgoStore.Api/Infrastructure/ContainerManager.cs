@@ -6,7 +6,7 @@ using Lykke.AlgoStore.Core.Settings;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lykke.AlgoStore.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure
 {
     internal static class ContainerManager
     {

@@ -3,11 +3,10 @@ using System.Linq;
 using System.Net;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Lykke.AlgoStore.Controllers
+namespace Lykke.AlgoStore.Api.Controllers
 {
     // NOTE: See https://lykkex.atlassian.net/wiki/spaces/LKEWALLET/pages/35755585/Add+your+app+to+Monitoring
     [Route("api/IsAlive")]

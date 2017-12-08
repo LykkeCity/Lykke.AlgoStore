@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Lykke.AlgoStore.Infrastructure.Authentication
+namespace Lykke.AlgoStore.Api.Infrastructure.Authentication
 {
     public class LykkeAuthHandler : AuthenticationHandler<LykkeAuthOptions>
     {

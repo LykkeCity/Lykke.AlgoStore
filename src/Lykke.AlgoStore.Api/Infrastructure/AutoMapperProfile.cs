@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
 
-namespace Lykke.AlgoStore.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure
 {
     public class AutoMapperProfile : Profile
     {

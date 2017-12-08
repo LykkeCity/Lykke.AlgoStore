@@ -6,7 +6,6 @@ using Common.Log;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.SettingsReader;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
@@ -26,7 +25,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<List<AlgoTemplateData>> GetTemplatesByLanguage(string languageId)
         {
-            var entities = await _table.GetDataAsync(PartitionKey, entity => entity.LanguageId == languageId && entity.IsActive == true);
+            var entities = await _table.GetDataAsync(PartitionKey, entity => entity.LanguageId == languageId && entity.IsActive);
 
             return entities.ToModel();
         }

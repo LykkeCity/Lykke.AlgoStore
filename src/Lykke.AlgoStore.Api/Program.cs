@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Api.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Lykke.Service.LykkeService
+namespace Lykke.AlgoStore.Api
 {
     public class Program
     {
@@ -11,7 +12,7 @@ namespace Lykke.Service.LykkeService
 
         public static void Main(string[] args)
         {
-            Console.WriteLine($"{Lykke.AlgoStore.Infrastructure.Const.AppName} version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
+            Console.WriteLine($"{Const.AppName} version {Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion}");
 #if DEBUG
             Console.WriteLine("Is DEBUG");
 #else

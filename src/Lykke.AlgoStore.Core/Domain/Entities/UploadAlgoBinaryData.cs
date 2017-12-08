@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
-namespace Lykke.AlgoStore.Core.Domain.Entities 
+namespace Lykke.AlgoStore.Core.Domain.Entities
 {
     public class UploadAlgoBinaryData : BaseValidatableData
     {
