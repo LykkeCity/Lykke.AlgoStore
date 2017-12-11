@@ -62,10 +62,15 @@ namespace Lykke.AlgoStore.Services
                 var response =
                     await _externalClient.BuildAlgoImageFromBinary(blob, data.ClientId, algoMetaData.ClientAlgoId);
 
+                int imageId = int.Parse(response);
+                var testId = await _externalClient.CreateTestAlgo(imageId, algoMetaData.ClientAlgoId);
+                if (testId < 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "Error creating test");
+
                 var runtimeData = new AlgoClientRuntimeData
                 {
                     ClientAlgoId = data.AlgoId,
-                    RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData { ImageId = response } }
+                    RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData { ImageId = testId.ToString() } }
                 };
 
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
@@ -105,11 +110,6 @@ namespace Lykke.AlgoStore.Services
                 var statusResult = AlgoRuntimeStatuses.Uknown;
                 switch (status)
                 {
-                    case ClientAlgoRuntimeStatuses.NotFound:
-                        if (await _externalClient.CreateTestAlgo(imageId, algoId) &&
-                            await _externalClient.StartTestAlgo(imageId))
-                            statusResult = AlgoRuntimeStatuses.Started;
-                        break;
                     case ClientAlgoRuntimeStatuses.Created:
                     case ClientAlgoRuntimeStatuses.Paused:
                     case ClientAlgoRuntimeStatuses.Stopped:

@@ -75,7 +75,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetTestLog([FromBody]ManageImageModel model)
+        public async Task<IActionResult> GetTestLog(ManageImageModel model)
         {
             var data = Mapper.Map<ManageImageData>(model);
             data.ClientId = User.GetClientId();

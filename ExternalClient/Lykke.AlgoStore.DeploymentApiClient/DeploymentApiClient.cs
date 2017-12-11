@@ -30,15 +30,17 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
 
-        public async Task<bool> CreateTestAlgo(long imageId, string algoId)
+        public async Task<long> CreateTestAlgo(long imageId, string algoId)
         {
             var response = await TestAlgoUsingPUTWithHttpMessagesAsync(imageId, algoId);
 
+            AlgoTest test = response.Body;
             if ((response.Response.StatusCode == HttpStatusCode.OK)
-                && response.Body != null)
-                return true;
+                && test != null
+                && MapToStatusEnum(test.Status) == ClientAlgoRuntimeStatuses.Created)
+                return test.Id.GetValueOrDefault();
 
-            return false;
+            return 0;
         }
         public async Task<bool> StartTestAlgo(long imageId)
         {
@@ -67,7 +69,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
         public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestStatus(long id)
         {
-            HttpOperationResponse<string> response = await GetTestAlgoStatusUsingGETWithHttpMessagesAsync(id);
+            HttpOperationResponse<string> response = await GetTestAlgoStringStatusUsingGetWithHttpMessagesAsync(id);
 
             if (response.Response.StatusCode != HttpStatusCode.OK)
                 return MapToStatusEnum(response.Response.StatusCode);
@@ -124,19 +126,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 throw new ValidationException(ValidationRules.CannotBeNull, "algoName");
             }
 
-            // Tracing
-            bool shouldTrace = ServiceClientTracing.IsEnabled;
-            string invocationId = null;
-            if (shouldTrace)
-            {
-                invocationId = ServiceClientTracing.NextInvocationId.ToString();
-                var tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("file", file);
-                tracingParameters.Add("algoUserName", algoUserName);
-                tracingParameters.Add("algoName", algoName);
-                tracingParameters.Add("cancellationToken", default(CancellationToken));
-                ServiceClientTracing.Enter(invocationId, this, "BuildAlgoImageFromBinaryUsingPOST", tracingParameters);
-            }
             // Construct URL
             var baseUrl = BaseUri.AbsoluteUri;
             var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/build/upload-java-binary").ToString();
@@ -167,19 +156,10 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 multiPartContent.Add(streamContent, "file");
 
                 httpRequest.Content = multiPartContent;
-                // Send Request
-                if (shouldTrace)
-                {
-                    ServiceClientTracing.SendRequest(invocationId, httpRequest);
-                }
 
                 using (var httpResponse =
                     await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false))
                 {
-                    if (shouldTrace)
-                    {
-                        ServiceClientTracing.ReceiveResponse(invocationId, httpResponse);
-                    }
                     HttpStatusCode statusCode = httpResponse.StatusCode;
                     string responseContent;
                     if ((int)statusCode != 200 && (int)statusCode != 201 && (int)statusCode != 401 &&
@@ -198,10 +178,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                         }
                         ex.Request = new HttpRequestMessageWrapper(httpRequest, null);
                         ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
-                        if (shouldTrace)
-                        {
-                            ServiceClientTracing.Error(invocationId, ex);
-                        }
                         httpRequest.Dispose();
                         throw ex;
                     }
@@ -225,15 +201,63 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                                 ex);
                         }
                     }
-
-
-                    if (shouldTrace)
-                    {
-                        ServiceClientTracing.Exit(invocationId, result);
-                    }
                     return result;
                 }
             }
+        }
+        private async Task<HttpOperationResponse<string>> GetTestAlgoStringStatusUsingGetWithHttpMessagesAsync(long id)
+        {
+            // Construct URL
+            var baseUrl = BaseUri.AbsoluteUri;
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/test/{id}/status").ToString();
+            url = url.Replace("{id}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(id, SerializationSettings).Trim('"')));
+            // Create HTTP transport objects
+            HttpOperationResponse<string> result;
+            using (var httpRequest = new HttpRequestMessage())
+            {
+                httpRequest.Method = new HttpMethod("GET");
+                httpRequest.RequestUri = new System.Uri(url);
+
+                // Serialize Request
+                using (HttpResponseMessage httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false))
+                {
+                    HttpStatusCode statusCode = httpResponse.StatusCode;
+                    string responseContent;
+                    if ((int)statusCode != 200 && (int)statusCode != 401 && (int)statusCode != 403 && (int)statusCode != 404)
+                    {
+                        var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+                        if (httpResponse.Content != null)
+                        {
+                            responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            responseContent = string.Empty;
+                        }
+                        ex.Request = new HttpRequestMessageWrapper(httpRequest, null);
+                        ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+                        throw ex;
+                    }
+                    // Create Result
+                    result = new HttpOperationResponse<string>();
+                    result.Request = httpRequest;
+                    result.Response = httpResponse;
+                    // Deserialize Response
+                    if ((int)statusCode == 200)
+                    {
+                        responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        try
+                        {
+                            result.Body = responseContent;
+                        }
+                        catch (JsonException ex)
+                        {
+                            throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+                        }
+                    }
+                }
+            }
+            return result;
         }
     }
 }
