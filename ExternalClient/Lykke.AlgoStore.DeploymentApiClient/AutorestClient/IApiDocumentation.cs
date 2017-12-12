@@ -37,19 +37,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
 
         /// <summary>
-        /// Gets the ILinksUsingGET.
-        /// </summary>
-        ILinksUsingGET LinksUsingGET { get; }
-
-        /// <summary>
         /// Gets the IGetUsingGET.
         /// </summary>
         IGetUsingGET GetUsingGET { get; }
-
-        /// <summary>
-        /// Gets the IGetAlgoLogUsingGET.
-        /// </summary>
-        IGetAlgoLogUsingGET GetAlgoLogUsingGET { get; }
 
         /// <summary>
         /// Gets the IGetAlgoUsingGET.
@@ -57,55 +47,24 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         IGetAlgoUsingGET GetAlgoUsingGET { get; }
 
         /// <summary>
-        /// Gets the IFindByPrincipalAndAfterAndTypeUsingGET.
-        /// </summary>
-        IFindByPrincipalAndAfterAndTypeUsingGET FindByPrincipalAndAfterAndTypeUsingGET { get; }
-
-        /// <summary>
-        /// Gets the IInvokeUsingGET.
-        /// </summary>
-        IInvokeUsingGET InvokeUsingGET { get; }
-
-        /// <summary>
-        /// Gets the IInvokeUsingHEAD.
-        /// </summary>
-        IInvokeUsingHEAD InvokeUsingHEAD { get; }
-
-        /// <summary>
-        /// Gets the IValueUsingGET.
-        /// </summary>
-        IValueUsingGET ValueUsingGET { get; }
-
-        /// <summary>
-        /// links
-        /// </summary>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<ResourceSupport>> LinksUsingGETWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
         /// buildAlgoImageFromBinary
         /// </summary>
-        /// <param name='file'>
-        /// file
-        /// </param>
         /// <param name='algoUserName'>
         /// algoUserName
         /// </param>
         /// <param name='algoName'>
         /// algoName
         /// </param>
+        /// <param name='file'>
+        /// file
+        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<Algo>> BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(Stream file, string algoUserName, string algoName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<Algo>> BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(string algoUserName, string algoName, Stream file, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// buildAlgoImageFromSource
@@ -153,7 +112,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<AlgoService>> CreateAlgoServiceUsingPUTWithHttpMessagesAsync(long algoId, string name, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AlgoService>> CreateAlgoServiceUsingPOSTWithHttpMessagesAsync(long algoId, string name, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// get
@@ -226,7 +185,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<AlgoTest>> TestAlgoUsingPUTWithHttpMessagesAsync(long algoId, string name, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<AlgoTest>> TestAlgoUsingPOSTWithHttpMessagesAsync(long algoId, string name, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// getAll
@@ -252,6 +211,65 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// The cancellation token.
         /// </param>
         Task<HttpOperationResponse> DeleteTestAlgoUsingDELETEWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// getAdministrativeStatus
+        /// </summary>
+        /// <param name='id'>
+        /// id
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<string>> GetAdministrativeStatusUsingGETWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// getAlgoLog
+        /// </summary>
+        /// <param name='id'>
+        /// id
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<string>> GetAlgoLogUsingGETWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// getOperationalStatus
+        /// </summary>
+        /// <param name='id'>
+        /// id
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<string>> GetOperationalStatusUsingGETWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// getTailLog
+        /// </summary>
+        /// <param name='id'>
+        /// id
+        /// </param>
+        /// <param name='tail'>
+        /// tail
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        Task<HttpOperationResponse<string>> GetTailLogUsingGETWithHttpMessagesAsync(long id, int tail, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// pauseTestAlgo
@@ -296,20 +314,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         Task<HttpOperationResponse> StartUsingPUTWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// getTestAlgoStatus
-        /// </summary>
-        /// <param name='id'>
-        /// id
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<string>> GetTestAlgoStatusUsingGETWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
         /// stopTestAlgo
         /// </summary>
         /// <param name='id'>
@@ -338,27 +342,18 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         Task<HttpOperationResponse> RemoveALgoUsingDELETEWithHttpMessagesAsync(long id, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// findByPrincipalAndAfterAndType
+        /// errorHtml
         /// </summary>
-        /// <param name='principal'>
-        /// principal
-        /// </param>
-        /// <param name='after'>
-        /// after
-        /// </param>
-        /// <param name='type'>
-        /// type
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<object>> FindByPrincipalAndAfterAndTypeUsingGETWithHttpMessagesAsync(string principal = default(string), System.DateTime? after = default(System.DateTime?), string type = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ModelAndView>> ErrorHtmlUsingGETWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// invoke
+        /// errorHtml
         /// </summary>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -366,24 +361,21 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<object>> InvokeUsingGETWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ModelAndView>> ErrorHtmlUsingHEADWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// value
+        /// errorHtml
         /// </summary>
-        /// <param name='name'>
-        /// name
-        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<object>> ValueUsingGETWithHttpMessagesAsync(string name, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ModelAndView>> ErrorHtmlUsingPOSTWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// error
+        /// errorHtml
         /// </summary>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -391,10 +383,10 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IDictionary<string, object>>> ErrorUsingGETWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ModelAndView>> ErrorHtmlUsingPUTWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// error
+        /// errorHtml
         /// </summary>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -402,10 +394,10 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IDictionary<string, object>>> ErrorUsingHEADWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ModelAndView>> ErrorHtmlUsingDELETEWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// error
+        /// errorHtml
         /// </summary>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -413,68 +405,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<IDictionary<string, object>>> ErrorUsingPOSTWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// error
-        /// </summary>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<IDictionary<string, object>>> ErrorUsingPUTWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// error
-        /// </summary>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<IDictionary<string, object>>> ErrorUsingDELETEWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// error
-        /// </summary>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<IDictionary<string, object>>> ErrorUsingPATCHWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// invoke
-        /// </summary>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse> InvokeUsingHEADWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// set
-        /// </summary>
-        /// <param name='name'>
-        /// name
-        /// </param>
-        /// <param name='configuration'>
-        /// configuration
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        Task<HttpOperationResponse<object>> SetUsingPOSTWithHttpMessagesAsync(string name, IDictionary<string, string> configuration, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<ModelAndView>> ErrorHtmlUsingPATCHWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
     }
 }

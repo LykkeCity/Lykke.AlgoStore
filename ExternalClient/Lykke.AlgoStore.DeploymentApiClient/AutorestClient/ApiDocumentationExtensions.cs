@@ -19,31 +19,23 @@ namespace Lykke.AlgoStore.DeploymentApiClient
     public static partial class ApiDocumentationExtensions
     {
             /// <summary>
-            /// links
+            /// buildAlgoImageFromBinary
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static ResourceSupport LinksUsingGET(this IApiDocumentation operations)
-            {
-                return operations.LinksUsingGETAsync().GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// links
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
+            /// <param name='algoUserName'>
+            /// algoUserName
             /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
+            /// <param name='algoName'>
+            /// algoName
             /// </param>
-            public static async Task<ResourceSupport> LinksUsingGETAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
+            /// <param name='file'>
+            /// file
+            /// </param>
+            public static Algo BuildAlgoImageFromBinaryUsingPOST(this IApiDocumentation operations, string algoUserName, string algoName, Stream file)
             {
-                using (var _result = await operations.LinksUsingGETWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
+                return operations.BuildAlgoImageFromBinaryUsingPOSTAsync(algoUserName, algoName, file).GetAwaiter().GetResult();
             }
 
             /// <summary>
@@ -52,41 +44,21 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='file'>
-            /// file
-            /// </param>
             /// <param name='algoUserName'>
             /// algoUserName
             /// </param>
             /// <param name='algoName'>
             /// algoName
             /// </param>
-            public static Algo BuildAlgoImageFromBinaryUsingPOST(this IApiDocumentation operations, Stream file, string algoUserName, string algoName)
-            {
-                return operations.BuildAlgoImageFromBinaryUsingPOSTAsync(file, algoUserName, algoName).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// buildAlgoImageFromBinary
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
             /// <param name='file'>
             /// file
-            /// </param>
-            /// <param name='algoUserName'>
-            /// algoUserName
-            /// </param>
-            /// <param name='algoName'>
-            /// algoName
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<Algo> BuildAlgoImageFromBinaryUsingPOSTAsync(this IApiDocumentation operations, Stream file, string algoUserName, string algoName, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<Algo> BuildAlgoImageFromBinaryUsingPOSTAsync(this IApiDocumentation operations, string algoUserName, string algoName, Stream file, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(file, algoUserName, algoName, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.BuildAlgoImageFromBinaryUsingPOSTWithHttpMessagesAsync(algoUserName, algoName, file, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -178,9 +150,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='name'>
             /// name
             /// </param>
-            public static AlgoService CreateAlgoServiceUsingPUT(this IApiDocumentation operations, long algoId, string name)
+            public static AlgoService CreateAlgoServiceUsingPOST(this IApiDocumentation operations, long algoId, string name)
             {
-                return operations.CreateAlgoServiceUsingPUTAsync(algoId, name).GetAwaiter().GetResult();
+                return operations.CreateAlgoServiceUsingPOSTAsync(algoId, name).GetAwaiter().GetResult();
             }
 
             /// <summary>
@@ -198,9 +170,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AlgoService> CreateAlgoServiceUsingPUTAsync(this IApiDocumentation operations, long algoId, string name, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AlgoService> CreateAlgoServiceUsingPOSTAsync(this IApiDocumentation operations, long algoId, string name, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.CreateAlgoServiceUsingPUTWithHttpMessagesAsync(algoId, name, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.CreateAlgoServiceUsingPOSTWithHttpMessagesAsync(algoId, name, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -348,9 +320,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='name'>
             /// name
             /// </param>
-            public static AlgoTest TestAlgoUsingPUT(this IApiDocumentation operations, long algoId, string name)
+            public static AlgoTest TestAlgoUsingPOST(this IApiDocumentation operations, long algoId, string name)
             {
-                return operations.TestAlgoUsingPUTAsync(algoId, name).GetAwaiter().GetResult();
+                return operations.TestAlgoUsingPOSTAsync(algoId, name).GetAwaiter().GetResult();
             }
 
             /// <summary>
@@ -368,9 +340,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<AlgoTest> TestAlgoUsingPUTAsync(this IApiDocumentation operations, long algoId, string name, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<AlgoTest> TestAlgoUsingPOSTAsync(this IApiDocumentation operations, long algoId, string name, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.TestAlgoUsingPUTWithHttpMessagesAsync(algoId, name, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.TestAlgoUsingPOSTWithHttpMessagesAsync(algoId, name, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -433,6 +405,148 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             public static async Task DeleteTestAlgoUsingDELETEAsync(this IApiDocumentation operations, long id, CancellationToken cancellationToken = default(CancellationToken))
             {
                 (await operations.DeleteTestAlgoUsingDELETEWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false)).Dispose();
+            }
+
+            /// <summary>
+            /// getAdministrativeStatus
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            public static string GetAdministrativeStatusUsingGET(this IApiDocumentation operations, long id)
+            {
+                return operations.GetAdministrativeStatusUsingGETAsync(id).GetAwaiter().GetResult();
+            }
+
+            /// <summary>
+            /// getAdministrativeStatus
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<string> GetAdministrativeStatusUsingGETAsync(this IApiDocumentation operations, long id, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetAdministrativeStatusUsingGETWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// getAlgoLog
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            public static string GetAlgoLogUsingGET(this IApiDocumentation operations, long id)
+            {
+                return operations.GetAlgoLogUsingGETAsync(id).GetAwaiter().GetResult();
+            }
+
+            /// <summary>
+            /// getAlgoLog
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<string> GetAlgoLogUsingGETAsync(this IApiDocumentation operations, long id, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetAlgoLogUsingGETWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// getOperationalStatus
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            public static string GetOperationalStatusUsingGET(this IApiDocumentation operations, long id)
+            {
+                return operations.GetOperationalStatusUsingGETAsync(id).GetAwaiter().GetResult();
+            }
+
+            /// <summary>
+            /// getOperationalStatus
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<string> GetOperationalStatusUsingGETAsync(this IApiDocumentation operations, long id, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetOperationalStatusUsingGETWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// getTailLog
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            /// <param name='tail'>
+            /// tail
+            /// </param>
+            public static string GetTailLogUsingGET(this IApiDocumentation operations, long id, int tail)
+            {
+                return operations.GetTailLogUsingGETAsync(id, tail).GetAwaiter().GetResult();
+            }
+
+            /// <summary>
+            /// getTailLog
+            /// </summary>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='id'>
+            /// id
+            /// </param>
+            /// <param name='tail'>
+            /// tail
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            public static async Task<string> GetTailLogUsingGETAsync(this IApiDocumentation operations, long id, int tail, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.GetTailLogUsingGETWithHttpMessagesAsync(id, tail, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
             }
 
             /// <summary>
@@ -529,40 +643,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             }
 
             /// <summary>
-            /// getTestAlgoStatus
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='id'>
-            /// id
-            /// </param>
-            public static string GetTestAlgoStatusUsingGET(this IApiDocumentation operations, long id)
-            {
-                return operations.GetTestAlgoStatusUsingGETAsync(id).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// getTestAlgoStatus
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='id'>
-            /// id
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<string> GetTestAlgoStatusUsingGETAsync(this IApiDocumentation operations, long id, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.GetTestAlgoStatusUsingGETWithHttpMessagesAsync(id, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <summary>
             /// stopTestAlgo
             /// </summary>
             /// <param name='operations'>
@@ -625,64 +705,46 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             }
 
             /// <summary>
-            /// findByPrincipalAndAfterAndType
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='principal'>
-            /// principal
-            /// </param>
-            /// <param name='after'>
-            /// after
-            /// </param>
-            /// <param name='type'>
-            /// type
-            /// </param>
-            public static object FindByPrincipalAndAfterAndTypeUsingGET(this IApiDocumentation operations, string principal = default(string), System.DateTime? after = default(System.DateTime?), string type = default(string))
+            public static ModelAndView ErrorHtmlUsingGET(this IApiDocumentation operations)
             {
-                return operations.FindByPrincipalAndAfterAndTypeUsingGETAsync(principal, after, type).GetAwaiter().GetResult();
+                return operations.ErrorHtmlUsingGETAsync().GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// findByPrincipalAndAfterAndType
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
-            /// </param>
-            /// <param name='principal'>
-            /// principal
-            /// </param>
-            /// <param name='after'>
-            /// after
-            /// </param>
-            /// <param name='type'>
-            /// type
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> FindByPrincipalAndAfterAndTypeUsingGETAsync(this IApiDocumentation operations, string principal = default(string), System.DateTime? after = default(System.DateTime?), string type = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<ModelAndView> ErrorHtmlUsingGETAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.FindByPrincipalAndAfterAndTypeUsingGETWithHttpMessagesAsync(principal, after, type, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ErrorHtmlUsingGETWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// invoke
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static object InvokeUsingGET(this IApiDocumentation operations)
+            public static ModelAndView ErrorHtmlUsingHEAD(this IApiDocumentation operations)
             {
-                return operations.InvokeUsingGETAsync().GetAwaiter().GetResult();
+                return operations.ErrorHtmlUsingHEADAsync().GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// invoke
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -690,61 +752,55 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> InvokeUsingGETAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<ModelAndView> ErrorHtmlUsingHEADAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.InvokeUsingGETWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ErrorHtmlUsingHEADWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// value
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            /// <param name='name'>
-            /// name
-            /// </param>
-            public static object ValueUsingGET(this IApiDocumentation operations, string name)
+            public static ModelAndView ErrorHtmlUsingPOST(this IApiDocumentation operations)
             {
-                return operations.ValueUsingGETAsync(name).GetAwaiter().GetResult();
+                return operations.ErrorHtmlUsingPOSTAsync().GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// value
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// name
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> ValueUsingGETAsync(this IApiDocumentation operations, string name, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<ModelAndView> ErrorHtmlUsingPOSTAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.ValueUsingGETWithHttpMessagesAsync(name, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ErrorHtmlUsingPOSTWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// error
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static IDictionary<string, object> ErrorUsingGET(this IApiDocumentation operations)
+            public static ModelAndView ErrorHtmlUsingPUT(this IApiDocumentation operations)
             {
-                return operations.ErrorUsingGETAsync().GetAwaiter().GetResult();
+                return operations.ErrorHtmlUsingPUTAsync().GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// error
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -752,27 +808,27 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IDictionary<string, object>> ErrorUsingGETAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<ModelAndView> ErrorHtmlUsingPUTAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.ErrorUsingGETWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ErrorHtmlUsingPUTWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// error
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static IDictionary<string, object> ErrorUsingHEAD(this IApiDocumentation operations)
+            public static ModelAndView ErrorHtmlUsingDELETE(this IApiDocumentation operations)
             {
-                return operations.ErrorUsingHEADAsync().GetAwaiter().GetResult();
+                return operations.ErrorHtmlUsingDELETEAsync().GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// error
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -780,27 +836,27 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IDictionary<string, object>> ErrorUsingHEADAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<ModelAndView> ErrorHtmlUsingDELETEAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.ErrorUsingHEADWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ErrorHtmlUsingDELETEWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// error
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static IDictionary<string, object> ErrorUsingPOST(this IApiDocumentation operations)
+            public static ModelAndView ErrorHtmlUsingPATCH(this IApiDocumentation operations)
             {
-                return operations.ErrorUsingPOSTAsync().GetAwaiter().GetResult();
+                return operations.ErrorHtmlUsingPATCHAsync().GetAwaiter().GetResult();
             }
 
             /// <summary>
-            /// error
+            /// errorHtml
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -808,158 +864,9 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<IDictionary<string, object>> ErrorUsingPOSTAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<ModelAndView> ErrorHtmlUsingPATCHAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.ErrorUsingPOSTWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <summary>
-            /// error
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            public static IDictionary<string, object> ErrorUsingPUT(this IApiDocumentation operations)
-            {
-                return operations.ErrorUsingPUTAsync().GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// error
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<IDictionary<string, object>> ErrorUsingPUTAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.ErrorUsingPUTWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <summary>
-            /// error
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            public static IDictionary<string, object> ErrorUsingDELETE(this IApiDocumentation operations)
-            {
-                return operations.ErrorUsingDELETEAsync().GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// error
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<IDictionary<string, object>> ErrorUsingDELETEAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.ErrorUsingDELETEWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <summary>
-            /// error
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            public static IDictionary<string, object> ErrorUsingPATCH(this IApiDocumentation operations)
-            {
-                return operations.ErrorUsingPATCHAsync().GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// error
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<IDictionary<string, object>> ErrorUsingPATCHAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.ErrorUsingPATCHWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <summary>
-            /// invoke
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            public static void InvokeUsingHEAD(this IApiDocumentation operations)
-            {
-                operations.InvokeUsingHEADAsync().GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// invoke
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task InvokeUsingHEADAsync(this IApiDocumentation operations, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                (await operations.InvokeUsingHEADWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false)).Dispose();
-            }
-
-            /// <summary>
-            /// set
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// name
-            /// </param>
-            /// <param name='configuration'>
-            /// configuration
-            /// </param>
-            public static object SetUsingPOST(this IApiDocumentation operations, string name, IDictionary<string, string> configuration)
-            {
-                return operations.SetUsingPOSTAsync(name, configuration).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// set
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// name
-            /// </param>
-            /// <param name='configuration'>
-            /// configuration
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<object> SetUsingPOSTAsync(this IApiDocumentation operations, string name, IDictionary<string, string> configuration, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.SetUsingPOSTWithHttpMessagesAsync(name, configuration, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.ErrorHtmlUsingPATCHWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
