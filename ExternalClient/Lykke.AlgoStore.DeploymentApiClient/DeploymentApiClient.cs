@@ -62,14 +62,14 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         }
         public async Task<string> GetTestAlgoLog(long imageId)
         {
-            var response = await GetAlgoLogUsingGET.OneWithHttpMessagesAsync(imageId);
+            var response = await GetLogWithHttpMessagesAsync(imageId);
 
             return response.Body;
         }
 
-        public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestStatus(long id)
+        public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatus(long id)
         {
-            HttpOperationResponse<string> response = await GetTestAlgoStringStatusUsingGetWithHttpMessagesAsync(id);
+            HttpOperationResponse<string> response = await GetTestAlgoAdministrativeStatusStringUsingGetWithHttpMessagesAsync(id);
 
             if (response.Response.StatusCode != HttpStatusCode.OK)
                 return MapToStatusEnum(response.Response.StatusCode);
@@ -205,11 +205,11 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 }
             }
         }
-        private async Task<HttpOperationResponse<string>> GetTestAlgoStringStatusUsingGetWithHttpMessagesAsync(long id)
+        private async Task<HttpOperationResponse<string>> GetTestAlgoAdministrativeStatusStringUsingGetWithHttpMessagesAsync(long id)
         {
             // Construct URL
             var baseUrl = BaseUri.AbsoluteUri;
-            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/test/{id}/status").ToString();
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/test/{id}/getAdministrativeStatus").ToString();
             url = url.Replace("{id}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(id, SerializationSettings).Trim('"')));
             // Create HTTP transport objects
             HttpOperationResponse<string> result;
@@ -254,6 +254,53 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                         {
                             throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
                         }
+                    }
+                }
+            }
+            return result;
+        }
+        private async Task<HttpOperationResponse<string>> GetLogWithHttpMessagesAsync(long id)
+        {
+            // Construct URL
+            var baseUrl = BaseUri.AbsoluteUri;
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/test/{id}/getLog").ToString();
+            url = url.Replace("{id}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(id, SerializationSettings).Trim('"')));
+            // Create HTTP transport objects
+            HttpOperationResponse<string> result;
+            using (var httpRequest = new HttpRequestMessage())
+            {
+                httpRequest.Method = new HttpMethod("GET");
+                httpRequest.RequestUri = new System.Uri(url);
+
+                // Send Request
+                using (var httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false))
+                {
+                    HttpStatusCode statusCode = httpResponse.StatusCode;
+                    string responseContent;
+                    if ((int)statusCode != 200 && (int)statusCode != 401 && (int)statusCode != 403 && (int)statusCode != 404)
+                    {
+                        var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+                        if (httpResponse.Content != null)
+                        {
+                            responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            responseContent = string.Empty;
+                        }
+                        ex.Request = new HttpRequestMessageWrapper(httpRequest, null);
+                        ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+                        throw ex;
+                    }
+                    // Create Result
+                    result = new HttpOperationResponse<string>();
+                    result.Request = httpRequest;
+                    result.Response = httpResponse;
+                    // Deserialize Response
+                    if ((int)statusCode == 200)
+                    {
+                        responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        result.Body = responseContent;
                     }
                 }
             }

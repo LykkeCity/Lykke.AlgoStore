@@ -438,7 +438,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static IDeploymentApiReadOnlyClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
         {
             var result = new Mock<IDeploymentApiReadOnlyClient>();
-            result.Setup(repo => repo.GetAlgoTestStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
+            result.Setup(repo => repo.GetAlgoTestAdministrativeStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
 
             return result.Object;
         }
