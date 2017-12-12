@@ -232,7 +232,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(
             IAlgoMetaDataRepository repo,
             IAlgoBlobRepository blobRepo,
-            IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
+            IAlgoRuntimeDataRepository runtimeDataRepository,
             IDeploymentApiReadOnlyClient deploymentClient)
         {
             return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, new LogMock());
@@ -353,10 +353,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             return new AlgoBlobRepository(new AzureBlobInMemory());
         }
 
-        private static IAlgoRuntimeDataReadOnlyRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
+        private static IAlgoRuntimeDataRepository Given_Correct_AlgoRuntimeDataRepositoryMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAlgoRuntimeDataReadOnlyRepository>();
+            var result = new Mock<IAlgoRuntimeDataRepository>();
             result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>()))
                 .Returns((string imageId) =>
                 {
@@ -387,9 +387,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoRuntimeDataReadOnlyRepository Given_Null_AlgoRuntimeDataRepositoryMock()
+        private static IAlgoRuntimeDataRepository Given_Null_AlgoRuntimeDataRepositoryMock()
         {
-            var result = new Mock<IAlgoRuntimeDataReadOnlyRepository>();
+            var result = new Mock<IAlgoRuntimeDataRepository>();
             result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>()))
                 .Returns(Task.FromResult<AlgoClientRuntimeData>(null));
             result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>()))
@@ -420,9 +420,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoRuntimeDataReadOnlyRepository Given_Error_AlgoRuntimeDataRepositoryMock()
+        private static IAlgoRuntimeDataRepository Given_Error_AlgoRuntimeDataRepositoryMock()
         {
-            var result = new Mock<IAlgoRuntimeDataReadOnlyRepository>();
+            var result = new Mock<IAlgoRuntimeDataRepository>();
             result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
             result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>())).ThrowsAsync(new Exception("GetByAlgo"));
 
