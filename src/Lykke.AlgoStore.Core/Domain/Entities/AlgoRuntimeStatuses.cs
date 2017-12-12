@@ -2,7 +2,7 @@
 {
     public enum AlgoRuntimeStatuses
     {
-        Uknown = 0,
+        Unknown = 0,
         Deployed,
         Started,
         Stopped,
