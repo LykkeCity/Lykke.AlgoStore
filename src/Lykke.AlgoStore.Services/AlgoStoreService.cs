@@ -103,9 +103,9 @@ namespace Lykke.AlgoStore.Services
                 if (imageId < 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
 
-                var status = await _externalClient.GetAlgoTestStatus(imageId);
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(imageId);
 
-                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {imageId}");
 
                 var statusResult = AlgoRuntimeStatuses.Uknown;
                 switch (status)
@@ -149,9 +149,9 @@ namespace Lykke.AlgoStore.Services
                 if (imageId < 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
 
-                var status = await _externalClient.GetAlgoTestStatus(imageId);
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(imageId);
 
-                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {imageId}");
 
                 var statusResult = AlgoRuntimeStatuses.Uknown;
                 switch (status)

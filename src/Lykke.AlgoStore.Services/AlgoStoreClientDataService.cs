@@ -131,7 +131,7 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    var status = await _deploymentClient.GetAlgoTestStatus(imageId);
+                    var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
                     metadata.Status = status.ToModel().ToUpperText();
                 }
 
@@ -236,9 +236,9 @@ namespace Lykke.AlgoStore.Services
 
         private async Task<bool> DeleteImage(long imageId)
         {
-            var status = await _deploymentClient.GetAlgoTestStatus(imageId);
+            var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestStatus Status: {status} for imageId {imageId}");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {imageId}");
 
             bool result = true;
 
