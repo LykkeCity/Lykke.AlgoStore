@@ -18,7 +18,7 @@ namespace Lykke.AlgoStore.Services.Utils
                 case ClientAlgoRuntimeStatuses.Stopped:
                     return AlgoRuntimeStatuses.Stopped;
                 default:
-                    return AlgoRuntimeStatuses.Uknown;
+                    return AlgoRuntimeStatuses.Unknown;
             }
         }
     }

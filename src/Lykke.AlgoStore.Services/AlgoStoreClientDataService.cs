@@ -126,7 +126,7 @@ namespace Lykke.AlgoStore.Services
                         runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
                         (imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber()) < 1)
                     {
-                        metadata.Status = AlgoRuntimeStatuses.Uknown.ToUpperText();
+                        metadata.Status = AlgoRuntimeStatuses.Unknown.ToUpperText();
                         // TODO Skip?!?
                         continue;
                     }

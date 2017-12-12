@@ -107,7 +107,7 @@ namespace Lykke.AlgoStore.Services
 
                 await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {imageId}");
 
-                var statusResult = AlgoRuntimeStatuses.Uknown;
+                var statusResult = AlgoRuntimeStatuses.Unknown;
                 switch (status)
                 {
                     case ClientAlgoRuntimeStatuses.Created:
@@ -153,7 +153,7 @@ namespace Lykke.AlgoStore.Services
 
                 await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {imageId}");
 
-                var statusResult = AlgoRuntimeStatuses.Uknown;
+                var statusResult = AlgoRuntimeStatuses.Unknown;
                 switch (status)
                 {
                     case ClientAlgoRuntimeStatuses.Running:
