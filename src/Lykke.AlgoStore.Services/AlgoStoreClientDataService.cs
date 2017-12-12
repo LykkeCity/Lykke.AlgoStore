@@ -131,7 +131,15 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
+                    ClientAlgoRuntimeStatuses status = ClientAlgoRuntimeStatuses.NotFound;
+                    try
+                    {
+                        status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                    }
                     metadata.Status = status.ToModel().ToUpperText();
                 }
 
