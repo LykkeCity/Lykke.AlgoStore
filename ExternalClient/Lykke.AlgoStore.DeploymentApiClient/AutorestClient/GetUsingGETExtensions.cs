@@ -83,39 +83,5 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 }
             }
 
-            /// <summary>
-            /// get
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// name
-            /// </param>
-            public static object Three(this IGetUsingGET operations, string name)
-            {
-                return operations.ThreeAsync(name).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// get
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='name'>
-            /// name
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<object> ThreeAsync(this IGetUsingGET operations, string name, CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.ThreeWithHttpMessagesAsync(name, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
     }
 }

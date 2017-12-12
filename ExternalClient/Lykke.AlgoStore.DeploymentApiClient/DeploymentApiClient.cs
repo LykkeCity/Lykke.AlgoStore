@@ -32,7 +32,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
         public async Task<long> CreateTestAlgo(long imageId, string algoId)
         {
-            var response = await TestAlgoUsingPUTWithHttpMessagesAsync(imageId, algoId);
+            var response = await TestAlgoUsingPOSTWithHttpMessagesAsync(imageId, algoId);
 
             AlgoTest test = response.Body;
             if ((response.Response.StatusCode == HttpStatusCode.OK)
