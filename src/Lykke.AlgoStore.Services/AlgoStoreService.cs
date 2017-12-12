@@ -196,5 +196,29 @@ namespace Lykke.AlgoStore.Services
                 throw HandleException(ex, ComponentName);
             }
         }
+
+        public async Task<string> GetTestTailLog(TailLogData data)
+        {
+            try
+            {
+                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                    throw exception;
+
+                string algoId = data.AlgoId;
+
+                long imageId;
+                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
+                if ((runtimeData == null) ||
+                    runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
+                    (imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber()) < 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {algoId}");
+
+                return await _externalClient.GetTestAlgoTailLog(imageId, data.Tail);
+            }
+            catch (Exception ex)
+            {
+                throw HandleException(ex, ComponentName);
+            }
+        }
     }
 }

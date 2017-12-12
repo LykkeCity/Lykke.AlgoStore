@@ -66,6 +66,12 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
             return response.Body;
         }
+        public async Task<string> GetTestAlgoTailLog(long imageId, int tail)
+        {
+            var response = await GetTailLogWithHttpMessagesAsync(imageId, tail);
+
+            return response.Body;
+        }
 
         public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatus(long id)
         {
@@ -265,6 +271,61 @@ namespace Lykke.AlgoStore.DeploymentApiClient
             var baseUrl = BaseUri.AbsoluteUri;
             var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/test/{id}/getLog").ToString();
             url = url.Replace("{id}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(id, SerializationSettings).Trim('"')));
+            // Create HTTP transport objects
+            HttpOperationResponse<string> result;
+            using (var httpRequest = new HttpRequestMessage())
+            {
+                httpRequest.Method = new HttpMethod("GET");
+                httpRequest.RequestUri = new System.Uri(url);
+
+                // Send Request
+                using (var httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false))
+                {
+                    HttpStatusCode statusCode = httpResponse.StatusCode;
+                    string responseContent;
+                    if ((int)statusCode != 200 && (int)statusCode != 401 && (int)statusCode != 403 && (int)statusCode != 404)
+                    {
+                        var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+                        if (httpResponse.Content != null)
+                        {
+                            responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            responseContent = string.Empty;
+                        }
+                        ex.Request = new HttpRequestMessageWrapper(httpRequest, null);
+                        ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+                        throw ex;
+                    }
+                    // Create Result
+                    result = new HttpOperationResponse<string>();
+                    result.Request = httpRequest;
+                    result.Response = httpResponse;
+                    // Deserialize Response
+                    if ((int)statusCode == 200)
+                    {
+                        responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        result.Body = responseContent;
+                    }
+                }
+            }
+            return result;
+        }
+        private async Task<HttpOperationResponse<string>> GetTailLogWithHttpMessagesAsync(long id, int tail)
+        {
+            // Construct URL
+            var baseUrl = BaseUri.AbsoluteUri;
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "algo/test/{id}/getTailLog").ToString();
+            url = url.Replace("{id}", System.Uri.EscapeDataString(SafeJsonConvert.SerializeObject(id, SerializationSettings).Trim('"')));
+
+            var queryParameters = new List<string>();
+            queryParameters.Add(string.Format("tail={0}", System.Uri.EscapeDataString(tail.ToString())));
+            if (queryParameters.Count > 0)
+            {
+                url += "?" + string.Join("&", queryParameters);
+            }
+
             // Create HTTP transport objects
             HttpOperationResponse<string> result;
             using (var httpRequest = new HttpRequestMessage())

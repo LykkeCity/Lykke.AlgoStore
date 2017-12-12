@@ -84,5 +84,20 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("test/tailLog")]
+        [SwaggerOperation("GetTestTailLog")]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetTestTailLog(TailLogModel model)
+        {
+            var data = Mapper.Map<TailLogData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = await _service.GetTestTailLog(data);
+
+            return Ok(result);
+        }
     }
 }
