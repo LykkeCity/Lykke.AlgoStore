@@ -59,6 +59,7 @@ namespace Lykke.AlgoStore.Api
                 {
                     options.DefaultLykkeConfiguration(Const.ApiVersion, Const.AppName);
                     options.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    options.OperationFilter<FileUploadOperationFilter>();
                 });
 
                 services.AddLykkeAuthentication();
