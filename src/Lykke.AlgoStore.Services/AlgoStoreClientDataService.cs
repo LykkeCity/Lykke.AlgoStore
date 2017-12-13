@@ -69,10 +69,9 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Specified algo id and/or algo string are empty! ");
                 }
                 var algo = await _metaDataRepository.GetAlgoMetaData(algoId);
-                if (algo == null)
-                {
+                if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {algoId} is not found! ");
-                }
+
                 await _blobRepository.SaveBlobAsync(algoId, data);
 
             }
@@ -89,10 +88,8 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 var algo = await _metaDataRepository.GetAlgoMetaData(dataModel.AlgoId);
-                if (algo == null)
-                {
+                if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
-                }
 
                 using (var stream = new MemoryStream())
                 {
@@ -211,7 +208,7 @@ namespace Lykke.AlgoStore.Services
                 await _metaDataRepository.SaveAlgoMetaData(clientData);
 
                 var res = await _metaDataRepository.GetAlgoMetaData(data.ClientAlgoId);
-                if (res == null)
+                if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot save data for {clientId} id: {data.ClientAlgoId}");
 
                 return res;
