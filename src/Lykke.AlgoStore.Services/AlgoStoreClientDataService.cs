@@ -197,10 +197,8 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
 
-                var id = Guid.NewGuid().ToString();
-
                 if (string.IsNullOrWhiteSpace(data.ClientAlgoId))
-                    data.ClientAlgoId = id;
+                    data.ClientAlgoId = Guid.NewGuid().ToString();
 
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
@@ -212,7 +210,7 @@ namespace Lykke.AlgoStore.Services
                 };
                 await _metaDataRepository.SaveAlgoMetaData(clientData);
 
-                var res = await _metaDataRepository.GetAlgoMetaData(id);
+                var res = await _metaDataRepository.GetAlgoMetaData(data.ClientAlgoId);
                 if (res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot save data for {clientId} id: {data.ClientAlgoId}");
 
