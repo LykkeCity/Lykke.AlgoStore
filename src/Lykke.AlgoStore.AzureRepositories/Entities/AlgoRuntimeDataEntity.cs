@@ -6,6 +6,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
     {
         public string ClientAlgoId { get; set; }
         public string Version { get; set; }
+        public int BuildImageId { get; set; }
 
         public string AssetId { get; set; }
         public string AssetName { get; set; }

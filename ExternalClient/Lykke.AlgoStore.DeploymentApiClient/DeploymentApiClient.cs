@@ -227,39 +227,16 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 // Serialize Request
                 using (HttpResponseMessage httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false))
                 {
-                    HttpStatusCode statusCode = httpResponse.StatusCode;
-                    string responseContent;
-                    if ((int)statusCode != 200 && (int)statusCode != 401 && (int)statusCode != 403 && (int)statusCode != 404)
-                    {
-                        var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
-                        if (httpResponse.Content != null)
-                        {
-                            responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            responseContent = string.Empty;
-                        }
-                        ex.Request = new HttpRequestMessageWrapper(httpRequest, null);
-                        ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
-                        throw ex;
-                    }
-                    // Create Result
                     result = new HttpOperationResponse<string>();
                     result.Request = httpRequest;
                     result.Response = httpResponse;
-                    // Deserialize Response
-                    if ((int)statusCode == 200)
+                    if (httpResponse.Content != null)
                     {
-                        responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                        try
-                        {
-                            result.Body = responseContent;
-                        }
-                        catch (JsonException ex)
-                        {
-                            throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                        }
+                        result.Body = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        result.Body = string.Empty;
                     }
                 }
             }

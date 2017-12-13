@@ -70,7 +70,11 @@ namespace Lykke.AlgoStore.Services
                 var runtimeData = new AlgoClientRuntimeData
                 {
                     ClientAlgoId = data.AlgoId,
-                    RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData { ImageId = testId.ToString() } }
+                    RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData
+                    {
+                        ImageId = testId.ToString(),
+                        BuildImageId = imageId
+                    } }
                 };
 
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);

@@ -42,11 +42,8 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<DeploymentApiClient.DeploymentApiClient>()
                 .As<IDeploymentApiClient>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
-                .SingleInstance();
-
-            builder.RegisterType<DeploymentApiClient.DeploymentApiClient>()
                 .As<IDeploymentApiReadOnlyClient>()
+                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
                 .SingleInstance();
         }
 

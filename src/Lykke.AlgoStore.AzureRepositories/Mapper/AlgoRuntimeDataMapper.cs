@@ -42,6 +42,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 var res = new AlgoRuntimeDataEntity();
                 res.PartitionKey = partitionKey;
                 res.ClientAlgoId = algoId;
+                res.BuildImageId = runtimeData.BuildImageId;
 
                 res.RowKey = runtimeData.ImageId;
                 res.Version = runtimeData.Version;
@@ -80,6 +81,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Asset = entity.ToTradingAssetData();
             result.TradingAmount = entity.ToTradingAmountData();
             result.Version = entity.Version;
+            result.BuildImageId = entity.BuildImageId;
 
             return result;
         }

@@ -280,6 +280,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoBlobRepository>();
 
             result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }

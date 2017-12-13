@@ -168,15 +168,18 @@ namespace Lykke.AlgoStore.Services
                 var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
                 if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
                 {
-                    var imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber();
+                    var runData = runtimeData.RuntimeData[0];
+                    var imageId = runData.GetImageIdAsNumber();
                     if (imageId < 1)
                         throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
+                    if (runData.BuildImageId < 1)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid data for BuildImageId {runData.BuildImageId}");
 
-                    if (!await DeleteImage(imageId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {algoId} imageId {imageId}");
+                    if (!await DeleteImage(imageId, runData.BuildImageId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {algoId} testId {imageId}");
 
                     if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(imageId.ToString()))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for algo {algoId} imageId {imageId}");
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for algo {algoId} testId {imageId}");
                 }
 
                 await DeleteMetadata(clientId, data);
@@ -246,11 +249,11 @@ namespace Lykke.AlgoStore.Services
             await _metaDataRepository.DeleteAlgoMetaData(clientData);
         }
 
-        private async Task<bool> DeleteImage(long imageId)
+        private async Task<bool> DeleteImage(long testId, int imageId)
         {
-            var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
+            var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(testId);
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {imageId}");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for testId {testId}");
 
             bool result = true;
 
@@ -259,12 +262,16 @@ namespace Lykke.AlgoStore.Services
 
             if (status == ClientAlgoRuntimeStatuses.Paused ||
                 status == ClientAlgoRuntimeStatuses.Running)
-                result = await _deploymentClient.StopTestAlgo(imageId);
+            {
+                result = await _deploymentClient.StopTestAlgo(testId);
+                if (result)
+                    status = ClientAlgoRuntimeStatuses.Stopped;
+            }
 
             if (result &&
                 (status == ClientAlgoRuntimeStatuses.Stopped ||
                 status == ClientAlgoRuntimeStatuses.Created))
-                result = await _deploymentClient.DeleteTestAlgo(imageId);
+                result = await _deploymentClient.DeleteTestAlgo(testId);
 
             if (result)
                 result = await _deploymentClient.DeleteAlgo(imageId);
