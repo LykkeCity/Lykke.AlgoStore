@@ -72,7 +72,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("test/log")]
         [SwaggerOperation("GetTestLog")]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetTestLog(ManageImageModel model)
@@ -80,14 +80,15 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<ManageImageData>(model);
             data.ClientId = User.GetClientId();
 
-            var result = await _service.GetTestLog(data);
+            var result = new LogModel();
+            result.Log = await _service.GetTestLog(data);
 
             return Ok(result);
         }
 
         [HttpGet("test/tailLog")]
         [SwaggerOperation("GetTestTailLog")]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetTestTailLog(TailLogModel model)
@@ -95,7 +96,8 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<TailLogData>(model);
             data.ClientId = User.GetClientId();
 
-            var result = await _service.GetTestTailLog(data);
+            var result = new LogModel();
+            result.Log = await _service.GetTestTailLog(data);
 
             return Ok(result);
         }
