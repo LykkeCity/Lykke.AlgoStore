@@ -69,8 +69,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             var data = Mapper.Map<AlgoMetaData>(model);
+            string clientId = User.GetClientId();
 
-            await _clientDataService.CascadeDeleteClientMetadata(User.GetClientId(), data);
+            await _clientDataService.CascadeDeleteClientMetadata(clientId, data);
 
             return NoContent();
         }
