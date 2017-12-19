@@ -93,7 +93,7 @@ namespace Lykke.AlgoStore.Services
 
                 foreach (var metadata in algos.AlgoMetaData)
                 {
-                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(metadata.ClientAlgoId);
+                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(metadata.AlgoId);
                     long imageId;
                     if (runtimeData == null ||
                         runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
@@ -134,7 +134,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
 
-                string algoId = data.ClientAlgoId;
+                string algoId = data.AlgoId;
                 if (!await _metaDataRepository.ExistsAlgoMetaData(clientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {algoId}");
 
@@ -170,8 +170,8 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
 
-                if (string.IsNullOrWhiteSpace(data.ClientAlgoId))
-                    data.ClientAlgoId = Guid.NewGuid().ToString();
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    data.AlgoId = Guid.NewGuid().ToString();
 
                 if (!data.ValidateData(out AlgoStoreAggregateException exception))
                     throw exception;
@@ -183,9 +183,9 @@ namespace Lykke.AlgoStore.Services
                 };
                 await _metaDataRepository.SaveAlgoMetaData(clientData);
 
-                var res = await _metaDataRepository.GetAlgoMetaData(clientId, data.ClientAlgoId);
+                var res = await _metaDataRepository.GetAlgoMetaData(clientId, data.AlgoId);
                 if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection())
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot save data for {clientId} id: {data.ClientAlgoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot save data for {clientId} id: {data.AlgoId}");
 
                 return res;
             }
@@ -209,8 +209,8 @@ namespace Lykke.AlgoStore.Services
 
         private async Task DeleteMetadata(string clientId, AlgoMetaData data)
         {
-            if (await _blobRepository.BlobExists(data.ClientAlgoId))
-                await _blobRepository.DeleteBlobAsync(data.ClientAlgoId);
+            if (await _blobRepository.BlobExists(data.AlgoId))
+                await _blobRepository.DeleteBlobAsync(data.AlgoId);
 
             var clientData = new AlgoClientMetaData
             {

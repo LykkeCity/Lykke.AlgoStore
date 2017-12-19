@@ -19,7 +19,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 var res = new AlgoMetaDataEntity();
 
                 res.PartitionKey = data.ClientId;
-                res.RowKey = algoData.ClientAlgoId;
+                res.RowKey = algoData.AlgoId;
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
                 res.ETag = "*";
@@ -52,7 +52,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         {
             var result = new AlgoMetaData();
 
-            result.ClientAlgoId = entity.RowKey;
+            result.AlgoId = entity.RowKey;
             result.Description = entity.Description;
             result.Name = entity.Name;
             result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");

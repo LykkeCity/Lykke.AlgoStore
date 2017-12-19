@@ -60,16 +60,16 @@ namespace Lykke.AlgoStore.Services
                 var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
 
                 var response =
-                    await _externalClient.BuildAlgoImageFromBinary(blob, data.ClientId, algoMetaData.ClientAlgoId);
+                    await _externalClient.BuildAlgoImageFromBinary(blob, data.ClientId, algoMetaData.AlgoId);
 
                 int imageId = int.Parse(response);
-                var testId = await _externalClient.CreateTestAlgo(imageId, algoMetaData.ClientAlgoId);
+                var testId = await _externalClient.CreateTestAlgo(imageId, algoMetaData.AlgoId);
                 if (testId < 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "Error creating test");
 
                 var runtimeData = new AlgoClientRuntimeData
                 {
-                    ClientAlgoId = data.AlgoId,
+                    AlgoId = data.AlgoId,
                     RuntimeData = new List<AlgoRuntimeData> { new AlgoRuntimeData
                     {
                         ImageId = testId.ToString(),

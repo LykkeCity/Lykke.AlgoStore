@@ -77,7 +77,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_Data_ShouldBe_Saved(AlgoMetaDataRepository repository, AlgoClientMetaData data)
         {
-            var saved = repository.GetAlgoMetaData(ClientId, data.AlgoMetaData[0].ClientAlgoId).Result;
+            var saved = repository.GetAlgoMetaData(ClientId, data.AlgoMetaData[0].AlgoId).Result;
             Assert.NotNull(saved);
         }
 

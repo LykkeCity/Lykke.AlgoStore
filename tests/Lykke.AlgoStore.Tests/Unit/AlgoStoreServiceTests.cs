@@ -294,7 +294,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .Returns((string algoId) =>
                 {
                     var res = new AlgoClientRuntimeData();
-                    res.ClientAlgoId = algoId;
+                    res.AlgoId = algoId;
                     res.RuntimeData = new List<AlgoRuntimeData>();
                     var data = new Fixture().Build<AlgoRuntimeData>()
                     .With(d => d.ImageId, "1")
@@ -330,7 +330,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     res.ClientId = clientId;
                     res.AlgoMetaData = new List<AlgoMetaData>();
                     var data = fixture.Build<AlgoMetaData>()
-                        .With(a => a.ClientAlgoId, id)
+                        .With(a => a.AlgoId, id)
                         .Create();
                     res.AlgoMetaData.Add(data);
 

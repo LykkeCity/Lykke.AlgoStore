@@ -19,7 +19,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 if (algoEntity == null)
                     continue;
 
-                result.ClientAlgoId = algoEntity.ClientAlgoId;
+                result.AlgoId = algoEntity.ClientAlgoId;
                 result.RuntimeData.Add(algoEntity.ToRuntimeData());
             }
 
@@ -32,7 +32,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if ((data == null) || data.RuntimeData.IsNullOrEmptyCollection())
                 return result;
 
-            var algoId = data.ClientAlgoId;
+            var algoId = data.AlgoId;
 
             foreach (AlgoRuntimeData runtimeData in data.RuntimeData)
             {

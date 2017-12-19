@@ -21,7 +21,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void SetUp()
         {
             _entity = new AlgoClientRuntimeData();
-            _entity.ClientAlgoId = ClientAlgoId;
+            _entity.AlgoId = ClientAlgoId;
             _entity.RuntimeData = new List<AlgoRuntimeData>();
 
             _entity.RuntimeData.Add(_fixture.Build<AlgoRuntimeData>().Create());
@@ -65,7 +65,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_Data_ShouldBe_Saved(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            var saved = repository.GetAlgoRuntimeDataByAlgo(data.ClientAlgoId).Result;
+            var saved = repository.GetAlgoRuntimeDataByAlgo(data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 
