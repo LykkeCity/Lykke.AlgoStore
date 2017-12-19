@@ -11,7 +11,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoRuntimeDataRepositoryTests
     {
-        private const string ClientAlgoId = "{F5385D58-137B-4E3D-BD75-E577A8EB38AA}";
+        private const string ClientId = "F5385D58-137B-4E3D-BD75-E577A8EB38AA";
+        private const string AlgoId = "26A253A1-7A16-495C-8EB9-F6AE1F310A33";
 
         private readonly Fixture _fixture = new Fixture();
         private AlgoClientRuntimeData _entity;
@@ -20,11 +21,10 @@ namespace Lykke.AlgoStore.Tests.Unit
         [SetUp]
         public void SetUp()
         {
-            _entity = new AlgoClientRuntimeData();
-            _entity.AlgoId = ClientAlgoId;
-            _entity.RuntimeData = new List<AlgoRuntimeData>();
-
-            _entity.RuntimeData.Add(_fixture.Build<AlgoRuntimeData>().Create());
+            _entity = _fixture.Build<AlgoClientRuntimeData>()
+                .With(d => d.AlgoId, AlgoId)
+                .With(d => d.ClientId, ClientId)
+                .Create();
         }
 
         [TearDown]
@@ -34,7 +34,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             if (_entitySaved)
             {
-                repo.DeleteAlgoRuntimeData(_entity.RuntimeData[0].ImageId).Wait();
+                repo.DeleteAlgoRuntimeData(_entity.ClientId, _entity.AlgoId).Wait();
                 _entitySaved = false;
             }
 
@@ -65,13 +65,13 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_Data_ShouldBe_Saved(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            var saved = repository.GetAlgoRuntimeDataByAlgo(data.AlgoId).Result;
+            var saved = repository.GetAlgoRuntimeData(data.ClientId, data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 
         private static void Then_Result_ShouldNotBe_Null(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            var saved = repository.GetAlgoRuntimeDataByAlgo(data.AlgoId).Result;
+            var saved = repository.GetAlgoRuntimeData(data.ClientId, data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 

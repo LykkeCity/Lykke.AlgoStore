@@ -118,11 +118,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             AlgoRuntimeDataEntity entity = data;
 
-            var model = When_Invoke_ToModel(new List<AlgoRuntimeDataEntity> { entity });
+            var model = When_Invoke_ToModel(entity);
             var result = When_Invoke_ToEntity(model);
 
 
-            Then_Entity_ShouldBe_Equal(entity, result[0]);
+            Then_Entity_ShouldBe_Equal(entity, result);
         }
 
 
@@ -133,9 +133,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             return data.ToEntity();
         }
 
-        private static List<AlgoRuntimeDataEntity> When_Invoke_ToEntity(AlgoClientRuntimeData data)
+        private static AlgoRuntimeDataEntity When_Invoke_ToEntity(AlgoClientRuntimeData data)
         {
-            return data.ToEntity(PartitionKey);
+            return data.ToEntity();
         }
 
         private static AlgoClientMetaData When_Invoke_ToModel(List<AlgoMetaDataEntity> entities)
@@ -143,7 +143,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return entities.ToModel();
         }
 
-        private static AlgoClientRuntimeData When_Invoke_ToModel(List<AlgoRuntimeDataEntity> entities)
+        private static AlgoClientRuntimeData When_Invoke_ToModel(AlgoRuntimeDataEntity entities)
         {
             return entities.ToModel();
         }

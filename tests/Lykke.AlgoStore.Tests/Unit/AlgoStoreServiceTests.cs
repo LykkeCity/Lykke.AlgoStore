@@ -290,16 +290,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoRuntimeDataRepository>();
 
             result.Setup(repo => repo.SaveAlgoRuntimeData(It.IsAny<AlgoClientRuntimeData>())).Returns(Task.CompletedTask);
-            result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>()))
-                .Returns((string algoId) =>
+            result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) =>
                 {
                     var res = new AlgoClientRuntimeData();
                     res.AlgoId = algoId;
-                    res.RuntimeData = new List<AlgoRuntimeData>();
-                    var data = new Fixture().Build<AlgoRuntimeData>()
-                    .With(d => d.ImageId, "1")
-                    .Create();
-                    res.RuntimeData.Add(data);
+                    res.ClientId = clientId;
+                    res.ImageId = 1;
 
                     return Task.FromResult(res);
                 });
