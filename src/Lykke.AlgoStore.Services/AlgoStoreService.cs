@@ -48,10 +48,10 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoBlobRepository.BlobExists(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoBinaryDataNotFound, "No blob for provided id");
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.AlgoId))
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
-                var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.AlgoId);
+                var algo = await _algoMetaDataRepository.GetAlgoMetaData(data.ClientId, data.AlgoId);
                 var algoMetaData = algo.AlgoMetaData?.FirstOrDefault();
 
                 if (algoMetaData == null)
@@ -96,7 +96,7 @@ namespace Lykke.AlgoStore.Services
 
                 string algoId = data.AlgoId;
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(algoId))
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.ClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
 
                 var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
@@ -142,7 +142,7 @@ namespace Lykke.AlgoStore.Services
 
                 string algoId = data.AlgoId;
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(algoId))
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.ClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
 
                 var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
