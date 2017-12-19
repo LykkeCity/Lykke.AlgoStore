@@ -93,11 +93,9 @@ namespace Lykke.AlgoStore.Services
 
                 foreach (var metadata in algos.AlgoMetaData)
                 {
-                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(metadata.AlgoId);
-                    long imageId;
-                    if (runtimeData == null ||
-                        runtimeData.RuntimeData.IsNullOrEmptyCollection() ||
-                        (imageId = runtimeData.RuntimeData[0].GetImageIdAsNumber()) < 1)
+                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeData(clientId, metadata.AlgoId);
+
+                    if (runtimeData == null)
                     {
                         metadata.Status = AlgoRuntimeStatuses.Unknown.ToUpperText();
                         // TODO Skip?!?
@@ -107,7 +105,7 @@ namespace Lykke.AlgoStore.Services
                     ClientAlgoRuntimeStatuses status = ClientAlgoRuntimeStatuses.NotFound;
                     try
                     {
-                        status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
+                        status = await _deploymentClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
                     }
                     catch (Exception ex)
                     {
@@ -138,21 +136,14 @@ namespace Lykke.AlgoStore.Services
                 if (!await _metaDataRepository.ExistsAlgoMetaData(clientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {algoId}");
 
-                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
-                if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
+                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
+                if (runtimeData != null)
                 {
-                    var runData = runtimeData.RuntimeData[0];
-                    var imageId = runData.GetImageIdAsNumber();
-                    if (imageId < 1)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
-                    if (runData.BuildImageId < 1)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid data for BuildImageId {runData.BuildImageId}");
+                    if (!await DeleteImage(runtimeData.ImageId, runtimeData.BuildImageId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {algoId} testId {runtimeData.ImageId}");
 
-                    if (!await DeleteImage(imageId, runData.BuildImageId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {algoId} testId {imageId}");
-
-                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(imageId.ToString()))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for algo {algoId} testId {imageId}");
+                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(clientId, runtimeData.AlgoId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for algo {algoId} testId {runtimeData.ImageId}");
                 }
 
                 await DeleteMetadata(clientId, data);
@@ -195,11 +186,11 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task<AlgoClientRuntimeData> GetRuntimeData(string clientAlgoId)
+        public async Task<AlgoClientRuntimeData> GetRuntimeData(string clientId, string algoId)
         {
             try
             {
-                return await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(clientAlgoId);
+                return await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
             }
             catch (Exception ex)
             {
