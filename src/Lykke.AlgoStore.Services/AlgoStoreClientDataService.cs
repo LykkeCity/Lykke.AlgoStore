@@ -84,7 +84,7 @@ namespace Lykke.AlgoStore.Services
         {
             try
             {
-                if (!dataModel.ValidateData(out AlgoStoreAggregateException exception))
+                if (!dataModel.ValidateData(out var exception))
                     throw exception;
 
                 var algo = await _metaDataRepository.GetAlgoMetaData(dataModel.AlgoId);
@@ -128,7 +128,7 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    ClientAlgoRuntimeStatuses status = ClientAlgoRuntimeStatuses.NotFound;
+                    var status = ClientAlgoRuntimeStatuses.NotFound;
                     try
                     {
                         status = await _deploymentClient.GetAlgoTestAdministrativeStatus(imageId);
@@ -148,43 +148,41 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task CascadeDeleteClientMetadata(string clientId, AlgoMetaData data)
+        public async Task ValidateCascadeDeleteClientMetadataRequest(string clientId, AlgoMetaData data)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
 
-                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                if (!data.ValidateData(out var exception))
                     throw exception;
 
-                string algoId = data.ClientAlgoId;
+                var algoId = data.ClientAlgoId;
                 if (!await _metaDataRepository.ExistsAlgoMetaData(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {algoId}");
-
-                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataByAlgo(algoId);
-                if ((runtimeData != null) && !runtimeData.RuntimeData.IsNullOrEmptyCollection())
-                {
-                    var runData = runtimeData.RuntimeData[0];
-                    var imageId = runData.GetImageIdAsNumber();
-                    if (imageId < 1)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {algoId}");
-                    if (runData.BuildImageId < 1)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid data for BuildImageId {runData.BuildImageId}");
-
-                    if (!await DeleteImage(imageId, runData.BuildImageId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {algoId} testId {imageId}");
-
-                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(imageId.ToString()))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for algo {algoId} testId {imageId}");
-                }
-
-                await DeleteMetadata(clientId, data);
             }
             catch (Exception ex)
             {
                 throw HandleException(ex, ComponentName);
             }
+        }
+
+        public bool ShouldCascadeDeleteRuntimeData(AlgoClientRuntimeData runtimeData)
+        {
+            if (runtimeData?.RuntimeData?.Count == 0)
+                return false;
+
+            var runData = runtimeData.RuntimeData[0];
+            var imageId = runData.GetImageIdAsNumber();
+
+            if (imageId < 1)
+                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Image id is not long {imageId}");
+
+            if (runData.BuildImageId < 1)
+                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid data for BuildImageId {runData.BuildImageId}");
+
+            return (!runtimeData?.RuntimeData.IsNullOrEmptyCollection() == true);
         }
 
         public async Task<AlgoClientMetaData> SaveClientMetadata(string clientId, AlgoMetaData data)
@@ -197,7 +195,7 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(data.ClientAlgoId))
                     data.ClientAlgoId = Guid.NewGuid().ToString();
 
-                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                if (!data.ValidateData(out var exception))
                     throw exception;
 
                 var clientData = new AlgoClientMetaData
@@ -231,7 +229,7 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        private async Task DeleteMetadata(string clientId, AlgoMetaData data)
+        public async Task DeleteMetadata(string clientId, AlgoMetaData data)
         {
             if (await _blobRepository.BlobExists(data.ClientAlgoId))
                 await _blobRepository.DeleteBlobAsync(data.ClientAlgoId);
@@ -244,34 +242,9 @@ namespace Lykke.AlgoStore.Services
             await _metaDataRepository.DeleteAlgoMetaData(clientData);
         }
 
-        private async Task<bool> DeleteImage(long testId, int imageId)
+        public async Task<bool> DeleteAlgoRuntimeData(string imageId)
         {
-            var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(testId);
-
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for testId {testId}");
-
-            bool result = true;
-
-            if (status == ClientAlgoRuntimeStatuses.NotFound)
-                return true;
-
-            if (status == ClientAlgoRuntimeStatuses.Paused ||
-                status == ClientAlgoRuntimeStatuses.Running)
-            {
-                result = await _deploymentClient.StopTestAlgo(testId);
-                if (result)
-                    status = ClientAlgoRuntimeStatuses.Stopped;
-            }
-
-            if (result &&
-                (status == ClientAlgoRuntimeStatuses.Stopped ||
-                status == ClientAlgoRuntimeStatuses.Created))
-                result = await _deploymentClient.DeleteTestAlgo(testId);
-
-            if (result)
-                result = await _deploymentClient.DeleteAlgo(imageId);
-
-            return result;
+            return await _runtimeDataRepository.DeleteAlgoRuntimeData(imageId);
         }
     }
 }

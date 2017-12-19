@@ -109,71 +109,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void CascadeDeleteClientMetadata_Returns_Ok()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_Null(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Returns_ImageExists()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Error_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Blob_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Error_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Runtime_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Error_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
         public void SaveClientMetadata_Returns_Ok()
         {
             var clientId = Guid.NewGuid().ToString();
@@ -249,19 +184,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 exception = ex;
                 return null;
-            }
-        }
-
-        private static void When_Invoke_CascadeDeleteClientMetadata(AlgoStoreClientDataService service, string clientId, AlgoMetaData data, out Exception exception)
-        {
-            exception = null;
-            try
-            {
-                service.CascadeDeleteClientMetadata(clientId, data).Wait();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
             }
         }
 
