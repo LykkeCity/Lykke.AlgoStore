@@ -13,8 +13,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
     {
         public static readonly string TableName = "AlgoMetaDataTable";
 
-        private const string PartitionKey = "AlgoMetaData";
-
         private readonly INoSQLTableStorage<AlgoMetaDataEntity> _table;
 
         public AlgoMetaDataRepository(INoSQLTableStorage<AlgoMetaDataEntity> table)
@@ -24,7 +22,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<AlgoClientMetaData> GetAllClientAlgoMetaData(string clientId)
         {
-            var entities = await _table.GetDataAsync(PartitionKey, data => data.ClientId == clientId);
+            var entities = await _table.GetDataAsync(clientId);
 
             var result = entities.ToList().ToModel();
 
@@ -36,30 +34,30 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return result;
         }
-        public async Task<AlgoClientMetaData> GetAlgoMetaData(string id)
+        public async Task<AlgoClientMetaData> GetAlgoMetaData(string clientId, string algoId)
         {
-            var entitiy = await _table.GetDataAsync(PartitionKey, id);
+            var entitiy = await _table.GetDataAsync(clientId, algoId);
 
             return new[] { entitiy }.ToModel();
         }
-        public async Task<bool> ExistsAlgoMetaData(string id)
+        public async Task<bool> ExistsAlgoMetaData(string clientId, string algoId)
         {
             var entity = new AlgoMetaDataEntity();
-            entity.PartitionKey = PartitionKey;
-            entity.RowKey = id;
+            entity.PartitionKey = clientId;
+            entity.RowKey = algoId;
 
             return await _table.RecordExistsAsync(entity);
         }
 
         public async Task SaveAlgoMetaData(AlgoClientMetaData metaData)
         {
-            var enitites = metaData.ToEntity(PartitionKey);
+            var enitites = metaData.ToEntity();
 
             await _table.InsertOrMergeBatchAsync(enitites);
         }
         public async Task DeleteAlgoMetaData(AlgoClientMetaData metaData)
         {
-            var entities = metaData.ToEntity(PartitionKey);
+            var entities = metaData.ToEntity();
             await _table.DeleteAsync(entities);
         }
     }
