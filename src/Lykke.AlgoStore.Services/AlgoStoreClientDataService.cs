@@ -36,30 +36,6 @@ namespace Lykke.AlgoStore.Services
             _deploymentClient = deploymentClient;
         }
 
-        public async Task DeleteAlgoBlobBinaryAsync(string algoId)
-        {
-            try
-            {
-                await _blobRepository.DeleteBlobAsync(algoId);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
-        public async Task DeleteAlgoBlobStringAsync(string algoId)
-        {
-            try
-            {
-                await _blobRepository.DeleteBlobAsync(algoId);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
         public async Task SaveAlgoAsString(string clientId, string algoId, string data)
         {
             try
