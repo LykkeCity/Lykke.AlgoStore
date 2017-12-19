@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
@@ -12,8 +11,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
     {
         public static readonly string TableName = "AlgoRuntimeDataTable";
 
-        private const string PartitionKey = "AlgoRuntimeData";
-
         private readonly INoSQLTableStorage<AlgoRuntimeDataEntity> _table;
 
         public AlgoRuntimeDataRepository(INoSQLTableStorage<AlgoRuntimeDataEntity> table)
@@ -21,22 +18,22 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
-        public async Task<AlgoClientRuntimeData> GetAlgoRuntimeDataByAlgo(string algoId)
+        public async Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string clientId, string algoId)
         {
-            var entities = await _table.GetDataAsync(PartitionKey, entity => entity.ClientAlgoId == algoId);
+            var entities = await _table.GetDataAsync(clientId, algoId);
 
-            return entities.ToList().ToModel();
+            return entities.ToModel();
         }
 
         public async Task SaveAlgoRuntimeData(AlgoClientRuntimeData data)
         {
-            var enitites = data.ToEntity(PartitionKey);
+            var enitites = data.ToEntity();
 
-            await _table.InsertOrMergeBatchAsync(enitites);
+            await _table.InsertOrMergeAsync(enitites);
         }
-        public async Task<bool> DeleteAlgoRuntimeData(string imageId)
+        public async Task<bool> DeleteAlgoRuntimeData(string clientId, string algoId)
         {
-            var entity = await _table.DeleteAsync(PartitionKey, imageId);
+            var entity = await _table.DeleteAsync(clientId, algoId);
             return entity != null;
         }
     }

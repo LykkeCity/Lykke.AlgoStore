@@ -5,6 +5,6 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
     public interface IAlgoRuntimeDataReadOnlyRepository
     {
-        Task<AlgoClientRuntimeData> GetAlgoRuntimeDataByAlgo(string algoId);
+        Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string clientId, string algoId);
     }
 }
