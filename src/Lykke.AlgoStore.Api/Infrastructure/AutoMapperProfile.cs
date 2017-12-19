@@ -9,11 +9,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
         public AutoMapperProfile()
         {
             CreateMap<AlgoMetaData, AlgoMetaDataModel>()
-                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ClientAlgoId))
-                    .ForSourceMember(src => src.TemplateId, opt => opt.Ignore());
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.ClientAlgoId));
             CreateMap<AlgoMetaDataModel, AlgoMetaData>()
-                .ForMember(dest => dest.ClientAlgoId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.TemplateId, opt => opt.Ignore());
+                .ForMember(dest => dest.ClientAlgoId, opt => opt.MapFrom(src => src.Id));
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
 
             CreateMap<ManageImageData, ManageImageModel>().ReverseMap();
