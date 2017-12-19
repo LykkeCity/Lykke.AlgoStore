@@ -22,6 +22,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoStoreClientDataServiceTests
     {
+        private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private static readonly string BlobKey = "TestKey";
         private static readonly string AlogId = "AlgoId123";
         private static readonly string BlobAlgoString = "testString";
@@ -221,12 +222,12 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_SaveAlgoAsString(AlgoStoreClientDataService service)
         {
-            service.SaveAlgoAsString(AlogId, BlobAlgoString).Wait();
+            service.SaveAlgoAsString(ClientId, AlogId, BlobAlgoString).Wait();
         }
 
         private static void When_Invoke_SaveAlgoAsBinary(AlgoStoreClientDataService service, UploadAlgoBinaryData model)
         {
-            service.SaveAlgoAsBinary(model).Wait();
+            service.SaveAlgoAsBinary(ClientId, model).Wait();
         }
 
         private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(
@@ -318,11 +319,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.DeleteAlgoMetaData(It.IsAny<AlgoClientMetaData>())).Returns(Task.CompletedTask);
             result.Setup(repo => repo.GetAllClientAlgoMetaData(It.IsAny<string>()))
                 .Returns((string clientId) => { return Task.FromResult(fixture.Build<AlgoClientMetaData>().With(a => a.ClientId, clientId).Create()); });
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>()))
-                .Returns((string id) =>
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientid, string id) =>
                 {
                     var res = new AlgoClientMetaData();
-                    res.ClientId = Guid.NewGuid().ToString();
+                    res.ClientId = clientid;
                     res.AlgoMetaData = new List<AlgoMetaData>();
                     var data = fixture.Build<AlgoMetaData>()
                         .With(a => a.ClientAlgoId, id)
@@ -333,7 +334,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
             result.Setup(repo => repo.SaveAlgoMetaData(It.IsAny<AlgoClientMetaData>())).Returns(Task.CompletedTask);
             result.Setup(repo => repo.DeleteAlgoMetaData(It.IsAny<AlgoClientMetaData>())).Returns(Task.CompletedTask);
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }
@@ -403,9 +404,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoMetaDataRepository>();
             result.Setup(repo => repo.DeleteAlgoMetaData(It.IsAny<AlgoClientMetaData>())).ThrowsAsync(new Exception("Delete"));
             result.Setup(repo => repo.GetAllClientAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("GetAll"));
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
             result.Setup(repo => repo.SaveAlgoMetaData(It.IsAny<AlgoClientMetaData>())).ThrowsAsync(new Exception("Save"));
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
 
             return result.Object;
         }

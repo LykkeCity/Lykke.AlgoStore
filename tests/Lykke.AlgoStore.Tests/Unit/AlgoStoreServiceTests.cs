@@ -183,8 +183,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
 
             return result.Object;
         }
@@ -321,13 +321,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>()))
-                .Returns((string id) =>
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string id) =>
                 {
                     var res = new AlgoClientMetaData();
-                    res.ClientId = Guid.NewGuid().ToString();
+                    res.ClientId = clientId;
                     res.AlgoMetaData = new List<AlgoMetaData>();
                     var data = fixture.Build<AlgoMetaData>()
                         .With(a => a.ClientAlgoId, id)
@@ -344,9 +344,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>()))
+            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string id) =>
                 {
                     var res = new AlgoClientMetaData();

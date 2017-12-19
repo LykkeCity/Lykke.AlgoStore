@@ -11,7 +11,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 {
     public class AlgoMetaDataRepositoryTests
     {
-        private const string ClientId = "{066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D}";
+        private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
 
         private readonly Fixture _fixture = new Fixture();
         private AlgoClientMetaData _entity;
@@ -77,7 +77,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_Data_ShouldBe_Saved(AlgoMetaDataRepository repository, AlgoClientMetaData data)
         {
-            var saved = repository.GetAlgoMetaData(data.AlgoMetaData[0].ClientAlgoId).Result;
+            var saved = repository.GetAlgoMetaData(ClientId, data.AlgoMetaData[0].ClientAlgoId).Result;
             Assert.NotNull(saved);
         }
 

@@ -130,7 +130,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static List<AlgoMetaDataEntity> When_Invoke_ToEntity(AlgoClientMetaData data)
         {
-            return data.ToEntity(PartitionKey);
+            return data.ToEntity();
         }
 
         private static List<AlgoRuntimeDataEntity> When_Invoke_ToEntity(AlgoClientRuntimeData data)
