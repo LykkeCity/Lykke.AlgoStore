@@ -60,17 +60,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
         }
 
-        [Test]
-        public void SaveAlgoAsString_Test()
-        {
-            var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepository = Given_AlgoBinary_InMemory_Storage_Repository();
-            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null);
-
-            When_Invoke_SaveAlgoAsString(service);
-            ThenAlgo_StringShouldExist(blobRepository);
-        }
-
         [TestCaseSource("StatusesData")]
         public void GetClientMetadata_Returns_Data(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
         {
@@ -107,71 +96,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Returns_Ok()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_Null(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Returns_ImageExists()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Error_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Blob_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Error_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Null_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void CascadeDeleteClientMetadata_Runtime_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoClientMetaData();
-            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var runtimeRepo = Given_Error_AlgoRuntimeDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null);
-            When_Invoke_CascadeDeleteClientMetadata(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
         }
 
         [Test]
@@ -220,11 +144,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             return model;
         }
 
-        private static void When_Invoke_SaveAlgoAsString(AlgoStoreClientDataService service)
-        {
-            service.SaveAlgoAsString(ClientId, AlogId, BlobAlgoString).Wait();
-        }
-
         private static void When_Invoke_SaveAlgoAsBinary(AlgoStoreClientDataService service, UploadAlgoBinaryData model)
         {
             service.SaveAlgoAsBinary(ClientId, model).Wait();
@@ -250,19 +169,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 exception = ex;
                 return null;
-            }
-        }
-
-        private static void When_Invoke_CascadeDeleteClientMetadata(AlgoStoreClientDataService service, string clientId, AlgoMetaData data, out Exception exception)
-        {
-            exception = null;
-            try
-            {
-                service.CascadeDeleteClientMetadata(clientId, data).Wait();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
             }
         }
 

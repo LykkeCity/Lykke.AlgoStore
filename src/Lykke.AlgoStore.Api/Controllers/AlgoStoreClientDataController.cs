@@ -5,9 +5,13 @@ using AutoMapper;
 using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -19,10 +23,14 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoClientDataController : Controller
     {
         private readonly IAlgoStoreClientDataService _clientDataService;
+        private readonly IAlgoStoreService _service;
 
-        public AlgoClientDataController(IAlgoStoreClientDataService clientDataService)
+        public AlgoClientDataController(
+            IAlgoStoreClientDataService clientDataService,
+            IAlgoStoreService service)
         {
             _clientDataService = clientDataService;
+            _service = service;
         }
 
         [HttpGet("metadata")]
@@ -70,11 +78,29 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
-            string clientId = User.GetClientId();
-
             var data = Mapper.Map<AlgoMetaData>(model);
+            var clientId = User.GetClientId();
 
-            await _clientDataService.CascadeDeleteClientMetadata(clientId, data);
+            await _clientDataService.ValidateCascadeDeleteClientMetadataRequest(clientId, data);
+
+            var runtimeData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequest(clientId, data);
+
+            if (runtimeData != null)
+            {
+                if (!await _service.DeleteImage(runtimeData.ImageId, runtimeData.BuildImageId))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot delete image for algo {data.AlgoId} testId {runtimeData.ImageId}");
+                }
+
+                if (!await _clientDataService.DeleteAlgoRuntimeData(runtimeData.ClientId, runtimeData.AlgoId))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot delete runtime data for algo {data.AlgoId} testId {runtimeData.ImageId}");
+                }
+            }
+
+            await _clientDataService.DeleteMetadata(clientId, data);
 
             return NoContent();
         }

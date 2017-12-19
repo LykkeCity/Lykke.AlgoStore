@@ -207,5 +207,35 @@ namespace Lykke.AlgoStore.Services
                 throw HandleException(ex, ComponentName);
             }
         }
+
+        public async Task<bool> DeleteImage(long imageId, int buildImageId)
+        {
+            var status = await _externalClient.GetAlgoTestAdministrativeStatus(imageId);
+
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for testId {imageId}");
+
+            var result = true;
+
+            if (status == ClientAlgoRuntimeStatuses.NotFound)
+                return true;
+
+            if (status == ClientAlgoRuntimeStatuses.Paused ||
+                status == ClientAlgoRuntimeStatuses.Running)
+            {
+                result = await _externalClient.StopTestAlgo(imageId);
+                if (result)
+                    status = ClientAlgoRuntimeStatuses.Stopped;
+            }
+
+            if (result &&
+                (status == ClientAlgoRuntimeStatuses.Stopped ||
+                 status == ClientAlgoRuntimeStatuses.Created))
+                result = await _externalClient.DeleteTestAlgo(imageId);
+
+            if (result)
+                result = await _externalClient.DeleteAlgo(buildImageId);
+
+            return result;
+        }
     }
 }

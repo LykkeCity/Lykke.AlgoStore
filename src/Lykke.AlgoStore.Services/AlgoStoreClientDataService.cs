@@ -36,26 +36,6 @@ namespace Lykke.AlgoStore.Services
             _deploymentClient = deploymentClient;
         }
 
-        public async Task SaveAlgoAsString(string clientId, string algoId, string data)
-        {
-            try
-            {
-                if (String.IsNullOrWhiteSpace(algoId) || String.IsNullOrWhiteSpace(data))
-                {
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Specified algo id and/or algo string are empty! ");
-                }
-                var algo = await _metaDataRepository.GetAlgoMetaData(clientId, algoId);
-                if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Specified algo id {algoId} is not found! ");
-
-                await _blobRepository.SaveBlobAsync(algoId, data);
-
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
         public async Task SaveAlgoAsBinary(string clientId, UploadAlgoBinaryData dataModel)
         {
             try
@@ -102,7 +82,7 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    ClientAlgoRuntimeStatuses status = ClientAlgoRuntimeStatuses.NotFound;
+                    var status = ClientAlgoRuntimeStatuses.NotFound;
                     try
                     {
                         status = await _deploymentClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
@@ -122,31 +102,21 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task CascadeDeleteClientMetadata(string clientId, AlgoMetaData data)
+        public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequest(string clientId, AlgoMetaData data)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
 
-                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                if (!data.ValidateData(out var exception))
                     throw exception;
 
                 string algoId = data.AlgoId;
                 if (!await _metaDataRepository.ExistsAlgoMetaData(clientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo metadata not found for {algoId}");
 
-                var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
-                if (runtimeData != null)
-                {
-                    if (!await DeleteImage(runtimeData.ImageId, runtimeData.BuildImageId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete image for algo {algoId} testId {runtimeData.ImageId}");
-
-                    if (!await _runtimeDataRepository.DeleteAlgoRuntimeData(clientId, runtimeData.AlgoId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Cannot delete runtime data for algo {algoId} testId {runtimeData.ImageId}");
-                }
-
-                await DeleteMetadata(clientId, data);
+                return await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
             }
             catch (Exception ex)
             {
@@ -164,7 +134,7 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
 
-                if (!data.ValidateData(out AlgoStoreAggregateException exception))
+                if (!data.ValidateData(out var exception))
                     throw exception;
 
                 var clientData = new AlgoClientMetaData
@@ -186,19 +156,7 @@ namespace Lykke.AlgoStore.Services
             }
         }
 
-        public async Task<AlgoClientRuntimeData> GetRuntimeData(string clientId, string algoId)
-        {
-            try
-            {
-                return await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
-            }
-            catch (Exception ex)
-            {
-                throw HandleException(ex, ComponentName);
-            }
-        }
-
-        private async Task DeleteMetadata(string clientId, AlgoMetaData data)
+        public async Task DeleteMetadata(string clientId, AlgoMetaData data)
         {
             if (await _blobRepository.BlobExists(data.AlgoId))
                 await _blobRepository.DeleteBlobAsync(data.AlgoId);
@@ -211,34 +169,9 @@ namespace Lykke.AlgoStore.Services
             await _metaDataRepository.DeleteAlgoMetaData(clientData);
         }
 
-        private async Task<bool> DeleteImage(long testId, int imageId)
+        public async Task<bool> DeleteAlgoRuntimeData(string clientId, string imageId)
         {
-            var status = await _deploymentClient.GetAlgoTestAdministrativeStatus(testId);
-
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"GetAlgoTestAdministrativeStatus Status: {status} for testId {testId}");
-
-            bool result = true;
-
-            if (status == ClientAlgoRuntimeStatuses.NotFound)
-                return true;
-
-            if (status == ClientAlgoRuntimeStatuses.Paused ||
-                status == ClientAlgoRuntimeStatuses.Running)
-            {
-                result = await _deploymentClient.StopTestAlgo(testId);
-                if (result)
-                    status = ClientAlgoRuntimeStatuses.Stopped;
-            }
-
-            if (result &&
-                (status == ClientAlgoRuntimeStatuses.Stopped ||
-                status == ClientAlgoRuntimeStatuses.Created))
-                result = await _deploymentClient.DeleteTestAlgo(testId);
-
-            if (result)
-                result = await _deploymentClient.DeleteAlgo(imageId);
-
-            return result;
+            return await _runtimeDataRepository.DeleteAlgoRuntimeData(clientId, imageId);
         }
     }
 }
