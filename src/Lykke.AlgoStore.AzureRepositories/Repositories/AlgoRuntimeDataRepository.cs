@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
@@ -22,12 +21,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
-        public async Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string imageId)
-        {
-            var entity = await _table.GetDataAsync(PartitionKey, imageId);
-
-            return new List<AlgoRuntimeDataEntity> { entity }.ToModel();
-        }
         public async Task<AlgoClientRuntimeData> GetAlgoRuntimeDataByAlgo(string algoId)
         {
             var entities = await _table.GetDataAsync(PartitionKey, entity => entity.ClientAlgoId == algoId);

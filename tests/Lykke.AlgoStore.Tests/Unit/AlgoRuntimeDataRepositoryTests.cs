@@ -71,7 +71,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_Result_ShouldNotBe_Null(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            var saved = repository.GetAlgoRuntimeData(data.RuntimeData[0].ImageId).Result;
+            var saved = repository.GetAlgoRuntimeDataByAlgo(data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 

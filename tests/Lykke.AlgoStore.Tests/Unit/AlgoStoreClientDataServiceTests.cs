@@ -358,19 +358,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var fixture = new Fixture();
             var result = new Mock<IAlgoRuntimeDataRepository>();
-            result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>()))
-                .Returns((string imageId) =>
-                {
-                    var res = new AlgoClientRuntimeData();
-                    res.AlgoId = Guid.NewGuid().ToString();
-                    res.RuntimeData = new List<AlgoRuntimeData>();
-                    var data = fixture.Build<AlgoRuntimeData>()
-                        .With(a => a.ImageId, imageId)
-                        .Create();
-                    res.RuntimeData.Add(data);
-
-                    return Task.FromResult(res);
-                });
             result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>()))
                 .Returns((string algoId) =>
                 {
@@ -391,8 +378,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static IAlgoRuntimeDataRepository Given_Null_AlgoRuntimeDataRepositoryMock()
         {
             var result = new Mock<IAlgoRuntimeDataRepository>();
-            result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>()))
-                .Returns(Task.FromResult<AlgoClientRuntimeData>(null));
             result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>()))
                 .Returns(Task.FromResult<AlgoClientRuntimeData>(null));
 
@@ -424,7 +409,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static IAlgoRuntimeDataRepository Given_Error_AlgoRuntimeDataRepositoryMock()
         {
             var result = new Mock<IAlgoRuntimeDataRepository>();
-            result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
             result.Setup(repo => repo.GetAlgoRuntimeDataByAlgo(It.IsAny<string>())).ThrowsAsync(new Exception("GetByAlgo"));
 
             return result.Object;
