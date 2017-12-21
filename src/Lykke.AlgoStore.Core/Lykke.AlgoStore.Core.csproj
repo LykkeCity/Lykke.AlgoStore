@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>Lykke.AlgoStore.Core</AssemblyName>
+    <RootNamespace>Lykke.AlgoStore.Core</RootNamespace>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
+    <Compile Remove="Domain\Repositories\IAlgoDataRepository.cs" />
+    <Compile Remove="Domain\Repositories\IAlgoTemplateDataRepository.cs" />
+    <Compile Remove="DoNotUseAttribure.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lykke.Common" Version="3.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Domain\Repositories\" />
+  </ItemGroup>
+
+</Project>
