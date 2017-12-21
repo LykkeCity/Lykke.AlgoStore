@@ -6,5 +6,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
     {
         Task<string> BuildAlgoImageFromBinary(byte[] data, string algoUsername, string algoName);
         Task<long> CreateTestAlgo(long imageId, string algoId);
+        Task<bool> StartTestAlgo(long imageId);
     }
 }
