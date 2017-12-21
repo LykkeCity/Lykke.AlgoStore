@@ -1,12 +1,16 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -70,6 +74,45 @@ namespace Lykke.AlgoStore.Services
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
 
                 return true;
+            });
+        }
+        public async Task<string> StartTestImage(ManageImageData data)
+        {
+            return await LogTimedInfoAsync(nameof(StartTestImage), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var algoId = data.AlgoId;
+
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.ClientId, algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeData(data.ClientId, algoId);
+                if (runtimeData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound,
+                        $"No runtime data for algo id {algoId}");
+
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
+                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+
+                var statusResult = AlgoRuntimeStatuses.Unknown;
+                switch (status)
+                {
+                    case ClientAlgoRuntimeStatuses.Created:
+                    case ClientAlgoRuntimeStatuses.Paused:
+                    case ClientAlgoRuntimeStatuses.Stopped:
+                        if (await _externalClient.StartTestAlgo(runtimeData.ImageId))
+                            statusResult = AlgoRuntimeStatuses.Started;
+                        break;
+                    default:
+                        statusResult = status.ToModel();
+                        break;
+                }
+
+                return statusResult.ToUpperText();
             });
         }
     }
