@@ -135,6 +135,21 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
         }
+        [TestCaseSource("StopStatusData")]
+        public void StopTestImage_Returns_CorrectStatus(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
+        {
+            var data = Given_ManageImageData();
+
+            var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock_WithStatus(statuses.Item1);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, repo, runtimeRepo);
+
+            var response = When_Invoke_StopTest(service, data, out var exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
+        }
+
         #region Private Methods
 
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
@@ -215,6 +230,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(client => client.GetAlgoTestAdministrativeStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
             result.Setup(client => client.CreateTestAlgo(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
             result.Setup(client => client.StartTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
+            result.Setup(client => client.StopTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }
@@ -318,6 +334,25 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Response_ShouldBe_ExpectedStatus(string response, AlgoRuntimeStatuses expectedStatus)
         {
             Assert.AreEqual(response, expectedStatus.ToUpperText());
+        }
+        private static string When_Invoke_StopTest(AlgoStoreService service, ManageImageData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.StopTestImage(data).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            return string.Empty;
+        }
+
+        private static void Then_Response_ShouldBe_ExpectedLog(string response, string expectedLog)
+        {
+            Assert.AreEqual(response, expectedLog);
         }
         #endregion
     }
