@@ -1,5 +1,10 @@
 ﻿using Autofac;
+using AzureStorage.Blob;
+using AzureStorage.Tables;
 using Common.Log;
+using Lykke.AlgoStore.AzureRepositories.Entities;
+using Lykke.AlgoStore.AzureRepositories.Repositories;
+using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.SettingsReader;
 
@@ -21,6 +26,11 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(_log).SingleInstance();
 
             var reloadingDbManager = _settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString);
+            builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
+            builder.RegisterInstance(AzureTableStorage<AlgoMetaDataEntity>.Create(reloadingDbManager, AlgoMetaDataRepository.TableName, _log));
+
+            builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
+            builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();
         }
     }
 }
