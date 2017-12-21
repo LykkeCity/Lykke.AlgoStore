@@ -45,6 +45,9 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
                 .SingleInstance();
+            builder.RegisterType<AlgoStoreClientDataService>()
+                .As<IAlgoStoreClientDataService>()
+                .SingleInstance();
         }
     }
 }
