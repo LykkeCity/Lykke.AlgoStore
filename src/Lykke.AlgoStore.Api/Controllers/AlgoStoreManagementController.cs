@@ -37,7 +37,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(result);
         }
 
-[HttpPost("test/start")]
+        [HttpPost("test/start")]
         [SwaggerOperation("StartTest")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
