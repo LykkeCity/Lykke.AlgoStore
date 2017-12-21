@@ -115,5 +115,42 @@ namespace Lykke.AlgoStore.Services
                 return statusResult.ToUpperText();
             });
         }
+        public async Task<string> StopTestImage(ManageImageData data)
+        {
+            return await LogTimedInfoAsync(nameof(StopTestImage), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var algoId = data.AlgoId;
+
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaData(data.ClientId, algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeData(data.ClientId, algoId);
+                if (runtimeData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound,
+                        $"No runtime data for algo id {algoId}");
+
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
+                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+
+                var statusResult = AlgoRuntimeStatuses.Unknown;
+                switch (status)
+                {
+                    case ClientAlgoRuntimeStatuses.Running:
+                        if (await _externalClient.StopTestAlgo(runtimeData.ImageId))
+                            statusResult = AlgoRuntimeStatuses.Stopped;
+                        break;
+                    default:
+                        statusResult = status.ToModel();
+                        break;
+                }
+
+                return statusResult.ToUpperText();
+            });
+        }
     }
 }

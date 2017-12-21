@@ -52,5 +52,20 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return Ok(result);
         }
+        [HttpPost("test/stop")]
+        [SwaggerOperation("StopTest")]
+        [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> StopTest([FromBody]ManageImageModel model)
+        {
+            var data = Mapper.Map<ManageImageData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = new StatusModel();
+            result.Status = await _service.StopTestImage(data);
+
+            return Ok(result);
+        }
     }
 }
