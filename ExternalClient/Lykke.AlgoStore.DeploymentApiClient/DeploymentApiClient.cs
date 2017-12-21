@@ -42,6 +42,12 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
+        public async Task<bool> StopTestAlgo(long imageId)
+        {
+            var response = await StopTestAlgoUsingPUTWithHttpMessagesAsync(imageId);
+
+            return response.Response.StatusCode == HttpStatusCode.OK;
+        }
         public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatus(long id)
         {
             HttpOperationResponse<AdminStatusResponse> response = await GetAdministrativeStatusAsync(id);
