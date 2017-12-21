@@ -54,10 +54,12 @@ namespace Lykke.AlgoStore.Api
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                     });
 
+                services.AddScoped<ValidateMimeMultipartContentFilter>();
                 services.AddSwaggerGen(options =>
                 {
                     options.DefaultLykkeConfiguration(AlgoStoreConstants.ApiVersion, AlgoStoreConstants.AppName);
                     options.OperationFilter<ApiKeyHeaderOperationFilter>();
+                    options.OperationFilter<FileUploadOperationFilter>();
                 });
 
                 services.AddLykkeAuthentication();
