@@ -55,6 +55,7 @@ namespace Lykke.AlgoStore.Api
                     });
 
                 services.AddScoped<ValidateMimeMultipartContentFilter>();
+
                 services.AddSwaggerGen(options =>
                 {
                     options.DefaultLykkeConfiguration(AlgoStoreConstants.ApiVersion, AlgoStoreConstants.AppName);

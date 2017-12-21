@@ -3,6 +3,7 @@ using Autofac.Extensions.DependencyInjection;
 using Common.Log;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
+using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.Services;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
@@ -38,6 +39,12 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<ClientSessionsClient>()
                 .As<IClientSessionsClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.Services.SessionServiceUrl);
+
+            builder.RegisterType<DeploymentApiClient.DeploymentApiClient>()
+                .As<IDeploymentApiClient>()
+                .As<IDeploymentApiReadOnlyClient>()
+                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
+                .SingleInstance();
         }
 
         private static void RegisterLocalServices(ContainerBuilder builder)
@@ -45,8 +52,12 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
                 .SingleInstance();
+
             builder.RegisterType<AlgoStoreClientDataService>()
                 .As<IAlgoStoreClientDataService>()
+                .SingleInstance();
+            builder.RegisterType<AlgoStoreService>()
+                .As<IAlgoStoreService>()
                 .SingleInstance();
         }
     }

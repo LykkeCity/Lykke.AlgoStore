@@ -28,9 +28,11 @@ namespace Lykke.AlgoStore.Api.Modules
             var reloadingDbManager = _settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString);
             builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
             builder.RegisterInstance(AzureTableStorage<AlgoMetaDataEntity>.Create(reloadingDbManager, AlgoMetaDataRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<AlgoRuntimeDataEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
 
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
             builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();
+            builder.RegisterType<AlgoRuntimeDataRepository>().As<IAlgoRuntimeDataReadOnlyRepository>().As<IAlgoRuntimeDataRepository>();
         }
     }
 }
