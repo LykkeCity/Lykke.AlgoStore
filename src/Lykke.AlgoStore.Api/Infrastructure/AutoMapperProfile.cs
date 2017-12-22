@@ -15,6 +15,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
 
             CreateMap<ManageImageData, ManageImageModel>().ReverseMap();
+            CreateMap<TailLogData, TailLogModel>().ReverseMap();
         }
     }
 }
