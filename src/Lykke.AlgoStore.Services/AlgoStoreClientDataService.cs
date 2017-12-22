@@ -93,6 +93,24 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequest(string clientId, AlgoMetaData data)
+        {
+            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequest), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var algoId = data.AlgoId;
+                if (!await _metaDataRepository.ExistsAlgoMetaData(clientId, algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                        $"Algo metadata not found for {algoId}");
+
+                return await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
+            });
+        }
         public async Task<AlgoClientMetaData> SaveClientMetadata(string clientId, AlgoMetaData data)
         {
             return await LogTimedInfoAsync(nameof(SaveClientMetadata), clientId, async () =>
