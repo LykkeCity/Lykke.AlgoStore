@@ -16,8 +16,9 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreService : BaseAlgoStoreService, IAlgoStoreService
     {
-        private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
+        private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
+
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
         private readonly IDeploymentApiClient _externalClient;
 
@@ -168,7 +169,6 @@ namespace Lykke.AlgoStore.Services
                 return await _externalClient.GetTestAlgoLog(runtimeData.ImageId);
             });
         }
-
         public async Task<string> GetTestTailLog(TailLogData data)
         {
             return await LogTimedInfoAsync(nameof(GetTestTailLog), data.ClientId, async () =>

@@ -6,7 +6,7 @@ using Lykke.AlgoStore.Core.Settings;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lykke.AlgoStore.Api.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure.Managers
 {
     internal static class ContainerManager
     {
@@ -17,7 +17,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             builder.RegisterModule(new AspNetCoreModule());
             builder.RegisterModule(new AlgoApiModule(settings, log));
             builder.RegisterModule(new AlgoRepositoryModule(settings, log));
-            builder.RegisterModule(new ServiceModule(settings.Nested(x => x.AlgoApi), log));
+            builder.RegisterModule(new ServiceModule(settings.Nested(x => x.AlgoApi)));
 
             builder.Populate(services);
 

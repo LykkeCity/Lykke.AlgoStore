@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Lykke.AlgoStore.Core
+namespace Lykke.AlgoStore.Core.Domain.Attributes
 {
     public class DoNotUseAttribure : Attribute
     {

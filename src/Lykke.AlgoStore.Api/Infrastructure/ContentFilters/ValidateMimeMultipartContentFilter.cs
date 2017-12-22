@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Lykke.AlgoStore.Api.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 {
     public class ValidateMimeMultipartContentFilter : ActionFilterAttribute
     {

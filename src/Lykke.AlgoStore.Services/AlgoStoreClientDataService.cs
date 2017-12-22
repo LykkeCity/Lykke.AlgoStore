@@ -19,8 +19,9 @@ namespace Lykke.AlgoStore.Services
     public class AlgoStoreClientDataService : BaseAlgoStoreService, IAlgoStoreClientDataService
     {
         private readonly IAlgoMetaDataRepository _metaDataRepository;
-        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
+
+        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
@@ -54,7 +55,6 @@ namespace Lykke.AlgoStore.Services
                 }
             });
         }
-
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
         {
             return await LogTimedInfoAsync(nameof(GetClientMetadata), clientId, async () =>
@@ -92,7 +92,6 @@ namespace Lykke.AlgoStore.Services
                 return algos;
             });
         }
-
         public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequest(string clientId, AlgoMetaData data)
         {
             return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequest), clientId, async () =>
@@ -142,7 +141,6 @@ namespace Lykke.AlgoStore.Services
                 return res;
             });
         }
-
         public async Task DeleteMetadata(string clientId, AlgoMetaData data)
         {
             await LogTimedInfoAsync(nameof(DeleteMetadata), clientId, async () =>

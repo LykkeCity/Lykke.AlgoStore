@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
-using Lykke.AlgoStore.Api.Infrastructure;
+using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -86,6 +86,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return NoContent();
         }
+
         [HttpPost("imageData/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]

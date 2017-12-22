@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Lykke.AlgoStore.Api.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure.OperationFilters
 {
     //Modified one of provided solutions from
     //https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/193
     public class FileUploadOperationFilter : IOperationFilter
     {
         private const string FormDataMimeType = "multipart/form-data";
-        private static readonly List<string> FormFilePropertyNames = new List<string> {  "Data" };
+        private static readonly List<string> FormFilePropertyNames = new List<string> { "Data" };
 
         public FileUploadOperationFilter()
         {
