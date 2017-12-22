@@ -2,20 +2,11 @@
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Core.Domain.Errors;
 
-namespace Lykke.AlgoStore.Api.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure.Managers
 {
-    internal class ExceptionManager
+    internal static class ExceptionManager
     {
-        private static readonly ExceptionManager _instance = new ExceptionManager();
-        public static ExceptionManager Instance
-        {
-            get
-            {
-                return _instance;
-            }
-        }
-
-        public object CreateErrorResponse(Exception ex)
+        public static object CreateErrorResponse(Exception ex)
         {
             Exception temp = ex;
 

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Lykke.AlgoStore.Api.Infrastructure
+namespace Lykke.AlgoStore.Api.Infrastructure.OperationFilters
 {
     public class ApiKeyHeaderOperationFilter : IOperationFilter
     {

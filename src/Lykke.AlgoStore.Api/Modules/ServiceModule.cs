@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Common.Log;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.DeploymentApiClient;
@@ -14,13 +13,11 @@ namespace Lykke.AlgoStore.Api.Modules
     public class ServiceModule : Module
     {
         private readonly IReloadingManager<AlgoApiSettings> _settings;
-        private readonly ILog _log;
         private readonly IServiceCollection _services;
 
-        public ServiceModule(IReloadingManager<AlgoApiSettings> settings, ILog log)
+        public ServiceModule(IReloadingManager<AlgoApiSettings> settings)
         {
             _settings = settings;
-            _log = log;
 
             _services = new ServiceCollection();
         }

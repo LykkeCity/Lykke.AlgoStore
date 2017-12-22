@@ -16,8 +16,9 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreService : BaseAlgoStoreService, IAlgoStoreService
     {
-        private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
+        private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
+
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
         private readonly IDeploymentApiClient _externalClient;
 
@@ -168,7 +169,6 @@ namespace Lykke.AlgoStore.Services
                 return await _externalClient.GetTestAlgoLog(runtimeData.ImageId);
             });
         }
-
         public async Task<string> GetTestTailLog(TailLogData data)
         {
             return await LogTimedInfoAsync(nameof(GetTestTailLog), data.ClientId, async () =>
@@ -183,6 +183,49 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {algoId}");
 
                 return await _externalClient.GetTestAlgoTailLog(runtimeData.ImageId, data.Tail);
+            });
+        }
+        public async Task DeleteImage(AlgoClientRuntimeData runtimeData)
+        {
+            await LogTimedInfoAsync(nameof(DeleteImage), runtimeData?.ClientId, async () =>
+            {
+                if (runtimeData == null)
+                    return;
+
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+
+                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
+                    $"GetAlgoTestAdministrativeStatus Status: {status} for testId {runtimeData.ImageId}");
+
+                var result = true;
+
+                if (status == ClientAlgoRuntimeStatuses.NotFound)
+                    return;
+
+                if (status == ClientAlgoRuntimeStatuses.Paused ||
+                    status == ClientAlgoRuntimeStatuses.Running)
+                {
+                    result = await _externalClient.StopTestAlgo(runtimeData.ImageId);
+                    if (result)
+                        status = ClientAlgoRuntimeStatuses.Stopped;
+                }
+
+                if (result &&
+                    (status == ClientAlgoRuntimeStatuses.Stopped ||
+                     status == ClientAlgoRuntimeStatuses.Created))
+                    result = await _externalClient.DeleteTestAlgo(runtimeData.ImageId);
+
+                if (result)
+                    result = await _externalClient.DeleteAlgo(runtimeData.BuildImageId);
+
+                if (result)
+                    result = await _algoRuntimeDataRepository.DeleteAlgoRuntimeData(
+                        runtimeData.ClientId,
+                        runtimeData.AlgoId);
+
+                if (!result)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot delete image id {runtimeData.ImageId} for algo id {runtimeData.AlgoId}");
             });
         }
     }

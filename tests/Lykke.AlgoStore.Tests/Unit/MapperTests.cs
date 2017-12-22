@@ -46,8 +46,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
         }
 
+        private static IEnumerable<object[]> AlgoClientRuntimeData
+        {
+            get
+            {
+                var numberOfElements = 10;
+                var fixture = new Fixture();
+                var mock = Enumerable.Repeat(new object[] { fixture.Build<AlgoClientRuntimeData>().Create() }, numberOfElements).ToList();
+                return mock;
+            }
+        }
         private static IEnumerable<object[]> AlgoMetaDataEntity => TestEntity<AlgoMetaDataEntity>();
 
+        private static IEnumerable<object[]> AlgoRuntimeDataEntity => TestEntity<AlgoRuntimeDataEntity>();
         private static IEnumerable<object[]> TestEntity<T>() where T : TableEntity
         {
             int numberOfElements = 10;
@@ -90,6 +101,28 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Entity_ShouldBe_Equal(entity, result[0]);
         }
 
+        [TestCaseSource("AlgoClientRuntimeData")]
+        public void Mapper_AlgoClientRuntimeData_ToEntity_Test(AlgoClientRuntimeData data)
+        {
+            AlgoClientRuntimeData metadata = data;
+
+            var entities = When_Invoke_ToEntity(data);
+            var result = When_Invoke_ToModel(entities);
+
+            Then_Data_ShouldBe_Equal(metadata, result);
+        }
+
+        [TestCaseSource("AlgoRuntimeDataEntity")]
+        public void Mapper_AlgoRuntimeDataEntity_ToModel_Test(AlgoRuntimeDataEntity data)
+        {
+            AlgoRuntimeDataEntity entity = data;
+
+            var model = When_Invoke_ToModel(entity);
+            var result = When_Invoke_ToEntity(model);
+
+
+            Then_Entity_ShouldBe_Equal(entity, result);
+        }
 
         #region Private Methods
 
@@ -98,11 +131,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             return data.ToEntity();
         }
 
+        private static AlgoRuntimeDataEntity When_Invoke_ToEntity(AlgoClientRuntimeData data)
+        {
+            return data.ToEntity();
+        }
         private static AlgoClientMetaData When_Invoke_ToModel(List<AlgoMetaDataEntity> entities)
         {
             return entities.ToModel();
         }
 
+        private static AlgoClientRuntimeData When_Invoke_ToModel(AlgoRuntimeDataEntity entities)
+        {
+            return entities.ToModel();
+        }
         private static void Then_Data_ShouldBe_Equal(AlgoClientMetaData first, AlgoClientMetaData second)
         {
             string serializedFirst = JsonConvert.SerializeObject(first);
@@ -111,6 +152,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.AreEqual(serializedFirst, serializedSecond);
         }
 
+        private static void Then_Data_ShouldBe_Equal(AlgoClientRuntimeData first, AlgoClientRuntimeData second)
+        {
+            string serializedFirst = JsonConvert.SerializeObject(first);
+            string serializedSecond = JsonConvert.SerializeObject(second);
+
+            Assert.AreEqual(serializedFirst, serializedSecond);
+        }
         private static void Then_Entity_ShouldBe_Equal(AlgoMetaDataEntity first, AlgoMetaDataEntity second)
         {
             string serializedFirst = JsonConvert.SerializeObject(first);
@@ -119,6 +167,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.AreEqual(serializedFirst, serializedSecond);
         }
 
+        private static void Then_Entity_ShouldBe_Equal(AlgoRuntimeDataEntity first, AlgoRuntimeDataEntity second)
+        {
+            string serializedFirst = JsonConvert.SerializeObject(first);
+            string serializedSecond = JsonConvert.SerializeObject(second);
+
+            Assert.AreEqual(serializedFirst, serializedSecond);
+        }
         #endregion
     }
 }

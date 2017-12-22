@@ -6,6 +6,9 @@ using AutoMapper;
 using Common.Log;
 using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.Api.Infrastructure.Authentication;
+using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
+using Lykke.AlgoStore.Api.Infrastructure.Managers;
+using Lykke.AlgoStore.Api.Infrastructure.OperationFilters;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.Common.ApiLibrary.Middleware;
@@ -101,7 +104,7 @@ namespace Lykke.AlgoStore.Api
                     app.UseDeveloperExceptionPage();
                 }
 
-                app.UseMiddleware<GlobalErrorHandlerMiddleware>(AlgoStoreConstants.AppName, (CreateErrorResponse)ExceptionManager.Instance.CreateErrorResponse);
+                app.UseMiddleware<GlobalErrorHandlerMiddleware>(AlgoStoreConstants.AppName, (CreateErrorResponse)ExceptionManager.CreateErrorResponse);
 
                 app.UseAuthentication();
 

@@ -23,6 +23,12 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 return response.Body.Id.ToString();
             }
         }
+        public async Task<bool> DeleteAlgo(long imageId)
+        {
+            var response = await RemoveALgoUsingDELETEWithHttpMessagesAsync(imageId);
+
+            return response.Response.StatusCode == HttpStatusCode.OK;
+        }
 
         public async Task<long> CreateTestAlgo(long imageId, string algoId)
         {
@@ -45,6 +51,12 @@ namespace Lykke.AlgoStore.DeploymentApiClient
         public async Task<bool> StopTestAlgo(long imageId)
         {
             var response = await StopTestAlgoUsingPUTWithHttpMessagesAsync(imageId);
+
+            return response.Response.StatusCode == HttpStatusCode.OK;
+        }
+        public async Task<bool> DeleteTestAlgo(long imageId)
+        {
+            var response = await DeleteTestAlgoUsingDELETEWithHttpMessagesAsync(imageId);
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }

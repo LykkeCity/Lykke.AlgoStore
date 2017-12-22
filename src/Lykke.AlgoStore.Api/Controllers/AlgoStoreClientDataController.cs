@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
-using Lykke.AlgoStore.Api.Infrastructure;
+using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -19,11 +19,14 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoClientDataController : Controller
     {
         private readonly IAlgoStoreClientDataService _clientDataService;
+        private readonly IAlgoStoreService _service;
 
         public AlgoClientDataController(
-            IAlgoStoreClientDataService clientDataService)
+            IAlgoStoreClientDataService clientDataService,
+            IAlgoStoreService service)
         {
             _clientDataService = clientDataService;
+            _service = service;
         }
 
         [HttpGet("metadata")]
@@ -61,6 +64,27 @@ namespace Lykke.AlgoStore.Api.Controllers
             var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
 
             return Ok(response);
+        }
+
+        [HttpPost("metadata/cascadeDelete")]
+        [SwaggerOperation("CascadeDeleteAlgoMetadata")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
+        {
+            var clientId = User.GetClientId();
+
+            var data = Mapper.Map<AlgoMetaData>(model);
+
+            var runtimeData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequest(clientId, data);
+
+            await _service.DeleteImage(runtimeData);
+
+            await _clientDataService.DeleteMetadata(clientId, data);
+
+            return NoContent();
         }
 
         [HttpPost("imageData/upload/binary")]

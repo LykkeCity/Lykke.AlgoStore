@@ -52,6 +52,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return Ok(result);
         }
+
         [HttpPost("test/stop")]
         [SwaggerOperation("StopTest")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
@@ -67,6 +68,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return Ok(result);
         }
+
         [HttpGet("test/log")]
         [SwaggerOperation("GetTestLog")]
         [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
