@@ -174,5 +174,22 @@ namespace Lykke.AlgoStore.Services
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data);
             });
         }
+        public async Task<string> GetAlgoAsString(string clientId, string algoId)
+        {
+            return await LogTimedInfoAsync(nameof(GetAlgoAsString), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+                if (string.IsNullOrWhiteSpace(algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "AlgoId Is empty");
+
+                var algo = await _metaDataRepository.GetAlgoMetaData(clientId, algoId);
+                if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                        $"Specified algo id {algoId} is not found!");
+
+                return await _blobRepository.GetBlobStringAsync(algoId);
+            });
+        }
     }
 }

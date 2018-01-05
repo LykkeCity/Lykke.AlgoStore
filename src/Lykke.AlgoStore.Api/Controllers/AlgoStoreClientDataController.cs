@@ -103,12 +103,12 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return NoContent();
         }
+
         [HttpPost("imageData/upload/string")]
         [SwaggerOperation("UploadString")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        [ServiceFilter(typeof(ValidateMimeMultipartContentFilter))]
         public async Task<IActionResult> UploadSting(UploadAlgoStringModel model)
         {
             string clientId = User.GetClientId();
@@ -118,6 +118,24 @@ namespace Lykke.AlgoStore.Api.Controllers
             await _clientDataService.SaveAlgoAsString(clientId, data);
 
             return NoContent();
+        }
+
+        [HttpGet("imageData/upload/string")]
+        [SwaggerOperation("GetUploadString")]
+        [ProducesResponseType(typeof(DataStringModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetUploadString([FromBody] string algoId)
+        {
+            string clientId = User.GetClientId();
+
+            var data = await _clientDataService.GetAlgoAsString(clientId, algoId);
+
+            return Ok(new DataStringModel
+            {
+                Data = data
+            });
         }
     }
 }
