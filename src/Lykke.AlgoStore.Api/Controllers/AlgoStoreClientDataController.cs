@@ -119,5 +119,23 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("imageData/upload/string")]
+        [SwaggerOperation("GetUploadString")]
+        [ProducesResponseType(typeof(DataStringModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetUploadString([FromBody] string algoId)
+        {
+            string clientId = User.GetClientId();
+
+            var data = await _clientDataService.GetAlgoAsString(clientId, algoId);
+
+            return Ok(new DataStringModel
+            {
+                Data = data
+            });
+        }
     }
 }
