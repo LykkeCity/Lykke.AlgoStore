@@ -159,5 +159,20 @@ namespace Lykke.AlgoStore.Services
                 await _metaDataRepository.DeleteAlgoMetaData(clientData);
             });
         }
+        public async Task SaveAlgoAsString(string clientId, UploadAlgoStringData dataModel)
+        {
+            await LogTimedInfoAsync(nameof(SaveAlgoAsString), clientId, async () =>
+            {
+                if (!dataModel.ValidateData(out var exception))
+                    throw exception;
+
+                var algo = await _metaDataRepository.GetAlgoMetaData(clientId, dataModel.AlgoId);
+                if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                        $"Specified algo id {dataModel.AlgoId} is not found! Cant save string for a non existing algo.");
+
+                await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data);
+            });
+        }
     }
 }
