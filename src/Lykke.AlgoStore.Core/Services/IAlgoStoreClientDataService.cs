@@ -10,5 +10,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequest(string clientId, AlgoMetaData data);
         Task SaveAlgoAsBinary(string clientId, UploadAlgoBinaryData dataModel);
         Task DeleteMetadata(string clientId, AlgoMetaData data);
+        Task SaveAlgoAsString(string clientId, UploadAlgoStringData dataModel);
     }
 }

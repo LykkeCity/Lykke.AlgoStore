@@ -103,5 +103,21 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return NoContent();
         }
+        [HttpPost("imageData/upload/string")]
+        [SwaggerOperation("UploadString")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        [ServiceFilter(typeof(ValidateMimeMultipartContentFilter))]
+        public async Task<IActionResult> UploadSting(UploadAlgoStringModel model)
+        {
+            string clientId = User.GetClientId();
+
+            var data = Mapper.Map<UploadAlgoStringData>(model);
+
+            await _clientDataService.SaveAlgoAsString(clientId, data);
+
+            return NoContent();
+        }
     }
 }
