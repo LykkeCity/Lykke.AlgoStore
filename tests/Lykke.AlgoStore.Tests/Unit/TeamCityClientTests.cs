@@ -79,5 +79,10 @@ namespace Lykke.AlgoStore.Tests.Unit
                 var responseString = JsonConvert.SerializeObject(problems);
             }
         }
+
+        [Test]
+        public void TeamCityParametersTest()
+        {
+        }
     }
 }
