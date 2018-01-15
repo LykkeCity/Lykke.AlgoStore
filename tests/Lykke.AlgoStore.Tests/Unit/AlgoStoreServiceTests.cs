@@ -165,6 +165,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldBe_ExpectedLog(response, expectedLog);
         }
+
         #region Private Methods
 
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
@@ -226,7 +227,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataReadOnlyRepository repo,
             IAlgoRuntimeDataRepository runtimeDataRepository)
         {
-            return new AlgoStoreService(deploymentApiClient, new LogMock(), blobRepo, repo, runtimeDataRepository);
+            return new AlgoStoreService(deploymentApiClient, new LogMock(), blobRepo, repo, runtimeDataRepository, null, null);
         }
 
         private static ManageImageData Given_ManageImageData()
