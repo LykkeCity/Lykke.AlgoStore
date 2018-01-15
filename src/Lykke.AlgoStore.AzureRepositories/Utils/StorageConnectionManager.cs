@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Globalization;
+using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.SettingsReader;
 using Microsoft.WindowsAzure.Storage;
@@ -28,6 +30,23 @@ namespace Lykke.AlgoStore.AzureRepositories.Utils
             Initialize();
         }
 
+        public string GetDateHeader()
+        {
+            const string dateHeaderFormat = "x-ms-date:{0}";
 
+            return string.Format(dateHeaderFormat, DateTime.UtcNow.ToString("R", CultureInfo.InvariantCulture));
+        }
+
+        public string GetServerVersionHeader()
+        {
+            const string serverVersionHeaderFormat = "x-ms-version:{0}";
+
+            return string.Format(serverVersionHeaderFormat, "2017-04-17");
+        }
+
+        public string GetAuthenticationHeader(string tableName, string partitionKey, string rowKey)
+        {
+            return String.Empty;
+        }
     }
 }
