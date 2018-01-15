@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ExternalClient\Lykke.AlgoStore.DeploymentApiClient\Lykke.AlgoStore.DeploymentApiClient.csproj" />
+    <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
   </ItemGroup>
 

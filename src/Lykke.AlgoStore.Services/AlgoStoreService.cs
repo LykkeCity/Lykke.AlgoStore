@@ -11,6 +11,7 @@ using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services.Utils;
+using Lykke.AlgoStore.TeamCityClient;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -22,17 +23,24 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
         private readonly IDeploymentApiClient _externalClient;
 
+        private readonly IStorageConnectionManager _storageConnectionManager;
+        private readonly ITeamCityClient _teamCityClient;
+
         public AlgoStoreService(
             IDeploymentApiClient externalClient,
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
             IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
-            IAlgoRuntimeDataRepository algoRuntimeDataRepository) : base(log, nameof(AlgoStoreService))
+            IAlgoRuntimeDataRepository algoRuntimeDataRepository,
+            IStorageConnectionManager storageConnectionManager,
+            ITeamCityClient teamCityClient) : base(log, nameof(AlgoStoreService))
         {
             _externalClient = externalClient;
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
             _algoRuntimeDataRepository = algoRuntimeDataRepository;
+            _storageConnectionManager = storageConnectionManager;
+            _teamCityClient = teamCityClient;
         }
 
         public async Task<bool> DeployImage(ManageImageData data)

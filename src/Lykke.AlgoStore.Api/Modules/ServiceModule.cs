@@ -4,6 +4,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.Services;
+using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IDeploymentApiReadOnlyClient>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
                 .SingleInstance();
+
+            builder.RegisterInstance<ITeamCityClient>(new TeamCityClient.TeamCityClient(_settings.CurrentValue.TeamCity));
         }
 
         private static void RegisterLocalServices(ContainerBuilder builder)
