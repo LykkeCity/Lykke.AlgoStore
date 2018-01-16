@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
@@ -48,11 +47,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
 
-                using (var stream = new MemoryStream())
-                {
-                    await dataModel.Data.CopyToAsync(stream);
-                    await _blobRepository.SaveBlobAsync(dataModel.AlgoId, stream.ToArray());
-                }
+                await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data.OpenReadStream());
             });
         }
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
