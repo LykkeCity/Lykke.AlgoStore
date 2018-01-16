@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Lykke.AlgoStore.AzureRepositories.Utils;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.TeamCityClient.Models;
+using Lykke.AlgoStore.Tests.Infrastructure;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
@@ -20,6 +23,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetBuildTypes_Returns_Success()
         {
+            string key = "6edcd51b-09c7-4d9b-b78c-1e08bdd84623";
+
             var client = new TeamCityClient.TeamCityClient(_settings);
 
             //BuildTypeResponse buildTypeResponse = client.GetBuildTypes().Result;
@@ -38,17 +43,42 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Properties = new Properties { Property = new List<PropertyBase>() }
             };
 
-            int i = 0;
-            //for (int i = 0; i < 5; i++)
-            //{
+            var storageConnectionManager = new StorageConnectionManager(SettingsMock.GetSettings());
+            var headers = storageConnectionManager.GetData(key);
+
+            //CODE_Blob_AuthorizationHeader
+            //    CODE_Blob_DateHeader
+            //CODE_Blob_Url
+            //    CODE_Blob_VersionHeader
+            //CODE_Source_File
             foreach (Property responsePropery in parametersResponse.Properies)
             {
                 var propertyBase = new PropertyBase
                 {
-                    Name = responsePropery.Name,
-                    Value = responsePropery.Name + i
+                    Name = responsePropery.Name
                 };
-                request.Properties.Property.Add(propertyBase);
+
+                switch (responsePropery.Name)
+                {
+                    case "CODE_Blob_AuthorizationHeader":
+                        propertyBase.Value = headers.AuthorizationHeader;
+                        break;
+                    case "CODE_Blob_DateHeader":
+                        propertyBase.Value = headers.DateHeader;
+                        break;
+                    case "CODE_Blob_Url":
+                        propertyBase.Value = headers.Url;
+                        break;
+                    case "CODE_Blob_VersionHeader":
+                        propertyBase.Value = headers.VersionHeader;
+                        break;
+                    case "CODE_Source_File":
+                        propertyBase.Value = "TestFile.java";
+                        break;
+                }
+
+                if (!string.IsNullOrWhiteSpace(propertyBase.Value))
+                    request.Properties.Property.Add(propertyBase);
             }
 
             var buildBase = client.StartBuild(request).Result;
@@ -57,9 +87,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var build = client.GetBuildStatus(buildBase.Id).Result;
 
             var responseString = JsonConvert.SerializeObject(build);
-            //}
-
-            //var responseString = JsonConvert.SerializeObject(response);            
+          
         }
 
         [Test]
@@ -83,6 +111,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void TeamCityParametersTest()
         {
+            var storageConnectionManager = new StorageConnectionManager(SettingsMock.GetSettings());
+            Assert.IsNotNull(storageConnectionManager);
+
+            var headers = storageConnectionManager.GetData(Guid.NewGuid().ToString());
+            Assert.IsNotNull(headers);
         }
     }
 }
