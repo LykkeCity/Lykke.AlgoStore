@@ -152,8 +152,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
 
-                string key = SourceCodeTypeHelper.GetBlobKey(dataModel.AlgoId, SourceCodeTypes.JavaBinary);
-                await _blobRepository.SaveBlobAsync(key, dataModel.Data.OpenReadStream());
+                await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data.OpenReadStream());
             });
         }
         public async Task SaveAlgoAsString(string clientId, UploadAlgoStringData dataModel)
@@ -168,8 +167,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {dataModel.AlgoId} is not found! Cant save string for a non existing algo.");
 
-                string key = SourceCodeTypeHelper.GetBlobKey(dataModel.AlgoId, SourceCodeTypes.JavaSource);
-                await _blobRepository.SaveBlobAsync(key, dataModel.Data);
+                await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data);
             });
         }
         public async Task<string> GetAlgoAsString(string clientId, string algoId)
@@ -186,13 +184,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {algoId} is not found!");
 
-                string key = SourceCodeTypeHelper.GetBlobKey(algoId, SourceCodeTypes.JavaSource);
-                var res = await _blobRepository.GetBlobStringAsync(key);
-                if (string.IsNullOrWhiteSpace(res))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoBinaryDataNotFound,
-                        $"String source for algo id {algoId} is not found!");
-
-                return res;
+                return await _blobRepository.GetBlobStringAsync(algoId);
             });
         }
     }
