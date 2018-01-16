@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using AzureStorage.Blob;
@@ -93,7 +94,10 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_Save_BinaryFile(IAlgoBlobRepository repository, string key, byte[] bytes)
         {
-            repository.SaveBlobAsync(key, bytes).Wait();
+            using (var stream = new MemoryStream(bytes))
+            {
+                repository.SaveBlobAsync(key, stream).Wait();
+            }
         }
 
         private static void And_TryDelete_BinaryFile(IAlgoBlobRepository repository, string key)

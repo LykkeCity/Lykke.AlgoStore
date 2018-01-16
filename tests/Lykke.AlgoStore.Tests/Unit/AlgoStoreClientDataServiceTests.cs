@@ -238,7 +238,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoBlobRepository>();
             result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
-            result.Setup(repo => repo.SaveBlobAsync(It.IsAny<string>(), It.IsAny<byte[]>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.SaveBlobAsync(It.IsAny<string>(), It.IsAny<Stream>())).Returns(Task.CompletedTask);
             result.Setup(repo => repo.DeleteBlobAsync(It.IsAny<string>())).Returns(Task.FromResult(new byte[0]));
 
             return result.Object;
