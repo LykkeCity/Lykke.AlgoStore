@@ -164,7 +164,7 @@ namespace Lykke.AlgoStore.Services
 
                 var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeData(data.ClientId, algoId);
                 if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {algoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data for {algoId}");
 
                 return await _externalClient.GetTestAlgoLog(runtimeData.ImageId);
             });
@@ -180,7 +180,7 @@ namespace Lykke.AlgoStore.Services
 
                 var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeData(data.ClientId, algoId);
                 if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {algoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data for {algoId}");
 
                 return await _externalClient.GetTestAlgoTailLog(runtimeData.ImageId, data.Tail);
             });
@@ -190,7 +190,7 @@ namespace Lykke.AlgoStore.Services
             await LogTimedInfoAsync(nameof(DeleteImage), runtimeData?.ClientId, async () =>
             {
                 if (runtimeData == null)
-                    return;
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data");
 
                 var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
 
