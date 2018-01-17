@@ -145,7 +145,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoRuntimeDataRepository runtimeDataRepository,
             IDeploymentApiReadOnlyClient deploymentClient)
         {
-            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, new LogMock());
+            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, null, new LogMock());
         }
 
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)

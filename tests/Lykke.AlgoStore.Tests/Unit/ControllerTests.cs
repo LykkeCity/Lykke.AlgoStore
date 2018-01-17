@@ -260,7 +260,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IDeploymentApiReadOnlyClient deploymentClient)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, runtimeDataRepository, blobRepository,
-                deploymentClient, new LogMock());
+                deploymentClient, null, new LogMock());
 
             return result;
         }
