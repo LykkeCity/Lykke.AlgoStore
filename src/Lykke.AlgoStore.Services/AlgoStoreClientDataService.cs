@@ -40,7 +40,7 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(GetClientMetadata), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
 
                 var algos = await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
 
@@ -77,7 +77,7 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequest), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
 
                 if (!data.ValidateData(out var exception))
                     throw exception;
@@ -95,7 +95,7 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(SaveClientMetadata), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
@@ -175,9 +175,9 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(GetAlgoAsString), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
                 if (string.IsNullOrWhiteSpace(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "AlgoId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
 
                 var algo = await _metaDataRepository.GetAlgoMetaData(clientId, algoId);
                 if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
