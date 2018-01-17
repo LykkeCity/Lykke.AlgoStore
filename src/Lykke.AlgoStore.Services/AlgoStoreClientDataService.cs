@@ -19,6 +19,7 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
+        private readonly IAlgoClientInstanceRepository _instanceRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
@@ -27,12 +28,14 @@ namespace Lykke.AlgoStore.Services
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
             IDeploymentApiReadOnlyClient deploymentClient,
+            IAlgoClientInstanceRepository instanceRepository,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
             _deploymentClient = deploymentClient;
+            _instanceRepository = instanceRepository;
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
@@ -185,6 +188,46 @@ namespace Lykke.AlgoStore.Services
                         $"Specified algo id {algoId} is not found!");
 
                 return await _blobRepository.GetBlobStringAsync(algoId);
+            });
+        }
+
+        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceData(BaseAlgoData data)
+        {
+            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceData), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                return await _instanceRepository.GetAllAlgoInstanceData(data.ClientId, data.AlgoId);
+            });
+        }
+
+        public async Task<AlgoClientInstanceData> GetAlgoInstanceData(BaseAlgoInstance data)
+        {
+            return await LogTimedInfoAsync(nameof(GetAlgoInstanceData), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                return await _instanceRepository.GetAlgoInstanceData(data.ClientId, data.AlgoId, data.InstanceId);
+            });
+        }
+
+        public async Task<AlgoClientInstanceData> SaveAlgoInstance(AlgoClientInstanceData data)
+        {
+            return await LogTimedInfoAsync(nameof(SaveAlgoInstance), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                await _instanceRepository.SaveAlgoInstanceData(data);
+
+                var res = await _instanceRepository.GetAlgoInstanceData(data.ClientId, data.AlgoId, data.InstanceId);
+                if (res == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot save data for {data.ClientId} id: {data.AlgoId}");
+
+                return res;
             });
         }
     }
