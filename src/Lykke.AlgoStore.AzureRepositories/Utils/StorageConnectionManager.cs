@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,7 +41,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Utils
             result.VersionHeader = GetServerVersionHeader();
             result.Url = GetUrl(key);
 
-            GetAuthenticationHeader(result);
+            GetAuthenticationHeader(result, key);
 
             return result;
         }
@@ -61,10 +60,10 @@ namespace Lykke.AlgoStore.AzureRepositories.Utils
             return string.Format(serverVersionHeaderFormat, "2017-04-17");
         }
 
-        private void GetAuthenticationHeader(StorageConnectionData data)
+        private void GetAuthenticationHeader(StorageConnectionData data, string key)
         {
-            string headers = string.Format("{0}/n{1}", data.DateHeader, data.VersionHeader);
-            string resource = string.Format("/{0}/{1}", _storageAccount.Credentials.AccountName, AlgoBlobRepository.BlobContainer);
+            string headers = string.Format("{0}\n{1}", data.DateHeader, data.VersionHeader);
+            string resource = string.Format("/{0}/{1}/{2}", _storageAccount.Credentials.AccountName, AlgoBlobRepository.BlobContainer, key);
 
             var messageSignature = String.Format("GET\n\n\n\n\n\n\n\n\n\n\n\n{0}\n{1}", headers, resource);
 
@@ -73,10 +72,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Utils
             // Create the HMACSHA256 version of the storage key.
             var sha256 = new HMACSHA256(Convert.FromBase64String(_storageAccount.Credentials.ExportBase64EncodedKey()));
 
-            // This is the actual header that will be added to the list of request headers.
-            AuthenticationHeaderValue authHV = new AuthenticationHeaderValue("SharedKey", _storageAccount.Credentials.AccountName + ":" + Convert.ToBase64String(sha256.ComputeHash(signatureBytes)));
-
-            data.AuthorizationHeader = authHV.ToString();
+            data.AuthorizationHeader = "Authorization: SharedKey" + _storageAccount.Credentials.AccountName + ":" + Convert.ToBase64String(sha256.ComputeHash(signatureBytes));
         }
 
         private string GetUrl(string key)

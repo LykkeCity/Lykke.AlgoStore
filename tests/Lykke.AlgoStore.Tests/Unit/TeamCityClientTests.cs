@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Lykke.AlgoStore.AzureRepositories.Utils;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.TeamCityClient.Models;
@@ -72,9 +71,6 @@ namespace Lykke.AlgoStore.Tests.Unit
                     case "CODE_Blob_VersionHeader":
                         propertyBase.Value = headers.VersionHeader;
                         break;
-                    case "CODE_Source_File":
-                        propertyBase.Value = "TestFile.java";
-                        break;
                 }
 
                 if (!string.IsNullOrWhiteSpace(propertyBase.Value))
@@ -87,7 +83,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var build = client.GetBuildStatus(buildBase.Id).Result;
 
             var responseString = JsonConvert.SerializeObject(build);
-          
+
         }
 
         [Test]
