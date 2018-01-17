@@ -241,14 +241,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IDeploymentApiClient>();
 
             result.Setup(
-                client => client.BuildAlgoImageFromBinary(
+                client => client.BuildAlgoImageFromBinaryAsync(
                     It.IsAny<byte[]>(),
                     It.IsAny<string>(),
                     It.IsAny<string>()
                 )
             )
             .ReturnsAsync("1");
-            result.Setup(client => client.CreateTestAlgo(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
+            result.Setup(client => client.CreateTestAlgoAsync(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
 
             return result.Object;
         }
@@ -256,10 +256,10 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IDeploymentApiClient>();
 
-            result.Setup(client => client.GetAlgoTestAdministrativeStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
-            result.Setup(client => client.CreateTestAlgo(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
-            result.Setup(client => client.StartTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
-            result.Setup(client => client.StopTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(true));
+            result.Setup(client => client.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
+            result.Setup(client => client.CreateTestAlgoAsync(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
+            result.Setup(client => client.StartTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
+            result.Setup(client => client.StopTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }
@@ -267,7 +267,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IDeploymentApiClient>();
 
-            result.Setup(client => client.GetTestAlgoLog(It.IsAny<long>())).Returns(Task.FromResult(log));
+            result.Setup(client => client.GetTestAlgoLogAsync(It.IsAny<long>())).Returns(Task.FromResult(log));
 
             return result.Object;
         }

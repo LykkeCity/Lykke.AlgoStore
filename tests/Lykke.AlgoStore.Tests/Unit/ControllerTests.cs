@@ -216,7 +216,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             if (result == null)
                 result = new Mock<IDeploymentApiClient>();
 
-            result.Setup(c => c.GetAlgoTestAdministrativeStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
+            result.Setup(c => c.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
 
             return result;
         }
@@ -230,9 +230,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             if (result == null)
                 result = new Mock<IDeploymentApiClient>();
 
-            result.Setup(c => c.StopTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(resultStop));
-            result.Setup(c => c.DeleteTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(resultDeleteTest));
-            result.Setup(c => c.DeleteAlgo(It.IsAny<long>())).Returns(Task.FromResult(resultDelete));
+            result.Setup(c => c.StopTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(resultStop));
+            result.Setup(c => c.DeleteTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(resultDeleteTest));
+            result.Setup(c => c.DeleteAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(resultDelete));
 
             return result;
         }

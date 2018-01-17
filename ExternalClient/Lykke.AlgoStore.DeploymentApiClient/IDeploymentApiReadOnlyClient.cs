@@ -5,6 +5,6 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 {
     public interface IDeploymentApiReadOnlyClient
     {
-        Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatus(long id);
+        Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatusAsync(long id);
     }
 }
