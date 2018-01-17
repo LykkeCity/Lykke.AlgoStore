@@ -72,7 +72,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Utils
             // Create the HMACSHA256 version of the storage key.
             var sha256 = new HMACSHA256(Convert.FromBase64String(_storageAccount.Credentials.ExportBase64EncodedKey()));
 
-            data.AuthorizationHeader = "Authorization: SharedKey" + _storageAccount.Credentials.AccountName + ":" + Convert.ToBase64String(sha256.ComputeHash(signatureBytes));
+            data.AuthorizationHeader = "Authorization: SharedKey " + _storageAccount.Credentials.AccountName + ":" + Convert.ToBase64String(sha256.ComputeHash(signatureBytes));
         }
 
         private string GetUrl(string key)
