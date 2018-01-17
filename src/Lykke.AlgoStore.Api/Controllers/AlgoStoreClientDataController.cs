@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             string clientId = User.GetClientId();
 
-            var result = await _clientDataService.GetClientMetadata(clientId);
+            var result = await _clientDataService.GetClientMetadataAsync(clientId);
 
             if (result == null || result.AlgoMetaData.IsNullOrEmptyCollection())
                 return NotFound();
@@ -59,7 +59,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var result = await _clientDataService.SaveClientMetadata(clientId, data);
+            var result = await _clientDataService.SaveClientMetadataAsync(clientId, data);
 
             var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
 
@@ -78,11 +78,11 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var runtimeData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequest(clientId, data);
+            var runtimeData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(clientId, data);
 
-            await _service.DeleteImage(runtimeData);
+            await _service.DeleteImageAsync(runtimeData);
 
-            await _clientDataService.DeleteMetadata(clientId, data);
+            await _clientDataService.DeleteMetadataAsync(clientId, data);
 
             return NoContent();
         }
@@ -99,7 +99,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
 
-            await _clientDataService.SaveAlgoAsBinary(clientId, data);
+            await _clientDataService.SaveAlgoAsBinaryAsync(clientId, data);
 
             return NoContent();
         }

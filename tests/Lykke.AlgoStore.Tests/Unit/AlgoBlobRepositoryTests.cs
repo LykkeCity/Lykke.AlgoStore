@@ -55,7 +55,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_DeleteBinary(IAlgoBlobRepository repo, string blobKey)
         {
             repo.DeleteBlobAsync(blobKey).Wait();
-            Assert.False(repo.BlobExists(blobKey).Result);
+            Assert.False(repo.BlobExistsAsync(blobKey).Result);
         }
 
         private static byte[] Give_Large_Byte_Array()
@@ -68,7 +68,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_BinaryFile_ShouldNotExist(IAlgoBlobRepository repo, string blobKey)
         {
-            var exists = repo.BlobExists(blobKey).Result;
+            var exists = repo.BlobExistsAsync(blobKey).Result;
             Assert.False(exists);
         }
 

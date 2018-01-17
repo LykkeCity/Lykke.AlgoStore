@@ -36,14 +36,14 @@ namespace Lykke.AlgoStore.Services
             _deploymentClient = deploymentClient;
         }
 
-        public async Task SaveAlgoAsBinary(string clientId, UploadAlgoBinaryData dataModel)
+        public async Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel)
         {
-            await LogTimedInfoAsync(nameof(SaveAlgoAsBinary), clientId, async () =>
+            await LogTimedInfoAsync(nameof(SaveAlgoAsBinaryAsync), clientId, async () =>
             {
                 if (!dataModel.ValidateData(out var exception))
                     throw exception;
 
-                var algo = await _metaDataRepository.GetAlgoMetaData(clientId, dataModel.AlgoId);
+                var algo = await _metaDataRepository.GetAlgoMetaDataAsync(clientId, dataModel.AlgoId);
                 if (algo == null || algo.AlgoMetaData.IsNullOrEmptyCollection())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
@@ -55,21 +55,21 @@ namespace Lykke.AlgoStore.Services
                 }
             });
         }
-        public async Task<AlgoClientMetaData> GetClientMetadata(string clientId)
+        public async Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId)
         {
-            return await LogTimedInfoAsync(nameof(GetClientMetadata), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(GetClientMetadataAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
 
-                var algos = await _metaDataRepository.GetAllClientAlgoMetaData(clientId);
+                var algos = await _metaDataRepository.GetAllClientAlgoMetaDataAsync(clientId);
 
                 if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
                     return algos;
 
                 foreach (var metadata in algos.AlgoMetaData)
                 {
-                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeData(clientId, metadata.AlgoId);
+                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, metadata.AlgoId);
 
                     if (runtimeData == null)
                     {
@@ -92,9 +92,9 @@ namespace Lykke.AlgoStore.Services
                 return algos;
             });
         }
-        public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequest(string clientId, AlgoMetaData data)
+        public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequestAsync(string clientId, AlgoMetaData data)
         {
-            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequest), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
@@ -103,16 +103,16 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 var algoId = data.AlgoId;
-                if (!await _metaDataRepository.ExistsAlgoMetaData(clientId, algoId))
+                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(clientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Algo metadata not found for {algoId}");
 
-                return await _runtimeDataRepository.GetAlgoRuntimeData(clientId, algoId);
+                return await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, algoId);
             });
         }
-        public async Task<AlgoClientMetaData> SaveClientMetadata(string clientId, AlgoMetaData data)
+        public async Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, AlgoMetaData data)
         {
-            return await LogTimedInfoAsync(nameof(SaveClientMetadata), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(SaveClientMetadataAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "ClientId Is empty");
@@ -131,9 +131,9 @@ namespace Lykke.AlgoStore.Services
                         data
                     }
                 };
-                await _metaDataRepository.SaveAlgoMetaData(clientData);
+                await _metaDataRepository.SaveAlgoMetaDataAsync(clientData);
 
-                var res = await _metaDataRepository.GetAlgoMetaData(clientId, data.AlgoId);
+                var res = await _metaDataRepository.GetAlgoMetaDataAsync(clientId, data.AlgoId);
                 if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot save data for {clientId} id: {data.AlgoId}");
@@ -141,11 +141,11 @@ namespace Lykke.AlgoStore.Services
                 return res;
             });
         }
-        public async Task DeleteMetadata(string clientId, AlgoMetaData data)
+        public async Task DeleteMetadataAsync(string clientId, AlgoMetaData data)
         {
-            await LogTimedInfoAsync(nameof(DeleteMetadata), clientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), clientId, async () =>
             {
-                if (await _blobRepository.BlobExists(data.AlgoId))
+                if (await _blobRepository.BlobExistsAsync(data.AlgoId))
                     await _blobRepository.DeleteBlobAsync(data.AlgoId);
 
                 var clientData = new AlgoClientMetaData
@@ -156,7 +156,7 @@ namespace Lykke.AlgoStore.Services
                         data
                     }
                 };
-                await _metaDataRepository.DeleteAlgoMetaData(clientData);
+                await _metaDataRepository.DeleteAlgoMetaDataAsync(clientData);
             });
         }
     }

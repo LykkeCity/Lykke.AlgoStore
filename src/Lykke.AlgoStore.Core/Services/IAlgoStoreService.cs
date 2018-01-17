@@ -5,11 +5,11 @@ namespace Lykke.AlgoStore.Core.Services
 {
     public interface IAlgoStoreService
     {
-        Task<bool> DeployImage(ManageImageData data);
-        Task<string> StartTestImage(ManageImageData data);
-        Task<string> StopTestImage(ManageImageData data);
-        Task<string> GetTestLog(ManageImageData data);
-        Task<string> GetTestTailLog(TailLogData data);
-        Task DeleteImage(AlgoClientRuntimeData runtimeData);
+        Task<bool> DeployImageAsync(ManageImageData data);
+        Task<string> StartTestImageAsync(ManageImageData data);
+        Task<string> StopTestImageAsync(ManageImageData data);
+        Task<string> GetTestLogAsync(ManageImageData data);
+        Task<string> GetTestTailLogAsync(TailLogData data);
+        Task DeleteImageAsync(AlgoClientRuntimeData runtimeData);
     }
 }

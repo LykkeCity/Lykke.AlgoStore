@@ -181,8 +181,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+            result.Setup(repo => repo.GetAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
+            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
 
             return result.Object;
         }
@@ -196,7 +196,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.DeployImage(data).Result;
+                return service.DeployImageAsync(data).Result;
             }
             catch (Exception ex)
             {
@@ -211,7 +211,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.GetTestLog(data).Result;
+                return service.GetTestLogAsync(data).Result;
             }
             catch (Exception ex)
             {
@@ -276,8 +276,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoBlobRepository>();
 
-            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
-            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.BlobExistsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.BlobExistsAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }
@@ -286,8 +286,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoRuntimeDataRepository>();
 
-            result.Setup(repo => repo.SaveAlgoRuntimeData(It.IsAny<AlgoClientRuntimeData>())).Returns(Task.CompletedTask);
-            result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.SaveAlgoRuntimeDataAsync(It.IsAny<AlgoClientRuntimeData>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.GetAlgoRuntimeDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientId, string algoId) =>
                 {
                     var res = new AlgoClientRuntimeData();
@@ -305,7 +305,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoBlobRepository>();
 
-            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(false));
+            result.Setup(repo => repo.BlobExistsAsync(It.IsAny<string>())).Returns(Task.FromResult(false));
 
             return result.Object;
         }
@@ -315,9 +315,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.GetAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientId, string id) =>
                 {
                     var res = new AlgoClientMetaData();
@@ -338,9 +338,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoMetaDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
-            result.Setup(repo => repo.GetAlgoMetaData(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.GetAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string id) =>
                 {
                     var res = new AlgoClientMetaData();
@@ -358,7 +358,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.StartTestImage(data).Result;
+                return service.StartTestImageAsync(data).Result;
             }
             catch (Exception ex)
             {
@@ -377,7 +377,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.StopTestImage(data).Result;
+                return service.StopTestImageAsync(data).Result;
             }
             catch (Exception ex)
             {
