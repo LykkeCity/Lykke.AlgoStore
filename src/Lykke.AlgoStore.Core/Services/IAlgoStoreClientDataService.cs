@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Entities;
 
 namespace Lykke.AlgoStore.Core.Services
@@ -12,5 +13,8 @@ namespace Lykke.AlgoStore.Core.Services
         Task DeleteMetadata(string clientId, AlgoMetaData data);
         Task SaveAlgoAsString(string clientId, UploadAlgoStringData dataModel);
         Task<string> GetAlgoAsString(string clientId, string algoId);
+        Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data);
+        Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data);
+        Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data);
     }
 }
