@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Entities;
 
 namespace Lykke.AlgoStore.Core.Services
