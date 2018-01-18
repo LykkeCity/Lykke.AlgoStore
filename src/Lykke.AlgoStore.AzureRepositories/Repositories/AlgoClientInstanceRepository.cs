@@ -20,7 +20,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
-        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceData(string clientId, string algoId)
+        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(string clientId, string algoId)
         {
             var entities = await _table.GetDataAsync(AlgoClientInstanceMapper.GenerateKey(clientId, algoId));
 
@@ -28,13 +28,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return result;
         }
-        public async Task<AlgoClientInstanceData> GetAlgoInstanceData(string clientId, string algoId, string instanceId)
+        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(string clientId, string algoId, string instanceId)
         {
             var entitiy = await _table.GetDataAsync(AlgoClientInstanceMapper.GenerateKey(clientId, algoId), instanceId);
 
             return entitiy.ToModel();
         }
-        public async Task<bool> ExistsAlgoInstanceData(string clientId, string algoId, string instanceId)
+        public async Task<bool> ExistsAlgoInstanceDataAsync(string clientId, string algoId, string instanceId)
         {
             var entity = new AlgoClientInstanceEntity();
             entity.PartitionKey = AlgoClientInstanceMapper.GenerateKey(clientId, algoId);
@@ -43,13 +43,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             return await _table.RecordExistsAsync(entity);
         }
 
-        public async Task SaveAlgoInstanceData(AlgoClientInstanceData data)
+        public async Task SaveAlgoInstanceDataAsync(AlgoClientInstanceData data)
         {
             var enitites = data.ToEntity();
 
             await _table.InsertOrMergeAsync(enitites);
         }
-        public async Task DeleteAlgoInstanceData(AlgoClientInstanceData data)
+        public async Task DeleteAlgoInstanceDataAsync(AlgoClientInstanceData data)
         {
             var entities = data.ToEntity();
             await _table.DeleteAsync(entities);
