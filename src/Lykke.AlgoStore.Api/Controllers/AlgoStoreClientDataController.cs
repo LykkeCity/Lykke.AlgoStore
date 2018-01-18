@@ -137,5 +137,69 @@ namespace Lykke.AlgoStore.Api.Controllers
                 Data = data
             });
         }
+
+        [HttpGet("instanceData/all")]
+        [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
+        [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAllAlgoInstanceDataAsync(string algoId)
+        {
+            var data = new BaseAlgoData
+            {
+                ClientId = User.GetClientId(),
+                AlgoId = algoId
+            };
+
+            var result = await _clientDataService.GetAllAlgoInstanceDataAsync(data);
+
+            if (result.IsNullOrEmptyCollection())
+                return NotFound();
+
+            var response = Mapper.Map<List<AlgoClientInstanceModel>>(result);
+
+            return Ok(response);
+        }
+
+        [HttpGet("instanceData")]
+        [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
+        [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAlgoInstanceDataAsync(string algoId, string instanceId)
+        {
+            var data = new BaseAlgoInstance
+            {
+                ClientId = User.GetClientId(),
+                AlgoId = algoId,
+                InstanceId = instanceId
+            };
+
+            var result = await _clientDataService.GetAlgoInstanceDataAsync(data);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<AlgoClientInstanceModel>(result);
+
+            return Ok(response);
+        }
+
+        [HttpPost("instanceData")]
+        [SwaggerOperation("SaveAlgoInstanceDataAsync")]
+        [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> SaveAlgoInstanceDataAsync([FromBody]AlgoClientInstanceModel model)
+        {
+            var data = Mapper.Map<AlgoClientInstanceData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = await _clientDataService.SaveAlgoInstanceDataAsync(data);
+
+            var response = Mapper.Map<AlgoClientInstanceModel>(result);
+
+            return Ok(response);
+        }
     }
 }
