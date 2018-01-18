@@ -508,6 +508,66 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+        private static List<AlgoClientInstanceData> When_Invoke_GetAllAlgoInstanceDataAsync(AlgoStoreClientDataService service, string clientId, string algoId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAllAlgoInstanceDataAsync(new BaseAlgoData { ClientId = clientId, AlgoId = algoId }).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+        private static AlgoClientInstanceData When_Invoke_GetAlgoInstanceDataAsync(AlgoStoreClientDataService service, string clientId, string algoId, string id, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAlgoInstanceDataAsync(new BaseAlgoInstance { ClientId = clientId, AlgoId = algoId, InstanceId = id }).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+        private static AlgoClientInstanceData When_Invoke_SaveAlgoInstanceDataAsync(AlgoStoreClientDataService service, AlgoClientInstanceData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.SaveAlgoInstanceDataAsync(data).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static void Then_Data_ShouldNotBe_Empty(List<AlgoClientInstanceData> data)
+        {
+            Assert.IsTrue(!data.IsNullOrEmptyCollection());
+        }
+        private static void Then_Data_ShouldBe_Empty(List<AlgoClientInstanceData> data)
+        {
+            Assert.IsTrue(data.IsNullOrEmptyCollection());
+        }
+
+        private static void Then_Data_ShouldNotBe_Empty(AlgoClientInstanceData data)
+        {
+            Assert.NotNull(data);
+        }
+        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume)
+        {
+            var fixture = new Fixture();
+            return fixture.Build<AlgoClientInstanceData>()
+                .With(a => a.Volume, volume)
+                .Create();
+        }
         #endregion
     }
 }
