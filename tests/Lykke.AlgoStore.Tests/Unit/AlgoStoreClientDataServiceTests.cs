@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -12,7 +15,10 @@ using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Rest;
 using Moq;
 using NUnit.Framework;
 
@@ -22,6 +28,8 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class AlgoStoreClientDataServiceTests
     {
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
+        private const int AssetAccuracy = 3;
+
         private static readonly string BlobKey = "TestKey";
         private static readonly string AlogId = "AlgoId123";
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
@@ -46,12 +54,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
         }
         #endregion
+
         [Test]
         public void SaveAlgoAsBinary_Test()
         {
             var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepository = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null);
+            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null, null, null);
             var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
@@ -64,7 +73,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var deploymentClient = Given_Correct_DeploymentApiClientMock(statuses.Item1);
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, deploymentClient);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, deploymentClient, null, null);
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -77,7 +86,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, deploymentClient);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, deploymentClient, null, null);
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -89,7 +98,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, deploymentClient);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, deploymentClient, null, null);
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -101,7 +110,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientMetaData();
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null);
             When_Invoke_SaveClientMetadata(service, clientId, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
         }
@@ -113,8 +122,139 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientMetaData();
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null);
             When_Invoke_SaveClientMetadata(service, clientId, data, out var exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void GetAllAlgoInstanceDataAsync_Returns_Ok()
+        {
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null);
+            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(), out Exception exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(data);
+        }
+
+        [Test]
+        public void GetAllAlgoInstanceDataAsync_Returns_NotFound()
+        {
+            var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null);
+            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(), out Exception exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldBe_Empty(data);
+        }
+
+        [Test]
+        public void GetAllAlgoInstanceDataAsync_Throws_Exception()
+        {
+            var repo = Given_Error_AlgoClientInstanceRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null);
+            When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(), out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void GetAlgoInstanceDataAsync_Returns_Ok()
+        {
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null);
+            var data = When_Invoke_GetAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), out Exception exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(data);
+        }
+
+        [Test]
+        public void GetAlgoInstanceDataAsync_Returns_NotFound()
+        {
+            var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null);
+            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(), out Exception exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldBe_Empty(data);
+        }
+
+        [Test]
+        public void GetAlgoInstanceDataAsync_Throws_Exception()
+        {
+            var repo = Given_Error_AlgoClientInstanceRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null);
+            When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(), out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Ok()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, assetService);
+            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(result);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_VolumeAccuracy()
+        {
+            var data = Given_AlgoClientInstanceData(5.00003);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, assetService);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_NotTradable()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(false, true);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, assetService);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_AssetPairNotExists()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(true, false);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, assetService);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_NoDataSaved()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, assetService);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Throws_Exception()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_Error_AlgoClientInstanceRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, assetService);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -143,9 +283,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataRepository repo,
             IAlgoBlobRepository blobRepo,
             IAlgoRuntimeDataRepository runtimeDataRepository,
-            IDeploymentApiReadOnlyClient deploymentClient)
+            IDeploymentApiReadOnlyClient deploymentClient,
+            IAlgoClientInstanceRepository algoInstanceRepository,
+            IAssetsService assetsService)
         {
-            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, new LogMock());
+            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, algoInstanceRepository, assetsService, new LogMock());
         }
 
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)
@@ -284,6 +426,147 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
 
             return result.Object;
+        }
+
+        private static IAlgoClientInstanceRepository Given_Correct_AlgoClientInstanceRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoClientInstanceRepository>();
+
+            result.Setup(repo => repo.GetAllAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) =>
+                {
+                    return Task.FromResult(new List<AlgoClientInstanceData>
+                    {
+                        fixture.Build<AlgoClientInstanceData>().With(a => a.ClientId, clientId).With(b => b.AlgoId, algoId).Create()
+                    });
+                });
+
+            result.Setup(repo => repo.GetAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId, string id) =>
+                {
+                    return Task.FromResult(fixture.Build<AlgoClientInstanceData>()
+                        .With(a => a.ClientId, clientId)
+                        .With(b => b.AlgoId, algoId)
+                        .With(b => b.InstanceId, id)
+                        .Create());
+                });
+            result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).Returns(Task.CompletedTask);
+
+            return result.Object;
+        }
+        private static IAlgoClientInstanceRepository Given_Empty_AlgoClientInstanceRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoClientInstanceRepository>();
+
+            result.Setup(repo => repo.GetAllAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) => Task.FromResult(new List<AlgoClientInstanceData>()));
+
+            result.Setup(repo => repo.GetAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.FromResult((AlgoClientInstanceData)null));
+
+            return result.Object;
+        }
+        private static IAlgoClientInstanceRepository Given_Error_AlgoClientInstanceRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoClientInstanceRepository>();
+
+            result.Setup(repo => repo.GetAllAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new Exception("GetAllAlgoInstanceDataAsync"));
+
+            result.Setup(repo =>
+                    repo.GetAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new Exception("GetAlgoInstanceDataAsync"));
+            result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).ThrowsAsync(new Exception("SaveAlgoInstanceDataAsync"));
+
+            return result.Object;
+        }
+
+        private static IAssetsService Given_Customized_AssetServiceMock(bool isTradable, bool exists)
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAssetsService>();
+
+            result.Setup(service => service.AssetGetWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(new HttpOperationResponse<Asset>
+                {
+                    Body = fixture.Build<Asset>()
+                    .With(a => a.IsTradable, isTradable)
+                    .With(a => a.Accuracy, AssetAccuracy)
+                    .Create(),
+                    Response = new HttpResponseMessage(HttpStatusCode.OK)
+                }));
+
+            result.Setup(service => service.AssetPairExistsWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(new HttpOperationResponse<bool?>
+                {
+                    Body = exists,
+                    Response = new HttpResponseMessage(HttpStatusCode.OK)
+                }));
+
+            return result.Object;
+        }
+        private static List<AlgoClientInstanceData> When_Invoke_GetAllAlgoInstanceDataAsync(AlgoStoreClientDataService service, string clientId, string algoId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAllAlgoInstanceDataAsync(new BaseAlgoData { ClientId = clientId, AlgoId = algoId }).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+        private static AlgoClientInstanceData When_Invoke_GetAlgoInstanceDataAsync(AlgoStoreClientDataService service, string clientId, string algoId, string id, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAlgoInstanceDataAsync(new BaseAlgoInstance { ClientId = clientId, AlgoId = algoId, InstanceId = id }).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+        private static AlgoClientInstanceData When_Invoke_SaveAlgoInstanceDataAsync(AlgoStoreClientDataService service, AlgoClientInstanceData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.SaveAlgoInstanceDataAsync(data).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static void Then_Data_ShouldNotBe_Empty(List<AlgoClientInstanceData> data)
+        {
+            Assert.IsTrue(!data.IsNullOrEmptyCollection());
+        }
+        private static void Then_Data_ShouldBe_Empty(List<AlgoClientInstanceData> data)
+        {
+            Assert.IsTrue(data.IsNullOrEmptyCollection());
+        }
+
+        private static void Then_Data_ShouldNotBe_Empty(AlgoClientInstanceData data)
+        {
+            Assert.NotNull(data);
+        }
+        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume)
+        {
+            var fixture = new Fixture();
+            return fixture.Build<AlgoClientInstanceData>()
+                .With(a => a.Volume, volume)
+                .Create();
         }
         #endregion
     }

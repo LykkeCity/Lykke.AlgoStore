@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
@@ -13,6 +13,7 @@ using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services.Utils;
+using Lykke.Service.Assets.Client;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -20,20 +21,27 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
+        private readonly IAlgoClientInstanceRepository _instanceRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
+
+        private readonly IAssetsService _assetService;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
             IDeploymentApiReadOnlyClient deploymentClient,
+            IAlgoClientInstanceRepository instanceRepository,
+            IAssetsService assetService,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
             _deploymentClient = deploymentClient;
+            _instanceRepository = instanceRepository;
+            _assetService = assetService;
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId)
@@ -186,6 +194,62 @@ namespace Lykke.AlgoStore.Services
                         $"Specified algo id {algoId} is not found!");
 
                 return await _blobRepository.GetBlobStringAsync(algoId);
+            });
+        }
+
+        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data)
+        {
+            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataAsync), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                return await _instanceRepository.GetAllAlgoInstanceDataAsync(data.ClientId, data.AlgoId);
+            });
+        }
+        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data)
+        {
+            return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                return await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+            });
+        }
+        public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data)
+        {
+            return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId, async () =>
+            {
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(data.TradedAsset);
+                if (assetResponse.Response.StatusCode != HttpStatusCode.OK)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetGetWithHttpMessagesAsync");
+
+                var asset = assetResponse.Body;
+                if (asset == null || !asset.IsTradable)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Traded Asset is not valid");
+
+                if (data.Volume.GetAccuracy() > asset.Accuracy)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset");
+
+                var response = await _assetService.AssetPairExistsWithHttpMessagesAsync(data.AssetPair);
+                if (response.Response.StatusCode != HttpStatusCode.OK)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetPairExistsWithHttpMessagesAsync");
+
+                if (response.Body.GetValueOrDefault() != true)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Asset Pair is not valid");
+
+                await _instanceRepository.SaveAlgoInstanceDataAsync(data);
+
+                var res = await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                if (res == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot save data for {data.ClientId} id: {data.AlgoId}");
+
+                return res;
             });
         }
     }
