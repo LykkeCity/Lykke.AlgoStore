@@ -4,13 +4,13 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 {
     public interface IDeploymentApiClient : IDeploymentApiReadOnlyClient
     {
-        Task<string> BuildAlgoImageFromBinary(byte[] data, string algoUsername, string algoName);
-        Task<long> CreateTestAlgo(long imageId, string algoId);
-        Task<bool> StartTestAlgo(long imageId);
-        Task<bool> StopTestAlgo(long imageId);
-        Task<string> GetTestAlgoLog(long imageId);
-        Task<string> GetTestAlgoTailLog(long imageId, int tail);
-        Task<bool> DeleteAlgo(long imageId);
-        Task<bool> DeleteTestAlgo(long imageId);
+        Task<string> BuildAlgoImageFromBinaryAsync(byte[] data, string algoUsername, string algoName);
+        Task<long> CreateTestAlgoAsync(long imageId, string algoId);
+        Task<bool> StartTestAlgoAsync(long imageId);
+        Task<bool> StopTestAlgoAsync(long imageId);
+        Task<string> GetTestAlgoLogAsync(long imageId);
+        Task<string> GetTestAlgoTailLogAsync(long imageId, int tail);
+        Task<bool> DeleteAlgoAsync(long imageId);
+        Task<bool> DeleteTestAlgoAsync(long imageId);
     }
 }

@@ -19,13 +19,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _storage = storage;
         }
 
-        public async Task<bool> BlobExists(string blobKey)
+        public async Task<bool> BlobExistsAsync(string blobKey)
         {
             return await _storage.HasBlobAsync(BlobContainer, blobKey);
         }
         public async Task<byte[]> GetBlobAsync(string blobKey)
         {
-            if (!await BlobExists(blobKey))
+            if (!await BlobExistsAsync(blobKey))
                 return null;
 
             using (var stream = await _storage.GetAsync(BlobContainer, blobKey))
@@ -35,7 +35,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         }
         public async Task<string> GetBlobStringAsync(string blobKey)
         {
-            if (!await BlobExists(blobKey))
+            if (!await BlobExistsAsync(blobKey))
                 return null;
 
             using (var stream = await _storage.GetAsync(BlobContainer, blobKey))

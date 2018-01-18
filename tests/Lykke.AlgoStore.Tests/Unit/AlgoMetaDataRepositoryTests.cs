@@ -39,7 +39,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             if (_entitySaved)
             {
-                repo.DeleteAlgoMetaData(_entity).Wait();
+                repo.DeleteAlgoMetaDataAsync(_entity).Wait();
                 _entitySaved = false;
             }
 
@@ -72,19 +72,19 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_Save(AlgoMetaDataRepository repository, AlgoClientMetaData data)
         {
-            repository.SaveAlgoMetaData(data).Wait();
+            repository.SaveAlgoMetaDataAsync(data).Wait();
             _entitySaved = true;
         }
 
         private static void Then_Data_ShouldBe_Saved(AlgoMetaDataRepository repository, AlgoClientMetaData data)
         {
-            var saved = repository.GetAlgoMetaData(ClientId, data.AlgoMetaData[0].AlgoId).Result;
+            var saved = repository.GetAlgoMetaDataAsync(ClientId, data.AlgoMetaData[0].AlgoId).Result;
             Assert.NotNull(saved);
         }
 
         private static AlgoClientMetaData When_Ivoke_GetAll(AlgoMetaDataRepository repository, string clientId)
         {
-            return repository.GetAllClientAlgoMetaData(clientId).Result;
+            return repository.GetAllClientAlgoMetaDataAsync(clientId).Result;
         }
 
         private static void Then_Result_ShouldNotBe_Null(AlgoClientMetaData data)

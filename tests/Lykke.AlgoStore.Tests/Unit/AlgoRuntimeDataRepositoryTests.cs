@@ -34,7 +34,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             if (_entitySaved)
             {
-                repo.DeleteAlgoRuntimeData(_entity.ClientId, _entity.AlgoId).Wait();
+                repo.DeleteAlgoRuntimeDataAsync(_entity.ClientId, _entity.AlgoId).Wait();
                 _entitySaved = false;
             }
 
@@ -59,19 +59,19 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_Save(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            repository.SaveAlgoRuntimeData(data).Wait();
+            repository.SaveAlgoRuntimeDataAsync(data).Wait();
             _entitySaved = true;
         }
 
         private static void Then_Data_ShouldBe_Saved(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            var saved = repository.GetAlgoRuntimeData(data.ClientId, data.AlgoId).Result;
+            var saved = repository.GetAlgoRuntimeDataAsync(data.ClientId, data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 
         private static void Then_Result_ShouldNotBe_Null(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)
         {
-            var saved = repository.GetAlgoRuntimeData(data.ClientId, data.AlgoId).Result;
+            var saved = repository.GetAlgoRuntimeDataAsync(data.ClientId, data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 

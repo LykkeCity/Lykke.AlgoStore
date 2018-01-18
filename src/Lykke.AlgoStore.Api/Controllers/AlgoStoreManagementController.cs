@@ -32,7 +32,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<ManageImageData>(model);
             data.ClientId = User.GetClientId();
 
-            var result = await _service.DeployImage(data);
+            var result = await _service.DeployImageAsync(data);
 
             return Ok(result);
         }
@@ -48,7 +48,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.ClientId = User.GetClientId();
 
             var result = new StatusModel();
-            result.Status = await _service.StartTestImage(data);
+            result.Status = await _service.StartTestImageAsync(data);
 
             return Ok(result);
         }
@@ -64,7 +64,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.ClientId = User.GetClientId();
 
             var result = new StatusModel();
-            result.Status = await _service.StopTestImage(data);
+            result.Status = await _service.StopTestImageAsync(data);
 
             return Ok(result);
         }
@@ -80,7 +80,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.ClientId = User.GetClientId();
 
             var result = new LogModel();
-            result.Log = await _service.GetTestLog(data);
+            result.Log = await _service.GetTestLogAsync(data);
 
             return Ok(result);
         }
@@ -96,7 +96,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.ClientId = User.GetClientId();
 
             var result = new LogModel();
-            result.Log = await _service.GetTestTailLog(data);
+            result.Log = await _service.GetTestTailLogAsync(data);
 
             return Ok(result);
         }
