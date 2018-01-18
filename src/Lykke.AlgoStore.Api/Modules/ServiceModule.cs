@@ -4,6 +4,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.Services;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IDeploymentApiReadOnlyClient>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
                 .SingleInstance();
+
+            builder.RegisterType<AssetsService>()
+                .As<IAssetsService>()
+                .WithParameter("BaseUri", _settings.CurrentValue.Services.AssetServiceUrl);
         }
 
         private static void RegisterLocalServices(ContainerBuilder builder)
