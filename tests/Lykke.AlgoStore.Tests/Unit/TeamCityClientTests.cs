@@ -111,7 +111,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var build = client.GetBuildStatus(buildBase.Id).Result;
             var responseString = JsonConvert.SerializeObject(build);
             Assert.IsNotNull(responseString);
-            Assert.AreEqual(JObject.Parse(responseString)["Status"].ToString(), "SUCCESS");
+            Assert.AreEqual("SUCCESS", JObject.Parse(responseString)["Status"].ToString());
         }
 
         private BuildRequest BuildBuildRequest(ParametersResponse parametersResponse, Dictionary<string, string> buildParams)
