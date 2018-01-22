@@ -22,7 +22,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public async Task DeployNewPod()
         {
             var client = Given_KubernetesClient();
-            
+
             var result = await client.CreateDeploymentAsync(
                 new Iok8skubernetespkgapisappsv1beta1Deployment
                 {
@@ -42,7 +42,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                             {
                                 Labels = new Dictionary<string, string>()
                                 {
-                                    { "app", "nginx" }
+                                    {"app", "nginx"}
                                 }
                             },
                             Spec = new Iok8skubernetespkgapiv1PodSpec
@@ -52,7 +52,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                                     new Iok8skubernetespkgapiv1Container
                                     {
                                         Name = "nginx",
-                                        Image = "nginx:1.10",
+                                        Image = "crccheck/hello-world", //hello-world",//"nginx:1.10",
                                         Ports = new List<Iok8skubernetespkgapiv1ContainerPort>
                                         {
                                             new Iok8skubernetespkgapiv1ContainerPort
@@ -83,10 +83,43 @@ namespace Lykke.AlgoStore.Tests.Unit
                     OrphanDependents = false
                 },
                 "deployment-example",
-                "default"//,
+                "default" //,
                 //REMARK: I spent too much time until I figured out that parameters from below should be set inside body!!!
                 //0,
                 //false
+            );
+        }
+
+        [Test, Explicit("Run manually cause it will create new namespace with specific name")]
+        public async Task CreateNamespace()
+        {
+            var client = Given_KubernetesClient();
+
+            var result = await client.CreateNamespaceAsync(
+                new Iok8skubernetespkgapiv1Namespace
+                {
+                    Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta
+                    {
+                        Name = "mj-test"
+                    }
+                }
+            );
+        }
+
+        [Test,
+         Explicit(
+             "Run manually cause it will try to delete existing namespace (one that is created via CreateNamespace test")]
+        public async Task DeleteNamespace()
+        {
+            var client = Given_KubernetesClient();
+
+            var result = await client.DeleteNamespaceAsync(
+                new Iok8sapimachinerypkgapismetav1DeleteOptions
+                {
+                    GracePeriodSeconds = 0,
+                    OrphanDependents = false
+                },
+                "mj-test"
             );
         }
 
