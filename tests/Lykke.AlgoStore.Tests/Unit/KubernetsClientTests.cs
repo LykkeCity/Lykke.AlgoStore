@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
 using NUnit.Framework;
@@ -12,21 +13,97 @@ namespace Lykke.AlgoStore.Tests.Unit
         public async Task GetNamespaces_ReturnSuccess()
         {
             var client = Given_KubernetesClient();
-            var list = await client.ListCoreV1NamespaceWithHttpMessagesAsync();
+            var list = await client.ListCoreV1NamespaceAsync();
 
             Then_Result_ShouldContainNamespaceData(list);
         }
 
-        private static void Then_Result_ShouldContainNamespaceData(Microsoft.Rest.HttpOperationResponse<Iok8skubernetespkgapiv1NamespaceList> list)
+        [Test, Explicit("Run manually cause it will create new deployment with specific name")]
+        public async Task DeployNewPod()
         {
-            Assert.IsNotNull(list);
-            Assert.IsNotNull(list.Body.Items);
-            Assert.Greater(list.Body.Items.Count, 0);
+            var client = Given_KubernetesClient();
+            
+            var result = await client.CreateDeploymentAsync(
+                new Iok8skubernetespkgapisappsv1beta1Deployment
+                {
+                    ApiVersion = "apps/v1beta1",
+                    Kind = "Deployment",
+                    Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta
+                    {
+                        Name = "deployment-example" //Unique key of the Deployment instance
+                    },
+                    Spec = new Iok8skubernetespkgapisappsv1beta1DeploymentSpec
+                    {
+                        Replicas = 1,
+                        RevisionHistoryLimit = 10,
+                        Template = new Iok8skubernetespkgapiv1PodTemplateSpec
+                        {
+                            Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta
+                            {
+                                Labels = new Dictionary<string, string>()
+                                {
+                                    { "app", "nginx" }
+                                }
+                            },
+                            Spec = new Iok8skubernetespkgapiv1PodSpec
+                            {
+                                Containers = new List<Iok8skubernetespkgapiv1Container>
+                                {
+                                    new Iok8skubernetespkgapiv1Container
+                                    {
+                                        Name = "nginx",
+                                        Image = "nginx:1.10",
+                                        Ports = new List<Iok8skubernetespkgapiv1ContainerPort>
+                                        {
+                                            new Iok8skubernetespkgapiv1ContainerPort
+                                            {
+                                                ContainerPort = 80
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "default"
+            );
         }
 
-        private static IKubernetes Given_KubernetesClient()
+        [Test,
+         Explicit("Run manually cause it will try to delete existing pod (one that is created via DeployNewPod test")]
+        public async Task DeletePod()
         {
-            var client = new Kubernetes();
+            var client = Given_KubernetesClient();
+
+            var result = await client.DeleteAppsV1beta1NamespacedDeploymentAsync(
+                new Iok8sapimachinerypkgapismetav1DeleteOptions
+                {
+                    GracePeriodSeconds = 0,
+                    OrphanDependents = false
+                },
+                "deployment-example",
+                "default"//,
+                //REMARK: I spent too much time until I figured out that parameters from below should be set inside body!!!
+                //0,
+                //false
+            );
+        }
+
+        private static void Then_Result_ShouldContainNamespaceData(Iok8skubernetespkgapiv1NamespaceList list)
+        {
+            Assert.IsNotNull(list);
+            Assert.IsNotNull(list.Items);
+            Assert.Greater(list.Items.Count, 0);
+        }
+
+        private static KubernetesApiClient Given_KubernetesClient()
+        {
+            var client = new KubernetesApiClient
+            {
+                BaseUri = new System.Uri("http://127.0.0.1:8001")
+            };
+
             client.SetRetryPolicy(null);
 
             return client;
