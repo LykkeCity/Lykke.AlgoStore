@@ -158,6 +158,18 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Result_Should_Contain_PodData(result);
         }
 
+        [Test, Explicit("Run manually cause it will try to get existing namespace")]
+        public async Task GetNamespace_Returns_NamespaceData()
+        {
+            var client = Given_KubernetesClient();
+
+            var result = await client.ReadCoreV1NamespaceAsync(
+                "default" //namespace name
+            );
+
+            Then_Result_Should_Contain_NamespaceData(result);
+        }
+
         private static void Then_Result_Should_Contain_PodData(Iok8skubernetespkgapiv1Pod result)
         {
             Assert.IsNotNull(result);
