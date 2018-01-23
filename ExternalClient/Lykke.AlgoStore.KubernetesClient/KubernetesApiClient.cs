@@ -64,7 +64,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <param name="pretty"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Iok8sapimachinerypkgapismetav1Status> DeleteNamespaceAsync(
+        public async Task<DeleteNamespaceResponse> DeleteNamespaceAsync(
             Iok8sapimachinerypkgapismetav1DeleteOptions body, string name,
             int? gracePeriodSeconds = default(int?), bool? orphanDependents = default(bool?),
             string propagationPolicy = default(string), string pretty = default(string),
@@ -105,7 +105,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <param name="customHeaders"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<HttpOperationResponse<Iok8sapimachinerypkgapismetav1Status>>
+        private async Task<HttpOperationResponse<DeleteNamespaceResponse>>
             DeleteNamespaceWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name,
                 int? gracePeriodSeconds = default(int?), bool? orphanDependents = default(bool?),
                 string propagationPolicy = default(string), string pretty = default(string),
@@ -237,7 +237,7 @@ namespace Lykke.AlgoStore.KubernetesClient
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<Iok8sapimachinerypkgapismetav1Status>();
+            var _result = new HttpOperationResponse<DeleteNamespaceResponse>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -247,7 +247,7 @@ namespace Lykke.AlgoStore.KubernetesClient
                 try
                 {
                     _result.Body =
-                        SafeJsonConvert.DeserializeObject<Iok8sapimachinerypkgapismetav1Status>(_responseContent,
+                        SafeJsonConvert.DeserializeObject<DeleteNamespaceResponse>(_responseContent,
                             DeserializationSettings);
                 }
                 catch (JsonException ex)
