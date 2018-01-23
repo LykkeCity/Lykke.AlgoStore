@@ -18,5 +18,11 @@ namespace Lykke.AlgoStore.KubernetesClient
             Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, int? gracePeriodSeconds = default(int?),
             bool? orphanDependents = default(bool?), string propagationPolicy = default(string),
             string pretty = default(string), CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<string> ReadPodLogAsync(string name, string namespaceParameter,
+            string container = default(string), bool? follow = default(bool?), int? limitBytes = default(int?),
+            string pretty = default(string), bool? previous = default(bool?), int? sinceSeconds = default(int?),
+            int? tailLines = default(int?), bool? timestamps = default(bool?),
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }
