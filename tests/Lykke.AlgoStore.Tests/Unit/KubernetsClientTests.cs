@@ -115,7 +115,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test,
          Explicit(
              "Run manually cause it will try to delete existing namespace (one that is created via CreateNamespace test")]
-        public async Task DeleteNamespace()
+        public async Task DeleteNamespace_Returns_DeleteNamespaceData()
         {
             var client = Given_KubernetesClient();
 
@@ -127,6 +127,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 },
                 "mj-test"
             );
+
+            Then_Result_Should_Contain_DeleteNamespaceData(result);
         }
 
         [Test, Explicit("Run manually cause it will try to get log for existing pod")]
@@ -177,7 +179,12 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.IsNotNull(result);
         }
 
-        private void Then_Result_Should_Contain_NamespaceData(Iok8skubernetespkgapiv1Namespace result)
+        private static void Then_Result_Should_Contain_NamespaceData(Iok8skubernetespkgapiv1Namespace result)
+        {
+            Assert.IsNotNull(result);
+        }
+
+        private static void Then_Result_Should_Contain_DeleteNamespaceData(DeleteNamespaceResponse result)
         {
             Assert.IsNotNull(result);
         }
