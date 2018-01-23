@@ -145,6 +145,24 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Result_Should_Contain_LogData(result);
         }
 
+        [Test, Explicit("Run manually cause it will try to get existing pod")]
+        public async Task GetPod_Returns_PodData()
+        {
+            var client = Given_KubernetesClient();
+
+            var result = await client.ReadCoreV1NamespacedPodAsync(
+                "kubernetes-dashboard-924040265-3hgnr", //pod name
+                "kube-system" // pod namespace
+            );
+
+            Then_Result_Should_Contain_PodData(result);
+        }
+
+        private static void Then_Result_Should_Contain_PodData(Iok8skubernetespkgapiv1Pod result)
+        {
+            Assert.IsNotNull(result);
+        }
+
         private static void Then_Result_Should_Contain_LogData(string result)
         {
             Assert.IsNotNull(result);
