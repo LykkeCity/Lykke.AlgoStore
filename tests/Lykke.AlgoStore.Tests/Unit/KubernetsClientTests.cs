@@ -10,16 +10,16 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class KubernetsClientTests
     {
         [Test]
-        public async Task GetNamespaces_ReturnSuccess()
+        public async Task GetNamespaces_Returns_Success()
         {
             var client = Given_KubernetesClient();
             var list = await client.ListCoreV1NamespaceAsync();
 
-            Then_Result_ShouldContainNamespaceData(list);
+            Then_Result_Should_Contain_NamespacesData(list);
         }
 
         [Test, Explicit("Run manually cause it will create new deployment with specific name")]
-        public async Task DeployNewPod()
+        public async Task DeployPod_Returns_DeploymentData()
         {
             var client = Given_KubernetesClient();
 
@@ -68,11 +68,13 @@ namespace Lykke.AlgoStore.Tests.Unit
                 },
                 "default"
             );
+
+            Then_Result_Should_Contain_DeploymentData(result);
         }
 
         [Test,
          Explicit("Run manually cause it will try to delete existing pod (one that is created via DeployNewPod test")]
-        public async Task DeletePod()
+        public async Task DeletePod_Returns_StatusData()
         {
             var client = Given_KubernetesClient();
 
@@ -88,10 +90,12 @@ namespace Lykke.AlgoStore.Tests.Unit
                 //0,
                 //false
             );
+
+            Then_Result_Should_Contain_StatusData(result);
         }
 
         [Test, Explicit("Run manually cause it will create new namespace with specific name")]
-        public async Task CreateNamespace()
+        public async Task CreateNamespace_Returns_NamespaceData()
         {
             var client = Given_KubernetesClient();
 
@@ -104,6 +108,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                     }
                 }
             );
+
+            Then_Result_Should_Contain_NamespaceData(result);
         }
 
         [Test,
@@ -124,7 +130,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test, Explicit("Run manually cause it will try to get log for existing pod")]
-        public async Task GetPodLog()
+        public async Task GetPodLog_Returns_LogData()
         {
             var client = Given_KubernetesClient();
 
@@ -134,15 +140,15 @@ namespace Lykke.AlgoStore.Tests.Unit
                 tailLines: 100 // get last 100 lines from log
             );
 
-            Then_Result_ShouldContainLogData(result);
+            Then_Result_Should_Contain_LogData(result);
         }
 
-        private static void Then_Result_ShouldContainLogData(string result)
+        private static void Then_Result_Should_Contain_LogData(string result)
         {
             Assert.IsNotNull(result);
         }
 
-        private static void Then_Result_ShouldContainNamespaceData(Iok8skubernetespkgapiv1NamespaceList list)
+        private static void Then_Result_Should_Contain_NamespacesData(Iok8skubernetespkgapiv1NamespaceList list)
         {
             Assert.IsNotNull(list);
             Assert.IsNotNull(list.Items);
@@ -159,6 +165,21 @@ namespace Lykke.AlgoStore.Tests.Unit
             client.SetRetryPolicy(null);
 
             return client;
+        }
+
+        private static void Then_Result_Should_Contain_DeploymentData(Iok8skubernetespkgapisappsv1beta1Deployment result)
+        {
+            Assert.IsNotNull(result);
+        }
+
+        private static void Then_Result_Should_Contain_StatusData(Iok8sapimachinerypkgapismetav1Status result)
+        {
+            Assert.IsNotNull(result);
+        }
+
+        private void Then_Result_Should_Contain_NamespaceData(Iok8skubernetespkgapiv1Namespace result)
+        {
+            Assert.IsNotNull(result);
         }
     }
 }
