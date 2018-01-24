@@ -29,7 +29,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
             builder.RegisterInstance(AzureTableStorage<AlgoMetaDataEntity>.Create(reloadingDbManager, AlgoMetaDataRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoRuntimeDataEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
-            builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.TableName, _log));
 
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
             builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();
