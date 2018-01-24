@@ -231,6 +231,8 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
 
                 var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(data.TradedAsset);
+                if (assetResponse.Response.StatusCode == HttpStatusCode.NotFound)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"Asset: {data.TradedAsset} was not found");
                 if (assetResponse.Response.StatusCode != HttpStatusCode.OK)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetGetWithHttpMessagesAsync");
 
@@ -242,6 +244,8 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset");
 
                 var response = await _assetService.AssetPairExistsWithHttpMessagesAsync(data.AssetPair);
+                if (assetResponse.Response.StatusCode == HttpStatusCode.NotFound)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {data.AssetPair} was not found");
                 if (response.Response.StatusCode != HttpStatusCode.OK)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetPairExistsWithHttpMessagesAsync");
 
