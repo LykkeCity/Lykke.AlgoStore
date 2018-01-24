@@ -13,6 +13,7 @@
         AlgoNotFound = 502,
         AlgoBinaryDataNotFound = 503,
         AlgoRuntimeDataNotFound = 504,
+        AssetNotFound = 505,
 
         //Validation - 1000
         ValidationError = 1000,
