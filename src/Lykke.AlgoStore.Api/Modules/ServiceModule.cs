@@ -46,7 +46,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AssetsService>()
                 .As<IAssetsService>()
-                .WithParameter("BaseUri", _settings.CurrentValue.Services.AssetServiceUrl);
+                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.AssetServiceUrl));
         }
 
         private static void RegisterLocalServices(ContainerBuilder builder)
