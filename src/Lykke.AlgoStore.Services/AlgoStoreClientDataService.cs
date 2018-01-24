@@ -221,8 +221,14 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId, async () =>
             {
+                if (string.IsNullOrWhiteSpace(data.InstanceId))
+                    data.InstanceId = Guid.NewGuid().ToString();
+
                 if (!data.ValidateData(out var exception))
                     throw exception;
+
+                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
 
                 var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(data.TradedAsset);
                 if (assetResponse.Response.StatusCode != HttpStatusCode.OK)
