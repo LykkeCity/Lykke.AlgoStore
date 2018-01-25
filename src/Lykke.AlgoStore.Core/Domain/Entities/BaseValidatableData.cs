@@ -20,7 +20,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
                 this,
                 new ValidationContext(this, null, null),
                 results,
-                false);
+                true);
 
             return results;
 
