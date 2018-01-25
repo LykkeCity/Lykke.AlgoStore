@@ -44,6 +44,26 @@ namespace Lykke.AlgoStore.Services
             _assetService = assetService;
         }
 
+        public async Task<AlgoClientMetaData> GetAllAlgosAsync()
+        {
+            return await LogTimedInfoAsync(nameof(GetAllAlgosAsync), null, async () =>
+            {
+                var algos = await _metaDataRepository.GetAllAlgos();
+
+                if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
+                    return algos;
+
+                Random rnd = new Random();
+                foreach (var metadata in algos.AlgoMetaData)
+                {                   
+                    metadata.Rating = Math.Round(rnd.NextDouble() * (6 - 1) + 1, 2);
+                    metadata.UsersCount = rnd.Next(0, 201);
+                    metadata.Author = "Administrator";
+                }
+                return algos;
+            });
+        }
+
         public async Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId)
         {
             return await LogTimedInfoAsync(nameof(GetClientMetadataAsync), clientId, async () =>

@@ -29,6 +29,24 @@ namespace Lykke.AlgoStore.Api.Controllers
             _service = service;
         }
 
+        [HttpGet("getAllAlgos")]
+        [SwaggerOperation("GetAllAlgos")]
+        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAllAlgos()
+        {
+
+            var result = await _clientDataService.GetAllAlgosAsync();
+
+            if (result == null || result.AlgoMetaData.IsNullOrEmptyCollection())
+                return NotFound();
+
+            var response = Mapper.Map<List<AlgoMetaDataModel>>(result.AlgoMetaData);
+
+            return Ok(response);
+        }
+
         [HttpGet("metadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
