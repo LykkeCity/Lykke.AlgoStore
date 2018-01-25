@@ -35,6 +35,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();
             builder.RegisterType<AlgoRuntimeDataRepository>().As<IAlgoRuntimeDataReadOnlyRepository>().As<IAlgoRuntimeDataRepository>();
             builder.RegisterType<AlgoClientInstanceRepository>().As<IAlgoClientInstanceReadOnlyRepository>().As<IAlgoClientInstanceRepository>();
+            builder.RegisterType<RandomAlgoRatingsRepository>().As<IAlgoRatingsRepository>();
         }
     }
 }

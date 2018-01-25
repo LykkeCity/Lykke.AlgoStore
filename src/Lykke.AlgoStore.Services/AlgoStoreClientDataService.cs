@@ -22,6 +22,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoMetaDataRepository _metaDataRepository;
         private readonly IAlgoBlobRepository _blobRepository;
         private readonly IAlgoClientInstanceRepository _instanceRepository;
+        private readonly IAlgoRatingsRepository _ratingsRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
@@ -33,6 +34,7 @@ namespace Lykke.AlgoStore.Services
             IAlgoBlobRepository blobRepository,
             IDeploymentApiReadOnlyClient deploymentClient,
             IAlgoClientInstanceRepository instanceRepository,
+            IAlgoRatingsRepository ratingsRepository,
             IAssetsService assetService,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
@@ -41,6 +43,7 @@ namespace Lykke.AlgoStore.Services
             _blobRepository = blobRepository;
             _deploymentClient = deploymentClient;
             _instanceRepository = instanceRepository;
+            _ratingsRepository = ratingsRepository;
             _assetService = assetService;
         }
 
@@ -55,8 +58,8 @@ namespace Lykke.AlgoStore.Services
 
                 Random rnd = new Random();
                 foreach (var metadata in algos.AlgoMetaData)
-                {                   
-                    metadata.Rating = Math.Round(rnd.NextDouble() * (6 - 1) + 1, 2);
+                {
+                    metadata.Rating = _ratingsRepository.GetAlgoRating();
                     metadata.UsersCount = rnd.Next(0, 201);
                     metadata.Author = "Administrator";
                 }
