@@ -230,27 +230,21 @@ namespace Lykke.AlgoStore.Services
                 if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
 
-                var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(data.TradedAsset);
-                if (assetResponse.Response.StatusCode == HttpStatusCode.NotFound)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"Asset: {data.TradedAsset} was not found");
-                if (assetResponse.Response.StatusCode != HttpStatusCode.OK)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetGetWithHttpMessagesAsync");
-
-                var asset = assetResponse.Body;
-                if (asset == null || !asset.IsTradable)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Traded Asset is not valid");
-
-                if (data.Volume.GetAccuracy() > asset.Accuracy)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset");
-
-                var response = await _assetService.AssetPairExistsWithHttpMessagesAsync(data.AssetPair);
-                if (assetResponse.Response.StatusCode == HttpStatusCode.NotFound)
+                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
+                if (assetPairResponse.Response.StatusCode == HttpStatusCode.NotFound)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {data.AssetPair} was not found");
-                if (response.Response.StatusCode != HttpStatusCode.OK)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetPairExistsWithHttpMessagesAsync");
+                if (assetPairResponse.Response.StatusCode != HttpStatusCode.OK)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetPairResponse.Response.StatusCode} from asset service calling AssetPairGetWithHttpMessagesAsync");
 
-                if (response.Body.GetValueOrDefault() != true)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Asset Pair is not valid");
+                var assetPair = assetPairResponse.Body;
+                if (assetPair == null || assetPair.IsDisabled)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AssetPair is not valid");
+
+                if (assetPair.QuotingAssetId != data.TradedAsset)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Traded Asset {data.TradedAsset} is not valid - should be {assetPair.QuotingAssetId}");
+
+                if (data.Volume.GetAccuracy() > assetPair.Accuracy)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset");
 
                 await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
