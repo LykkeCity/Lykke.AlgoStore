@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {
@@ -10,7 +11,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         public string AssetPair { get; set; }
         [Required]
         public string TradedAsset { get; set; }
-        [Required]
+        [Range(Double.Epsilon, double.MaxValue)]
         public double Volume { get; set; }
         [Required]
         public double Margin { get; set; }
