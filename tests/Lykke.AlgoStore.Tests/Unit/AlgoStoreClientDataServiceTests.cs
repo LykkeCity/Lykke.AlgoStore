@@ -197,7 +197,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
-            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -210,7 +210,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(false);
-            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -222,19 +222,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(5.00003);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
-            var assetService = Given_Customized_AssetServiceMock(true, true);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
-            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
-        public void SaveAlgoInstanceDataAsync_Returns_Error_NotTradable()
-        {
-            var data = Given_AlgoClientInstanceData(1);
-            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(false, true);
-            var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -245,7 +233,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(true, false);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
@@ -258,7 +246,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
-            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -270,7 +258,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Error_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
-            var assetService = Given_Customized_AssetServiceMock(true, true);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, null, repo, assetService);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -510,27 +498,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAssetsService Given_Customized_AssetServiceMock(bool isTradable, bool exists)
+        private static IAssetsService Given_Customized_AssetServiceMock(AlgoClientInstanceData data, HttpStatusCode statusCode)
         {
             var fixture = new Fixture();
             var result = new Mock<IAssetsService>();
 
-            result.Setup(service => service.AssetGetWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(new HttpOperationResponse<Asset>
+            result.Setup(service => service.AssetPairGetWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new HttpOperationResponse<AssetPair>
                 {
-                    Body = fixture.Build<Asset>()
-                    .With(a => a.IsTradable, isTradable)
-                    .With(a => a.Accuracy, AssetAccuracy)
+                    Body = fixture.Build<AssetPair>()
+                    .With(pair => pair.QuotingAssetId, data.TradedAsset)
+                    .With(pair => pair.Id, data.AssetPair)
+                    .With(pair => pair.Accuracy, AssetAccuracy)
+                    .With(pair => pair.IsDisabled, false)
                     .Create(),
-                    Response = new HttpResponseMessage(HttpStatusCode.OK)
-                }));
-
-            result.Setup(service => service.AssetPairExistsWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(new HttpOperationResponse<bool?>
-                {
-                    Body = exists,
-                    Response = new HttpResponseMessage(HttpStatusCode.OK)
-                }));
+                    Response = new HttpResponseMessage(statusCode)
+                });
 
             return result.Object;
         }
