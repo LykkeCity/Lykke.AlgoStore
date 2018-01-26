@@ -28,7 +28,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             _clientDataService = clientDataService;
             _service = service;
         }
-
+        
         [HttpGet("getAllAlgos")]
         [SwaggerOperation("GetAllAlgos")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]

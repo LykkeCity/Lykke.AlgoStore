@@ -36,6 +36,9 @@ namespace Lykke.AlgoStore.Tests.Unit
                                 fixture.Build<AlgoMetaData>()
                                 .With(data => data.Date, DateTime.MinValue.ToString("yyyy-MM-dd HH:mm:ss"))
                                 .Without(data => data.Status)
+                                .Without(data => data.Rating)
+                                .Without(data => data.Author)
+                                .Without(data => data.UsersCount)
                                 .Create()
                             }
                         }
