@@ -47,11 +47,11 @@ namespace Lykke.AlgoStore.Services
             _assetService = assetService;
         }
 
-        public async Task<List<AlgoRaingMetaData>> GetAllAlgosWithRatingAsync()
+        public async Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync()
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgosWithRatingAsync), null, async () =>
             {
-                var result = new List<AlgoRaingMetaData>();
+                var result = new List<AlgoRatingMetaData>();
                 var algos = await _metaDataRepository.GetAllAlgos();
 
                 if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
@@ -59,19 +59,21 @@ namespace Lykke.AlgoStore.Services
 
                 foreach (var metadata in algos.AlgoMetaData)
                 {
-                    var raingMetaData = new AlgoRaingMetaData();
-                    raingMetaData.AlgoId = metadata.AlgoId;
-                    raingMetaData.Name = metadata.Name;
-                    raingMetaData.Description = metadata.Description;
-                    raingMetaData.Date = metadata.Date;
-                    raingMetaData.Author = algos.Author;
+                    var ratingMetaData = new AlgoRatingMetaData();
+                    ratingMetaData.AlgoId = metadata.AlgoId;
+                    ratingMetaData.Name = metadata.Name;
+                    ratingMetaData.Description = metadata.Description;
+                    ratingMetaData.Date = metadata.Date;
+                    ratingMetaData.Author = algos.Author;
 
                     var rating = _ratingsRepository.GetAlgoRating(algos.ClientId, metadata.AlgoId);
                     if (rating != null)
                     {
-                        raingMetaData.Rating = rating.Rating;
-                        raingMetaData.UsersCount = rating.UsersCount;
+                        ratingMetaData.Rating = rating.Rating;
+                        ratingMetaData.UsersCount = rating.UsersCount;
                     }
+
+                    result.Add(ratingMetaData);
                 }
 
                 return result;

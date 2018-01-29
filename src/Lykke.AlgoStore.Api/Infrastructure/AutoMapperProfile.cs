@@ -23,8 +23,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
             CreateMap<AlgoClientInstanceModel, AlgoClientInstanceData>()
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore());
-
-            CreateMap<AlgoRaingMetaData, AlgoRatingMetaDataModel>().ReverseMap();
+            
+            CreateMap<AlgoRatingMetaData, AlgoRatingMetaDataModel>()
+                    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));
         }
     }
 }
