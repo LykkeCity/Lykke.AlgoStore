@@ -13,10 +13,6 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         public string Date { get; set; }
         public string Status { get; set; }
 
-        public double Rating { get; set; }
-        public int UsersCount { get; set; }
-        public string Author { get; set; }
-
         public int CompareTo(AlgoMetaData other)
         {
             if (string.IsNullOrWhiteSpace(other.Date) && string.IsNullOrWhiteSpace(Date))

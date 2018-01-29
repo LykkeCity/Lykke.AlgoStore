@@ -12,6 +12,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));
             CreateMap<AlgoMetaDataModel, AlgoMetaData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id));
+
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
             CreateMap<UploadAlgoStringModel, UploadAlgoStringData>();
 
@@ -22,6 +23,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
             CreateMap<AlgoClientInstanceModel, AlgoClientInstanceData>()
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore());
+
+            CreateMap<AlgoRaingMetaData, AlgoRatingMetaDataModel>().ReverseMap();
         }
     }
 }

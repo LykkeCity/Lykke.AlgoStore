@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Lykke.AlgoStore.Core.Domain.Entities;
 
 namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
     public interface IAlgoRatingsRepository
     {
-        double GetAlgoRating();
+        AlgoRatingData GetAlgoRating(string clientId, string algoId);
     }
 }

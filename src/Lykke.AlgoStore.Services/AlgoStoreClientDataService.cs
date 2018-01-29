@@ -47,23 +47,34 @@ namespace Lykke.AlgoStore.Services
             _assetService = assetService;
         }
 
-        public async Task<AlgoClientMetaData> GetAllAlgosAsync()
+        public async Task<List<AlgoRaingMetaData>> GetAllAlgosWithRatingAsync()
         {
-            return await LogTimedInfoAsync(nameof(GetAllAlgosAsync), null, async () =>
+            return await LogTimedInfoAsync(nameof(GetAllAlgosWithRatingAsync), null, async () =>
             {
+                var result = new List<AlgoRaingMetaData>();
                 var algos = await _metaDataRepository.GetAllAlgos();
 
                 if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
-                    return algos;
+                    return result;
 
-                Random rnd = new Random();
                 foreach (var metadata in algos.AlgoMetaData)
                 {
-                    metadata.Rating = _ratingsRepository.GetAlgoRating();
-                    metadata.UsersCount = rnd.Next(0, 201);
-                    metadata.Author = "Administrator";
+                    var raingMetaData = new AlgoRaingMetaData();
+                    raingMetaData.AlgoId = metadata.AlgoId;
+                    raingMetaData.Name = metadata.Name;
+                    raingMetaData.Description = metadata.Description;
+                    raingMetaData.Date = metadata.Date;
+                    raingMetaData.Author = algos.Author;
+
+                    var rating = _ratingsRepository.GetAlgoRating(algos.ClientId, metadata.AlgoId);
+                    if (rating != null)
+                    {
+                        raingMetaData.Rating = rating.Rating;
+                        raingMetaData.UsersCount = rating.UsersCount;
+                    }
                 }
-                return algos;
+
+                return result;
             });
         }
 
@@ -122,7 +133,7 @@ namespace Lykke.AlgoStore.Services
                 return await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, algoId);
             });
         }
-        public async Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, AlgoMetaData data)
+        public async Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, string clientName, AlgoMetaData data)
         {
             return await LogTimedInfoAsync(nameof(SaveClientMetadataAsync), clientId, async () =>
             {
@@ -138,6 +149,7 @@ namespace Lykke.AlgoStore.Services
                 var clientData = new AlgoClientMetaData
                 {
                     ClientId = clientId,
+                    Author = clientName,
                     AlgoMetaData = new List<AlgoMetaData>
                     {
                         data

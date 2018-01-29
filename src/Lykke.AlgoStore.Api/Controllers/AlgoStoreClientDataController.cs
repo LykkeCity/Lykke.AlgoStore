@@ -28,21 +28,21 @@ namespace Lykke.AlgoStore.Api.Controllers
             _clientDataService = clientDataService;
             _service = service;
         }
-        
+
         [HttpGet("getAllAlgos")]
         [SwaggerOperation("GetAllAlgos")]
-        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllAlgos()
         {
 
-            var result = await _clientDataService.GetAllAlgosAsync();
+            var result = await _clientDataService.GetAllAlgosWithRatingAsync();
 
-            if (result == null || result.AlgoMetaData.IsNullOrEmptyCollection())
+            if (result == null || result.IsNullOrEmptyCollection())
                 return NotFound();
 
-            var response = Mapper.Map<List<AlgoMetaDataModel>>(result.AlgoMetaData);
+            var response = Mapper.Map<List<AlgoRatingMetaDataModel>>(result);
 
             return Ok(response);
         }
@@ -74,10 +74,11 @@ namespace Lykke.AlgoStore.Api.Controllers
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             string clientId = User.GetClientId();
+            string clientName = User.Identity.Name;
 
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var result = await _clientDataService.SaveClientMetadataAsync(clientId, data);
+            var result = await _clientDataService.SaveClientMetadataAsync(clientId, clientName, data);
 
             var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
 

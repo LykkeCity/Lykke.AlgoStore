@@ -6,9 +6,9 @@ namespace Lykke.AlgoStore.Core.Services
 {
     public interface IAlgoStoreClientDataService
     {
-        Task<AlgoClientMetaData> GetAllAlgosAsync();
+        Task<List<AlgoRaingMetaData>> GetAllAlgosWithRatingAsync();
         Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId);
-        Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, AlgoMetaData data);
+        Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, string clientName, AlgoMetaData data);
         Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequestAsync(string clientId, AlgoMetaData data);
         Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel);
         Task DeleteMetadataAsync(string clientId, AlgoMetaData data);

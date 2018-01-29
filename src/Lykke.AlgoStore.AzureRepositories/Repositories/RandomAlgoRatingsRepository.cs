@@ -1,16 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Domain.Repositories;
 
-namespace Lykke.AlgoStore.Core.Domain.Repositories
+namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class RandomAlgoRatingsRepository : IAlgoRatingsRepository
     {
-        Random rnd = new Random();
-        public double GetAlgoRating()
+        private static readonly Random Rnd = new Random();
+
+        public AlgoRatingData GetAlgoRating(string clientId, string algoId)
         {
-            return Math.Round(rnd.NextDouble() * (6 - 1) + 1, 2);
+            var result = new AlgoRatingData();
+            result.Rating = Math.Round(Rnd.NextDouble() * (6 - 1) + 1, 2);
+            result.UsersCount = Rnd.Next(0, 201);
+
+            return result;
         }
     }
 }

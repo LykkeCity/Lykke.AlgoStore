@@ -316,7 +316,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                service.SaveClientMetadataAsync(clientId, data).Wait();
+                service.SaveClientMetadataAsync(clientId, string.Empty, data).Wait();
             }
             catch (Exception ex)
             {
