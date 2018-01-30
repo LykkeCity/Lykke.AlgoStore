@@ -43,7 +43,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                     continue;
 
                 result.ClientId = algoEntity.PartitionKey;
-                result.Author = algoEntity.Author;
+                if (!string.IsNullOrWhiteSpace(algoEntity.Author))
+                    result.Author = algoEntity.Author;
                 result.AlgoMetaData.Add(algoEntity.ToAlgoMetaData());
             }
 
