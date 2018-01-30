@@ -52,6 +52,10 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(GetAllAlgosWithRatingAsync), null, async () =>
             {
                 var result = new List<AlgoRatingMetaData>();
+
+                // TODO call IPublicAlgosRepository.GetAllPublicAlgosAsync
+                // Foreach (publicalgo algo) => _metaDataRepository.GetMetadata
+
                 var algos = await _metaDataRepository.GetAllAlgos();
 
                 if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
