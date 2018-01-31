@@ -23,6 +23,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoBlobRepository _blobRepository;
         private readonly IAlgoClientInstanceRepository _instanceRepository;
         private readonly IAlgoRatingsRepository _ratingsRepository;
+        private readonly IPublicAlgosRepository _publicAlgosRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
@@ -35,6 +36,7 @@ namespace Lykke.AlgoStore.Services
             IDeploymentApiReadOnlyClient deploymentClient,
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
+            IPublicAlgosRepository publicAlgosRepository,
             IAssetsService assetService,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
@@ -44,6 +46,7 @@ namespace Lykke.AlgoStore.Services
             _deploymentClient = deploymentClient;
             _instanceRepository = instanceRepository;
             _ratingsRepository = ratingsRepository;
+            _publicAlgosRepository = publicAlgosRepository;
             _assetService = assetService;
         }
 
@@ -53,32 +56,38 @@ namespace Lykke.AlgoStore.Services
             {
                 var result = new List<AlgoRatingMetaData>();
 
-                // TODO call IPublicAlgosRepository.GetAllPublicAlgosAsync
-                // Foreach (publicalgo algo) => _metaDataRepository.GetMetadata
+                var algos = await _publicAlgosRepository.GetAllPublicAlgosAsync(); 
 
-                var algos = await _metaDataRepository.GetAllAlgos();
-
-                if (algos == null || algos.AlgoMetaData.IsNullOrEmptyCollection())
+                if (algos.IsNullOrEmptyCollection())
                     return result;
 
-                foreach (var metadata in algos.AlgoMetaData)
+                foreach (var publicAlgo in algos)
                 {
-                    var ratingMetaData = new AlgoRatingMetaData();
-                    ratingMetaData.AlgoId = metadata.AlgoId;
-                    ratingMetaData.Name = metadata.Name;
-                    ratingMetaData.Description = metadata.Description;
-                    ratingMetaData.Date = metadata.Date;
-                    ratingMetaData.Author = algos.Author;
+                    var currentAlgoMetadata = await _metaDataRepository.GetAlgoMetaDataAsync(publicAlgo.ClientId, publicAlgo.AlgoId);
+                    if (currentAlgoMetadata.Author == null) currentAlgoMetadata.Author = "Administrator";
 
-                    var rating = _ratingsRepository.GetAlgoRating(algos.ClientId, metadata.AlgoId);
-                    if (rating != null)
+                    foreach (var algoMetadata in currentAlgoMetadata.AlgoMetaData)
                     {
-                        ratingMetaData.Rating = rating.Rating;
-                        ratingMetaData.UsersCount = rating.UsersCount;
+                        var ratingMetaData = new AlgoRatingMetaData
+                        {
+                            AlgoId = algoMetadata.AlgoId,
+                            Name = algoMetadata.Name,
+                            Description = algoMetadata.Description,
+                            Date = algoMetadata.Date,
+                            Author = currentAlgoMetadata.Author
+                        };
+
+                        var rating = _ratingsRepository.GetAlgoRating(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
+                        if (rating != null)
+                        {
+                            ratingMetaData.Rating = rating.Rating;
+                            ratingMetaData.UsersCount = rating.UsersCount;
+                        }
+
+                        result.Add(ratingMetaData);
                     }
 
-                    result.Add(ratingMetaData);
-                }
+                }                
 
                 return result;
             });

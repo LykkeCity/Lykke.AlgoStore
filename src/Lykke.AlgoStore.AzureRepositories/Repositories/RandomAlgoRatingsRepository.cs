@@ -10,9 +10,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public AlgoRatingData GetAlgoRating(string clientId, string algoId)
         {
-            var result = new AlgoRatingData();
-            result.Rating = Math.Round(Rnd.NextDouble() * (6 - 1) + 1, 2);
-            result.UsersCount = Rnd.Next(0, 201);
+            var result = new AlgoRatingData
+            {
+                Rating = Math.Round(Rnd.NextDouble() * (6 - 1) + 1, 2),
+                UsersCount = Rnd.Next(0, 201)
+            };
 
             return result;
         }

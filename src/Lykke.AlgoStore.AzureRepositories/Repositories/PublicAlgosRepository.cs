@@ -30,9 +30,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         }
         public async Task<bool> ExistsPublicAlgoAsync(string clientId, string algoId)
         {
-            var entity = new PublicAlgoEntity();
-            entity.PartitionKey = PublicAlgoMapper.PartitionKey;
-            entity.RowKey = KeyGenerator.GenerateKey(clientId, algoId);
+            var entity = new PublicAlgoEntity
+            {
+                PartitionKey = PublicAlgoMapper.PartitionKey,
+                RowKey = KeyGenerator.GenerateKey(clientId, algoId)
+            };
 
             return await _table.RecordExistsAsync(entity);
         }
