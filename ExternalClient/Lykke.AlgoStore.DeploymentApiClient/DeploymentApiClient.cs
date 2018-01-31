@@ -14,7 +14,7 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 {
     public class DeploymentApiClient : ApiDocumentation, IDeploymentApiClient
     {
-        public async Task<string> BuildAlgoImageFromBinary(byte[] data, string algoUsername, string algoName)
+        public async Task<string> BuildAlgoImageFromBinaryAsync(byte[] data, string algoUsername, string algoName)
         {
             using (var stream = new MemoryStream(data))
             {
@@ -23,14 +23,14 @@ namespace Lykke.AlgoStore.DeploymentApiClient
                 return response.Body.Id.ToString();
             }
         }
-        public async Task<bool> DeleteAlgo(long imageId)
+        public async Task<bool> DeleteAlgoAsync(long imageId)
         {
             var response = await RemoveALgoUsingDELETEWithHttpMessagesAsync(imageId);
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
 
-        public async Task<long> CreateTestAlgo(long imageId, string algoId)
+        public async Task<long> CreateTestAlgoAsync(long imageId, string algoId)
         {
             var response = await TestAlgoUsingPOSTWithHttpMessagesAsync(imageId, algoId);
 
@@ -42,37 +42,38 @@ namespace Lykke.AlgoStore.DeploymentApiClient
 
             return 0;
         }
-        public async Task<bool> StartTestAlgo(long imageId)
+        public async Task<bool> StartTestAlgoAsync(long imageId)
         {
             var response = await StartUsingPUTWithHttpMessagesAsync(imageId);
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
-        public async Task<bool> StopTestAlgo(long imageId)
+        public async Task<bool> StopTestAlgoAsync(long imageId)
         {
             var response = await StopTestAlgoUsingPUTWithHttpMessagesAsync(imageId);
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
-        public async Task<bool> DeleteTestAlgo(long imageId)
+
+        public async Task<bool> DeleteTestAlgoAsync(long imageId)
         {
             var response = await DeleteTestAlgoUsingDELETEWithHttpMessagesAsync(imageId);
 
             return response.Response.StatusCode == HttpStatusCode.OK;
         }
-        public async Task<string> GetTestAlgoLog(long imageId)
+        public async Task<string> GetTestAlgoLogAsync(long imageId)
         {
             var response = await GetAlgoLogUsingGETWithHttpMessagesAsync(imageId);
 
             return response.Body.Log;
         }
-        public async Task<string> GetTestAlgoTailLog(long imageId, int tail)
+        public async Task<string> GetTestAlgoTailLogAsync(long imageId, int tail)
         {
             var response = await GetTailLogUsingGETWithHttpMessagesAsync(imageId, tail);
 
             return response.Body.Log;
         }
-        public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatus(long id)
+        public async Task<ClientAlgoRuntimeStatuses> GetAlgoTestAdministrativeStatusAsync(long id)
         {
             HttpOperationResponse<AdminStatusResponse> response = await GetAdministrativeStatusAsync(id);
 

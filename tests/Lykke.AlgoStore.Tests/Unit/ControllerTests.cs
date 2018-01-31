@@ -183,9 +183,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoMetaDataRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaData(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(exists));
-            result.Setup(repo => repo.DeleteAlgoMetaData(It.IsAny<AlgoClientMetaData>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.DeleteAlgoMetaDataAsync(It.IsAny<AlgoClientMetaData>())).Returns(Task.CompletedTask);
 
             return result.Object;
         }
@@ -193,7 +193,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoRuntimeDataReadOnlyRepository>();
 
-            result.Setup(repo => repo.GetAlgoRuntimeData(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.GetAlgoRuntimeDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientId, string algoId) =>
                 {
                     if (returnNull)
@@ -216,7 +216,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             if (result == null)
                 result = new Mock<IDeploymentApiClient>();
 
-            result.Setup(c => c.GetAlgoTestAdministrativeStatus(It.IsAny<long>())).Returns(Task.FromResult(status));
+            result.Setup(c => c.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
 
             return result;
         }
@@ -230,9 +230,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             if (result == null)
                 result = new Mock<IDeploymentApiClient>();
 
-            result.Setup(c => c.StopTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(resultStop));
-            result.Setup(c => c.DeleteTestAlgo(It.IsAny<long>())).Returns(Task.FromResult(resultDeleteTest));
-            result.Setup(c => c.DeleteAlgo(It.IsAny<long>())).Returns(Task.FromResult(resultDelete));
+            result.Setup(c => c.StopTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(resultStop));
+            result.Setup(c => c.DeleteTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(resultDeleteTest));
+            result.Setup(c => c.DeleteAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(resultDelete));
 
             return result;
         }
@@ -240,7 +240,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoRuntimeDataRepository>();
 
-            result.Setup(repo => repo.DeleteAlgoRuntimeData(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(success));
+            result.Setup(repo => repo.DeleteAlgoRuntimeDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(success));
 
             return result.Object;
         }
@@ -248,7 +248,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoBlobRepository>();
 
-            result.Setup(repo => repo.BlobExists(It.IsAny<string>())).Returns(Task.FromResult(exists));
+            result.Setup(repo => repo.BlobExistsAsync(It.IsAny<string>())).Returns(Task.FromResult(exists));
 
             return result.Object;
         }
@@ -285,11 +285,11 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             try
             {
-                var runtimeData = await clientDataService.ValidateCascadeDeleteClientMetadataRequest(clientId, data);
+                var runtimeData = await clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(clientId, data);
 
-                await algoStoreService.DeleteImage(runtimeData);
+                await algoStoreService.DeleteImageAsync(runtimeData);
 
-                await clientDataService.DeleteMetadata(clientId, data);
+                await clientDataService.DeleteMetadataAsync(clientId, data);
             }
             catch (Exception exception)
             {

@@ -35,6 +35,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.DeploymentA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lykke.AlgoStore.TeamCityClient", "Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj", "{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.KubernetesClient", "ExternalClient\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj", "{0164CC4B-7354-400C-99B9-F42AE8D3ECE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -18,20 +18,20 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
-        public async Task<AlgoClientRuntimeData> GetAlgoRuntimeData(string clientId, string algoId)
+        public async Task<AlgoClientRuntimeData> GetAlgoRuntimeDataAsync(string clientId, string algoId)
         {
             var entities = await _table.GetDataAsync(clientId, algoId);
 
             return entities.ToModel();
         }
 
-        public async Task SaveAlgoRuntimeData(AlgoClientRuntimeData data)
+        public async Task SaveAlgoRuntimeDataAsync(AlgoClientRuntimeData data)
         {
             var enitites = data.ToEntity();
 
             await _table.InsertOrMergeAsync(enitites);
         }
-        public async Task<bool> DeleteAlgoRuntimeData(string clientId, string algoId)
+        public async Task<bool> DeleteAlgoRuntimeDataAsync(string clientId, string algoId)
         {
             var entity = await _table.DeleteAsync(clientId, algoId);
             return entity != null;

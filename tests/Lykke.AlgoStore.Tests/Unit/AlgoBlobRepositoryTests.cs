@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using AzureStorage.Blob;
@@ -64,7 +65,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_DeleteBinary(IAlgoBlobRepository repo, string blobKey)
         {
             repo.DeleteBlobAsync(blobKey).Wait();
-            Assert.False(repo.BlobExists(blobKey).Result);
+            Assert.False(repo.BlobExistsAsync(blobKey).Result);
         }
 
         private static byte[] Give_Large_Byte_Array()
@@ -77,7 +78,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_BinaryFile_ShouldNotExist(IAlgoBlobRepository repo, string blobKey)
         {
-            var exists = repo.BlobExists(blobKey).Result;
+            var exists = repo.BlobExistsAsync(blobKey).Result;
             Assert.False(exists);
         }
 
@@ -93,7 +94,10 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_Save_BinaryFile(IAlgoBlobRepository repository, string key, byte[] bytes)
         {
-            repository.SaveBlobAsync(key, bytes).Wait();
+            using (var stream = new MemoryStream(bytes))
+            {
+                repository.SaveBlobAsync(key, stream).Wait();
+            }
         }
 
         private static void And_TryDelete_BinaryFile(IAlgoBlobRepository repository, string key)

@@ -105,6 +105,7 @@ namespace Lykke.AlgoStore.Api
                 }
 
                 app.UseMiddleware<GlobalErrorHandlerMiddleware>(AlgoStoreConstants.AppName, (CreateErrorResponse)ExceptionManager.CreateErrorResponse);
+                app.UseMiddleware<AlgoStoreErrorHandlerMiddleware>();
 
                 app.UseAuthentication();
 
