@@ -16,6 +16,12 @@ namespace Lykke.AlgoStore.TeamCityClient
 {
     public class TeamCityClient : ITeamCityClient
     {
+        private const string BlobAuthorizationHeader = "CODE_Blob_AuthorizationHeader";
+        private const string BlobDateHeader = "CODE_Blob_DateHeader";
+        private const string BlobUrl = "CODE_Blob_Url";
+        private const string BlobVersionHeader = "CODE_Blob_VersionHeader";
+        private const string AlgoId = "CODE_ALGO_ID";
+
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -29,52 +35,21 @@ namespace Lykke.AlgoStore.TeamCityClient
             _settings = settings;
         }
 
-        public async Task<BuildTypeResponse> GetBuildTypes()
+
+        public async Task<BuildBase> StartBuild(TeamCityClientBuildData buildData)
         {
-            const string url = "/app/rest/buildTypes";
+            ParametersResponse parametersResponse = await GetParameters(_settings.BuildConfigurationId);
 
-            using (HttpClient client = CreateClient(_settings))
-            using (HttpResponseMessage responseMessage = await client.GetAsync(url, CancellationToken.None))
+            var request = new BuildRequest
             {
-                if (responseMessage.StatusCode != HttpStatusCode.OK)
-                    return null;
+                Personal = true,
+                BuildType = new BuildTypeBase { Id = _settings.BuildConfigurationId },
+                Properties = new Properties { Property = new List<PropertyBase>() }
+            };
 
-                var content = await responseMessage.Content.ReadAsStringAsync();
+            SetBlobRequestParameter(request, parametersResponse, buildData);
 
-                return JsonConvert.DeserializeObject<BuildTypeResponse>(content, JsonSerializerSettings);
-            }
-        }
-
-        public async Task<ParametersResponse> GetParameters(string buildTypeId)
-        {
-            const string url = "/app/rest/buildTypes/id:{0}/parameters";
-
-            using (HttpClient client = CreateClient(_settings))
-            using (HttpResponseMessage responseMessage = await client.GetAsync(string.Format(url, buildTypeId), CancellationToken.None))
-            {
-                if (responseMessage.StatusCode != HttpStatusCode.OK)
-                    return null;
-
-                var content = await responseMessage.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<ParametersResponse>(content, JsonSerializerSettings);
-            }
-        }
-
-        public async Task<BuildBase> StartBuild(BuildRequest request)
-        {
-            const string url = "/app/rest/buildQueue ";
-
-            using (HttpClient client = CreateClient(_settings))
-            using (HttpResponseMessage responseMessage = await client.PostAsync(url, CreateJsonContent(request)))
-            {
-                if (responseMessage.StatusCode != HttpStatusCode.OK)
-                    return null;
-
-                var content = await responseMessage.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<BuildBase>(content, JsonSerializerSettings);
-            }
+            return await StartBuild(request);
         }
 
         public async Task<Build> GetBuildStatus(int buildId)
@@ -93,7 +68,27 @@ namespace Lykke.AlgoStore.TeamCityClient
             }
         }
 
-        public async Task<List<ProblemInfo>> GetBuildProblemDetails(int buildId)
+
+
+        private async Task<BuildTypeResponse> GetBuildTypes()
+        {
+            const string url = "/app/rest/buildTypes";
+
+            using (HttpClient client = CreateClient(_settings))
+            using (HttpResponseMessage responseMessage = await client.GetAsync(url, CancellationToken.None))
+            {
+                if (responseMessage.StatusCode != HttpStatusCode.OK)
+                    return null;
+
+                var content = await responseMessage.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<BuildTypeResponse>(content, JsonSerializerSettings);
+            }
+        }
+
+        
+
+        private async Task<List<ProblemInfo>> GetBuildProblemDetails(int buildId)
         {
             const string urlProblems = "/app/rest/problemOccurrences?locator=build:(id:{0})";
 
@@ -132,6 +127,74 @@ namespace Lykke.AlgoStore.TeamCityClient
         }
 
         #region Private Methods
+
+        private async Task<BuildBase> StartBuild(BuildRequest request)
+        {
+            const string url = "/app/rest/buildQueue ";
+
+            using (HttpClient client = CreateClient(_settings))
+            using (HttpResponseMessage responseMessage = await client.PostAsync(url, CreateJsonContent(request)))
+            {
+                if (responseMessage.StatusCode != HttpStatusCode.OK)
+                    return null;
+
+                var content = await responseMessage.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<BuildBase>(content, JsonSerializerSettings);
+            }
+        }
+
+        private void SetBlobRequestParameter(BuildRequest request, ParametersResponse parametersResponse, TeamCityClientBuildData buildData)
+        {
+            foreach (Property responsePropery in parametersResponse.Properies)
+            {
+                var propertyBase = new PropertyBase
+                {
+                    Name = responsePropery.Name
+                };
+
+                switch (responsePropery.Name)
+                {
+                    case BlobAuthorizationHeader:
+                        propertyBase.Value = buildData.BlobAuthorizationHeader;
+                        break;
+                    case BlobDateHeader:
+                        propertyBase.Value = buildData.BlobDateHeader;
+                        break;
+                    case BlobUrl:
+                        propertyBase.Value = buildData.BlobUrl;
+                        break;
+                    case BlobVersionHeader:
+                        propertyBase.Value = buildData.BlobVersionHeader;
+                        break;
+                    case AlgoId:
+                        propertyBase.Value = buildData.AlgoId;
+                        break;
+                }
+
+                if (!string.IsNullOrWhiteSpace(propertyBase.Value))
+                    request.Properties.Property.Add(propertyBase);
+            }
+        }
+
+        private async Task<ParametersResponse> GetParameters(string buildTypeId)
+        {
+            const string url = "/app/rest/buildTypes/id:{0}/parameters";
+
+            using (HttpClient client = CreateClient(_settings))
+            using (HttpResponseMessage responseMessage = await client.GetAsync(string.Format(url, buildTypeId), CancellationToken.None))
+            {
+                if (responseMessage.StatusCode != HttpStatusCode.OK)
+                    return null;
+
+                var content = await responseMessage.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<ParametersResponse>(content, JsonSerializerSettings);
+            }
+        }
+        #endregion
+
+        #region Infrastructure Methods
         private static HttpClient CreateClient(TeamCitySettings settings)
         {
             var client = new HttpClient();

@@ -78,16 +78,16 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    var status = ClientAlgoRuntimeStatuses.NotFound;
-                    try
-                    {
-                        status = await _deploymentClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                    }
-                    metadata.Status = status.ToModel().ToUpperText();
+                    //var status = ClientAlgoRuntimeStatuses.NotFound;
+                    //try
+                    //{
+                    //    status = await _deploymentClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                    //}
+                    //metadata.Status = status.ToModel().ToUpperText();
                 }
                 return algos;
             });

@@ -1,6 +1,6 @@
 ﻿namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class BuildType : BaseInfo
+    internal class BuildType : BaseInfo
     {
         public string Id { get; set; }
         public string Name { get; set; }

@@ -202,8 +202,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                     var res = new AlgoClientRuntimeData();
                     res.ClientId = clientId;
                     res.AlgoId = algoId;
-                    res.ImageId = 2;
-                    res.BuildImageId = 1;
+                    //res.ImageId = 2;
+                    //res.BuildImageId = 1;
 
                     return Task.FromResult(res);
                 });

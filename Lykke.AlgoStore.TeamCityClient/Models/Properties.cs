@@ -2,7 +2,7 @@
 
 namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class Properties
+    internal class Properties
     {
         public List<PropertyBase> Property { get; set; }
     }

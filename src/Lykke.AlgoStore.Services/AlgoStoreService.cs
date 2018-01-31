@@ -12,6 +12,7 @@ using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.TeamCityClient;
+using Lykke.AlgoStore.TeamCityClient.Models;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -62,27 +63,30 @@ namespace Lykke.AlgoStore.Services
                 if (algoMetaData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo meta data for provided id");
 
-                var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
+                var headers = _storageConnectionManager.GetData(data.AlgoId);
 
-                var response =
-                    await _externalClient.BuildAlgoImageFromBinary(blob, data.ClientId, algoMetaData.AlgoId);
+                var buildData = new TeamCityClientBuildData
+                {
+                    BlobAuthorizationHeader = headers.AuthorizationHeader,
+                    BlobUrl = headers.Url,
+                    BlobVersionHeader = headers.VersionHeader,
+                    BlobDateHeader = headers.DateHeader,
+                    AlgoId = data.AlgoId
+                };
 
-                var imageId = int.Parse(response);
-                var testId = await _externalClient.CreateTestAlgo(imageId, algoMetaData.AlgoId);
-                if (testId < 1)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "Error creating test");
+                var response = await _teamCityClient.StartBuild(buildData);
 
                 var runtimeData = new AlgoClientRuntimeData
                 {
                     ClientId = data.ClientId,
                     AlgoId = data.AlgoId,
-                    ImageId = testId,
-                    BuildImageId = imageId
+                    BuildId = response.Id,
+                    PodId = string.Empty
                 };
 
                 await _algoRuntimeDataRepository.SaveAlgoRuntimeData(runtimeData);
 
-                return true;
+                return response.GetBuildState() != BuildStates.Undefined;
             });
         }
         public async Task<string> StartTestImage(ManageImageData data)
@@ -102,26 +106,38 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound,
                         $"No runtime data for algo id {algoId}");
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+                var buildStatus = await _teamCityClient.GetBuildStatus(runtimeData.BuildId);
 
                 await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+                    $"GetBuildStatus Status: {buildStatus.Status} {buildStatus.StatusText} for buildId {runtimeData.BuildId}");
 
-                var statusResult = AlgoRuntimeStatuses.Unknown;
-                switch (status)
-                {
-                    case ClientAlgoRuntimeStatuses.Created:
-                    case ClientAlgoRuntimeStatuses.Paused:
-                    case ClientAlgoRuntimeStatuses.Stopped:
-                        if (await _externalClient.StartTestAlgo(runtimeData.ImageId))
-                            statusResult = AlgoRuntimeStatuses.Started;
-                        break;
-                    default:
-                        statusResult = status.ToModel();
-                        break;
-                }
+                if (buildStatus.GetBuildStatus() != BuildStatuses.Success)
+                    return buildStatus.Status.ToUpper();
 
-                return statusResult.ToUpperText();
+
+
+                return string.Empty;
+
+                //var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+
+                //await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
+                //    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+
+                //var statusResult = AlgoRuntimeStatuses.Unknown;
+                //switch (status)
+                //{
+                //    case ClientAlgoRuntimeStatuses.Created:
+                //    case ClientAlgoRuntimeStatuses.Paused:
+                //    case ClientAlgoRuntimeStatuses.Stopped:
+                //        if (await _externalClient.StartTestAlgo(runtimeData.ImageId))
+                //            statusResult = AlgoRuntimeStatuses.Started;
+                //        break;
+                //    default:
+                //        statusResult = status.ToModel();
+                //        break;
+                //}
+
+                //return statusResult.ToUpperText();
             });
         }
         public async Task<string> StopTestImage(ManageImageData data)
@@ -141,16 +157,16 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound,
                         $"No runtime data for algo id {algoId}");
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.BuildId);
 
                 await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.BuildId}");
 
                 var statusResult = AlgoRuntimeStatuses.Unknown;
                 switch (status)
                 {
                     case ClientAlgoRuntimeStatuses.Running:
-                        if (await _externalClient.StopTestAlgo(runtimeData.ImageId))
+                        if (await _externalClient.StopTestAlgo(runtimeData.BuildId))
                             statusResult = AlgoRuntimeStatuses.Stopped;
                         break;
                     default:
@@ -174,7 +190,7 @@ namespace Lykke.AlgoStore.Services
                 if (runtimeData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {algoId}");
 
-                return await _externalClient.GetTestAlgoLog(runtimeData.ImageId);
+                return await _externalClient.GetTestAlgoLog(runtimeData.BuildId);
             });
         }
         public async Task<string> GetTestTailLog(TailLogData data)
@@ -190,7 +206,7 @@ namespace Lykke.AlgoStore.Services
                 if (runtimeData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Bad runtime data for {algoId}");
 
-                return await _externalClient.GetTestAlgoTailLog(runtimeData.ImageId, data.Tail);
+                return await _externalClient.GetTestAlgoTailLog(runtimeData.BuildId, data.Tail);
             });
         }
         public async Task DeleteImage(AlgoClientRuntimeData runtimeData)
@@ -200,10 +216,10 @@ namespace Lykke.AlgoStore.Services
                 if (runtimeData == null)
                     return;
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
+                var status = await _externalClient.GetAlgoTestAdministrativeStatus(runtimeData.BuildId);
 
                 await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for testId {runtimeData.ImageId}");
+                    $"GetAlgoTestAdministrativeStatus Status: {status} for testId {runtimeData.BuildId}");
 
                 var result = true;
 
@@ -213,7 +229,7 @@ namespace Lykke.AlgoStore.Services
                 if (status == ClientAlgoRuntimeStatuses.Paused ||
                     status == ClientAlgoRuntimeStatuses.Running)
                 {
-                    result = await _externalClient.StopTestAlgo(runtimeData.ImageId);
+                    result = await _externalClient.StopTestAlgo(runtimeData.BuildId);
                     if (result)
                         status = ClientAlgoRuntimeStatuses.Stopped;
                 }
@@ -221,10 +237,10 @@ namespace Lykke.AlgoStore.Services
                 if (result &&
                     (status == ClientAlgoRuntimeStatuses.Stopped ||
                      status == ClientAlgoRuntimeStatuses.Created))
-                    result = await _externalClient.DeleteTestAlgo(runtimeData.ImageId);
+                    result = await _externalClient.DeleteTestAlgo(runtimeData.BuildId);
 
                 if (result)
-                    result = await _externalClient.DeleteAlgo(runtimeData.BuildImageId);
+                    result = await _externalClient.DeleteAlgo(runtimeData.BuildId);
 
                 if (result)
                     result = await _algoRuntimeDataRepository.DeleteAlgoRuntimeData(
@@ -233,7 +249,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot delete image id {runtimeData.ImageId} for algo id {runtimeData.AlgoId}");
+                        $"Cannot delete image id {runtimeData.BuildId} for algo id {runtimeData.AlgoId}");
             });
         }
     }

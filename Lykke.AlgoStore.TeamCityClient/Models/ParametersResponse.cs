@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class ParametersResponse : BaseInfo
+    internal class ParametersResponse : BaseInfo
     {
         [JsonProperty(PropertyName = "property")]
         public List<Property> Properies { get; set; }

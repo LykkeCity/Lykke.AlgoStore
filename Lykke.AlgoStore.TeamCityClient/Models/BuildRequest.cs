@@ -3,7 +3,7 @@
 namespace Lykke.AlgoStore.TeamCityClient.Models
 {
     [JsonObject(Title = "build")]
-    public class BuildRequest
+    internal class BuildRequest
     {
         public bool Personal { get; set; }
         public BuildTypeBase BuildType { get; set; }
