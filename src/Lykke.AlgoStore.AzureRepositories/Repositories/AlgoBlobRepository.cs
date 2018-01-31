@@ -9,7 +9,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class AlgoBlobRepository : IAlgoBlobRepository
     {
-        private const string BlobContainer = "algo-store-binary";
+        public const string BlobContainer = "algo-store-binary";
         private readonly Encoding _encoding = Encoding.Unicode;
 
         private readonly IBlobStorage _storage;

@@ -2,7 +2,7 @@
 
 namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class Property : PropertyBase
+    internal class Property : PropertyBase
     {
         public bool Inherited { get; set; }
         [JsonProperty(PropertyName = "type")]

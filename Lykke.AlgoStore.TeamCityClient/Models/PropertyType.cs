@@ -1,6 +1,6 @@
 ﻿namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class PropertyType
+    internal class PropertyType
     {
         public string RawValue { get; set; }
     }

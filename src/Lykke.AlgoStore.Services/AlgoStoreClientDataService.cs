@@ -124,7 +124,7 @@ namespace Lykke.AlgoStore.Services
                     var status = ClientAlgoRuntimeStatuses.NotFound;
                     try
                     {
-                        status = await _deploymentClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.ImageId);
+                        status = await _deploymentClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.BuildId);
                     }
                     catch (Exception ex)
                     {

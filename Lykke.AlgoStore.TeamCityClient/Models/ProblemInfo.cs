@@ -1,6 +1,6 @@
 ﻿namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class ProblemInfo : BaseInfo
+    internal class ProblemInfo : BaseInfo
     {
         private const string ToStringPattern = "Problem id: {0}; identity: {1}; type: {2}; details: {3}";
 

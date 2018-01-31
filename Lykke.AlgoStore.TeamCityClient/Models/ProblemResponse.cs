@@ -2,7 +2,7 @@
 
 namespace Lykke.AlgoStore.TeamCityClient.Models
 {
-    public class ProblemResponse
+    internal class ProblemResponse
     {
         public List<BaseInfo> ProblemOccurrence { get; set; }
     }
