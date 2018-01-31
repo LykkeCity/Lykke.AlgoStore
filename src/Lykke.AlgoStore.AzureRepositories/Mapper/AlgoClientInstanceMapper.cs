@@ -5,9 +5,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
     public static class AlgoClientInstanceMapper
     {
-        private const string PartitionKeySeparator = "_";
-        private const string PartitionKeyPattern = "{0}{1}{2}";
-
         public static AlgoClientInstanceData ToModel(this AlgoClientInstanceEntity entitiy)
         {
             var result = new AlgoClientInstanceData();
@@ -15,7 +12,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if (entitiy == null)
                 return result;
 
-            var pair = ParseKey(entitiy.PartitionKey);
+            var pair = KeyGenerator.ParseKey(entitiy.PartitionKey);
             if (pair == null)
                 return result;
 
@@ -37,7 +34,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             if (data == null)
                 return result;
 
-            result.PartitionKey = GenerateKey(data.ClientId, data.AlgoId);
+            result.PartitionKey = KeyGenerator.GenerateKey(data.ClientId, data.AlgoId);
             result.RowKey = data.InstanceId;
             result.AssetPair = data.AssetPair;
             result.HftApiKey = data.HftApiKey;
@@ -47,23 +44,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.ETag = "*";
 
             return result;
-        }
-
-        public static string GenerateKey(string clientId, string algoId)
-        {
-            return string.Format(PartitionKeyPattern, clientId, PartitionKeySeparator, algoId);
-        }
-        public static BaseAlgoData ParseKey(string partitionKey)
-        {
-            var values = partitionKey.Split(PartitionKeySeparator);
-            if (values == null || values.Length != 2)
-                return null;
-
-            return new BaseAlgoData
-            {
-                ClientId = values[0],
-                AlgoId = values[1]
-            };
         }
     }
 }

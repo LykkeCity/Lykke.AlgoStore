@@ -20,6 +20,20 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
+        public async Task<AlgoClientMetaData> GetAllAlgos()
+        {
+            var entities = await _table.GetDataAsync();
+            var result = entities.ToList().ToModel();
+
+            if (!result.AlgoMetaData.IsNullOrEmptyCollection())
+            {
+                result.AlgoMetaData.Sort();
+                result.AlgoMetaData.Reverse();
+            }
+
+            return result;
+        }
+
         public async Task<AlgoClientMetaData> GetAllClientAlgoMetaDataAsync(string clientId)
         {
             var entities = await _table.GetDataAsync(clientId);

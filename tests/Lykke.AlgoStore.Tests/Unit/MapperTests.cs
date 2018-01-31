@@ -105,7 +105,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         #endregion
-
+        
         [TestCaseSource("AlgoClientMetaData")]
         public void Mapper_AlgoClientMetaData_ToEntity_Test(AlgoClientMetaData data)
         {
