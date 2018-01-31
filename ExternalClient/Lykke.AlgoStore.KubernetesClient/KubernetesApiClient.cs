@@ -12,6 +12,8 @@ namespace Lykke.AlgoStore.KubernetesClient
 {
     public class KubernetesApiClient : Kubernetes, IKubernetesApiClient
     {
+        //ListCoreV1NodeAsync
+
         /// <summary>
         /// This method is similar as <see cref="KubernetesExtensions.CreateAppsV1beta1NamespacedDeploymentAsync"/>
         /// parameters are same, but code is changed cause API return 201 and in swagger and docs it is stated that API will return 200.
@@ -210,8 +212,8 @@ namespace Lykke.AlgoStore.KubernetesClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int) _statusCode != 200 && (int) _statusCode != 401 && (int) _statusCode != 201 &&
-                (int) _statusCode != 202)
+            if ((int)_statusCode != 200 && (int)_statusCode != 401 && (int)_statusCode != 201 &&
+                (int)_statusCode != 202)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'",
                     _statusCode));
@@ -241,7 +243,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
-            if ((int) _statusCode == 200 || (int) _statusCode != 201 || (int) _statusCode != 202)
+            if ((int)_statusCode == 200 || (int)_statusCode != 201 || (int)_statusCode != 202)
             {
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
@@ -366,7 +368,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int) _statusCode != 200 && (int) _statusCode != 401 && (int) _statusCode != 201)
+            if ((int)_statusCode != 200 && (int)_statusCode != 401 && (int)_statusCode != 201)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'",
                     _statusCode));
@@ -396,7 +398,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
-            if ((int) _statusCode == 200 || (int) _statusCode == 201)
+            if ((int)_statusCode == 200 || (int)_statusCode == 201)
             {
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
@@ -513,8 +515,8 @@ namespace Lykke.AlgoStore.KubernetesClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int) _statusCode != 200 && (int) _statusCode != 401 && (int) _statusCode != 201 &&
-                (int) _statusCode != 202)
+            if ((int)_statusCode != 200 && (int)_statusCode != 401 && (int)_statusCode != 201 &&
+                (int)_statusCode != 202)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'",
                     _statusCode));
@@ -544,7 +546,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
-            if ((int) _statusCode == 200 || (int) _statusCode != 201 || (int) _statusCode != 202)
+            if ((int)_statusCode == 200 || (int)_statusCode != 201 || (int)_statusCode != 202)
             {
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
@@ -713,7 +715,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
-            if ((int) _statusCode != 200 && (int) _statusCode != 401)
+            if ((int)_statusCode != 200 && (int)_statusCode != 401)
             {
                 var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'",
                     _statusCode));
@@ -743,7 +745,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
-            if ((int) _statusCode == 200)
+            if ((int)_statusCode == 200)
             {
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
