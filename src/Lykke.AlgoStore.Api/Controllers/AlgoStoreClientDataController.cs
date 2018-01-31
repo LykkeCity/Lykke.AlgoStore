@@ -47,6 +47,23 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPost("addToPublic")]
+        [SwaggerOperation("addToPublic")]
+        [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> AddToPublic([FromBody] PublicAlgoDataModel model)
+        {
+            var data = Mapper.Map<PublicAlgoData>(model);
+
+            var result = await _clientDataService.AddToPublicAsync(data);
+
+            var response = Mapper.Map<PublicAlgoDataModel>(result);
+
+            return Ok(response);
+
+        }
+
         [HttpGet("metadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]

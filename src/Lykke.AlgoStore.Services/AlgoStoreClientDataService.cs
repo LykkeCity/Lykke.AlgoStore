@@ -130,6 +130,17 @@ namespace Lykke.AlgoStore.Services
                 return algos;
             });
         }
+
+        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data)
+        {
+            return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
+            {
+                await _publicAlgosRepository.SavePublicAlgoAsync(data);
+
+                return data;
+            });
+        }
+
         public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequestAsync(string clientId, AlgoMetaData data)
         {
             return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), clientId, async () =>
