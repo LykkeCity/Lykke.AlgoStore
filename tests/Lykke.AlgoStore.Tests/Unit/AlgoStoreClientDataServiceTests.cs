@@ -8,8 +8,9 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Utils;
-using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.KubernetesClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +28,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
 
         #region Data Generation
-        private static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StatusesData
+        public static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StatusesData
         {
             get
             {
@@ -57,7 +58,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
         }
 
-        [TestCaseSource("StatusesData")]
+        [TestCaseSource(nameof(StatusesData))]
         public void GetClientMetadata_Returns_Data(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
         {
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
@@ -68,7 +69,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
-            Then_Data_ShouldBe_WithCorrectStatus(data, statuses.Item2);
+            Then_Data_ShouldBe_WithCorrectStatus(data, statuses.Item1);
         }
         [Test]
         public void GetClientMetadata_Returns_DataWithStatus()
@@ -143,7 +144,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataRepository repo,
             IAlgoBlobRepository blobRepo,
             IAlgoRuntimeDataRepository runtimeDataRepository,
-            IDeploymentApiReadOnlyClient deploymentClient)
+            IKubernetesApiReadOnlyClient deploymentClient)
         {
             return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, new LogMock());
         }
@@ -180,7 +181,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.NotNull(data);
             Assert.IsNotEmpty(data.AlgoMetaData);
         }
-        private static void Then_Data_ShouldBe_WithCorrectStatus(AlgoClientMetaData data, AlgoRuntimeStatuses status)
+        private static void Then_Data_ShouldBe_WithCorrectStatus(AlgoClientMetaData data, ClientAlgoRuntimeStatuses status)
         {
             Assert.AreEqual(data.AlgoMetaData[0].Status, status.ToUpperText());
         }
@@ -278,10 +279,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             return fixture.Build<AlgoMetaData>().Create();
         }
 
-        private static IDeploymentApiReadOnlyClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
+        private static IKubernetesApiReadOnlyClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
         {
-            var result = new Mock<IDeploymentApiReadOnlyClient>();
-            result.Setup(repo => repo.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
+            var result = new Mock<IKubernetesApiReadOnlyClient>();
+
+            result.Setup(repo => repo.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(new List<Iok8skubernetespkgapiv1Pod>
+            {
+                new Fixture().Build<Iok8skubernetespkgapiv1Pod>()
+                .With(kub => kub.Status, new Iok8skubernetespkgapiv1PodStatus {Phase = status.ToUpperText()})
+                .Create()
+            });
 
             return result.Object;
         }
