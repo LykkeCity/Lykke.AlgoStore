@@ -25,18 +25,38 @@ namespace Lykke.AlgoStore.KubernetesClient
             }
         }
 
-        public async Task<Iok8sapimachinerypkgapismetav1Status> DeleteDeploymentAsync(string algoId,
-            Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
         {
-            var options = new Iok8sapimachinerypkgapismetav1DeleteOptions();
+            if (await DeleteServiceAsync(algoId, pod))
+                return await DeleteServiceAsync(algoId, pod);
+            return false;
+        }
+
+        public async Task<bool> DeleteDeploymentAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
+        {
+            var options = new Iok8sapimachinerypkgapismetav1DeleteOptions
+            {
+                PropagationPolicy = "Foreground"
+            };
 
             using (var kubeResponse =
-                await DeleteAppsV1beta1NamespacedDeploymentWithHttpMessagesAsync(options, algoId,
+                await DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(options, algoId,
                     pod.Metadata.NamespaceProperty))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
-                    return null;
-                return kubeResponse.Body;
+                    return false;
+                return true;
+            }
+        }
+
+        public async Task<bool> DeleteServiceAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
+        {
+            using (var kubeResponse =
+                await DeleteCoreV1NSServiceWithHttpMessagesAsync(algoId, pod.Metadata.NamespaceProperty))
+            {
+                if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
+                    return false;
+                return true;
             }
         }
 
@@ -190,6 +210,252 @@ namespace Lykke.AlgoStore.KubernetesClient
                 }
             }
             return result;
+        }
+
+        private async Task<HttpOperationResponse<string>> DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
+        {
+            if (body == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "body");
+            }
+            if (name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "name");
+            }
+            if (namespaceParameter == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "namespaceParameter");
+            }
+
+            // Construct URL
+            var baseUrl = BaseUri.AbsoluteUri;
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "apis/apps/v1beta1/namespaces/{namespace}/deployments/{name}").ToString();
+            url = url.Replace("{name}", System.Uri.EscapeDataString(name));
+            url = url.Replace("{namespace}", System.Uri.EscapeDataString(namespaceParameter));
+            List<string> _queryParameters = new List<string>();
+            if (_queryParameters.Count > 0)
+            {
+                url += "?" + string.Join("&", _queryParameters);
+            }
+            // Create HTTP transport objects
+            var httpRequest = new HttpRequestMessage();
+            HttpResponseMessage _httpResponse = null;
+            httpRequest.Method = new HttpMethod("DELETE");
+            httpRequest.RequestUri = new System.Uri(url);
+
+            // Serialize Request
+            string _requestContent = null;
+            if (body != null)
+            {
+                _requestContent = SafeJsonConvert.SerializeObject(body, SerializationSettings);
+                httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                httpRequest.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
+            _httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false);
+            HttpStatusCode statusCode = _httpResponse.StatusCode;
+            string responseContent = null;
+            if ((int)statusCode != 200 && (int)statusCode != 401)
+            {
+                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+                if (_httpResponse.Content != null)
+                {
+                    responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    responseContent = string.Empty;
+                }
+                ex.Request = new HttpRequestMessageWrapper(httpRequest, _requestContent);
+                ex.Response = new HttpResponseMessageWrapper(_httpResponse, responseContent);
+                httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw ex;
+            }
+            // Create Result
+            var _result = new HttpOperationResponse<string>();
+            _result.Request = httpRequest;
+            _result.Response = _httpResponse;
+            // Deserialize Response
+            if ((int)statusCode == 200)
+            {
+                responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    _result.Body = responseContent;
+                }
+                catch (JsonException ex)
+                {
+                    httpRequest.Dispose();
+                    if (_httpResponse != null)
+                    {
+                        _httpResponse.Dispose();
+                    }
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+                }
+            }
+
+            return _result;
+        }
+
+        private async Task<HttpOperationResponse<string>> DeleteCoreV1NSServiceWithHttpMessagesAsync(string name, string namespaceParameter)
+        {
+            if (name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "name");
+            }
+            if (namespaceParameter == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "namespaceParameter");
+            }
+            // Construct URL
+            var baseUrl = BaseUri.AbsoluteUri;
+            var url = new System.Uri(new System.Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/")), "api/v1/namespaces/{namespace}/services/{name}").ToString();
+            url = url.Replace("{name}", System.Uri.EscapeDataString(name));
+            url = url.Replace("{namespace}", System.Uri.EscapeDataString(namespaceParameter));
+            List<string> queryParameters = new List<string>();
+            if (queryParameters.Count > 0)
+            {
+                url += "?" + string.Join("&", queryParameters);
+            }
+            // Create HTTP transport objects
+            var httpRequest = new HttpRequestMessage();
+            HttpResponseMessage httpResponse = null;
+            httpRequest.Method = new HttpMethod("DELETE");
+            httpRequest.RequestUri = new System.Uri(url);
+
+            // Serialize Request
+            string requestContent = null;
+            // Send Request
+            httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false);
+            HttpStatusCode statusCode = httpResponse.StatusCode;
+            string responseContent = null;
+            if ((int)statusCode != 200 && (int)statusCode != 401)
+            {
+                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
+                if (httpResponse.Content != null)
+                {
+                    responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    responseContent = string.Empty;
+                }
+                ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
+                ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
+                httpRequest.Dispose();
+                if (httpResponse != null)
+                {
+                    httpResponse.Dispose();
+                }
+                throw ex;
+            }
+            // Create Result
+            var result = new HttpOperationResponse<string>();
+            result.Request = httpRequest;
+            result.Response = httpResponse;
+            // Deserialize Response
+            if ((int)statusCode == 200)
+            {
+                responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    result.Body = responseContent;
+                }
+                catch (JsonException ex)
+                {
+                    httpRequest.Dispose();
+                    if (httpResponse != null)
+                    {
+                        httpResponse.Dispose();
+                    }
+                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
+                }
+            }
+            return result;
+        }
+
+        public async Task<HttpOperationResponse<Iok8sapimachinerypkgapismetav1Status>> DeleteExtensionsV1beta1NSReplicaSetWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
+        {
+            if (body == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "body");
+            }
+            if (name == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "name");
+            }
+            if (namespaceParameter == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "namespaceParameter");
+            }
+            // Construct URL
+            var _baseUrl = BaseUri.AbsoluteUri;
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "apis/extensions/v1beta1/namespaces/{namespace}/replicasets/{name}").ToString();
+            _url = _url.Replace("{name}", System.Uri.EscapeDataString(name));
+            _url = _url.Replace("{namespace}", System.Uri.EscapeDataString(namespaceParameter));
+            // Create HTTP transport objects
+            var _httpRequest = new HttpRequestMessage();
+            HttpResponseMessage _httpResponse = null;
+            _httpRequest.Method = new HttpMethod("DELETE");
+            _httpRequest.RequestUri = new System.Uri(_url);
+
+            // Serialize Request
+            string _requestContent = null;
+            if (body != null)
+            {
+                _requestContent = SafeJsonConvert.SerializeObject(body, SerializationSettings);
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
+            _httpResponse = await HttpClient.SendAsync(_httpRequest, default(CancellationToken)).ConfigureAwait(false);
+            HttpStatusCode _statusCode = _httpResponse.StatusCode;
+            string _responseContent = null;
+            if ((int)_statusCode != 200 && (int)_statusCode != 401)
+            {
+                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                if (_httpResponse.Content != null)
+                {
+                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    _responseContent = string.Empty;
+                }
+                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
+                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
+                _httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw ex;
+            }
+            // Create Result
+            var _result = new HttpOperationResponse<Iok8sapimachinerypkgapismetav1Status>();
+            _result.Request = _httpRequest;
+            _result.Response = _httpResponse;
+            // Deserialize Response
+            if ((int)_statusCode == 200)
+            {
+                _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    _result.Body = SafeJsonConvert.DeserializeObject<Iok8sapimachinerypkgapismetav1Status>(_responseContent, DeserializationSettings);
+                }
+                catch (JsonException ex)
+                {
+                    _httpRequest.Dispose();
+                    if (_httpResponse != null)
+                    {
+                        _httpResponse.Dispose();
+                    }
+                    throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
+                }
+            }
+            return _result;
         }
     }
 }
