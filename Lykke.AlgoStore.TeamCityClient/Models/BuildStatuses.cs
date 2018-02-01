@@ -4,6 +4,8 @@
     {
         Undefined = 0,
         Failure,
-        Success
+        Success,
+        NotDeployed,
+        Running
     }
 }

@@ -271,7 +271,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoRuntimeDataRepository algoRuntimeDataRepository)
         {
             var result = new AlgoStoreService(externalClient, new LogMock(), algoBlobRepository, algoMetaDataRepository,
-                algoRuntimeDataRepository, null, null);
+                algoRuntimeDataRepository, null, null, null);
             return result;
         }
 
