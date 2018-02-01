@@ -9,184 +9,41 @@ namespace Lykke.AlgoStore.Tests.Unit
     [TestFixture]
     public class KubernetsClientTests
     {
-        [Test]
-        public async Task GetNamespaces_Returns_Success()
-        {
-            var client = Given_KubernetesClient();
-            var list = await client.ListCoreV1NamespaceAsync();
+        private const string Id = "b0ea081e-470d-462c-99a7-7864f13a7ddb";
 
-            Then_Result_Should_Contain_NamespacesData(list);
+        [Test, Explicit("Run manually cause it will try to get pods")]
+        public async void ListPodByAlgoId_Returns_Success()
+        {
+            IKubernetesApiClient client = Given_KubernetesClient();
+            var result = await When_I_Call_ListPodsByAlgoIdAsync(client);
+            Then_Result_ShouldBe_Valid(result);
         }
 
-        [Test, Explicit("Run manually cause it will create new deployment with specific name")]
-        public async Task DeployPod_Returns_DeploymentData()
+        [Test, Explicit("Run manually cause it will try to delete deployment")]
+        public async void DeleteDeployment_Returns_Success()
         {
-            var client = Given_KubernetesClient();
+            IKubernetesApiClient client = Given_KubernetesClient();
+            var result = await When_I_Call_ListPodsByAlgoIdAsync(client);
+            Then_Result_ShouldBe_Valid(result);
+            var pod = result[0];
 
-            var result = await client.CreateDeploymentAsync(
-                new Iok8skubernetespkgapisappsv1beta1Deployment
-                {
-                    ApiVersion = "apps/v1beta1",
-                    Kind = "Deployment",
-                    Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta
-                    {
-                        Name = "deployment-example" //Unique key of the Deployment instance
-                    },
-                    Spec = new Iok8skubernetespkgapisappsv1beta1DeploymentSpec
-                    {
-                        Replicas = 1,
-                        RevisionHistoryLimit = 10,
-                        Template = new Iok8skubernetespkgapiv1PodTemplateSpec
-                        {
-                            Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta
-                            {
-                                Labels = new Dictionary<string, string>()
-                                {
-                                    {"app", "nginx"}
-                                }
-                            },
-                            Spec = new Iok8skubernetespkgapiv1PodSpec
-                            {
-                                Containers = new List<Iok8skubernetespkgapiv1Container>
-                                {
-                                    new Iok8skubernetespkgapiv1Container
-                                    {
-                                        Name = "nginx",
-                                        Image = "crccheck/hello-world", //hello-world",//"nginx:1.10",
-                                        Ports = new List<Iok8skubernetespkgapiv1ContainerPort>
-                                        {
-                                            new Iok8skubernetespkgapiv1ContainerPort
-                                            {
-                                                ContainerPort = 80
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "default"
-            );
-
-            Then_Result_Should_Contain_DeploymentData(result);
-        }
-
-        [Test,
-         Explicit("Run manually cause it will try to delete existing pod (one that is created via DeployNewPod test")]
-        public async Task DeletePod_Returns_StatusData()
-        {
-            var client = Given_KubernetesClient();
-
-            var result = await client.DeleteAppsV1beta1NamespacedDeploymentAsync(
-                new Iok8sapimachinerypkgapismetav1DeleteOptions
-                {
-                    GracePeriodSeconds = 0,
-                    OrphanDependents = false
-                },
-                "deployment-example",
-                "default" //,
-                //REMARK: I spent too much time until I figured out that parameters from below should be set inside body!!!
-                //0,
-                //false
-            );
-
-            Then_Result_Should_Contain_StatusData(result);
-        }
-
-        [Test, Explicit("Run manually cause it will create new namespace with specific name")]
-        public async Task CreateNamespace_Returns_NamespaceData()
-        {
-            var client = Given_KubernetesClient();
-
-            var result = await client.CreateNamespaceAsync(
-                new Iok8skubernetespkgapiv1Namespace
-                {
-                    Metadata = new Iok8sapimachinerypkgapismetav1ObjectMeta
-                    {
-                        Name = "mj-test"
-                    }
-                }
-            );
-
-            Then_Result_Should_Contain_NamespaceData(result);
-        }
-
-        [Test,
-         Explicit(
-             "Run manually cause it will try to delete existing namespace (one that is created via CreateNamespace test")]
-        public async Task DeleteNamespace_Returns_DeleteNamespaceData()
-        {
-            var client = Given_KubernetesClient();
-
-            var result = await client.DeleteNamespaceAsync(
-                new Iok8sapimachinerypkgapismetav1DeleteOptions
-                {
-                    GracePeriodSeconds = 0,
-                    OrphanDependents = false
-                },
-                "mj-test"
-            );
-
-            Then_Result_Should_Contain_DeleteNamespaceData(result);
+            var status = await When_I_Call_DeleteDeploymentAsync(client, pod);
+            Then_Result_ShouldNotBe_Null(status);
         }
 
         [Test, Explicit("Run manually cause it will try to get log for existing pod")]
         public async Task GetPodLog_Returns_LogData()
         {
             var client = Given_KubernetesClient();
+            var result = await When_I_Call_ListPodsByAlgoIdAsync(client);
+            Then_Result_ShouldBe_Valid(result);
+            var pod = result[0];
 
-            var result = await client.ReadPodLogAsync(
-                "kubernetes-dashboard-924040265-3hgnr", //pod name
-                "kube-system", // pod namespace
-                tailLines: 100 // get last 100 lines from log
-            );
-
-            Then_Result_Should_Contain_LogData(result);
+            var log = await When_I_Call_ReadPodLogAsync(client, pod);
+            Then_Result_Should_Contain_LogData(log);
         }
 
-        [Test, Explicit("Run manually cause it will try to get existing pod")]
-        public async Task GetPod_Returns_PodData()
-        {
-            var client = Given_KubernetesClient();
-
-            var result = await client.ReadCoreV1NamespacedPodAsync(
-                "kubernetes-dashboard-924040265-3hgnr", //pod name
-                "kube-system" // pod namespace
-            );
-
-            Then_Result_Should_Contain_PodData(result);
-        }
-
-        [Test, Explicit("Run manually cause it will try to get existing namespace")]
-        public async Task GetNamespace_Returns_NamespaceData()
-        {
-            var client = Given_KubernetesClient();
-
-            var result = await client.ReadCoreV1NamespaceAsync(
-                "default" //namespace name
-            );
-
-            Then_Result_Should_Contain_NamespaceData(result);
-        }
-
-        private static void Then_Result_Should_Contain_PodData(Iok8skubernetespkgapiv1Pod result)
-        {
-            Assert.IsNotNull(result);
-        }
-
-        private static void Then_Result_Should_Contain_LogData(string result)
-        {
-            Assert.IsNotNull(result);
-        }
-
-        private static void Then_Result_Should_Contain_NamespacesData(Iok8skubernetespkgapiv1NamespaceList list)
-        {
-            Assert.IsNotNull(list);
-            Assert.IsNotNull(list.Items);
-            Assert.Greater(list.Items.Count, 0);
-        }
-
+        #region Private Methods
         private static KubernetesApiClient Given_KubernetesClient()
         {
             var client = new KubernetesApiClient
@@ -198,25 +55,32 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return client;
         }
-
-        private static void Then_Result_Should_Contain_DeploymentData(Iok8skubernetespkgapisappsv1beta1Deployment result)
+        private async Task<IList<Iok8skubernetespkgapiv1Pod>> When_I_Call_ListPodsByAlgoIdAsync(IKubernetesApiClient client)
+        {
+            return await client.ListPodsByAlgoIdAsync(Id);
+        }
+        private async Task<string> When_I_Call_ReadPodLogAsync(IKubernetesApiClient client, Iok8skubernetespkgapiv1Pod pod)
+        {
+            return await client.ReadPodLogAsync(pod, 10);
+        }
+        private async Task<Iok8sapimachinerypkgapismetav1Status> When_I_Call_DeleteDeploymentAsync(IKubernetesApiClient client, Iok8skubernetespkgapiv1Pod pod)
+        {
+            return await client.DeleteDeploymentAsync(Id, pod);
+        }
+        private static void Then_Result_ShouldBe_Valid(IList<Iok8skubernetespkgapiv1Pod> pods)
+        {
+            Assert.IsNotNull(pods);
+            Assert.AreEqual(1, pods.Count);
+            Assert.IsNotNull(pods[0]);
+        }
+        private static void Then_Result_Should_Contain_LogData(string result)
         {
             Assert.IsNotNull(result);
         }
-
-        private static void Then_Result_Should_Contain_StatusData(Iok8sapimachinerypkgapismetav1Status result)
+        private static void Then_Result_ShouldNotBe_Null(Iok8sapimachinerypkgapismetav1Status status)
         {
-            Assert.IsNotNull(result);
+            Assert.IsNotNull(status);
         }
-
-        private static void Then_Result_Should_Contain_NamespaceData(Iok8skubernetespkgapiv1Namespace result)
-        {
-            Assert.IsNotNull(result);
-        }
-
-        private static void Then_Result_Should_Contain_DeleteNamespaceData(DeleteNamespaceResponse result)
-        {
-            Assert.IsNotNull(result);
-        }
+        #endregion
     }
 }
