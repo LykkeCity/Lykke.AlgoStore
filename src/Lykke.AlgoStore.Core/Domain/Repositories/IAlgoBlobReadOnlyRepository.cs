@@ -7,5 +7,6 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
         Task<bool> BlobExistsAsync(string blobKey);
         Task<byte[]> GetBlobAsync(string blobKey);
         Task<string> GetBlobStringAsync(string blobKey);
+        string SourceExtension { get; }
     }
 }

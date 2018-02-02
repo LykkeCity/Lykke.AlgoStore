@@ -228,7 +228,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataReadOnlyRepository repo,
             IAlgoRuntimeDataRepository runtimeDataRepository)
         {
-            return new AlgoStoreService(new LogMock(), blobRepo, repo, runtimeDataRepository, null, null, null);
+            return new AlgoStoreService(new LogMock(), blobRepo, repo, runtimeDataRepository, null, null, null, null);
         }
 
         private static ManageImageData Given_ManageImageData()
