@@ -261,7 +261,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IKubernetesApiReadOnlyClient deploymentClient)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, runtimeDataRepository, blobRepository,
-                deploymentClient, null, null, null, null, null, new LogMock());
+                null, null, null, null, deploymentClient, new LogMock());
 
             return result;
         }
