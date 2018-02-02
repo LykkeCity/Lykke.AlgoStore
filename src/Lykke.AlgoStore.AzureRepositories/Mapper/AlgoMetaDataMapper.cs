@@ -22,6 +22,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 res.RowKey = algoData.AlgoId;
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
+                res.Author = data.Author;
                 res.ETag = "*";
 
                 result.Add(res);
@@ -42,6 +43,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                     continue;
 
                 result.ClientId = algoEntity.PartitionKey;
+                if (!string.IsNullOrWhiteSpace(algoEntity.Author))
+                    result.Author = algoEntity.Author;
                 result.AlgoMetaData.Add(algoEntity.ToAlgoMetaData());
             }
 

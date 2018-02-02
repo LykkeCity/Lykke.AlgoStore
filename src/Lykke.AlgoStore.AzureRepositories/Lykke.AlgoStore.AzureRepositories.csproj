@@ -16,10 +16,4 @@
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Entities\" />
-    <Folder Include="Mapper\" />
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-
 </Project>

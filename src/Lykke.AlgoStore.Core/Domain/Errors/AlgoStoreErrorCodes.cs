@@ -14,6 +14,7 @@
         AlgoBinaryDataNotFound = 503,
         AlgoRuntimeDataNotFound = 504,
         PodNotFound = 505,
+        AssetNotFound = 505,
 
         //Validation - 1000
         ValidationError = 1000,

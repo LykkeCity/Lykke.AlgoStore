@@ -30,12 +30,17 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
             builder.RegisterInstance(AzureTableStorage<AlgoMetaDataEntity>.Create(reloadingDbManager, AlgoMetaDataRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoRuntimeDataEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<PublicAlgoEntity>.Create(reloadingDbManager, PublicAlgosRepository.TableName, _log));
 
             builder.RegisterInstance<IStorageConnectionManager>(new StorageConnectionManager(reloadingDbManager));
 
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
             builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();
             builder.RegisterType<AlgoRuntimeDataRepository>().As<IAlgoRuntimeDataReadOnlyRepository>().As<IAlgoRuntimeDataRepository>();
+            builder.RegisterType<AlgoClientInstanceRepository>().As<IAlgoClientInstanceReadOnlyRepository>().As<IAlgoClientInstanceRepository>();
+            builder.RegisterType<RandomAlgoRatingsRepository>().As<IAlgoRatingsRepository>();
+            builder.RegisterType<PublicAlgosRepository>().As<IPublicAlgosRepository>();
         }
     }
 }

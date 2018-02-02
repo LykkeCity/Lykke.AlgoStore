@@ -5,6 +5,7 @@ using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IKubernetesApiReadOnlyClient>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
                 .SingleInstance();
+
+            builder.RegisterType<AssetsService>()
+                .As<IAssetsService>()
+                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.AssetServiceUrl));
 
             builder.RegisterInstance<ITeamCityClient>(new TeamCityClient.TeamCityClient(_settings.CurrentValue.TeamCity));
         }

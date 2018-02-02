@@ -29,6 +29,41 @@ namespace Lykke.AlgoStore.Api.Controllers
             _service = service;
         }
 
+        [HttpGet("getAllAlgos")]
+        [SwaggerOperation("GetAllAlgos")]
+        [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAllAlgos()
+        {
+
+            var result = await _clientDataService.GetAllAlgosWithRatingAsync();
+
+            if (result == null || result.IsNullOrEmptyCollection())
+                return NotFound();
+
+            var response = Mapper.Map<List<AlgoRatingMetaDataModel>>(result);
+
+            return Ok(response);
+        }
+
+        [HttpPost("addToPublic")]
+        [SwaggerOperation("addToPublic")]
+        [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> AddToPublic([FromBody] PublicAlgoDataModel model)
+        {
+            var data = Mapper.Map<PublicAlgoData>(model);
+
+            var result = await _clientDataService.AddToPublicAsync(data);
+
+            var response = Mapper.Map<PublicAlgoDataModel>(result);
+
+            return Ok(response);
+
+        }
+
         [HttpGet("metadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
@@ -56,10 +91,11 @@ namespace Lykke.AlgoStore.Api.Controllers
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
             string clientId = User.GetClientId();
+            string clientName = User.Identity.Name;
 
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var result = await _clientDataService.SaveClientMetadataAsync(clientId, data);
+            var result = await _clientDataService.SaveClientMetadataAsync(clientId, clientName, data);
 
             var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
 
@@ -109,7 +145,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> UploadSting([FromBody]UploadAlgoStringModel model)
+        public async Task<IActionResult> UploadSting([FromBody] UploadAlgoStringModel model)
         {
             string clientId = User.GetClientId();
 
@@ -136,6 +172,70 @@ namespace Lykke.AlgoStore.Api.Controllers
             {
                 Data = data
             });
+        }
+
+        [HttpGet("instanceData/all")]
+        [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
+        [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAllAlgoInstanceDataAsync(string algoId)
+        {
+            var data = new BaseAlgoData
+            {
+                ClientId = User.GetClientId(),
+                AlgoId = algoId
+            };
+
+            var result = await _clientDataService.GetAllAlgoInstanceDataAsync(data);
+
+            if (result.IsNullOrEmptyCollection())
+                return NotFound();
+
+            var response = Mapper.Map<List<AlgoClientInstanceModel>>(result);
+
+            return Ok(response);
+        }
+
+        [HttpGet("instanceData")]
+        [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
+        [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAlgoInstanceDataAsync(string algoId, string instanceId)
+        {
+            var data = new BaseAlgoInstance
+            {
+                ClientId = User.GetClientId(),
+                AlgoId = algoId,
+                InstanceId = instanceId
+            };
+
+            var result = await _clientDataService.GetAlgoInstanceDataAsync(data);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<AlgoClientInstanceModel>(result);
+
+            return Ok(response);
+        }
+
+        [HttpPost("instanceData")]
+        [SwaggerOperation("SaveAlgoInstanceDataAsync")]
+        [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> SaveAlgoInstanceDataAsync([FromBody]AlgoClientInstanceModel model)
+        {
+            var data = Mapper.Map<AlgoClientInstanceData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = await _clientDataService.SaveAlgoInstanceDataAsync(data);
+
+            var response = Mapper.Map<AlgoClientInstanceModel>(result);
+
+            return Ok(response);
         }
     }
 }
