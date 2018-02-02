@@ -6,8 +6,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Utils;
-using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Moq;
@@ -151,21 +151,21 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Response_ShouldBe_ExpectedStatus(response, statuses.Item2);
         }
 
-        //[Test]
-        //public void GetLog_Returns_Ok()
-        //{
-        //    const string expectedLog = "TestLog";
+        [Test]
+        public void GetLog_Returns_Ok()
+        {
+            const string expectedLog = "TestLog";
 
-        //    var data = Given_ManageImageData();
+            var data = Given_ManageImageData();
 
-        //    var deploymentApiClient = Given_Correct_DeploymentApiClientMock_WithLog(expectedLog);
-        //    var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
-        //    var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, null, runtimeRepo);
+            var deploymentApiClient = Given_Correct_DeploymentApiClientMock_WithLog(expectedLog);
+            var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
+            var service = Given_Correct_AlgoStoreServiceMock(deploymentApiClient, null, null, runtimeRepo);
 
-        //    var response = When_Invoke_GetLog(service, data, out var exception);
-        //    Then_Exception_ShouldBe_Null(exception);
-        //    Then_Response_ShouldBe_ExpectedLog(response, expectedLog);
-        //}
+            var response = When_Invoke_GetLog(service, data, out var exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Response_ShouldBe_ExpectedLog(response, expectedLog);
+        }
 
         #region Private Methods
 
@@ -208,27 +208,27 @@ namespace Lykke.AlgoStore.Tests.Unit
             return false;
         }
 
-        //private static string When_Invoke_GetLog(AlgoStoreService service, ManageImageData data, out Exception exception)
-        //{
-        //    exception = null;
-        //    try
-        //    {
-        //        return service.GetTestLogAsync(data).Result;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        exception = ex;
-        //    }
+        private static string When_Invoke_GetLog(AlgoStoreService service, ManageImageData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetTestTailLogAsync(new TailLogData { AlgoId = data.AlgoId, ClientId = data.ClientId, Tail = 10 }).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
 
-        //    return string.Empty;
-        //}
+            return string.Empty;
+        }
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
-            IDeploymentApiClient deploymentApiClient,
+            IKubernetesApiClient deploymentApiClient,
             IAlgoBlobReadOnlyRepository blobRepo,
             IAlgoMetaDataReadOnlyRepository repo,
             IAlgoRuntimeDataRepository runtimeDataRepository)
         {
-            return new AlgoStoreService(deploymentApiClient, new LogMock(), blobRepo, repo, runtimeDataRepository, null, null, null);
+            return new AlgoStoreService(new LogMock(), blobRepo, repo, runtimeDataRepository, null, null, null);
         }
 
         private static ManageImageData Given_ManageImageData()
@@ -238,38 +238,38 @@ namespace Lykke.AlgoStore.Tests.Unit
             return fixture.Build<ManageImageData>().Create();
         }
 
-        private static IDeploymentApiClient Given_Correct_DeploymentApiClientMock()
+        private static IKubernetesApiClient Given_Correct_DeploymentApiClientMock()
         {
-            var result = new Mock<IDeploymentApiClient>();
+            var result = new Mock<IKubernetesApiClient>();
 
-            result.Setup(
-                client => client.BuildAlgoImageFromBinaryAsync(
-                    It.IsAny<byte[]>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()
-                )
-            )
-            .ReturnsAsync("1");
-            result.Setup(client => client.CreateTestAlgoAsync(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
+            //result.Setup(
+            //    client => client.BuildAlgoImageFromBinaryAsync(
+            //        It.IsAny<byte[]>(),
+            //        It.IsAny<string>(),
+            //        It.IsAny<string>()
+            //    )
+            //)
+            //.ReturnsAsync("1");
+            //result.Setup(client => client.CreateTestAlgoAsync(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
 
             return result.Object;
         }
-        private static IDeploymentApiClient Given_Correct_DeploymentApiClientMock_WithStatus(ClientAlgoRuntimeStatuses status)
+        private static IKubernetesApiClient Given_Correct_DeploymentApiClientMock_WithStatus(ClientAlgoRuntimeStatuses status)
         {
-            var result = new Mock<IDeploymentApiClient>();
+            var result = new Mock<IKubernetesApiClient>();
 
-            result.Setup(client => client.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
-            result.Setup(client => client.CreateTestAlgoAsync(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
-            result.Setup(client => client.StartTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
-            result.Setup(client => client.StopTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
+            //result.Setup(client => client.GetAlgoTestAdministrativeStatusAsync(It.IsAny<long>())).Returns(Task.FromResult(status));
+            //result.Setup(client => client.CreateTestAlgoAsync(It.IsAny<long>(), It.IsAny<string>())).Returns(Task.FromResult((long)1));
+            //result.Setup(client => client.StartTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
+            //result.Setup(client => client.StopTestAlgoAsync(It.IsAny<long>())).Returns(Task.FromResult(true));
 
             return result.Object;
         }
-        private static IDeploymentApiClient Given_Correct_DeploymentApiClientMock_WithLog(string log)
+        private static IKubernetesApiClient Given_Correct_DeploymentApiClientMock_WithLog(string log)
         {
-            var result = new Mock<IDeploymentApiClient>();
+            var result = new Mock<IKubernetesApiClient>();
 
-            result.Setup(client => client.GetTestAlgoLogAsync(It.IsAny<long>())).Returns(Task.FromResult(log));
+            //result.Setup(client => client.GetTestAlgoLogAsync(It.IsAny<long>())).Returns(Task.FromResult(log));
 
             return result.Object;
         }

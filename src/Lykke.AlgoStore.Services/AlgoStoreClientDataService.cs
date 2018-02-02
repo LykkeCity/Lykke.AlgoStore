@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
@@ -10,9 +9,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
-using Lykke.AlgoStore.Services.Utils;
+using Lykke.AlgoStore.KubernetesClient;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -22,18 +20,18 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoBlobRepository _blobRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
-        private readonly IDeploymentApiReadOnlyClient _deploymentClient;
+        private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
-            IDeploymentApiReadOnlyClient deploymentClient,
+            IKubernetesApiReadOnlyClient kubernetesApiClient,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
-            _deploymentClient = deploymentClient;
+            _kubernetesApiClient = kubernetesApiClient;
         }
 
         public async Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId)
@@ -59,16 +57,28 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    //var status = ClientAlgoRuntimeStatuses.NotFound;
-                    //try
-                    //{
-                    //    status = await _deploymentClient.GetAlgoTestAdministrativeStatus(runtimeData.ImageId);
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                    //}
-                    //metadata.Status = status.ToModel().ToUpperText();
+                    var status = ClientAlgoRuntimeStatuses.NotFound.ToUpperText();
+                    try
+                    {
+                        var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(metadata.AlgoId);
+                        if (!pods.IsNullOrEmptyCollection())
+                        {
+                            if (pods.Count != 1)
+                                throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound,
+                                    $"More than one pod for algoId {metadata.AlgoId}");
+
+                            var pod = pods[0];
+                            if (pod != null)
+                            {
+                                status = pod.Status.Phase.ToUpper();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                    }
+                    metadata.Status = status;
                 }
                 return algos;
             });

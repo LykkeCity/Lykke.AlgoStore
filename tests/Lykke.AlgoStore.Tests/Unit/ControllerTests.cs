@@ -6,6 +6,7 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Moq;
@@ -257,7 +258,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
-            IDeploymentApiReadOnlyClient deploymentClient)
+            IKubernetesApiReadOnlyClient deploymentClient)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, runtimeDataRepository, blobRepository,
                 deploymentClient, new LogMock());
@@ -270,7 +271,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
             IAlgoRuntimeDataRepository algoRuntimeDataRepository)
         {
-            var result = new AlgoStoreService(externalClient, new LogMock(), algoBlobRepository, algoMetaDataRepository,
+            var result = new AlgoStoreService(new LogMock(), algoBlobRepository, algoMetaDataRepository,
                 algoRuntimeDataRepository, null, null, null);
             return result;
         }

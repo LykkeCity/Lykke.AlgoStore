@@ -9,37 +9,50 @@ namespace Lykke.AlgoStore.Tests.Unit
     [TestFixture]
     public class KubernetsClientTests
     {
-        private const string Id = "b0ea081e-470d-462c-99a7-7864f13a7ddb";
+        private const string Id = "test3";
+        //private const string Id = "b0ea081e-470d-462c-99a7-7864f13a7ddb";
 
         [Test, Explicit("Run manually cause it will try to get pods")]
-        public async void ListPodByAlgoId_Returns_Success()
+        public void ListPodByAlgoId_Returns_Success()
         {
             IKubernetesApiClient client = Given_KubernetesClient();
-            var result = await When_I_Call_ListPodsByAlgoIdAsync(client);
+            var result = When_I_Call_ListPodsByAlgoIdAsync(client).Result;
             Then_Result_ShouldBe_Valid(result);
         }
 
         [Test, Explicit("Run manually cause it will try to delete deployment")]
-        public async void DeleteDeployment_Returns_Success()
+        public void DeleteDeployment_Returns_Success()
         {
-            IKubernetesApiClient client = Given_KubernetesClient();
-            var result = await When_I_Call_ListPodsByAlgoIdAsync(client);
+            var client = Given_KubernetesClient();
+            var result = When_I_Call_ListPodsByAlgoIdAsync(client).Result;
             Then_Result_ShouldBe_Valid(result);
             var pod = result[0];
 
-            var status = await When_I_Call_DeleteDeploymentAsync(client, pod);
-            Then_Result_ShouldNotBe_Null(status);
+            var status = When_I_Call_DeleteDeploymentAsync(client, pod).Result;
+            Then_Result_ShouldBe_True(status);
+        }
+
+        [Test, Explicit("Run manually cause it will try to delete service")]
+        public void DeleteService_Returns_Success()
+        {
+            var client = Given_KubernetesClient();
+            var result = When_I_Call_ListPodsByAlgoIdAsync(client).Result;
+            Then_Result_ShouldBe_Valid(result);
+            var pod = result[0];
+
+            var status = When_I_Call_DeleteServiceAsync(client, pod).Result;
+            Then_Result_ShouldBe_True(status);
         }
 
         [Test, Explicit("Run manually cause it will try to get log for existing pod")]
-        public async Task GetPodLog_Returns_LogData()
+        public void GetPodLog_Returns_LogData()
         {
             var client = Given_KubernetesClient();
-            var result = await When_I_Call_ListPodsByAlgoIdAsync(client);
+            var result = When_I_Call_ListPodsByAlgoIdAsync(client).Result;
             Then_Result_ShouldBe_Valid(result);
             var pod = result[0];
 
-            var log = await When_I_Call_ReadPodLogAsync(client, pod);
+            var log = When_I_Call_ReadPodLogAsync(client, pod).Result;
             Then_Result_Should_Contain_LogData(log);
         }
 
@@ -63,9 +76,13 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             return await client.ReadPodLogAsync(pod, 10);
         }
-        private async Task<Iok8sapimachinerypkgapismetav1Status> When_I_Call_DeleteDeploymentAsync(IKubernetesApiClient client, Iok8skubernetespkgapiv1Pod pod)
+        private async Task<bool> When_I_Call_DeleteDeploymentAsync(KubernetesApiClient client, Iok8skubernetespkgapiv1Pod pod)
         {
             return await client.DeleteDeploymentAsync(Id, pod);
+        }
+        private async Task<bool> When_I_Call_DeleteServiceAsync(KubernetesApiClient client, Iok8skubernetespkgapiv1Pod pod)
+        {
+            return await client.DeleteServiceAsync(Id, pod);
         }
         private static void Then_Result_ShouldBe_Valid(IList<Iok8skubernetespkgapiv1Pod> pods)
         {
@@ -77,9 +94,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             Assert.IsNotNull(result);
         }
-        private static void Then_Result_ShouldNotBe_Null(Iok8sapimachinerypkgapismetav1Status status)
+        private static void Then_Result_ShouldBe_True(bool status)
         {
-            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
         }
         #endregion
     }
