@@ -33,7 +33,6 @@ namespace Lykke.AlgoStore.Services
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
-            IDeploymentApiReadOnlyClient deploymentClient,
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
@@ -44,7 +43,6 @@ namespace Lykke.AlgoStore.Services
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
-            _deploymentClient = deploymentClient;
             _instanceRepository = instanceRepository;
             _ratingsRepository = ratingsRepository;
             _publicAlgosRepository = publicAlgosRepository;
