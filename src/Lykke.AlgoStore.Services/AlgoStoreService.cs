@@ -8,8 +8,6 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
-using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
@@ -22,7 +20,6 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
 
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
-        private readonly IDeploymentApiClient _externalClient;
 
         private readonly IStorageConnectionManager _storageConnectionManager;
         private readonly ITeamCityClient _teamCityClient;
@@ -30,7 +27,6 @@ namespace Lykke.AlgoStore.Services
         private readonly IKubernetesApiClient _kubernetesApiClient;
 
         public AlgoStoreService(
-            IDeploymentApiClient externalClient,
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
             IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
@@ -39,7 +35,6 @@ namespace Lykke.AlgoStore.Services
             ITeamCityClient teamCityClient,
             IKubernetesApiClient kubernetesApiClient) : base(log, nameof(AlgoStoreService))
         {
-            _externalClient = externalClient;
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
             _algoRuntimeDataRepository = algoRuntimeDataRepository;
@@ -163,25 +158,7 @@ namespace Lykke.AlgoStore.Services
                 if (pod == null)
                     return BuildStatuses.NotDeployed.ToUpperText();
 
-                return string.Empty;
-                //var status = await _externalClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.BuildId);
-
-                //await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                //    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.BuildId}");
-
-                //var statusResult = AlgoRuntimeStatuses.Unknown;
-                //switch (status)
-                //{
-                //    case ClientAlgoRuntimeStatuses.Running:
-                //        if (await _externalClient.StopTestAlgoAsync(runtimeData.BuildId))
-                //            statusResult = AlgoRuntimeStatuses.Stopped;
-                //        break;
-                //    default:
-                //        statusResult = status.ToModel();
-                //        break;
-                //}
-
-                //return statusResult.ToUpperText();
+                return pod.Status.Phase.ToUpper();
             });
         }
 
@@ -216,32 +193,15 @@ namespace Lykke.AlgoStore.Services
                 if (runtimeData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data");
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.BuildId);
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(runtimeData.AlgoId);
+                if (pods.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {runtimeData.AlgoId}");
+                var pod = pods[0];
+                if (pod == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {runtimeData.AlgoId}");
 
-                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for testId {runtimeData.BuildId}");
-
-                var result = true;
-
-                if (status == ClientAlgoRuntimeStatuses.NotFound)
-                    return;
-
-                if (status == ClientAlgoRuntimeStatuses.Paused ||
-                    status == ClientAlgoRuntimeStatuses.Running)
-                {
-                    result = await _externalClient.StopTestAlgoAsync(runtimeData.BuildId);
-                    if (result)
-                        status = ClientAlgoRuntimeStatuses.Stopped;
-                }
-
-                if (result &&
-                    (status == ClientAlgoRuntimeStatuses.Stopped ||
-                     status == ClientAlgoRuntimeStatuses.Created))
-                    result = await _externalClient.DeleteTestAlgoAsync(runtimeData.BuildId);
-
-                if (result)
-                    result = await _externalClient.DeleteAlgoAsync(runtimeData.BuildId);
-
+                bool result = false;
+                result = await _kubernetesApiClient.DeleteAsync(runtimeData.AlgoId, pod);
                 if (result)
                     result = await _algoRuntimeDataRepository.DeleteAlgoRuntimeDataAsync(
                         runtimeData.ClientId,

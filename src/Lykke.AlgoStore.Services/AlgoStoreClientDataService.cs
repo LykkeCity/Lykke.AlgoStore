@@ -10,8 +10,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -27,7 +27,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IPublicAlgosRepository _publicAlgosRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
-        private readonly IDeploymentApiReadOnlyClient _deploymentClient;
+        private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;
 
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
@@ -35,23 +35,23 @@ namespace Lykke.AlgoStore.Services
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
-            IDeploymentApiReadOnlyClient deploymentClient,
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IAssetsService assetService,
             IPersonalDataService personalDataService,
+            IKubernetesApiReadOnlyClient kubernetesApiClient,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
-            _deploymentClient = deploymentClient;
             _instanceRepository = instanceRepository;
             _ratingsRepository = ratingsRepository;
             _publicAlgosRepository = publicAlgosRepository;
             _assetService = assetService;
             _personalDataService = personalDataService;
+            _kubernetesApiClient = kubernetesApiClient;
         }
 
         public async Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync()
@@ -121,16 +121,28 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    var status = ClientAlgoRuntimeStatuses.NotFound;
+                    var status = ClientAlgoRuntimeStatuses.NotFound.ToUpperText();
                     try
                     {
-                        status = await _deploymentClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.BuildId);
+                        var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(metadata.AlgoId);
+                        if (!pods.IsNullOrEmptyCollection())
+                        {
+                            if (pods.Count != 1)
+                                throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound,
+                                    $"More than one pod for algoId {metadata.AlgoId}");
+
+                            var pod = pods[0];
+                            if (pod != null)
+                            {
+                                status = pod.Status.Phase.ToUpper();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
                         Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
                     }
-                    metadata.Status = status.ToModel().ToUpperText();
+                    metadata.Status = status;
                 }
                 return algos;
             });

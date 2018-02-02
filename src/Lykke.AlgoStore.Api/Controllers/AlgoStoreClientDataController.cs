@@ -164,7 +164,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> UploadSting([FromBody] UploadAlgoStringModel model)
+        public async Task<IActionResult> UploadSting([FromBody]UploadAlgoStringModel model)
         {
             string clientId = User.GetClientId();
 

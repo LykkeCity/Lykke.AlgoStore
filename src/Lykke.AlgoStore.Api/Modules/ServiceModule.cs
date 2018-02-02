@@ -2,7 +2,8 @@
 using Autofac.Extensions.DependencyInjection;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings;
-using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.Core.Settings.ServiceSettings;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Client;
@@ -40,9 +41,9 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IClientSessionsClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoApi.Services.SessionServiceUrl);
 
-            builder.RegisterType<DeploymentApiClient.DeploymentApiClient>()
-                .As<IDeploymentApiClient>()
-                .As<IDeploymentApiReadOnlyClient>()
+            builder.RegisterType<KubernetesApiClient>()
+                .As<IKubernetesApiClient>()
+                .As<IKubernetesApiReadOnlyClient>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.DeploymentApiServiceUrl))
                 .SingleInstance();
 
