@@ -12,7 +12,11 @@ namespace Lykke.AlgoStore.KubernetesClient
 {
     public class KubernetesApiClient : Kubernetes, IKubernetesApiClient
     {
-
+        /// <summary>
+        /// Lists the pods by algo identifier asynchronous.
+        /// </summary>
+        /// <param name="algoId">The algo identifier.</param>
+        /// <returns></returns>
         public async Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByAlgoIdAsync(string algoId)
         {
             using (var kubeResponse =
@@ -25,12 +29,24 @@ namespace Lykke.AlgoStore.KubernetesClient
             }
         }
 
+        /// <summary>
+        /// Deletes the service and deployment asynchronous.
+        /// </summary>
+        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="pod">The pod.</param>
+        /// <returns></returns>
         public async Task<bool> DeleteAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
         {
             await DeleteServiceAsync(algoId, pod);
             return await DeleteDeploymentAsync(algoId, pod);
         }
 
+        /// <summary>
+        /// Deletes the deployment asynchronous.
+        /// </summary>
+        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="pod">The pod.</param>
+        /// <returns></returns>
         public async Task<bool> DeleteDeploymentAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
         {
             var options = new Iok8sapimachinerypkgapismetav1DeleteOptions
@@ -48,6 +64,12 @@ namespace Lykke.AlgoStore.KubernetesClient
             }
         }
 
+        /// <summary>
+        /// Deletes the service asynchronous.
+        /// </summary>
+        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="pod">The pod.</param>
+        /// <returns></returns>
         public async Task<bool> DeleteServiceAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
         {
             using (var kubeResponse =
@@ -59,6 +81,12 @@ namespace Lykke.AlgoStore.KubernetesClient
             }
         }
 
+        /// <summary>
+        /// Reads the pod log asynchronous.
+        /// </summary>
+        /// <param name="pod">The pod.</param>
+        /// <param name="tailLines">The tail lines.</param>
+        /// <returns></returns>
         public async Task<string> ReadPodLogAsync(Iok8skubernetespkgapiv1Pod pod, int? tailLines)
         {
             using (var kubeResponse = await ReadPodLogWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty).ConfigureAwait(false))
@@ -211,6 +239,22 @@ namespace Lykke.AlgoStore.KubernetesClient
             return result;
         }
 
+        /// <summary>
+        /// Deletes the deployment with HTTP messages asynchronous.
+        /// this is modification of auto generated to avoid deserialization exception
+        /// </summary>
+        /// <param name="body">The body.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="namespaceParameter">The namespace parameter.</param>
+        /// <returns></returns>
+        /// <exception cref="ValidationException">
+        /// body
+        /// or
+        /// name
+        /// or
+        /// namespaceParameter
+        /// </exception>
+        /// <exception cref="SerializationException">Unable to deserialize the response.</exception>
         private async Task<HttpOperationResponse<string>> DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
         {
             if (body == null)
@@ -299,6 +343,19 @@ namespace Lykke.AlgoStore.KubernetesClient
             return _result;
         }
 
+        /// <summary>
+        /// Deletes the service with HTTP messages asynchronous.
+        /// this is modification of auto generated to avoid deserialization exception
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="namespaceParameter">The namespace parameter.</param>
+        /// <returns></returns>
+        /// <exception cref="ValidationException">
+        /// name
+        /// or
+        /// namespaceParameter
+        /// </exception>
+        /// <exception cref="SerializationException">Unable to deserialize the response.</exception>
         private async Task<HttpOperationResponse<string>> DeleteCoreV1NSServiceWithHttpMessagesAsync(string name, string namespaceParameter)
         {
             if (name == null)
@@ -353,7 +410,23 @@ namespace Lykke.AlgoStore.KubernetesClient
             return result;
         }
 
-        public async Task<HttpOperationResponse<Iok8sapimachinerypkgapismetav1Status>> DeleteExtensionsV1beta1NSReplicaSetWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
+        /// <summary>
+        /// Deletes the replica set with HTTP messages asynchronous.
+        /// Not used - when delete deployment it cascade delete it
+        /// </summary>
+        /// <param name="body">The body.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="namespaceParameter">The namespace parameter.</param>
+        /// <returns></returns>
+        /// <exception cref="ValidationException">
+        /// body
+        /// or
+        /// name
+        /// or
+        /// namespaceParameter
+        /// </exception>
+        /// <exception cref="SerializationException">Unable to deserialize the response.</exception>
+        private async Task<HttpOperationResponse<Iok8sapimachinerypkgapismetav1Status>> DeleteExtensionsV1beta1NSReplicaSetWithHttpMessagesAsync(Iok8sapimachinerypkgapismetav1DeleteOptions body, string name, string namespaceParameter)
         {
             if (body == null)
             {

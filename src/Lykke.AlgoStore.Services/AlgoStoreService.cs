@@ -245,8 +245,7 @@ namespace Lykke.AlgoStore.Services
                 if (pod == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {runtimeData.AlgoId}");
 
-                bool result = false;
-                result = await _kubernetesApiClient.DeleteAsync(runtimeData.AlgoId, pod);
+                var result = await _kubernetesApiClient.DeleteAsync(runtimeData.AlgoId, pod);
                 if (result)
                     result = await _algoRuntimeDataRepository.DeleteAlgoRuntimeDataAsync(
                         runtimeData.ClientId,
