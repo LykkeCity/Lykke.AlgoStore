@@ -27,9 +27,8 @@ namespace Lykke.AlgoStore.KubernetesClient
 
         public async Task<bool> DeleteAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
         {
-            if (await DeleteServiceAsync(algoId, pod))
-                return await DeleteServiceAsync(algoId, pod);
-            return false;
+            await DeleteServiceAsync(algoId, pod);
+            return await DeleteDeploymentAsync(algoId, pod);
         }
 
         public async Task<bool> DeleteDeploymentAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
@@ -332,47 +331,24 @@ namespace Lykke.AlgoStore.KubernetesClient
             httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false);
             HttpStatusCode statusCode = httpResponse.StatusCode;
             string responseContent = null;
-            if ((int)statusCode != 200 && (int)statusCode != 401)
-            {
-                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", statusCode));
-                if (httpResponse.Content != null)
-                {
-                    responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                }
-                else
-                {
-                    responseContent = string.Empty;
-                }
-                ex.Request = new HttpRequestMessageWrapper(httpRequest, requestContent);
-                ex.Response = new HttpResponseMessageWrapper(httpResponse, responseContent);
-                httpRequest.Dispose();
-                if (httpResponse != null)
-                {
-                    httpResponse.Dispose();
-                }
-                throw ex;
-            }
             // Create Result
             var result = new HttpOperationResponse<string>();
             result.Request = httpRequest;
             result.Response = httpResponse;
             // Deserialize Response
-            if ((int)statusCode == 200)
+            responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            try
             {
-                responseContent = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
+                result.Body = responseContent;
+            }
+            catch (JsonException ex)
+            {
+                httpRequest.Dispose();
+                if (httpResponse != null)
                 {
-                    result.Body = responseContent;
+                    httpResponse.Dispose();
                 }
-                catch (JsonException ex)
-                {
-                    httpRequest.Dispose();
-                    if (httpResponse != null)
-                    {
-                        httpResponse.Dispose();
-                    }
-                    throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
-                }
+                throw new SerializationException("Unable to deserialize the response.", responseContent, ex);
             }
             return result;
         }

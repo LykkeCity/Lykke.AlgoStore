@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -21,6 +22,14 @@ namespace Lykke.AlgoStore.TeamCityClient
         private const string BlobUrl = "CODE_Blob_Url";
         private const string BlobVersionHeader = "CODE_Blob_VersionHeader";
         private const string AlgoId = "CODE_ALGO_ID";
+        private const string TradedAsset = "CODE_ASSET";
+        private const string AssetPair = "CODE_ASSET_PAIR";
+        private const string HftKey = "CODE_HFT_KEY";
+        private const string Margin = "CODE_MARGIN";
+        private const string Volume = "CODE_VOLUME";
+        private const string HftApiUrl = "CODE_HFT_API_BASE_PATH";
+        private const string WalletKey = "CODE_WALLET_KEY";
+        private const string ServiceName = "service.name";
 
         private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
         {
@@ -47,7 +56,7 @@ namespace Lykke.AlgoStore.TeamCityClient
                 Properties = new Properties { Property = new List<PropertyBase>() }
             };
 
-            SetBlobRequestParameter(request, parametersResponse, buildData);
+            SetRequestParameter(request, parametersResponse, buildData);
 
             return await StartBuild(request);
         }
@@ -86,7 +95,7 @@ namespace Lykke.AlgoStore.TeamCityClient
             }
         }
 
-        
+
 
         private async Task<List<ProblemInfo>> GetBuildProblemDetails(int buildId)
         {
@@ -144,7 +153,7 @@ namespace Lykke.AlgoStore.TeamCityClient
             }
         }
 
-        private void SetBlobRequestParameter(BuildRequest request, ParametersResponse parametersResponse, TeamCityClientBuildData buildData)
+        private void SetRequestParameter(BuildRequest request, ParametersResponse parametersResponse, TeamCityClientBuildData buildData)
         {
             foreach (Property responsePropery in parametersResponse.Properies)
             {
@@ -168,6 +177,30 @@ namespace Lykke.AlgoStore.TeamCityClient
                         propertyBase.Value = buildData.BlobVersionHeader;
                         break;
                     case AlgoId:
+                        propertyBase.Value = buildData.AlgoId;
+                        break;
+                    case TradedAsset:
+                        propertyBase.Value = buildData.TradedAsset;
+                        break;
+                    case AssetPair:
+                        propertyBase.Value = buildData.AssetPair;
+                        break;
+                    case HftKey:
+                        propertyBase.Value = buildData.HftApiKey;
+                        break;
+                    case Margin:
+                        propertyBase.Value = buildData.Margin.ToString(CultureInfo.InvariantCulture);
+                        break;
+                    case Volume:
+                        propertyBase.Value = buildData.Volume.ToString(CultureInfo.InvariantCulture);
+                        break;
+                    case HftApiUrl:
+                        propertyBase.Value = buildData.HftApiUrl;
+                        break;
+                    case WalletKey:
+                        propertyBase.Value = buildData.WalletApiKey;
+                        break;
+                    case ServiceName:
                         propertyBase.Value = buildData.AlgoId;
                         break;
                 }

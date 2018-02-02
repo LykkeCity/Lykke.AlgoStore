@@ -18,14 +18,25 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
-
         private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
+        private readonly IAlgoClientInstanceReadOnlyRepository _algoInstanceRepository;
 
         private readonly IStorageConnectionManager _storageConnectionManager;
         private readonly ITeamCityClient _teamCityClient;
 
         private readonly IKubernetesApiClient _kubernetesApiClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlgoStoreService"/> class.
+        /// </summary>
+        /// <param name="log">The log.</param>
+        /// <param name="algoBlobRepository">The algo BLOB repository.</param>
+        /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
+        /// <param name="algoRuntimeDataRepository">The algo runtime data repository.</param>
+        /// <param name="storageConnectionManager">The storage connection manager.</param>
+        /// <param name="teamCityClient">The team city client.</param>
+        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="algoInstanceRepository">The algo instance repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
@@ -33,7 +44,8 @@ namespace Lykke.AlgoStore.Services
             IAlgoRuntimeDataRepository algoRuntimeDataRepository,
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
-            IKubernetesApiClient kubernetesApiClient) : base(log, nameof(AlgoStoreService))
+            IKubernetesApiClient kubernetesApiClient,
+            IAlgoClientInstanceReadOnlyRepository algoInstanceRepository) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
@@ -41,8 +53,14 @@ namespace Lykke.AlgoStore.Services
             _storageConnectionManager = storageConnectionManager;
             _teamCityClient = teamCityClient;
             _kubernetesApiClient = kubernetesApiClient;
+            _algoInstanceRepository = algoInstanceRepository;
         }
 
+        /// <summary>
+        /// Deploys the image asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<bool> DeployImageAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(DeployImageAsync), data.ClientId, async () =>
@@ -56,13 +74,13 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
-                var algo = await _algoMetaDataRepository.GetAlgoMetaDataAsync(data.ClientId, data.AlgoId);
-                var algoMetaData = algo.AlgoMetaData?.FirstOrDefault();
+                var instanceDatas = await _algoInstanceRepository.GetAllAlgoInstanceDataAsync(data.ClientId, data.AlgoId);
+                var instanceData = instanceDatas.FirstOrDefault();
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
 
-                if (algoMetaData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo meta data for provided id");
-
-                var headers = _storageConnectionManager.GetData(data.AlgoId);
+                string blobKey = data.AlgoId + _algoBlobRepository.SourceExtension;
+                var headers = _storageConnectionManager.GetData(blobKey);
 
                 var buildData = new TeamCityClientBuildData
                 {
@@ -70,7 +88,14 @@ namespace Lykke.AlgoStore.Services
                     BlobUrl = headers.Url,
                     BlobVersionHeader = headers.VersionHeader,
                     BlobDateHeader = headers.DateHeader,
-                    AlgoId = data.AlgoId
+                    AlgoId = data.AlgoId,
+                    TradedAsset = instanceData.TradedAsset,
+                    AssetPair = instanceData.AssetPair,
+                    Volume = instanceData.Volume,
+                    Margin = instanceData.Margin,
+                    HftApiKey = "Dummy HFT Key",
+                    HftApiUrl = "Dummy HFT Url",
+                    WalletApiKey = "Dummy Wallet Key"
                 };
 
                 var response = await _teamCityClient.StartBuild(buildData);
@@ -88,6 +113,11 @@ namespace Lykke.AlgoStore.Services
                 return response.GetBuildState() != BuildStates.Undefined;
             });
         }
+        /// <summary>
+        /// Starts the test image asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<string> StartTestImageAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(StartTestImageAsync), data.ClientId, async () =>
@@ -130,6 +160,11 @@ namespace Lykke.AlgoStore.Services
                 return pod.Status.Phase.ToUpper();
             });
         }
+        /// <summary>
+        /// Stops the test image asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<string> StopTestImageAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(StopTestImageAsync), data.ClientId, async () =>
@@ -162,6 +197,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets the test tail log asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<string> GetTestTailLogAsync(TailLogData data)
         {
             return await LogTimedInfoAsync(nameof(GetTestTailLogAsync), data.ClientId, async () =>
@@ -186,6 +226,11 @@ namespace Lykke.AlgoStore.Services
                 return await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
             });
         }
+        /// <summary>
+        /// Deletes the image asynchronous.
+        /// </summary>
+        /// <param name="runtimeData">The runtime data.</param>
+        /// <returns></returns>
         public async Task DeleteImageAsync(AlgoClientRuntimeData runtimeData)
         {
             await LogTimedInfoAsync(nameof(DeleteImageAsync), runtimeData?.ClientId, async () =>

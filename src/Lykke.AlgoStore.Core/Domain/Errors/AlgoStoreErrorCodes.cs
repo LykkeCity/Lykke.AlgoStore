@@ -9,16 +9,19 @@
 
         //Data
         RuntimeSettingsExists = 500,
-        UnableToDeleteData = 501,
-        AlgoNotFound = 502,
-        AlgoBinaryDataNotFound = 503,
-        AlgoRuntimeDataNotFound = 504,
-        PodNotFound = 505,
-        AssetNotFound = 506,
+        AlgoNotFound = 501,
+        AlgoBinaryDataNotFound = 502,
+        AlgoRuntimeDataNotFound = 503,
+        PodNotFound = 504,
+        AssetNotFound = 505,
+        AlgoInstanceDataNotFound = 506,
+        MoreThanOnePodFound = 507,
+
+        //Operation
+        UnableToDeleteData = 601,
 
         //Validation - 1000
         ValidationError = 1000,
-        MoreThanOnePodFound = 1001,
 
     }
 }
