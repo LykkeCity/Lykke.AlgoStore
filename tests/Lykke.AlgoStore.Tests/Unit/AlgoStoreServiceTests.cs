@@ -171,7 +171,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IKubernetesApiClient deploymentApiClient,
             IAlgoBlobReadOnlyRepository blobRepo,
             IAlgoMetaDataReadOnlyRepository repo,
-            IAlgoClientInstanceReadOnlyRepository instanceDataRepository,
+            IAlgoClientInstanceRepository instanceDataRepository,
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient)
         {
@@ -220,9 +220,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoClientInstanceReadOnlyRepository Given_Correct_AlgoInstanceDataRepositoryMock()
+        private static IAlgoClientInstanceRepository Given_Correct_AlgoInstanceDataRepositoryMock()
         {
-            var result = new Mock<IAlgoClientInstanceReadOnlyRepository>();
+            var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo =>
                     repo.ExistsAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -234,9 +234,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        private static IAlgoClientInstanceReadOnlyRepository Given_Error_AlgoInstanceDataRepositoryMock()
+        private static IAlgoClientInstanceRepository Given_Error_AlgoInstanceDataRepositoryMock()
         {
-            var result = new Mock<IAlgoClientInstanceReadOnlyRepository>();
+            var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo =>
                     repo.ExistsAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
