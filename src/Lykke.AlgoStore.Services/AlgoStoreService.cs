@@ -17,8 +17,8 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
-        private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
-        private readonly IAlgoClientInstanceReadOnlyRepository _algoInstanceRepository;
+        private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository; // TODO Should be removed
+        private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
 
         private readonly IStorageConnectionManager _storageConnectionManager;
         private readonly ITeamCityClient _teamCityClient;
@@ -44,7 +44,7 @@ namespace Lykke.AlgoStore.Services
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
             IKubernetesApiClient kubernetesApiClient,
-            IAlgoClientInstanceReadOnlyRepository algoInstanceRepository) : base(log, nameof(AlgoStoreService))
+            IAlgoClientInstanceRepository algoInstanceRepository) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
@@ -214,31 +214,29 @@ namespace Lykke.AlgoStore.Services
         /// <summary>
         /// Deletes the image asynchronous.
         /// </summary>
-        /// <param name="runtimeData">The runtime data.</param>
+        /// <param name="instanceData">The instance data.</param>
         /// <returns></returns>
-        public async Task DeleteImageAsync(AlgoClientRuntimeData runtimeData)
+        public async Task DeleteImageAsync(AlgoClientInstanceData instanceData)
         {
-            await LogTimedInfoAsync(nameof(DeleteImageAsync), runtimeData?.ClientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
             {
-                if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data");
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
 
-                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(runtimeData.AlgoId);
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {runtimeData.AlgoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
                 var pod = pods[0];
                 if (pod == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {runtimeData.AlgoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
-                var result = await _kubernetesApiClient.DeleteAsync(runtimeData.AlgoId, pod);
+                var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
                 if (result)
-                    result = await _algoRuntimeDataRepository.DeleteAlgoRuntimeDataAsync(
-                        runtimeData.ClientId,
-                        runtimeData.AlgoId);
+                    await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot delete image id {runtimeData.BuildId} for algo id {runtimeData.AlgoId}");
+                        $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
             });
         }
     }
