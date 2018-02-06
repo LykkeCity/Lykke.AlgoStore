@@ -26,7 +26,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoRatingsRepository _ratingsRepository;
         private readonly IPublicAlgosRepository _publicAlgosRepository;
 
-        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
+        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository; // TODO Should be removed
         private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;
 
         private readonly IAssetsService _assetService;
@@ -185,22 +185,23 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequestAsync(string clientId, AlgoMetaData data)
+        public async Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data)
         {
-            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), data?.ClientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                var algoId = data.AlgoId;
-                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(clientId, algoId))
+                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Algo metadata not found for {algoId}");
+                        $"Algo metadata not found for {data.AlgoId}");
 
-                return await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, algoId);
+                var result = await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                if (result == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
+                        $"Algo instance data not found for {data.InstanceId}");
+
+                return result;
             });
         }
         public async Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, string clientName, AlgoMetaData data)
@@ -235,22 +236,14 @@ namespace Lykke.AlgoStore.Services
                 return res;
             });
         }
-        public async Task DeleteMetadataAsync(string clientId, AlgoMetaData data)
+        public async Task DeleteMetadataAsync(ManageImageData data)
         {
-            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), clientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
             {
                 if (await _blobRepository.BlobExistsAsync(data.AlgoId))
                     await _blobRepository.DeleteBlobAsync(data.AlgoId);
 
-                var clientData = new AlgoClientMetaData
-                {
-                    ClientId = clientId,
-                    AlgoMetaData = new List<AlgoMetaData>
-                    {
-                        data
-                    }
-                };
-                await _metaDataRepository.DeleteAlgoMetaDataAsync(clientData);
+                await _metaDataRepository.DeleteAlgoMetaDataAsync(data.ClientId, data.AlgoId);
             });
         }
 
