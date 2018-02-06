@@ -108,17 +108,18 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]AlgoMetaDataModel model)
+        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]ManageImageModel model)
         {
             var clientId = User.GetClientId();
 
-            var data = Mapper.Map<AlgoMetaData>(model);
+            var data = Mapper.Map<ManageImageData>(model);
+            data.ClientId = clientId;
 
-            var runtimeData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(clientId, data);
+            var clientInstanceData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
 
-            await _service.DeleteImageAsync(runtimeData);
+            await _service.DeleteImageAsync(clientInstanceData);
 
-            await _clientDataService.DeleteMetadataAsync(clientId, data);
+            await _clientDataService.DeleteMetadataAsync(data);
 
             return NoContent();
         }
