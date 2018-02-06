@@ -69,10 +69,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             await _table.InsertOrMergeBatchAsync(enitites);
         }
-        public async Task DeleteAlgoMetaDataAsync(AlgoClientMetaData metaData)
+        public async Task DeleteAlgoMetaDataAsync(string clientId, string algoId)
         {
-            var entities = metaData.ToEntity();
-            await _table.DeleteAsync(entities);
+            await _table.DeleteAsync(clientId, algoId);
         }
     }
 }
