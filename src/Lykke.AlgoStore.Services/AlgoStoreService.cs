@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -74,8 +73,7 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
-                var instanceDatas = await _algoInstanceRepository.GetAllAlgoInstanceDataAsync(data.ClientId, data.AlgoId);
-                var instanceData = instanceDatas.FirstOrDefault();
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
                 if (instanceData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
 
@@ -88,7 +86,7 @@ namespace Lykke.AlgoStore.Services
                     BlobUrl = headers.Url,
                     BlobVersionHeader = headers.VersionHeader,
                     BlobDateHeader = headers.DateHeader,
-                    AlgoId = data.AlgoId,
+                    AlgoId = data.InstanceId,
                     TradedAsset = instanceData.TradedAsset,
                     AssetPair = instanceData.AssetPair,
                     Volume = instanceData.Volume,
@@ -99,16 +97,6 @@ namespace Lykke.AlgoStore.Services
                 };
 
                 var response = await _teamCityClient.StartBuild(buildData);
-
-                var runtimeData = new AlgoClientRuntimeData
-                {
-                    ClientId = data.ClientId,
-                    AlgoId = data.AlgoId,
-                    BuildId = response.Id,
-                    PodId = string.Empty
-                };
-
-                await _algoRuntimeDataRepository.SaveAlgoRuntimeDataAsync(runtimeData);
 
                 return response.GetBuildState() != BuildStates.Undefined;
             });
@@ -209,19 +197,16 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                var algoId = data.AlgoId;
+                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for algo {data.AlgoId} and instanceId {data.InstanceId}");
 
-                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataAsync(data.ClientId, algoId);
-                if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data for {algoId}");
-
-                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(algoId);
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.Count != 1)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for instanceId {data.InstanceId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for algoId {algoId} was not found");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
 
                 return await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
             });
