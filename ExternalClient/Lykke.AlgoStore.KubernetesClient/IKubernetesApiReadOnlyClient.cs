@@ -6,6 +6,6 @@ namespace Lykke.AlgoStore.KubernetesClient
 {
     public interface IKubernetesApiReadOnlyClient
     {
-        Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByAlgoIdAsync(string algoId);
+        Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByAlgoIdAsync(string instanceId);
     }
 }
