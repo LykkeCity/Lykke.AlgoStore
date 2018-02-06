@@ -10,9 +10,9 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId);
         Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data);
         Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, string clientName, AlgoMetaData data);
-        Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequestAsync(string clientId, AlgoMetaData data);
+        Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data);
         Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel);
-        Task DeleteMetadataAsync(string clientId, AlgoMetaData data);
+        Task DeleteMetadataAsync(ManageImageData data);
         Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel);
         Task<string> GetAlgoAsStringAsync(string clientId, string algoId);
         Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data);
