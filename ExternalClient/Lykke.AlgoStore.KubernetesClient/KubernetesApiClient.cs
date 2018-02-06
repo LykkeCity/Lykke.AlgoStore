@@ -15,12 +15,12 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <summary>
         /// Lists the pods by algo identifier asynchronous.
         /// </summary>
-        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="instanceId">The instance identifier.</param>
         /// <returns></returns>
-        public async Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByAlgoIdAsync(string algoId)
+        public async Task<IList<Iok8skubernetespkgapiv1Pod>> ListPodsByAlgoIdAsync(string instanceId)
         {
             using (var kubeResponse =
-                await ListCoreV1PodForAllNamespacesWithHttpMessagesAsync(null, true, "app=" + algoId))
+                await ListCoreV1PodForAllNamespacesWithHttpMessagesAsync(null, true, "app=" + instanceId))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null ||
                     kubeResponse.Body.Items == null)
@@ -32,22 +32,22 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <summary>
         /// Deletes the service and deployment asynchronous.
         /// </summary>
-        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="instanceId">The instance identifier.</param>
         /// <param name="pod">The pod.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteAsync(string instanceId, Iok8skubernetespkgapiv1Pod pod)
         {
-            await DeleteServiceAsync(algoId, pod);
-            return await DeleteDeploymentAsync(algoId, pod);
+            await DeleteServiceAsync(instanceId, pod);
+            return await DeleteDeploymentAsync(instanceId, pod);
         }
 
         /// <summary>
         /// Deletes the deployment asynchronous.
         /// </summary>
-        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="instanceId">The instance identifier.</param>
         /// <param name="pod">The pod.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteDeploymentAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteDeploymentAsync(string instanceId, Iok8skubernetespkgapiv1Pod pod)
         {
             var options = new Iok8sapimachinerypkgapismetav1DeleteOptions
             {
@@ -55,7 +55,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             };
 
             using (var kubeResponse =
-                await DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(options, algoId,
+                await DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(options, instanceId,
                     pod.Metadata.NamespaceProperty))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
@@ -67,13 +67,13 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <summary>
         /// Deletes the service asynchronous.
         /// </summary>
-        /// <param name="algoId">The algo identifier.</param>
+        /// <param name="instanceId">The instance identifier.</param>
         /// <param name="pod">The pod.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteServiceAsync(string algoId, Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteServiceAsync(string instanceId, Iok8skubernetespkgapiv1Pod pod)
         {
             using (var kubeResponse =
-                await DeleteCoreV1NSServiceWithHttpMessagesAsync(algoId, pod.Metadata.NamespaceProperty))
+                await DeleteCoreV1NSServiceWithHttpMessagesAsync(instanceId, pod.Metadata.NamespaceProperty))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                     return false;
