@@ -199,6 +199,9 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
                         $"Algo instance data not found for {data.InstanceId}");
 
+                if (!result.ValidateData(out var instanceException))
+                    throw instanceException;
+
                 return result;
             });
         }
