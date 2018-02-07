@@ -60,116 +60,28 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             Then_Exception_ShouldNotBeNull(ex);
         }
-        //[Test]
-        //public void DeleteAlgoMetadataTest_ImageStatus_NotFound_ReturnSuccess()
-        //{
-        //    string clientId = Guid.NewGuid().ToString();
+        [Test]
+        public void DeleteAlgoMetadataTest_InstanceDataNotExists_Throws()
+        {
+            var data = Given_ManageImageData();
+            var instanceRepo = Given_InstanceDataRepository_ReturnNull();
 
-        //    var data = Given_AlgoMetaData();
-        //    var clientDataService = Given_ClientDataService(
-        //        Given_MetaDataRepository_Exists(true),
-        //        Given_RuntimeDataReadOnlyRepository_WithResult(false),
-        //        Given_BlobRepository_WithResult(true),
-        //        null
-        //    );
+            var clientDataService = Given_ClientDataService(
+                Given_MetaDataRepository_Exists(true),
+                instanceRepo,
+                Given_BlobRepository_WithResult(true),
+                null,
+                Given_PublicAlgoRepository_Exists(false)
+            );
 
-        //    var kubernetesClient = Given_DeploymentApiClient_WithStatus(null, ClientAlgoRuntimeStatuses.NotFound);
-        //    kubernetesClient = Given_DeploymentApiClient_WithResult(kubernetesClient, true, true, true);
-        //    var algoService = Given_AlgoStoreService(kubernetesClient.Object, null, null,
-        //        Given_RuntimeDataRepository_WithResult(true));
+            var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo);
 
-        //    var ex = When_Execute_Delete(clientId, data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
-        //    Then_Exception_ShouldBeNull(ex);
-        //}
-        //[Test]
-        //public void DeleteAlgoMetadataTest_StopFail_Throws()
-        //{
-        //    string clientId = Guid.NewGuid().ToString();
+            Then_Exception_ShouldNotBeNull(ex);
+        }
 
-        //    var data = Given_AlgoMetaData();
-        //    var clientDataService = Given_ClientDataService(
-        //        Given_MetaDataRepository_Exists(true),
-        //        Given_RuntimeDataReadOnlyRepository_WithResult(false),
-        //        Given_BlobRepository_WithResult(true),
-        //        null
-        //    );
-
-        //    var kubernetesClient = Given_DeploymentApiClient_WithStatus(null, ClientAlgoRuntimeStatuses.Running);
-        //    kubernetesClient = Given_DeploymentApiClient_WithResult(kubernetesClient, false, true, true);
-        //    var algoService = Given_AlgoStoreService(kubernetesClient.Object, null, null,
-        //        Given_RuntimeDataRepository_WithResult(true));
-
-        //    var ex = When_Execute_Delete(clientId, data, clientDataService, algoService).Result;
-
-        //    Then_Exception_ShouldNotBeNull(ex);
-        //}
-        //[Test]
-        //public void DeleteAlgoMetadataTest_DeleteTestFail_Throws()
-        //{
-        //    string clientId = Guid.NewGuid().ToString();
-
-        //    var data = Given_AlgoMetaData();
-        //    var clientDataService = Given_ClientDataService(
-        //        Given_MetaDataRepository_Exists(true),
-        //        Given_RuntimeDataReadOnlyRepository_WithResult(false),
-        //        Given_BlobRepository_WithResult(true),
-        //        null
-        //    );
-
-        //    var kubernetesClient = Given_DeploymentApiClient_WithStatus(null, ClientAlgoRuntimeStatuses.Running);
-        //    kubernetesClient = Given_DeploymentApiClient_WithResult(kubernetesClient, true, false, true);
-        //    var algoService = Given_AlgoStoreService(kubernetesClient.Object, null, null,
-        //        Given_RuntimeDataRepository_WithResult(true));
-
-        //    var ex = When_Execute_Delete(clientId, data, clientDataService, algoService).Result;
-
-        //    Then_Exception_ShouldNotBeNull(ex);
-        //}
-        //[Test]
-        //public void DeleteAlgoMetadataTest_DeleteImageFail_Throws()
-        //{
-        //    string clientId = Guid.NewGuid().ToString();
-
-        //    var data = Given_AlgoMetaData();
-        //    var clientDataService = Given_ClientDataService(
-        //        Given_MetaDataRepository_Exists(true),
-        //        Given_RuntimeDataReadOnlyRepository_WithResult(false),
-        //        Given_BlobRepository_WithResult(true),
-        //        null
-        //    );
-
-        //    var kubernetesClient = Given_DeploymentApiClient_WithStatus(null, ClientAlgoRuntimeStatuses.Running);
-        //    kubernetesClient = Given_DeploymentApiClient_WithResult(kubernetesClient, true, true, false);
-        //    var algoService = Given_AlgoStoreService(kubernetesClient.Object, null, null,
-        //        Given_RuntimeDataRepository_WithResult(true));
-
-        //    var ex = When_Execute_Delete(clientId, data, clientDataService, algoService).Result;
-
-        //    Then_Exception_ShouldNotBeNull(ex);
-        //}
-        //[Test]
-        //public void DeleteAlgoMetadataTest_DeleteRuntimeDataFail_Throws()
-        //{
-        //    string clientId = Guid.NewGuid().ToString();
-
-        //    var data = Given_AlgoMetaData();
-        //    var clientDataService = Given_ClientDataService(
-        //        Given_MetaDataRepository_Exists(true),
-        //        Given_RuntimeDataReadOnlyRepository_WithResult(false),
-        //        Given_BlobRepository_WithResult(true),
-        //        null
-        //    );
-
-        //    var kubernetesClient = Given_DeploymentApiClient_WithStatus(null, ClientAlgoRuntimeStatuses.Running);
-        //    kubernetesClient = Given_DeploymentApiClient_WithResult(kubernetesClient, true, true, true);
-        //    var algoService = Given_AlgoStoreService(kubernetesClient.Object, null, null,
-        //        Given_RuntimeDataRepository_WithResult(false));
-
-        //    var ex = When_Execute_Delete(clientId, data, clientDataService, algoService).Result;
-
-        //    Then_Exception_ShouldNotBeNull(ex);
-        //}
 
         #region Private Methods
         private static ManageImageData Given_ManageImageData()
@@ -219,6 +131,20 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
             result.Setup(repo => repo.DeleteAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).Returns(Task.CompletedTask);
             result.Setup(repo => repo.HasInstanceData(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(metadataHasInstance);
+
+            return result.Object;
+        }
+        private static IAlgoClientInstanceRepository Given_InstanceDataRepository_ReturnNull()
+        {
+            var result = new Mock<IAlgoClientInstanceRepository>();
+
+            result.Setup(repo => repo.ExistsAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
+            result.Setup(repo =>
+                    repo.GetAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync((AlgoClientInstanceData)null);
+            result.Setup(repo => repo.DeleteAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.HasInstanceData(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(false);
 
             return result.Object;
         }
