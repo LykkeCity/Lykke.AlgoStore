@@ -77,6 +77,9 @@ namespace Lykke.AlgoStore.Services
                 if (instanceData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
 
+                if (!instanceData.ValidateData(out var instanceException))
+                    throw instanceException;
+
                 string blobKey = data.AlgoId + _algoBlobRepository.SourceExtension;
                 var headers = _storageConnectionManager.GetData(blobKey);
 
