@@ -32,6 +32,18 @@ namespace Lykke.AlgoStore.Services
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlgoStoreClientDataService"/> class.
+        /// </summary>
+        /// <param name="metaDataRepository">The meta data repository.</param>
+        /// <param name="runtimeDataRepository">The runtime data repository.</param>
+        /// <param name="blobRepository">The BLOB repository.</param>
+        /// <param name="instanceRepository">The instance repository.</param>
+        /// <param name="ratingsRepository">The ratings repository.</param>
+        /// <param name="publicAlgosRepository">The public algos repository.</param>
+        /// <param name="assetService">The asset service.</param>
+        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="log">The log.</param>
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
@@ -54,6 +66,10 @@ namespace Lykke.AlgoStore.Services
             _kubernetesApiClient = kubernetesApiClient;
         }
 
+        /// <summary>
+        /// Gets all algos with rating asynchronous.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync()
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgosWithRatingAsync), null, async () =>
@@ -98,6 +114,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets the client metadata asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <returns></returns>
         public async Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId)
         {
             return await LogTimedInfoAsync(nameof(GetClientMetadataAsync), clientId, async () =>
@@ -175,6 +196,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Adds algo to public algos asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data)
         {
             return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
@@ -185,6 +211,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Validates the cascade delete client metadata request asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), data?.ClientId, async () =>
@@ -204,6 +235,13 @@ namespace Lykke.AlgoStore.Services
                 return result;
             });
         }
+        /// <summary>
+        /// Saves the client metadata asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, string clientName, AlgoMetaData data)
         {
             return await LogTimedInfoAsync(nameof(SaveClientMetadataAsync), clientId, async () =>
@@ -236,10 +274,19 @@ namespace Lykke.AlgoStore.Services
                 return res;
             });
         }
+        /// <summary>
+        /// Deletes the metadata asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task DeleteMetadataAsync(ManageImageData data)
         {
             await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
             {
+                if (await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId) ||
+                    await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
+                    return;
+
                 if (await _blobRepository.BlobExistsAsync(data.AlgoId))
                     await _blobRepository.DeleteBlobAsync(data.AlgoId);
 
@@ -247,6 +294,12 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Saves the algo as binary asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="dataModel">The data model.</param>
+        /// <returns></returns>
         public async Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel)
         {
             await LogTimedInfoAsync(nameof(SaveAlgoAsBinaryAsync), clientId, async () =>
@@ -262,6 +315,12 @@ namespace Lykke.AlgoStore.Services
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data.OpenReadStream());
             });
         }
+        /// <summary>
+        /// Saves the algo as string asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="dataModel">The data model.</param>
+        /// <returns></returns>
         public async Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel)
         {
             await LogTimedInfoAsync(nameof(SaveAlgoAsStringAsync), clientId, async () =>
@@ -277,7 +336,12 @@ namespace Lykke.AlgoStore.Services
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data);
             });
         }
-
+        /// <summary>
+        /// Gets the algo as string asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="algoId">The algo identifier.</param>
+        /// <returns></returns>
         public async Task<string> GetAlgoAsStringAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoAsStringAsync), clientId, async () =>
@@ -296,6 +360,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets all algo instance data asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data)
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataAsync), data.ClientId, async () =>
@@ -306,6 +375,11 @@ namespace Lykke.AlgoStore.Services
                 return await _instanceRepository.GetAllAlgoInstanceDataAsync(data.ClientId, data.AlgoId);
             });
         }
+        /// <summary>
+        /// Gets the algo instance data asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), data.ClientId, async () =>
@@ -316,6 +390,11 @@ namespace Lykke.AlgoStore.Services
                 return await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
             });
         }
+        /// <summary>
+        /// Saves the algo instance data asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data)
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId, async () =>
