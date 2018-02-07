@@ -23,14 +23,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void DeleteAlgoMetadataTest_ReturnSuccess()
         {
             var data = Given_ManageImageData();
-            var instanceRepo = Given_InstanceDataRepository_Exists(true);
+            var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
 
             var clientDataService = Given_ClientDataService(
                 Given_MetaDataRepository_Exists(true),
                 instanceRepo,
                 Given_BlobRepository_WithResult(true),
-                null
-                );
+                null,
+                Given_PublicAlgoRepository_Exists(false));
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo);
@@ -43,13 +43,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void DeleteAlgoMetadataTest_MetaDataNotExists_Throws()
         {
             var data = Given_ManageImageData();
-            var instanceRepo = Given_InstanceDataRepository_Exists(true);
+            var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
 
             var clientDataService = Given_ClientDataService(
                 Given_MetaDataRepository_Exists(false),
                 instanceRepo,
                 Given_BlobRepository_WithResult(true),
-                null
+                null,
+                Given_PublicAlgoRepository_Exists(false)
             );
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -200,7 +201,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        private static IAlgoClientInstanceRepository Given_InstanceDataRepository_Exists(bool exists)
+        private static IAlgoClientInstanceRepository Given_InstanceDataRepository_Exists(bool exists, bool metadataHasInstance)
         {
             var result = new Mock<IAlgoClientInstanceRepository>();
 
@@ -217,6 +218,15 @@ namespace Lykke.AlgoStore.Tests.Unit
                     .Create();
                 });
             result.Setup(repo => repo.DeleteAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.HasInstanceData(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(metadataHasInstance);
+
+            return result.Object;
+        }
+        private static IPublicAlgosRepository Given_PublicAlgoRepository_Exists(bool exists)
+        {
+            var result = new Mock<IPublicAlgosRepository>();
+
+            result.Setup(repo => repo.ExistsPublicAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(exists);
 
             return result.Object;
         }
@@ -235,10 +245,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoMetaDataRepository metaDataRepository,
             IAlgoClientInstanceRepository clientInstanceRepository,
             IAlgoBlobRepository blobRepository,
-            IKubernetesApiReadOnlyClient kubernetesClient)
+            IKubernetesApiReadOnlyClient kubernetesClient,
+            IPublicAlgosRepository publicAlgosRepository)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, null, null, kubernetesClient, new LogMock());
+                clientInstanceRepository, null, publicAlgosRepository, null, kubernetesClient, new LogMock());
 
             return result;
         }
