@@ -60,7 +60,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entitiy = await _table.GetDataAsync(clientId, algoId);
 
-            return entitiy.ToAlgoMetaInformation();
+            return entitiy?.ToAlgoMetaInformation();
         }
 
         public async Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId)
