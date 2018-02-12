@@ -7,5 +7,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
         public string Name { get; set; }
         public string Description { get; set; }
         public string Author { get; set; }
+        public string AlgoMetaDataInformationJSON { get; set; }
     }
 }

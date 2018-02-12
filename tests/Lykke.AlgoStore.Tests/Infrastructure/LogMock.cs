@@ -58,5 +58,15 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         {
             return WriteInfoAsync(string.Empty, process, context, info, dateTime);
         }
+
+        public Task WriteWarningAsync(string component, string process, string context, string info, Exception ex, DateTime? dateTime = null)
+        {
+            return WriteInfoAsync(string.Empty, process, context, info, dateTime);
+        }
+
+        public Task WriteWarningAsync(string process, string context, string info, Exception ex, DateTime? dateTime = null)
+        {
+            return WriteInfoAsync(string.Empty, process, context, info, dateTime);
+        }
     }
 }

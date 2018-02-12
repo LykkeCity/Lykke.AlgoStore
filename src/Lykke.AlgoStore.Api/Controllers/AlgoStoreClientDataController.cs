@@ -83,6 +83,26 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("algoMetadata")]
+        [SwaggerOperation("GetAlgoMetadata")]
+        [ProducesResponseType(typeof(AlgoClientMetaDataInformationModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAlgoMetadataByAlgoId(string algoId)
+        {
+            string clientId = User.GetClientId();
+            string clientName = User.Identity.Name;
+
+            var result = await _clientDataService.GetAlgoMetaDataInformationAsync(clientId, algoId);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<AlgoClientMetaDataInformationModel>(result);
+
+            return Ok(result);
+        }
+
         [HttpPost("metadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]

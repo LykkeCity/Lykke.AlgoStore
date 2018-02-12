@@ -48,12 +48,21 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return result;
         }
+
         public async Task<AlgoClientMetaData> GetAlgoMetaDataAsync(string clientId, string algoId)
         {
             var entitiy = await _table.GetDataAsync(clientId, algoId);
 
             return new[] { entitiy }.ToModel();
         }
+
+        public async Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId)
+        {
+            var entitiy = await _table.GetDataAsync(clientId, algoId);
+
+            return entitiy.ToAlgoMetaInformation();
+        }
+
         public async Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId)
         {
             var entity = new AlgoMetaDataEntity();
