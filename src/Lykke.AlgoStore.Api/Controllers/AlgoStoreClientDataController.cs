@@ -36,7 +36,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllAlgos()
         {
-
             var result = await _clientDataService.GetAllAlgosWithRatingAsync();
 
             if (result == null || result.IsNullOrEmptyCollection())
@@ -88,11 +87,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(AlgoClientMetaDataInformationModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetAlgoMetadataByAlgoId(string algoId)
+        public async Task<IActionResult> GetAlgoMetadata(string clientId, string algoId)
         {
-            string clientId = User.GetClientId();
-            string clientName = User.Identity.Name;
-
             var result = await _clientDataService.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
             if (result == null)

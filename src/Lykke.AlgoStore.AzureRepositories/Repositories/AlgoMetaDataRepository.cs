@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using AzureStorage;
+﻿using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Utils;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {

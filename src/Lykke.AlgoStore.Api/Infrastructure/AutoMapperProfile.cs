@@ -21,7 +21,6 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore())
             .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore());
-            //.ForSourceMember(src => src.AlgoMetaDataInformationJSON, opt => opt.Ignore());
 
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
             CreateMap<UploadAlgoStringModel, UploadAlgoStringData>();

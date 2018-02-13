@@ -74,6 +74,7 @@ namespace Lykke.AlgoStore.Services
                     {
                         var ratingMetaData = new AlgoRatingMetaData
                         {
+                            ClientId = currentAlgoMetadata.ClientId,
                             AlgoId = algoMetadata.AlgoId,
                             Name = algoMetadata.Name,
                             Description = algoMetadata.Description,
