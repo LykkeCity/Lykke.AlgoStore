@@ -11,6 +11,8 @@ using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Rest;
+using System;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -44,7 +46,8 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<KubernetesApiClient>()
                 .As<IKubernetesApiClient>()
                 .As<IKubernetesApiReadOnlyClient>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.DeploymentApiServiceUrl))
+                .WithParameter("baseUri", new System.Uri(_settings.CurrentValue.Kubernetes.Url))
+                .WithParameter("credentials", new TokenCredentials(_settings.CurrentValue.Kubernetes.BasicAuthenticationValue))
                 .SingleInstance();
 
             builder.RegisterType<AssetsService>()

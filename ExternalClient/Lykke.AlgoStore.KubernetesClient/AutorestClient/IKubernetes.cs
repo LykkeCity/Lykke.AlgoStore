@@ -33,6 +33,12 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// </summary>
         JsonSerializerSettings DeserializationSettings { get; }
 
+        /// <summary>
+        /// Subscription credentials which uniquely identify client
+        /// subscription.
+        /// </summary>
+        ServiceClientCredentials Credentials { get; }
+
 
         /// <summary>
         /// get available API versions

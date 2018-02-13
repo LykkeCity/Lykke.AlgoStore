@@ -14,5 +14,5 @@
 # If you need to update client please use provided swagger file.
 # First update swagger file and regenerate client via this script
 
-#autorest -Input http://127.0.0.1:8001/swagger.json -CodeGenerator CSharp -OutputDirectory ./AutorestClient -Namespace Lykke.AlgoStore.KubernetesClient
-autorest -Input swagger.json -CodeGenerator CSharp -OutputDirectory ./AutorestClient -Namespace Lykke.AlgoStore.KubernetesClient
+#autorest -Input http://127.0.0.1:8001/swagger.json -AddCredentials true -CodeGenerator CSharp -OutputDirectory ./AutorestClient -Namespace Lykke.AlgoStore.KubernetesClient
+autorest -Input swagger.json -AddCredentials true -CodeGenerator CSharp -OutputDirectory ./AutorestClient -Namespace Lykke.AlgoStore.KubernetesClient
