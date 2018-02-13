@@ -5,7 +5,8 @@ using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.Services;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.PersonalData.Client;
+using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,9 +50,9 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IAssetsService>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.AssetServiceUrl));
             
-            builder.RegisterInstance(new ClientAccountClient(_settings.CurrentValue.Services.ClientAccountServiceUrl))
-               .As<IClientAccountClient>()
-               .SingleInstance();
+            builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.Services.PersonalDataServiceClient, null))
+             .As<IPersonalDataService>()
+             .SingleInstance();
         }
 
         private static void RegisterLocalServices(ContainerBuilder builder)

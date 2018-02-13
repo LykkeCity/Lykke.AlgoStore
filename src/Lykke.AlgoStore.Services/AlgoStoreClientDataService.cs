@@ -14,7 +14,7 @@ using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
-using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -30,7 +30,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IDeploymentApiReadOnlyClient _deploymentClient;
 
         private readonly IAssetsService _assetService;
-        private readonly IClientAccountClient _clientAccountService;
+        private readonly IPersonalDataService _personalDataService;
 
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
@@ -40,7 +40,7 @@ namespace Lykke.AlgoStore.Services
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IAssetsService assetService,
-            IClientAccountClient clientAccountService,
+            IPersonalDataService personalDataService,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
@@ -51,7 +51,7 @@ namespace Lykke.AlgoStore.Services
             _ratingsRepository = ratingsRepository;
             _publicAlgosRepository = publicAlgosRepository;
             _assetService = assetService;
-            _clientAccountService = clientAccountService;
+            _personalDataService = personalDataService;
         }
 
         public async Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync()
@@ -144,7 +144,6 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
 
-
                 var algoInformation = await _metaDataRepository.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
                 var rating = _ratingsRepository.GetAlgoRating(clientId, algoId);
@@ -157,7 +156,7 @@ namespace Lykke.AlgoStore.Services
                         algoInformation.UsersCount = rating.UsersCount;
                     }
 
-                    algoInformation.Author = (await _clientAccountService.GetClientByIdAsync(clientId))?.Email;
+                    algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
                 }
                 return algoInformation;
             });

@@ -11,14 +11,15 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.ClientAccount.Client;
-using Lykke.Service.ClientAccount.Client.Models;
+using Lykke.Service.PersonalData.Client.Models;
+using Lykke.Service.PersonalData.Contract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Rest;
 using Moq;
@@ -366,9 +367,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoRatingsRepository algoRatingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IAssetsService assetsService,
-            IClientAccountClient clientAccountService)
+            IPersonalDataService personalDataService)
         {
-            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, algoInstanceRepository, algoRatingsRepository, publicAlgosRepository, assetsService, clientAccountService, new LogMock());
+            return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, deploymentClient, algoInstanceRepository, algoRatingsRepository,
+                publicAlgosRepository, assetsService, personalDataService, new LogMock());
         }
 
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)
@@ -709,15 +711,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IClientAccountClient Given_Customized_ClientAccountServiceMock(string clientId)
+        private static IPersonalDataService Given_Customized_ClientAccountServiceMock(string clientId)
         {
-            var result = new Mock<IClientAccountClient>();
+            var result = new Mock<IPersonalDataService>();
 
-            result.Setup(service => service.GetClientByIdAsync(It.IsAny<string>()))
-                .ReturnsAsync(new ClientAccountInformationModel
+            result.Setup(service => service.GetAsync(It.IsAny<string>()))
+                .ReturnsAsync(new PersonalDataModel()
                 {
                     Id = clientId,
-                    Email = "test@m.com"
+                    Email = "test@m.com",
+                    FullName = "Test Test"
                 });
 
             return result.Object;

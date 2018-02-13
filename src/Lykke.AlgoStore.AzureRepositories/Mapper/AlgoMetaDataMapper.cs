@@ -2,6 +2,7 @@
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.AlgoMetaDataModels;
 using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
@@ -65,8 +66,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             return result;
         }
-
-
 
         public static AlgoClientMetaDataInformation ToAlgoMetaInformation(this AlgoMetaDataEntity entity)
         {
