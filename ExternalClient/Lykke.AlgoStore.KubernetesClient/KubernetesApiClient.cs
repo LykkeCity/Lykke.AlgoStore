@@ -13,6 +13,14 @@ namespace Lykke.AlgoStore.KubernetesClient
     public class KubernetesApiClient : Kubernetes, IKubernetesApiClient
     {
         /// <summary>
+        /// Initializes new instance of <see cref="KubernetesApiClient"/>
+        /// </summary>
+        /// <param name="baseUri">The URI of the Kubernetes instance</param>
+        /// <param name="credentials">The credentials for Kubernetes instance</param>
+        public KubernetesApiClient(System.Uri baseUri, ServiceClientCredentials credentials)
+            : base(baseUri, credentials) { }
+
+        /// <summary>
         /// Lists the pods by algo identifier asynchronous.
         /// </summary>
         /// <param name="instanceId">The instance identifier.</param>
