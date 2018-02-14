@@ -17,8 +17,15 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// </summary>
         /// <param name="baseUri">The URI of the Kubernetes instance</param>
         /// <param name="credentials">The credentials for Kubernetes instance</param>
-        public KubernetesApiClient(System.Uri baseUri, ServiceClientCredentials credentials)
-            : base(baseUri, credentials) { }
+        public KubernetesApiClient(System.Uri baseUri, ServiceClientCredentials credentials, string certificateHash)
+            : base(baseUri, credentials, new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+                {
+                    return cert.GetCertHashString() == certificateHash;
+                }
+            })
+        { }
 
         /// <summary>
         /// Lists the pods by algo identifier asynchronous.
