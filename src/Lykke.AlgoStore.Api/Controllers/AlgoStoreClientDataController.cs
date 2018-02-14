@@ -96,7 +96,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var response = Mapper.Map<AlgoClientMetaDataInformationModel>(result);
 
-            return Ok(result);
+            return Ok(response);
         }
 
         [HttpPost("metadata")]
