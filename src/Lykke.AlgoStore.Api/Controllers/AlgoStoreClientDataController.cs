@@ -178,10 +178,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetUploadString(string algoId)
+        public async Task<IActionResult> GetUploadString(string clientId, string algoId)
         {
-            string clientId = User.GetClientId();
-
             var data = await _clientDataService.GetAlgoAsStringAsync(clientId, algoId);
 
             return Ok(new DataStringModel
