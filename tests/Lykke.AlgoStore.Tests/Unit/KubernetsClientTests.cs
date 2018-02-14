@@ -59,7 +59,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         #region Private Methods
         private static KubernetesApiClient Given_KubernetesClient()
         {
-            var client = new KubernetesApiClient(new System.Uri("http://127.0.0.1:8001"), null)
+            var client = new KubernetesApiClient(new System.Uri("http://127.0.0.1:8001"), null, "")
             {
                 BaseUri = new System.Uri("http://127.0.0.1:8001")
             };
