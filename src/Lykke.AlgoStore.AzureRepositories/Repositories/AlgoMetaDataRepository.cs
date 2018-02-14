@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using AzureStorage;
+﻿using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Utils;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
@@ -48,12 +48,21 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
             return result;
         }
+
         public async Task<AlgoClientMetaData> GetAlgoMetaDataAsync(string clientId, string algoId)
         {
             var entitiy = await _table.GetDataAsync(clientId, algoId);
 
             return new[] { entitiy }.ToModel();
         }
+
+        public async Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId)
+        {
+            var entitiy = await _table.GetDataAsync(clientId, algoId);
+
+            return entitiy?.ToAlgoMetaInformation();
+        }
+
         public async Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId)
         {
             var entity = new AlgoMetaDataEntity();

@@ -18,5 +18,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data);
         Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data);
         Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data);
+        Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId);
     }
 }

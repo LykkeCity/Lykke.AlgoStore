@@ -36,7 +36,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllAlgos()
         {
-
             var result = await _clientDataService.GetAllAlgosWithRatingAsync();
 
             if (result == null || result.IsNullOrEmptyCollection())
@@ -79,6 +78,23 @@ namespace Lykke.AlgoStore.Api.Controllers
                 return NotFound();
 
             var response = Mapper.Map<List<AlgoMetaDataModel>>(result.AlgoMetaData);
+
+            return Ok(response);
+        }
+
+        [HttpGet("algoMetadata")]
+        [SwaggerOperation("GetAlgoMetadata")]
+        [ProducesResponseType(typeof(AlgoClientMetaDataInformationModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAlgoMetadata(string clientId, string algoId)
+        {
+            var result = await _clientDataService.GetAlgoMetaDataInformationAsync(clientId, algoId);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<AlgoClientMetaDataInformationModel>(result);
 
             return Ok(response);
         }

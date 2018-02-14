@@ -2,6 +2,8 @@
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.AlgoMetaDataModels;
+using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {
@@ -24,6 +26,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 res.Name = algoData.Name;
                 res.Author = data.Author;
                 res.ETag = "*";
+                res.AlgoMetaDataInformationJSON = algoData.AlgoMetaDataInformationJSON;
 
                 result.Add(res);
             }
@@ -59,6 +62,24 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Description = entity.Description;
             result.Name = entity.Name;
             result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");
+            result.AlgoMetaDataInformationJSON = entity.AlgoMetaDataInformationJSON;
+
+            return result;
+        }
+
+        public static AlgoClientMetaDataInformation ToAlgoMetaInformation(this AlgoMetaDataEntity entity)
+        {
+            var result = new AlgoClientMetaDataInformation();
+
+            result.AlgoId = entity.RowKey;
+            result.Description = entity.Description;
+            result.Name = entity.Name;
+            result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");
+
+            if (!string.IsNullOrEmpty(entity.AlgoMetaDataInformationJSON))
+            {
+                result.AlgoMetaDataInformation = JsonConvert.DeserializeObject<AlgoMetaDataInformation>(entity.AlgoMetaDataInformationJSON);
+            }
 
             return result;
         }
