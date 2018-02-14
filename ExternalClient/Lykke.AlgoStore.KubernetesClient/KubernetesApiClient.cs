@@ -201,7 +201,13 @@ namespace Lykke.AlgoStore.KubernetesClient
             var httpRequest = new HttpRequestMessage();
             httpRequest.Method = new HttpMethod("GET");
             httpRequest.RequestUri = new System.Uri(url);
-
+            
+            // Set Credentials
+            if (Credentials != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            }
             // Send Request
             cancellationToken.ThrowIfCancellationRequested();
             var httpResponse = await HttpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
@@ -309,6 +315,14 @@ namespace Lykke.AlgoStore.KubernetesClient
                 httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 httpRequest.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
+
+            if (Credentials != null)
+            {
+                var cancellationToken = default(CancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                await Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+
             _httpResponse = await HttpClient.SendAsync(httpRequest, default(CancellationToken)).ConfigureAwait(false);
             HttpStatusCode statusCode = _httpResponse.StatusCode;
             string responseContent = null;
@@ -397,6 +411,13 @@ namespace Lykke.AlgoStore.KubernetesClient
             httpRequest.Method = new HttpMethod("DELETE");
             httpRequest.RequestUri = new System.Uri(url);
 
+            if (Credentials != null)
+            {
+                var cancellationToken = default(CancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                await Credentials.ProcessHttpRequestAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+
             // Serialize Request
             string requestContent = null;
             // Send Request
@@ -474,6 +495,13 @@ namespace Lykke.AlgoStore.KubernetesClient
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 _httpRequest.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
+            if (Credentials != null)
+            {
+                var cancellationToken = default(CancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                await Credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+
             _httpResponse = await HttpClient.SendAsync(_httpRequest, default(CancellationToken)).ConfigureAwait(false);
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             string _responseContent = null;
