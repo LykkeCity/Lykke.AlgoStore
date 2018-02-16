@@ -89,6 +89,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAlgoMetadata(string clientId, string algoId)
         {
+            if (string.IsNullOrWhiteSpace(clientId))
+                clientId = User.GetClientId();
+
             var result = await _clientDataService.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
             if (result == null)
@@ -180,6 +183,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetUploadString(string clientId, string algoId)
         {
+            if (string.IsNullOrWhiteSpace(clientId))
+                clientId = User.GetClientId();
+
             var data = await _clientDataService.GetAlgoAsStringAsync(clientId, algoId);
 
             return Ok(new DataStringModel
