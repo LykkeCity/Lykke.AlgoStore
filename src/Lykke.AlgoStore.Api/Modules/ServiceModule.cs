@@ -46,9 +46,9 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<KubernetesApiClient>()
                 .As<IKubernetesApiClient>()
                 .As<IKubernetesApiReadOnlyClient>()
-                .WithParameter("baseUri", new Uri(_settings.CurrentValue.Kubernetes.Url))
-                .WithParameter("credentials", new TokenCredentials(_settings.CurrentValue.Kubernetes.BasicAuthenticationValue))
-                .WithParameter("certificateHash", _settings.CurrentValue.Kubernetes.CertificateHash)
+                .WithParameter("baseUri", new Uri(_settings.CurrentValue.AlgoApi.Kubernetes.Url))
+                .WithParameter("credentials", new TokenCredentials(_settings.CurrentValue.AlgoApi.Kubernetes.BasicAuthenticationValue))
+                .WithParameter("certificateHash", _settings.CurrentValue.AlgoApi.Kubernetes.CertificateHash)
                 .SingleInstance();
 
             builder.RegisterType<AssetsService>()
