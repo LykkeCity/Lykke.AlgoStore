@@ -5,6 +5,7 @@ using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services;
+using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
