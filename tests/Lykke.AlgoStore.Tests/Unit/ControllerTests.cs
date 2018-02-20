@@ -272,7 +272,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IPublicAlgosRepository publicAlgosRepository)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, publicAlgosRepository, null, kubernetesClient, new LogMock());
+                clientInstanceRepository, null, publicAlgosRepository, null, null, kubernetesClient, new LogMock());
 
             return result;
         }
