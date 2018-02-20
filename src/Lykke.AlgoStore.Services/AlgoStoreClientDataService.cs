@@ -10,8 +10,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -26,34 +26,50 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoRatingsRepository _ratingsRepository;
         private readonly IPublicAlgosRepository _publicAlgosRepository;
 
-        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository;
-        private readonly IDeploymentApiReadOnlyClient _deploymentClient;
+        private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository; // TODO Should be removed
+        private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;
 
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlgoStoreClientDataService"/> class.
+        /// </summary>
+        /// <param name="metaDataRepository">The meta data repository.</param>
+        /// <param name="runtimeDataRepository">The runtime data repository.</param>
+        /// <param name="blobRepository">The BLOB repository.</param>
+        /// <param name="instanceRepository">The instance repository.</param>
+        /// <param name="ratingsRepository">The ratings repository.</param>
+        /// <param name="publicAlgosRepository">The public algos repository.</param>
+        /// <param name="assetService">The asset service.</param>
+        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="log">The log.</param>
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
-            IDeploymentApiReadOnlyClient deploymentClient,
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IAssetsService assetService,
             IPersonalDataService personalDataService,
+            IKubernetesApiReadOnlyClient kubernetesApiClient,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
-            _deploymentClient = deploymentClient;
             _instanceRepository = instanceRepository;
             _ratingsRepository = ratingsRepository;
             _publicAlgosRepository = publicAlgosRepository;
             _assetService = assetService;
             _personalDataService = personalDataService;
+            _kubernetesApiClient = kubernetesApiClient;
         }
 
+        /// <summary>
+        /// Gets all algos with rating asynchronous.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync()
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgosWithRatingAsync), null, async () =>
@@ -98,6 +114,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets the client metadata asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <returns></returns>
         public async Task<AlgoClientMetaData> GetClientMetadataAsync(string clientId)
         {
             return await LogTimedInfoAsync(nameof(GetClientMetadataAsync), clientId, async () =>
@@ -121,16 +142,28 @@ namespace Lykke.AlgoStore.Services
                         continue;
                     }
 
-                    var status = ClientAlgoRuntimeStatuses.NotFound;
+                    var status = ClientAlgoRuntimeStatuses.NotFound.ToUpperText();
                     try
                     {
-                        status = await _deploymentClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.ImageId);
+                        var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(metadata.AlgoId);
+                        if (!pods.IsNullOrEmptyCollection())
+                        {
+                            if (pods.Count != 1)
+                                throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound,
+                                    $"More than one pod for algoId {metadata.AlgoId}");
+
+                            var pod = pods[0];
+                            if (pod != null)
+                            {
+                                status = pod.Status.Phase.ToUpper();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
                         Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
                     }
-                    metadata.Status = status.ToModel().ToUpperText();
+                    metadata.Status = status;
                 }
                 return algos;
             });
@@ -163,6 +196,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Adds algo to public algos asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data)
         {
             return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
@@ -173,24 +211,40 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        public async Task<AlgoClientRuntimeData> ValidateCascadeDeleteClientMetadataRequestAsync(string clientId, AlgoMetaData data)
+        /// <summary>
+        /// Validates the cascade delete client metadata request asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        public async Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data)
         {
-            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), data?.ClientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                var algoId = data.AlgoId;
-                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(clientId, algoId))
+                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Algo metadata not found for {algoId}");
+                        $"Algo metadata not found for {data.AlgoId}");
 
-                return await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, algoId);
+                var result = await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                if (result == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
+                        $"Algo instance data not found for {data.InstanceId}");
+
+                if (!result.ValidateData(out var instanceException))
+                    throw instanceException;
+
+                return result;
             });
         }
+        /// <summary>
+        /// Saves the client metadata asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="clientName">Name of the client.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientMetaData> SaveClientMetadataAsync(string clientId, string clientName, AlgoMetaData data)
         {
             return await LogTimedInfoAsync(nameof(SaveClientMetadataAsync), clientId, async () =>
@@ -223,25 +277,32 @@ namespace Lykke.AlgoStore.Services
                 return res;
             });
         }
-        public async Task DeleteMetadataAsync(string clientId, AlgoMetaData data)
+        /// <summary>
+        /// Deletes the metadata asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        public async Task DeleteMetadataAsync(ManageImageData data)
         {
-            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), clientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
             {
+                if (await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId) ||
+                    await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
+                    return;
+
                 if (await _blobRepository.BlobExistsAsync(data.AlgoId))
                     await _blobRepository.DeleteBlobAsync(data.AlgoId);
 
-                var clientData = new AlgoClientMetaData
-                {
-                    ClientId = clientId,
-                    AlgoMetaData = new List<AlgoMetaData>
-                    {
-                        data
-                    }
-                };
-                await _metaDataRepository.DeleteAlgoMetaDataAsync(clientData);
+                await _metaDataRepository.DeleteAlgoMetaDataAsync(data.ClientId, data.AlgoId);
             });
         }
 
+        /// <summary>
+        /// Saves the algo as binary asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="dataModel">The data model.</param>
+        /// <returns></returns>
         public async Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel)
         {
             await LogTimedInfoAsync(nameof(SaveAlgoAsBinaryAsync), clientId, async () =>
@@ -257,6 +318,12 @@ namespace Lykke.AlgoStore.Services
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data.OpenReadStream());
             });
         }
+        /// <summary>
+        /// Saves the algo as string asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="dataModel">The data model.</param>
+        /// <returns></returns>
         public async Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel)
         {
             await LogTimedInfoAsync(nameof(SaveAlgoAsStringAsync), clientId, async () =>
@@ -272,7 +339,12 @@ namespace Lykke.AlgoStore.Services
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data);
             });
         }
-
+        /// <summary>
+        /// Gets the algo as string asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <param name="algoId">The algo identifier.</param>
+        /// <returns></returns>
         public async Task<string> GetAlgoAsStringAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoAsStringAsync), clientId, async () =>
@@ -291,6 +363,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets all algo instance data asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data)
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataAsync), data.ClientId, async () =>
@@ -301,6 +378,11 @@ namespace Lykke.AlgoStore.Services
                 return await _instanceRepository.GetAllAlgoInstanceDataAsync(data.ClientId, data.AlgoId);
             });
         }
+        /// <summary>
+        /// Gets the algo instance data asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), data.ClientId, async () =>
@@ -311,6 +393,11 @@ namespace Lykke.AlgoStore.Services
                 return await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
             });
         }
+        /// <summary>
+        /// Saves the algo instance data asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data)
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId, async () =>

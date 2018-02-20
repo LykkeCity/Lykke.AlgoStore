@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -8,9 +7,9 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.DeploymentApiClient;
-using Lykke.AlgoStore.DeploymentApiClient.Models;
-using Lykke.AlgoStore.Services.Utils;
+using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.TeamCityClient;
+using Lykke.AlgoStore.TeamCityClient.Models;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -18,23 +17,49 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
+        private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository; // TODO Should be removed
+        private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
 
-        private readonly IAlgoRuntimeDataRepository _algoRuntimeDataRepository;
-        private readonly IDeploymentApiClient _externalClient;
+        private readonly IStorageConnectionManager _storageConnectionManager;
+        private readonly ITeamCityClient _teamCityClient;
 
+        private readonly IKubernetesApiClient _kubernetesApiClient;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlgoStoreService"/> class.
+        /// </summary>
+        /// <param name="log">The log.</param>
+        /// <param name="algoBlobRepository">The algo BLOB repository.</param>
+        /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
+        /// <param name="algoRuntimeDataRepository">The algo runtime data repository.</param>
+        /// <param name="storageConnectionManager">The storage connection manager.</param>
+        /// <param name="teamCityClient">The team city client.</param>
+        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="algoInstanceRepository">The algo instance repository.</param>
         public AlgoStoreService(
-            IDeploymentApiClient externalClient,
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
             IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
-            IAlgoRuntimeDataRepository algoRuntimeDataRepository) : base(log, nameof(AlgoStoreService))
+            IAlgoRuntimeDataRepository algoRuntimeDataRepository,
+            IStorageConnectionManager storageConnectionManager,
+            ITeamCityClient teamCityClient,
+            IKubernetesApiClient kubernetesApiClient,
+            IAlgoClientInstanceRepository algoInstanceRepository) : base(log, nameof(AlgoStoreService))
         {
-            _externalClient = externalClient;
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
             _algoRuntimeDataRepository = algoRuntimeDataRepository;
+            _storageConnectionManager = storageConnectionManager;
+            _teamCityClient = teamCityClient;
+            _kubernetesApiClient = kubernetesApiClient;
+            _algoInstanceRepository = algoInstanceRepository;
         }
 
+        /// <summary>
+        /// Deploys the image asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<bool> DeployImageAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(DeployImageAsync), data.ClientId, async () =>
@@ -48,35 +73,42 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
-                var algo = await _algoMetaDataRepository.GetAlgoMetaDataAsync(data.ClientId, data.AlgoId);
-                var algoMetaData = algo.AlgoMetaData?.FirstOrDefault();
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
 
-                if (algoMetaData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo meta data for provided id");
+                if (!instanceData.ValidateData(out var instanceException))
+                    throw instanceException;
 
-                var blob = await _algoBlobRepository.GetBlobAsync(data.AlgoId);
+                string blobKey = data.AlgoId + _algoBlobRepository.SourceExtension;
+                var headers = _storageConnectionManager.GetData(blobKey);
 
-                var response =
-                    await _externalClient.BuildAlgoImageFromBinaryAsync(blob, data.ClientId, algoMetaData.AlgoId);
-
-                var imageId = int.Parse(response);
-                var testId = await _externalClient.CreateTestAlgoAsync(imageId, algoMetaData.AlgoId);
-                if (testId < 1)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, "Error creating test");
-
-                var runtimeData = new AlgoClientRuntimeData
+                var buildData = new TeamCityClientBuildData
                 {
-                    ClientId = data.ClientId,
-                    AlgoId = data.AlgoId,
-                    ImageId = testId,
-                    BuildImageId = imageId
+                    BlobAuthorizationHeader = headers.AuthorizationHeader,
+                    BlobUrl = headers.Url,
+                    BlobVersionHeader = headers.VersionHeader,
+                    BlobDateHeader = headers.DateHeader,
+                    AlgoId = data.InstanceId,
+                    TradedAsset = instanceData.TradedAsset,
+                    AssetPair = instanceData.AssetPair,
+                    Volume = instanceData.Volume,
+                    Margin = instanceData.Margin,
+                    HftApiKey = "Dummy HFT Key",
+                    HftApiUrl = "Dummy HFT Url",
+                    WalletApiKey = "Dummy Wallet Key"
                 };
 
-                await _algoRuntimeDataRepository.SaveAlgoRuntimeDataAsync(runtimeData);
+                var response = await _teamCityClient.StartBuild(buildData);
 
-                return true;
+                return response.GetBuildState() != BuildStates.Undefined;
             });
         }
+        /// <summary>
+        /// Starts the test image asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<string> StartTestImageAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(StartTestImageAsync), data.ClientId, async () =>
@@ -94,28 +126,36 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound,
                         $"No runtime data for algo id {algoId}");
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.ImageId);
+                var buildStatus = await _teamCityClient.GetBuildStatus(runtimeData.BuildId);
 
                 await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+                    $"GetBuildStatus Status: {buildStatus.Status} {buildStatus.StatusText} for buildId {runtimeData.BuildId}");
 
-                var statusResult = AlgoRuntimeStatuses.Unknown;
-                switch (status)
-                {
-                    case ClientAlgoRuntimeStatuses.Created:
-                    case ClientAlgoRuntimeStatuses.Paused:
-                    case ClientAlgoRuntimeStatuses.Stopped:
-                        if (await _externalClient.StartTestAlgoAsync(runtimeData.ImageId))
-                            statusResult = AlgoRuntimeStatuses.Started;
-                        break;
-                    default:
-                        statusResult = status.ToModel();
-                        break;
-                }
+                if (buildStatus.GetBuildStatus() != BuildStatuses.Success)
+                    return buildStatus.Status.ToUpper();
 
-                return statusResult.ToUpperText();
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(algoId);
+                if (pods == null)
+                    return BuildStatuses.NotDeployed.ToUpperText();
+
+                if (pods.Count != 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
+
+                var pod = pods[0];
+                if (pod == null)
+                    return BuildStatuses.NotDeployed.ToUpperText();
+
+                runtimeData.PodId = pod.Metadata.Name;
+                await _algoRuntimeDataRepository.SaveAlgoRuntimeDataAsync(runtimeData);
+
+                return pod.Status.Phase.ToUpper();
             });
         }
+        /// <summary>
+        /// Stops the test image asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<string> StopTestImageAsync(ManageImageData data)
         {
             return await LogTimedInfoAsync(nameof(StopTestImageAsync), data.ClientId, async () =>
@@ -133,43 +173,26 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound,
                         $"No runtime data for algo id {algoId}");
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.ImageId);
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(algoId);
+                if (pods.IsNullOrEmptyCollection())
+                    return BuildStatuses.NotDeployed.ToUpperText();
 
-                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for imageId {runtimeData.ImageId}");
+                if (pods.Count != 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
-                var statusResult = AlgoRuntimeStatuses.Unknown;
-                switch (status)
-                {
-                    case ClientAlgoRuntimeStatuses.Running:
-                        if (await _externalClient.StopTestAlgoAsync(runtimeData.ImageId))
-                            statusResult = AlgoRuntimeStatuses.Stopped;
-                        break;
-                    default:
-                        statusResult = status.ToModel();
-                        break;
-                }
+                var pod = pods[0];
+                if (pod == null)
+                    return BuildStatuses.NotDeployed.ToUpperText();
 
-                return statusResult.ToUpperText();
-            });
-        }
-        public async Task<string> GetTestLogAsync(ManageImageData data)
-        {
-            return await LogTimedInfoAsync(nameof(GetTestLogAsync), data.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                var algoId = data.AlgoId;
-
-                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataAsync(data.ClientId, algoId);
-                if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data for {algoId}");
-
-                return await _externalClient.GetTestAlgoLogAsync(runtimeData.ImageId);
+                return pod.Status.Phase.ToUpper();
             });
         }
 
+        /// <summary>
+        /// Gets the test tail log asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
         public async Task<string> GetTestTailLogAsync(TailLogData data)
         {
             return await LogTimedInfoAsync(nameof(GetTestTailLogAsync), data.ClientId, async () =>
@@ -177,56 +200,46 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                var algoId = data.AlgoId;
+                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for algo {data.AlgoId} and instanceId {data.InstanceId}");
 
-                var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataAsync(data.ClientId, algoId);
-                if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data for {algoId}");
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
+                if (pods.Count != 1)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for instanceId {data.InstanceId}");
 
-                return await _externalClient.GetTestAlgoTailLogAsync(runtimeData.ImageId, data.Tail);
+                var pod = pods[0];
+                if (pod == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
+
+                return await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
             });
         }
-        public async Task DeleteImageAsync(AlgoClientRuntimeData runtimeData)
+        /// <summary>
+        /// Deletes the image asynchronous.
+        /// </summary>
+        /// <param name="instanceData">The instance data.</param>
+        /// <returns></returns>
+        public async Task DeleteImageAsync(AlgoClientInstanceData instanceData)
         {
-            await LogTimedInfoAsync(nameof(DeleteImageAsync), runtimeData?.ClientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
             {
-                if (runtimeData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoRuntimeDataNotFound, $"Bad runtime data");
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
 
-                var status = await _externalClient.GetAlgoTestAdministrativeStatusAsync(runtimeData.ImageId);
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
+                if (pods.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
+                var pod = pods[0];
+                if (pod == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
-                await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName,
-                    $"GetAlgoTestAdministrativeStatus Status: {status} for testId {runtimeData.ImageId}");
-
-                var result = true;
-
-                if (status == ClientAlgoRuntimeStatuses.NotFound)
-                    return;
-
-                if (status == ClientAlgoRuntimeStatuses.Paused ||
-                    status == ClientAlgoRuntimeStatuses.Running)
-                {
-                    result = await _externalClient.StopTestAlgoAsync(runtimeData.ImageId);
-                    if (result)
-                        status = ClientAlgoRuntimeStatuses.Stopped;
-                }
-
-                if (result &&
-                    (status == ClientAlgoRuntimeStatuses.Stopped ||
-                     status == ClientAlgoRuntimeStatuses.Created))
-                    result = await _externalClient.DeleteTestAlgoAsync(runtimeData.ImageId);
-
+                var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
                 if (result)
-                    result = await _externalClient.DeleteAlgoAsync(runtimeData.BuildImageId);
-
-                if (result)
-                    result = await _algoRuntimeDataRepository.DeleteAlgoRuntimeDataAsync(
-                        runtimeData.ClientId,
-                        runtimeData.AlgoId);
+                    await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot delete image id {runtimeData.ImageId} for algo id {runtimeData.AlgoId}");
+                        $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
             });
         }
     }

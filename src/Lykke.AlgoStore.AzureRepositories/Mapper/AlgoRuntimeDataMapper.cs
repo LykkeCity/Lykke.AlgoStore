@@ -14,8 +14,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             result.ClientId = entitiy.PartitionKey;
             result.AlgoId = entitiy.RowKey;
-            result.BuildImageId = entitiy.BuildImageId;
-            result.ImageId = entitiy.ImageId;
+            result.BuildId = entitiy.BuildId;
+            result.PodId = entitiy.PodId;
 
             return result;
         }
@@ -28,8 +28,8 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             result.PartitionKey = data.ClientId;
             result.RowKey = data.AlgoId;
-            result.BuildImageId = data.BuildImageId;
-            result.ImageId = data.ImageId;
+            result.BuildId = data.BuildId;
+            result.PodId = data.PodId;
             result.ETag = "*";
 
             return result;

@@ -39,7 +39,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             if (_entitySaved)
             {
-                repo.DeleteAlgoMetaDataAsync(_entity).Wait();
+                repo.DeleteAlgoMetaDataAsync(_entity.ClientId, _entity.AlgoMetaData[0].AlgoId).Wait();
                 _entitySaved = false;
             }
 

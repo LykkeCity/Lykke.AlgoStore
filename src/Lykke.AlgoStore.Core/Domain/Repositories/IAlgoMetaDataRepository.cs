@@ -6,6 +6,6 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
     public interface IAlgoMetaDataRepository : IAlgoMetaDataReadOnlyRepository
     {
         Task SaveAlgoMetaDataAsync(AlgoClientMetaData metaData);
-        Task DeleteAlgoMetaDataAsync(AlgoClientMetaData metaData);
+        Task DeleteAlgoMetaDataAsync(string clientId, string algoId);
     }
 }

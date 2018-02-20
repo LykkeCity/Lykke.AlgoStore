@@ -4,6 +4,7 @@ using AzureStorage.Tables;
 using Common.Log;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
+using Lykke.AlgoStore.AzureRepositories.Utils;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.SettingsReader;
@@ -31,6 +32,8 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureTableStorage<AlgoRuntimeDataEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<PublicAlgoEntity>.Create(reloadingDbManager, PublicAlgosRepository.TableName, _log));
+
+            builder.RegisterInstance<IStorageConnectionManager>(new StorageConnectionManager(reloadingDbManager));
 
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
             builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();

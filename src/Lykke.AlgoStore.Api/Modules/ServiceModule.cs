@@ -2,14 +2,18 @@
 using Autofac.Extensions.DependencyInjection;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings;
-using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.Core.Settings.ServiceSettings;
+using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services;
+using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Rest;
+using System;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -40,10 +44,12 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IClientSessionsClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoApi.Services.SessionServiceUrl);
 
-            builder.RegisterType<DeploymentApiClient.DeploymentApiClient>()
-                .As<IDeploymentApiClient>()
-                .As<IDeploymentApiReadOnlyClient>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.DeploymentApiServiceUrl))
+            builder.RegisterType<KubernetesApiClient>()
+                .As<IKubernetesApiClient>()
+                .As<IKubernetesApiReadOnlyClient>()
+                .WithParameter("baseUri", new Uri(_settings.CurrentValue.AlgoApi.Kubernetes.Url))
+                .WithParameter("credentials", new TokenCredentials(_settings.CurrentValue.AlgoApi.Kubernetes.BasicAuthenticationValue))
+                .WithParameter("certificateHash", _settings.CurrentValue.AlgoApi.Kubernetes.CertificateHash)
                 .SingleInstance();
 
             builder.RegisterType<AssetsService>()

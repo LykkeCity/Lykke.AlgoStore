@@ -27,11 +27,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             switch (error.ErrorCode)
             {
                 case AlgoStoreErrorCodes.ValidationError:
+                case AlgoStoreErrorCodes.RuntimeSettingsExists:
                     statusCode = HttpStatusCode.BadRequest;
                     break;
                 case AlgoStoreErrorCodes.AlgoNotFound:
                 case AlgoStoreErrorCodes.AlgoBinaryDataNotFound:
                 case AlgoStoreErrorCodes.AlgoRuntimeDataNotFound:
+                case AlgoStoreErrorCodes.PodNotFound:
+                case AlgoStoreErrorCodes.AssetNotFound:
+                case AlgoStoreErrorCodes.AlgoInstanceDataNotFound:
                     statusCode = HttpStatusCode.NotFound;
                     break;
                 default:

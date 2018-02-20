@@ -39,7 +39,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             var entity = new AlgoClientInstanceEntity();
             entity.PartitionKey = KeyGenerator.GenerateKey(clientId, algoId);
             entity.RowKey = instanceId;
-
             return await _table.RecordExistsAsync(entity);
         }
 
@@ -53,6 +52,13 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entities = data.ToEntity();
             await _table.DeleteAsync(entities);
+        }
+
+        public async Task<bool> HasInstanceData(string clientId, string algoId)
+        {
+            string key = KeyGenerator.GenerateKey(clientId, algoId);
+            var data = await _table.GetTopRecordAsync(key);
+            return data != null;
         }
     }
 }
