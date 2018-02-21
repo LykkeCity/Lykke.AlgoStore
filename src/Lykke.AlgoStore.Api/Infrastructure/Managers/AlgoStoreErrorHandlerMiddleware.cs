@@ -1,5 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
+using Common;
+using Common.Log;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
@@ -7,11 +11,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Managers
 {
     public class AlgoStoreErrorHandlerMiddleware
     {
+        private readonly ILog _log;
+        private readonly string _componentName;
         private readonly RequestDelegate _next;
 
-        public AlgoStoreErrorHandlerMiddleware(RequestDelegate next)
+        public AlgoStoreErrorHandlerMiddleware(RequestDelegate next, ILog log, string componentName)
         {
             _next = next;
+            _log = log ?? throw new ArgumentNullException(nameof(log));
+            _componentName = componentName ?? throw new ArgumentNullException(nameof(componentName));
         }
 
         public async Task Invoke(HttpContext context)
@@ -22,7 +30,26 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Managers
             }
             catch (Exception ex)
             {
+                await LogError(context, ex);
                 await CreateErrorResponse(context, ex);
+            }
+        }
+
+        private async Task LogError(HttpContext context, Exception ex)
+        {
+            // request body might be already read at the moment 
+            if (context.Request.Body.CanSeek)
+            {
+                context.Request.Body.Seek(0, SeekOrigin.Begin);
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                context.Request.Body.CopyTo(ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                await _log.LogPartFromStream(ms, _componentName, context.Request.GetUri().AbsoluteUri, ex);
             }
         }
 
