@@ -52,6 +52,11 @@ namespace Lykke.AlgoStore.Api.Modules
                 .WithParameter("certificateHash", _settings.CurrentValue.AlgoApi.Kubernetes.CertificateHash)
                 .SingleInstance();
 
+            builder.RegisterType<TeamCityClient.TeamCityClient>()
+                .As<ITeamCityClient>()
+                .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
+                .SingleInstance();
+
             builder.RegisterType<AssetsService>()
                 .As<IAssetsService>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
