@@ -31,6 +31,7 @@ namespace Lykke.AlgoStore.TeamCityClient
         private const string HftApiUrl = "CODE_HFT_API_BASE_PATH";
         private const string WalletKey = "CODE_WALLET_KEY";
         private const string ServiceName = "service.name";
+        private const string AlgoInstanceParameters = "ALGO_INSTANCE_PARAMS";
         #endregion
 
         private readonly TeamCitySettings _settings;
@@ -156,6 +157,9 @@ namespace Lykke.AlgoStore.TeamCityClient
                         break;
                     case ServiceName:
                         propertyBase.Value = buildData.AlgoId;
+                        break;
+                    case AlgoInstanceParameters:
+                        propertyBase.Value = buildData.AlgoInstanceParameters;
                         break;
                 }
 
