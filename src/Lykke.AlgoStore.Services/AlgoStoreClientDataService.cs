@@ -95,7 +95,7 @@ namespace Lykke.AlgoStore.Services
                             Name = algoMetadata.Name,
                             Description = algoMetadata.Description,
                             Date = algoMetadata.Date,
-                            Author = currentAlgoMetadata.Author
+                            Author = (await _personalDataService.GetAsync(currentAlgoMetadata.Author))?.FullName
                         };
 
                         var rating = _ratingsRepository.GetAlgoRating(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
