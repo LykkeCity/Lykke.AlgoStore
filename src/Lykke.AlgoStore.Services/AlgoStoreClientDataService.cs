@@ -84,7 +84,10 @@ namespace Lykke.AlgoStore.Services
                 foreach (var publicAlgo in algos)
                 {
                     var currentAlgoMetadata = await _metaDataRepository.GetAlgoMetaDataAsync(publicAlgo.ClientId, publicAlgo.AlgoId);
-                    if (currentAlgoMetadata.Author == null) currentAlgoMetadata.Author = "Administrator";
+
+                    currentAlgoMetadata.Author = String.IsNullOrEmpty(currentAlgoMetadata.Author)
+                        ? "Administrator"
+                        : (await _personalDataService.GetAsync(currentAlgoMetadata.Author))?.FullName;
 
                     foreach (var algoMetadata in currentAlgoMetadata.AlgoMetaData)
                     {
@@ -95,7 +98,7 @@ namespace Lykke.AlgoStore.Services
                             Name = algoMetadata.Name,
                             Description = algoMetadata.Description,
                             Date = algoMetadata.Date,
-                            Author = (await _personalDataService.GetAsync(currentAlgoMetadata.Author))?.FullName
+                            Author = currentAlgoMetadata.Author
                         };
 
                         var rating = _ratingsRepository.GetAlgoRating(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
