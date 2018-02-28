@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Dynamic;
+using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -10,6 +11,7 @@ using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
+using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -83,6 +85,10 @@ namespace Lykke.AlgoStore.Services
                 string blobKey = data.AlgoId + _algoBlobRepository.SourceExtension;
                 var headers = _storageConnectionManager.GetData(blobKey);
 
+                dynamic algoInstanceParameters = new ExpandoObject();
+                algoInstanceParameters.AlgoId = data.AlgoId;
+                algoInstanceParameters.InstanceId = data.InstanceId;
+
                 var buildData = new TeamCityClientBuildData
                 {
                     BlobAuthorizationHeader = headers.AuthorizationHeader,
@@ -96,7 +102,8 @@ namespace Lykke.AlgoStore.Services
                     Margin = instanceData.Margin,
                     HftApiKey = "Dummy HFT Key",
                     HftApiUrl = "Dummy HFT Url",
-                    WalletApiKey = "Dummy Wallet Key"
+                    WalletApiKey = "Dummy Wallet Key",
+                    AlgoInstanceParameters = JsonConvert.SerializeObject(algoInstanceParameters)
                 };
 
                 var response = await _teamCityClient.StartBuild(buildData);
