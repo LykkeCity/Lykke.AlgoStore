@@ -2,7 +2,7 @@
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Utils;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.AlgoMetaDataModels;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper

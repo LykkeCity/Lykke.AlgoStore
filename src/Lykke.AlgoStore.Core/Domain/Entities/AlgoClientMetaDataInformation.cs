@@ -1,4 +1,4 @@
-﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.AlgoMetaDataModels;
+﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {

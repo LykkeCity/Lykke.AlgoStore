@@ -10,6 +10,9 @@ using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
+using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -73,7 +76,7 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
 
-                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
 
@@ -200,7 +203,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId))
+                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataWithAlgoIdAsync(data.AlgoId, data.InstanceId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for algo {data.AlgoId} and instanceId {data.InstanceId}");
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);

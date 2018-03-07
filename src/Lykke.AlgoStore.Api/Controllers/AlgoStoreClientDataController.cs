@@ -11,6 +11,7 @@ using Lykke.AlgoStore.Core.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -202,7 +203,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllAlgoInstanceDataAsync(string algoId)
         {
-            var data = new BaseAlgoData
+            var data = new CSharp.AlgoTemplate.Models.Models.BaseAlgoData
             {
                 ClientId = User.GetClientId(),
                 AlgoId = algoId

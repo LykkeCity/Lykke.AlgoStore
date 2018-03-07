@@ -5,6 +5,8 @@ using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
 using Lykke.AlgoStore.Services;
@@ -13,6 +15,7 @@ using Lykke.AlgoStore.TeamCityClient.Models;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Moq;
 using NUnit.Framework;
+using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -225,11 +228,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo =>
-                    repo.ExistsAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                    repo.ExistsAlgoInstanceDataWithAlgoIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             result.Setup(repo =>
-                    repo.GetAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                    repo.GetAlgoInstanceDataByAlgoIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(Fixture.Build<AlgoClientInstanceData>().Create());
 
             return result.Object;
@@ -239,11 +242,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo =>
-                    repo.ExistsAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                    repo.ExistsAlgoInstanceDataWithAlgoIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("ExistsAlgoInstanceDataAsync"));
 
             result.Setup(repo =>
-                    repo.GetAlgoInstanceDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                    repo.GetAlgoInstanceDataByAlgoIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("GetAlgoInstanceDataAsync"));
 
             return result.Object;

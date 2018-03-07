@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Core.Services
 {
