@@ -47,6 +47,42 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPost("algoRating")]
+        [SwaggerOperation("algoRating")]
+        [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> RateAlgo([FromBody] AlgoRatingModel model)
+        {
+            var data = Mapper.Map<AlgoRatingData>(model);
+
+            data.ClientId = User.GetClientId();
+
+            var result = await _clientDataService.SaveAlgoRating(data);
+
+            var response = Mapper.Map<AlgoRatingModel>(result);
+
+            return Ok(response);
+        }
+
+        [HttpGet("algoRating")]
+        [SwaggerOperation("algoRating")]
+        [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAlgoRating(string algoId)
+        {
+            var clientId = User.GetClientId();
+            var result = await _clientDataService.GetAlgoRating(algoId, clientId);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<AlgoRatingModel>(result);
+
+            return Ok(response);
+        }
+
         [HttpPost("addToPublic")]
         [SwaggerOperation("addToPublic")]
         [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
@@ -71,7 +107,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAlgoMetadata()
         {
-            string clientId = User.GetClientId();
+            var clientId = User.GetClientId();
 
             var result = await _clientDataService.GetClientMetadataAsync(clientId);
 
@@ -110,8 +146,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
         {
-            string clientId = User.GetClientId();
-            string clientName = User.Identity.Name;
+            var clientId = User.GetClientId();
+            var clientName = User.Identity.Name;
 
             var data = Mapper.Map<AlgoMetaData>(model);
 
@@ -152,7 +188,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ServiceFilter(typeof(ValidateMimeMultipartContentFilter))]
         public async Task<IActionResult> UploadBinaryFile(UploadAlgoBinaryModel model)
         {
-            string clientId = User.GetClientId();
+            var clientId = User.GetClientId();
 
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
 
@@ -168,7 +204,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UploadSting([FromBody]UploadAlgoStringModel model)
         {
-            string clientId = User.GetClientId();
+            var clientId = User.GetClientId();
 
             var data = Mapper.Map<UploadAlgoStringData>(model);
 

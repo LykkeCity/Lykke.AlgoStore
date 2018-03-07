@@ -21,5 +21,8 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance data);
         Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data);
         Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId);
+        Task<AlgoRatingData> SaveAlgoRating(AlgoRatingData data);
+        Task<AlgoRatingData> GetAlgoRatingForClient(string algoId, string clientId);
+        Task<AlgoRatingData> GetAlgoRating(string algoId, string clientId);
     }
 }
