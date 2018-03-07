@@ -14,5 +14,6 @@
         public string WalletApiKey { get; set; }
         public double Margin { get; set; }
         public double Volume { get; set; }
+        public string AlgoInstanceParameters { get; set; }
     }
 }
