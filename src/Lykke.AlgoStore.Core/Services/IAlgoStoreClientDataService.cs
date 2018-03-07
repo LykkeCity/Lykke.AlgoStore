@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Core.Services
 {
@@ -15,8 +17,8 @@ namespace Lykke.AlgoStore.Core.Services
         Task DeleteMetadataAsync(ManageImageData data);
         Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel);
         Task<string> GetAlgoAsStringAsync(string clientId, string algoId);
-        Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data);
-        Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data);
+        Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data);
+        Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance data);
         Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data);
         Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId);
     }

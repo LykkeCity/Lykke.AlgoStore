@@ -5,9 +5,13 @@ using AutoFixture;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using AlgoClientInstanceEntity = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities.AlgoClientInstanceEntity;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -15,7 +19,10 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class MapperTests
     {
         private const string PartitionKey = "PartitionKey";
-        private const string CompositePartitionKey = "ClientId_AlgoId";
+        private const string CompositePartitionKey = "algo_50531d18-fab8-489b-a54c-2529e8a7e61e";
+        private const string AlgoId = "50531d18-fab8-489b-a54c-2529e8a7e61e";
+        private const string AlgoMetaDataInformation =
+            "{\"Parameters\":[{\"Key\":\"AssetPair\",\"Value\":\"USDBTC\",\"Type\":\"String\",\"FunctionType\":\"Lykke.AlgoStore.CSharp.Funct.SimpleMovingAverage\"}],\"Functions\":null}";
 
         #region Data Generation
 
@@ -80,7 +87,9 @@ namespace Lykke.AlgoStore.Tests.Unit
                 {
                     fixture.Build<AlgoClientInstanceEntity>()
                     .With(entity => entity.PartitionKey, CompositePartitionKey)
+                    .With(entity => entity.AlgoId, AlgoId)
                     .With(entity => entity.ETag, "*")
+                    .With(entity => entity.AlgoMetaDataInformation, AlgoMetaDataInformation)
                     .Without(entity => entity.Timestamp)
                     .Create()
                 }, numberOfElements).ToList();
@@ -105,7 +114,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         #endregion
-        
+
         [TestCaseSource("AlgoClientMetaData")]
         public void Mapper_AlgoClientMetaData_ToEntity_Test(AlgoClientMetaData data)
         {
@@ -157,10 +166,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             AlgoClientInstanceData metadata = data;
 
-            var entities = When_Invoke_ToEntity(data);
-            var result = When_Invoke_ToModel(entities);
+            var entityWithAlgoIdPartKey = When_Invoke_ToEntityWithAlgoIdPartitionKey(data);
+            var entityWithClientIdPartKey = When_Invoke_ToEntityWithClientIdPartitionKey(data);
 
-            Then_Data_ShouldBe_Equal(metadata, result);
+            var resultWithAlgoIdPartKey = When_Invoke_ToModel(entityWithAlgoIdPartKey);
+            var resultWithClientIdPartKey = When_Invoke_ToModel(entityWithClientIdPartKey);
+
+            Then_Data_ShouldBe_Equal(metadata, resultWithAlgoIdPartKey);
+            Then_Data_ShouldBe_Equal(metadata, resultWithClientIdPartKey);
         }
 
         [TestCaseSource("AlgoClientInstanceEntity")]
@@ -169,10 +182,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             AlgoClientInstanceEntity entity = data;
 
             var model = When_Invoke_ToModel(entity);
-            var result = When_Invoke_ToEntity(model);
+            var resultWithAlgoIdPartKey = When_Invoke_ToEntityWithAlgoIdPartitionKey(model);
 
-
-            Then_Entity_ShouldBe_Equal(entity, result);
+            Then_Entity_ShouldBe_Equal(entity, resultWithAlgoIdPartKey);
         }
 
         #region Private Methods
@@ -195,10 +207,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             return entities.ToModel();
         }
 
-        private static AlgoClientInstanceEntity When_Invoke_ToEntity(AlgoClientInstanceData data)
+        private static AlgoClientInstanceEntity When_Invoke_ToEntityWithAlgoIdPartitionKey(AlgoClientInstanceData data)
         {
-            return data.ToEntity();
+            return data.ToEntityWithAlgoIdPartitionKey();
         }
+
+        private static AlgoClientInstanceEntity When_Invoke_ToEntityWithClientIdPartitionKey(AlgoClientInstanceData data)
+        {
+            return data.ToEntityWithClientIdPartitionKey();
+        }
+
+
         private static AlgoClientInstanceData When_Invoke_ToModel(AlgoClientInstanceEntity entities)
         {
             return entities.ToModel();

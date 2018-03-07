@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
 {

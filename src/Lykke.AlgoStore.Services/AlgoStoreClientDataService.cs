@@ -10,11 +10,15 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.PersonalData.Contract;
+using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
+using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
+using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -236,7 +240,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Algo metadata not found for {data.AlgoId}");
 
-                var result = await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                var result = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (result == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
                         $"Algo instance data not found for {data.InstanceId}");
@@ -377,14 +381,14 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(BaseAlgoData data)
+        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data)
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataAsync), data.ClientId, async () =>
             {
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                return await _instanceRepository.GetAllAlgoInstanceDataAsync(data.ClientId, data.AlgoId);
+                return await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
             });
         }
         /// <summary>
@@ -399,7 +403,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                return await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                return await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
             });
         }
         /// <summary>
@@ -438,7 +442,7 @@ namespace Lykke.AlgoStore.Services
 
                 await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
-                var res = await _instanceRepository.GetAlgoInstanceDataAsync(data.ClientId, data.AlgoId, data.InstanceId);
+                var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot save data for {data.ClientId} id: {data.AlgoId}");

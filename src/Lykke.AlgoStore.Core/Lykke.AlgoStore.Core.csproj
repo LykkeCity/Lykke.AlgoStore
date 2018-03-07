@@ -8,15 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Domain\Entities\AlgoClientInstanceData.cs" />
+    <Compile Remove="Domain\Entities\BaseAlgoInstance.cs" />
+    <Compile Remove="Domain\Entities\BaseValidatableData.cs" />
     <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
+    <Compile Remove="Domain\Repositories\IAlgoClientInstanceReadOnlyRepository.cs" />
+    <Compile Remove="Domain\Repositories\IAlgoClientInstanceRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoDataRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoTemplateDataRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.1" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.4-beta" />
     <PackageReference Include="Lykke.AzureQueueIntegration" Version="2.0.1" />
-    <PackageReference Include="Lykke.Common" Version="3.0.2" />
+    <PackageReference Include="Lykke.Common" Version="4.5.0" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.32" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.1" />
   </ItemGroup>

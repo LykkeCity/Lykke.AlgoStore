@@ -3,6 +3,7 @@ using System.Linq;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Core.Validation
 {
@@ -10,7 +11,7 @@ namespace Lykke.AlgoStore.Core.Validation
     {
         private const string ErrorPatternRequired = "{0} is required";
 
-        public static bool ValidateData(this BaseValidatableData data, out AlgoStoreAggregateException exception)
+        public static bool ValidateData(this CSharp.AlgoTemplate.Models.Models.BaseValidatableData data, out AlgoStoreAggregateException exception)
         {
             exception = null;
 
