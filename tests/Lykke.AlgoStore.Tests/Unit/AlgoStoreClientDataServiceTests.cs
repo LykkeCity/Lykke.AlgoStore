@@ -583,7 +583,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             data.ForEach(metadata =>
             {
-                Assert.NotNull(metadata.UsersCount);
+                Assert.NotNull(metadata.RatedUsersCount);
             });
         }
 
@@ -591,14 +591,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             data.ForEach(algo =>
             {
-                Assert.NotNull(algo.UsersCount);
+                Assert.NotNull(algo.RatedUsersCount);
             });
         }
 
         private static void Then_Algos_ShouldHave_UsersCount(AlgoRatingData data)
         {
 
-            Assert.NotNull(data.UsersCount);
+            Assert.NotNull(data.RatedUsersCount);
 
         }
 
@@ -708,7 +708,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 return Task.FromResult(new AlgoRatingData()
                 {
                     Rating = Math.Round(rnd.NextDouble() * (6 - 1) + 1, 2),
-                    UsersCount = rnd.Next(0, 201)
+                    RatedUsersCount = rnd.Next(0, 201)
                 });
             });
 

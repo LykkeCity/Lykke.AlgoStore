@@ -37,6 +37,8 @@ namespace Lykke.AlgoStore.Services
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
 
+        private static Random rnd = new Random();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AlgoStoreClientDataService"/> class.
         /// </summary>
@@ -112,13 +114,18 @@ namespace Lykke.AlgoStore.Services
                             Author = currentAlgoMetadata.Author
                         };
 
-                        var rating = await _ratingsRepository.GetAlgoRatingForClientAsync(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
-                        if (rating != null)
+                        var rating = await _ratingsRepository.GetAlgoRatingAsync(algoMetadata.AlgoId);
+                        if (rating != null && rating.Count > 0)
                         {
-                            ratingMetaData.Rating = rating.Rating;
-                            ratingMetaData.UsersCount = rating.UsersCount;
+                            ratingMetaData.Rating = rating.Average(item => item.Rating);
+                            ratingMetaData.RatedUsersCount = rating.Count;
+                        } else
+                        {
+                            ratingMetaData.Rating = 0;
+                            ratingMetaData.RatedUsersCount = 0;
                         }
 
+                        ratingMetaData.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
                         result.Add(ratingMetaData);
                     }
 
@@ -194,7 +201,7 @@ namespace Lykke.AlgoStore.Services
                     AlgoId = algoId,
                     ClientId = clientId,
                     Rating = ratings.Average(item => item.Rating),
-                    UsersCount = ratings.Count
+                    RatedUsersCount = ratings.Count
                 };
 
                 return result;
@@ -267,15 +274,23 @@ namespace Lykke.AlgoStore.Services
 
                 var algoInformation = await _metaDataRepository.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
-                var rating = await _ratingsRepository.GetAlgoRatingForClientAsync(clientId, algoId);
+                var rating = await _ratingsRepository.GetAlgoRatingAsync(algoId);
 
                 if (algoInformation != null)
-                {
-                    if (rating != null)
+                {                    
+                    
+                    if (rating != null && rating.Count > 0)
                     {
-                        algoInformation.Rating = rating.Rating;
-                        algoInformation.UsersCount = rating.UsersCount;
+                        algoInformation.Rating = rating.Average(item => item.Rating);
+                        algoInformation.RatedUsersCount = rating.Count;
                     }
+                    else
+                    {
+                        algoInformation.Rating = 0;
+                        algoInformation.RatedUsersCount = 0;
+                    }
+
+                    algoInformation.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
 
                     algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
                 }
