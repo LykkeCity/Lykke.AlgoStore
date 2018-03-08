@@ -8,7 +8,7 @@ namespace Lykke.AlgoStore.Api.Models
     {
         public string AlgoId { get; set; }
         public string ClientId { get; set; }
-        public int UsersCount { get; set; }
+        public int RatedUsersCount { get; set; }
         public double Rating { get; set; }
     }
 }

@@ -117,7 +117,7 @@ namespace Lykke.AlgoStore.Services
                         var rating = await _ratingsRepository.GetAlgoRatingAsync(algoMetadata.AlgoId);
                         if (rating != null && rating.Count > 0)
                         {
-                            ratingMetaData.Rating = rating.Average(item => item.Rating);
+                            ratingMetaData.Rating = Math.Round(rating.Average(item => item.Rating), 2);
                             ratingMetaData.RatedUsersCount = rating.Count;
                         } else
                         {
@@ -200,9 +200,19 @@ namespace Lykke.AlgoStore.Services
                 {
                     AlgoId = algoId,
                     ClientId = clientId,
-                    Rating = ratings.Average(item => item.Rating),
-                    RatedUsersCount = ratings.Count
                 };
+
+
+                if (ratings != null && ratings.Count > 0)
+                {
+                    result.Rating = Math.Round(ratings.Average(item => item.Rating), 2);
+                    result.RatedUsersCount = ratings.Count;
+                }
+                else
+                {
+                    result.Rating = 0;
+                    result.RatedUsersCount = 0;
+                }               
 
                 return result;
             });
@@ -281,7 +291,7 @@ namespace Lykke.AlgoStore.Services
                     
                     if (rating != null && rating.Count > 0)
                     {
-                        algoInformation.Rating = rating.Average(item => item.Rating);
+                        algoInformation.Rating = Math.Round(rating.Average(item => item.Rating), 2);
                         algoInformation.RatedUsersCount = rating.Count;
                     }
                     else
