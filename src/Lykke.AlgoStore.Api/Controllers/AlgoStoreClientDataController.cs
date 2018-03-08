@@ -70,12 +70,31 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetAlgoRating(string algoId, string clientId)
+        public async Task<IActionResult> GetAlgoRating(string algoId)
+        {           
+            var clientId = User.GetClientId();
+
+            var result = await _clientDataService.GetAlgoRatingAsync(algoId, clientId);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<AlgoRatingModel>(result);
+
+            return Ok(response);
+        }
+
+        [HttpGet("userAlgoRating")]
+        [SwaggerOperation("userAlgoRating")]
+        [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetUserAlgoRating(string algoId, string clientId)
         {
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _clientDataService.GetAlgoRatingAsync(algoId, clientId);
+            var result = await _clientDataService.GetAlgoRatingForClientAsync(algoId, clientId);
 
             if (result == null)
                 return NotFound();
