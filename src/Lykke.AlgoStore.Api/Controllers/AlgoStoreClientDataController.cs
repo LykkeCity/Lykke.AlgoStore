@@ -70,9 +70,11 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetAlgoRating(string algoId)
+        public async Task<IActionResult> GetAlgoRating(string algoId, string clientId)
         {
-            var clientId = User.GetClientId();
+            if (string.IsNullOrWhiteSpace(clientId))
+                clientId = User.GetClientId();
+
             var result = await _clientDataService.GetAlgoRatingAsync(algoId, clientId);
 
             if (result == null)
