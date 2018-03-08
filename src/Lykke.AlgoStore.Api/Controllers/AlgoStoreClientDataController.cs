@@ -58,7 +58,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             data.ClientId = User.GetClientId();
 
-            var result = await _clientDataService.SaveAlgoRating(data);
+            var result = await _clientDataService.SaveAlgoRatingAsync(data);
 
             var response = Mapper.Map<AlgoRatingModel>(result);
 
@@ -73,7 +73,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         public async Task<IActionResult> GetAlgoRating(string algoId)
         {
             var clientId = User.GetClientId();
-            var result = await _clientDataService.GetAlgoRating(algoId, clientId);
+            var result = await _clientDataService.GetAlgoRatingAsync(algoId, clientId);
 
             if (result == null)
                 return NotFound();

@@ -22,19 +22,19 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
-        public async Task<AlgoRatingData> GetAlgoRatingForClient(string clientId, string algoId)
+        public async Task<AlgoRatingData> GetAlgoRatingForClientAsync(string clientId, string algoId)
         {
             var result = await _table.GetDataAsync(clientId, algoId);
             return result.ToModel();
         }
 
-        public async Task<List<AlgoRatingData>> GetAlgoRating(string algoId)
+        public async Task<List<AlgoRatingData>> GetAlgoRatingAsync(string algoId)
         {
             var result = await _table.GetDataAsync(algoId);
             return result.ToList().ToModel();
         }
 
-        public async Task SaveAlgoRating(AlgoRatingData data)
+        public async Task SaveAlgoRatingAsync(AlgoRatingData data)
         {
             var entities = data.ToEntity();
             await _table.InsertOrReplaceAsync(entities);

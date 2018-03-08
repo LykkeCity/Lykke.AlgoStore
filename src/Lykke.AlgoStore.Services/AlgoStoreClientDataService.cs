@@ -112,7 +112,7 @@ namespace Lykke.AlgoStore.Services
                             Author = currentAlgoMetadata.Author
                         };
 
-                        var rating = await _ratingsRepository.GetAlgoRatingForClient(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
+                        var rating = await _ratingsRepository.GetAlgoRatingForClientAsync(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
                         if (rating != null)
                         {
                             ratingMetaData.Rating = rating.Rating;
@@ -133,9 +133,9 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">Ratings data</param>
         /// <returns></returns>
-        public async Task<AlgoRatingData> SaveAlgoRating(AlgoRatingData data)
+        public async Task<AlgoRatingData> SaveAlgoRatingAsync(AlgoRatingData data)
         {
-            return await LogTimedInfoAsync(nameof(SaveAlgoRating), data.ClientId, async () =>
+            return await LogTimedInfoAsync(nameof(SaveAlgoRatingAsync), data.ClientId, async () =>
             {
                 if (string.IsNullOrEmpty(data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
@@ -146,7 +146,7 @@ namespace Lykke.AlgoStore.Services
                 if (double.IsNaN(data.Rating))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Invalid rating.");
 
-                await _ratingsRepository.SaveAlgoRating(data);
+                await _ratingsRepository.SaveAlgoRatingAsync(data);
 
                 return data;
             });
@@ -158,9 +158,9 @@ namespace Lykke.AlgoStore.Services
         /// <param name="algoId"></param>
         /// <param name="clientId"></param>
         /// <returns></returns>
-        public async Task<AlgoRatingData> GetAlgoRatingForClient(string algoId, string clientId)
+        public async Task<AlgoRatingData> GetAlgoRatingForClientAsync(string algoId, string clientId)
         {
-            return await LogTimedInfoAsync(nameof(GetAlgoRatingForClient), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(GetAlgoRatingForClientAsync), clientId, async () =>
             {
                 if (string.IsNullOrEmpty(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
@@ -168,7 +168,7 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
 
-                var result = await _ratingsRepository.GetAlgoRatingForClient(algoId, clientId);
+                var result = await _ratingsRepository.GetAlgoRatingForClientAsync(algoId, clientId);
 
                 return result;
             });
@@ -180,14 +180,14 @@ namespace Lykke.AlgoStore.Services
         /// <param name="algoId"></param>
         /// <param name="clientId"></param>
         /// <returns></returns>
-        public async Task<AlgoRatingData> GetAlgoRating(string algoId, string clientId)
+        public async Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId)
         {
-            return await LogTimedInfoAsync(nameof(GetAlgoRatingForClient), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(GetAlgoRatingAsync), clientId, async () =>
             {
                 if (string.IsNullOrEmpty(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
 
-                var ratings = await _ratingsRepository.GetAlgoRating(algoId);
+                var ratings = await _ratingsRepository.GetAlgoRatingAsync(algoId);
 
                 var result = new AlgoRatingData
                 {
@@ -267,7 +267,7 @@ namespace Lykke.AlgoStore.Services
 
                 var algoInformation = await _metaDataRepository.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
-                var rating = await _ratingsRepository.GetAlgoRatingForClient(clientId, algoId);
+                var rating = await _ratingsRepository.GetAlgoRatingForClientAsync(clientId, algoId);
 
                 if (algoInformation != null)
                 {
