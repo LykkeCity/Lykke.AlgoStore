@@ -65,9 +65,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId)
         {
-            var entity = new AlgoMetaDataEntity();
-            entity.PartitionKey = clientId;
-            entity.RowKey = algoId;
+            var entity = new AlgoMetaDataEntity
+            {
+                PartitionKey = clientId,
+                RowKey = algoId
+            };
 
             return await _table.RecordExistsAsync(entity);
         }

@@ -12,6 +12,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         public string Author { get; set; }
 
         public double Rating { get; set; }
+        public int RatedUsersCount { get; set; }
         public int UsersCount { get; set; }
 
         public AlgoMetaDataInformation AlgoMetaDataInformation { get; set; }

@@ -36,11 +36,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoMetaDataModel, AlgoMetaData>()
-                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author));
+                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+                .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount));
 
             CreateMap<AlgoRatingMetaData, AlgoRatingMetaDataModel>()
                 .IncludeBase<AlgoMetaData, AlgoMetaDataModel>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
+                .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForSourceMember(src => src.AlgoMetaDataInformationJSON, opt => opt.Ignore());
         }
     }

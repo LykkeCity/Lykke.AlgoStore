@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Common.Log;
@@ -35,6 +36,8 @@ namespace Lykke.AlgoStore.Services
 
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
+
+        private static Random rnd = new Random();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlgoStoreClientDataService"/> class.
@@ -111,17 +114,105 @@ namespace Lykke.AlgoStore.Services
                             Author = currentAlgoMetadata.Author
                         };
 
-                        var rating = _ratingsRepository.GetAlgoRating(currentAlgoMetadata.ClientId, algoMetadata.AlgoId);
-                        if (rating != null)
+                        var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoMetadata.AlgoId);
+                        if (rating != null && rating.Count > 0)
                         {
-                            ratingMetaData.Rating = rating.Rating;
-                            ratingMetaData.UsersCount = rating.UsersCount;
+                            ratingMetaData.Rating = Math.Round(rating.Average(item => item.Rating), 2);
+                            ratingMetaData.RatedUsersCount = rating.Count;
+                        } else
+                        {
+                            ratingMetaData.Rating = 0;
+                            ratingMetaData.RatedUsersCount = 0;
                         }
 
+                        ratingMetaData.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
                         result.Add(ratingMetaData);
                     }
 
                 }
+
+                return result;
+            });
+        }
+
+        /// <summary>
+        /// Save the rating for a specific algo for a specific user
+        /// </summary>
+        /// <param name="data">Ratings data</param>
+        /// <returns></returns>
+        public async Task<AlgoRatingData> SaveAlgoRatingAsync(AlgoRatingData data)
+        {
+            return await LogTimedInfoAsync(nameof(SaveAlgoRatingAsync), data.ClientId, async () =>
+            {
+                if (string.IsNullOrEmpty(data.ClientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
+
+                if (string.IsNullOrEmpty(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+
+                if (double.IsNaN(data.Rating))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Invalid rating.");
+
+                await _ratingsRepository.SaveAlgoRatingAsync(data);
+
+                return data;
+            });
+        }
+
+        /// <summary>
+        /// Get the rating of a specific client for an algo
+        /// </summary>
+        /// <param name="algoId"></param>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
+        public async Task<AlgoRatingData> GetAlgoRatingForClientAsync(string algoId, string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetAlgoRatingForClientAsync), clientId, async () =>
+            {
+                if (string.IsNullOrEmpty(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
+
+                if (string.IsNullOrEmpty(algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+
+                var result = await _ratingsRepository.GetAlgoRatingForClientAsync(algoId, clientId);
+
+                return result;
+            });
+        }
+
+        /// <summary>
+        /// Get the average rating for an algo
+        /// </summary>
+        /// <param name="algoId"></param>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
+        public async Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetAlgoRatingAsync), clientId, async () =>
+            {
+                if (string.IsNullOrEmpty(algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+
+                var ratings = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
+
+                var result = new AlgoRatingData
+                {
+                    AlgoId = algoId,
+                    ClientId = clientId,
+                };
+
+
+                if (ratings != null && ratings.Count > 0)
+                {
+                    result.Rating = Math.Round(ratings.Average(item => item.Rating), 2);
+                    result.RatedUsersCount = ratings.Count;
+                }
+                else
+                {
+                    result.Rating = 0;
+                    result.RatedUsersCount = 0;
+                }               
 
                 return result;
             });
@@ -193,15 +284,23 @@ namespace Lykke.AlgoStore.Services
 
                 var algoInformation = await _metaDataRepository.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
-                var rating = _ratingsRepository.GetAlgoRating(clientId, algoId);
+                var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
                 if (algoInformation != null)
-                {
-                    if (rating != null)
+                {                    
+                    
+                    if (rating != null && rating.Count > 0)
                     {
-                        algoInformation.Rating = rating.Rating;
-                        algoInformation.UsersCount = rating.UsersCount;
+                        algoInformation.Rating = Math.Round(rating.Average(item => item.Rating), 2);
+                        algoInformation.RatedUsersCount = rating.Count;
                     }
+                    else
+                    {
+                        algoInformation.Rating = 0;
+                        algoInformation.RatedUsersCount = 0;
+                    }
+
+                    algoInformation.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
 
                     algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
                 }

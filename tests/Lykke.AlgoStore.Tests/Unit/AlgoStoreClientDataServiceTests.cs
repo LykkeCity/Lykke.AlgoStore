@@ -117,6 +117,77 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Algos_ShouldHave_UsersCount(data);
         }
 
+        [Test, Explicit("Can fail due to missing ratings for all algos in the DB")]
+        public void GetAlgoRating_Returns_Ok()
+        {
+            var repo = Given_Correct_AlgoRatingsRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null);
+            var data = When_Invoke_GetAlgoRating(service, out Exception exception);
+
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Result_ShouldNotBe_Empty(data);
+            Then_Algos_ShouldHave_Ratings(data);
+            Then_Algos_ShouldHave_UsersCount(data);
+        }
+
+        [Test]
+        public void GetAlgoRatingByClient_Returns_Ok()
+        {
+            var repo = Given_Correct_AlgoRatingsRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null);
+            var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
+            var data = When_Invoke_GetAlgoRatingByClient(service, AlgoStoreClientDataServiceTests.AlogId, ClientId, out Exception exception);
+
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Result_ShouldNotBe_Empty(data);
+            Then_Algos_ShouldHave_Ratings(data);
+            Then_Algos_ShouldHave_UsersCount(data);
+        }
+
+        [Test]
+        public void GetAlgoRatingsByWrongClientId_Returns_EmptyArray()
+        {
+            var repo = Given_Correct_AlgoRatingsRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null);
+            var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
+            var data = When_Invoke_GetAlgoRatingByClient(service, AlgoStoreClientDataServiceTests.AlogId, Guid.NewGuid().ToString(), out Exception exception);
+
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Result_ShouldNotBe_Empty(data);
+            Then_Algos_ShouldHave_Ratings(data);
+            Then_Algos_ShouldHave_UsersCount(data);
+        }
+
+        [Test]
+        public void SaveAlgoRating_Returns_Ok()
+        {
+            var repo = Given_Correct_AlgoRatingsRepositoryMock();
+            var publicRepo = Given_Correct_PublicAlgosRepositoryMock();
+            var metadataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(metadataRepo, null, null, null, repo, publicRepo, null, null, null);
+            var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
+
+            var randIndex = rnd.Next(0, allAlgos.Count);
+            var algoId = allAlgos[randIndex].AlgoId;
+            var clientId = allAlgos[randIndex].ClientId;
+
+            var ratingData = new AlgoRatingData
+            {
+                AlgoId = algoId,
+                ClientId = clientId,
+                Rating = rnd.NextDouble() * (6 - 1) + 1
+            };
+
+            When_Invoke_SaveAlgoRating(service, ratingData, out Exception exception);
+
+            var result = When_Invoke_GetAlgoRatingByClient(service, algoId, clientId, out Exception exc);
+
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Result_ShouldNotBe_Empty(result);
+            Then_Algos_ShouldHave_Ratings(result);
+            Then_Algos_ShouldHave_UsersCount(result);
+        }
+
         [Test]
         public void GetClientMetadata_Throws_Exception()
         {
@@ -421,6 +492,48 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
         }
 
+        private static AlgoRatingData When_Invoke_GetAlgoRating(AlgoStoreClientDataService service, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAlgoRatingAsync(AlogId, ClientId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static AlgoRatingData When_Invoke_GetAlgoRatingByClient(AlgoStoreClientDataService service, string algoId, string clientId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAlgoRatingForClientAsync(algoId, clientId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static AlgoRatingData When_Invoke_SaveAlgoRating(AlgoStoreClientDataService service, AlgoRatingData data, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.SaveAlgoRatingAsync(data).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
         private static void When_Invoke_SaveClientMetadata(AlgoStoreClientDataService service, string clientId, AlgoMetaData data, out Exception exception)
         {
             exception = null;
@@ -453,12 +566,40 @@ namespace Lykke.AlgoStore.Tests.Unit
             });
         }
 
+        private static void Then_Algos_ShouldHave_Ratings(List<AlgoRatingData> data)
+        {
+            data.ForEach(algo =>
+            {
+                Assert.NotNull(algo.Rating);
+            });
+        }
+
+        private static void Then_Algos_ShouldHave_Ratings(AlgoRatingData data)
+        {
+            Assert.NotNull(data.Rating);
+        }
+
         private static void Then_Algos_ShouldHave_UsersCount(List<AlgoRatingMetaData> data)
         {
             data.ForEach(metadata =>
             {
-                Assert.NotNull(metadata.UsersCount);
+                Assert.NotNull(metadata.RatedUsersCount);
             });
+        }
+
+        private static void Then_Algos_ShouldHave_UsersCount(List<AlgoRatingData> data)
+        {
+            data.ForEach(algo =>
+            {
+                Assert.NotNull(algo.RatedUsersCount);
+            });
+        }
+
+        private static void Then_Algos_ShouldHave_UsersCount(AlgoRatingData data)
+        {
+
+            Assert.NotNull(data.RatedUsersCount);
+
         }
 
         private static void Then_Data_ShouldBe_Empty(AlgoClientMetaData data)
@@ -468,6 +609,17 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Exception_ShouldBe_Null(Exception exception)
         {
             Assert.Null(exception);
+        }
+
+        private static void Then_Result_ShouldNotBe_Empty(List<AlgoRatingData> data)
+        {
+            Assert.IsNotNull(data);
+            Assert.NotZero(data.Count);
+        }
+
+        private static void Then_Result_ShouldNotBe_Empty(AlgoRatingData data)
+        {
+            Assert.IsNotNull(data);
         }
 
         private static void Then_Exception_ShouldBe_ServiceException(Exception exception)
@@ -503,9 +655,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientid, string id) =>
                 {
-                    var res = new AlgoClientMetaData();
-                    res.ClientId = clientid;
-                    res.AlgoMetaData = new List<AlgoMetaData>();
+                    var res = new AlgoClientMetaData
+                    {
+                        ClientId = clientid,
+                        AlgoMetaData = new List<AlgoMetaData>()
+                    };
                     var data = fixture.Build<AlgoMetaData>()
                         .With(a => a.AlgoId, id)
                         .Create();
@@ -519,12 +673,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAlgoMetaDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientid, string algoId) =>
                 {
-                    var res = new AlgoClientMetaDataInformation();
-                    res.AlgoId = algoId;
-                    res.AlgoMetaDataInformation = new AlgoMetaDataInformation()
+                    var res = new AlgoClientMetaDataInformation
                     {
-                        Parameters = new List<AlgoMetaDataParameter>(),
-                        Functions = new List<AlgoMetaDataFunction>()
+                        AlgoId = algoId,
+                        AlgoMetaDataInformation = new AlgoMetaDataInformation()
+                        {
+                            Parameters = new List<AlgoMetaDataParameter>(),
+                            Functions = new List<AlgoMetaDataFunction>()
+                        }
                     };
                     return Task.FromResult(res);
                 });
@@ -547,13 +703,13 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static IAlgoRatingsRepository Given_Correct_AlgoRatingsRepositoryMock()
         {
             var result = new Mock<IAlgoRatingsRepository>();
-            result.Setup(repo => repo.GetAlgoRating(It.IsAny<string>(), It.IsAny<string>())).Returns((string clientId, string algoId) =>
+            result.Setup(repo => repo.GetAlgoRatingForClientAsync(It.IsAny<string>(), It.IsAny<string>())).Returns((string clientId, string algoId) =>
             {
-                return new AlgoRatingData()
+                return Task.FromResult(new AlgoRatingData()
                 {
                     Rating = Math.Round(rnd.NextDouble() * (6 - 1) + 1, 2),
-                    UsersCount = rnd.Next(0, 201)
-                };
+                    RatedUsersCount = rnd.Next(0, 201)
+                });
             });
 
             return result.Object;
@@ -602,9 +758,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAlgoRuntimeDataAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientId, string algoId) =>
                 {
-                    var res = new AlgoClientRuntimeData();
-                    res.AlgoId = algoId;
-                    res.ClientId = clientId;
+                    var res = new AlgoClientRuntimeData
+                    {
+                        AlgoId = algoId,
+                        ClientId = clientId
+                    };
                     //res.ImageId = 1;
 
                     return Task.FromResult(res);
