@@ -21,8 +21,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         private const string PartitionKey = "PartitionKey";
         private const string CompositePartitionKey = "algo_50531d18-fab8-489b-a54c-2529e8a7e61e";
         private const string AlgoId = "50531d18-fab8-489b-a54c-2529e8a7e61e";
+        private const string ClientAlgoId = "60531d18-fab8-489b-a54c-2529e8a7e61e";
         private const string AlgoMetaDataInformation =
-            "{\"Parameters\":[{\"Key\":\"AssetPair\",\"Value\":\"USDBTC\",\"Type\":\"String\",\"FunctionType\":\"Lykke.AlgoStore.CSharp.Funct.SimpleMovingAverage\"}],\"Functions\":null}";
+            "{\"Parameters\":[{\"Key\":\"AssetPair\",\"Value\":\"USDBTC\",\"Type\":\"String\",\"PredefinedValues\":null}],\"Functions\":null}";
 
         #region Data Generation
 
