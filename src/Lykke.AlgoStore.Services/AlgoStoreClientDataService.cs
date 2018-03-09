@@ -300,7 +300,7 @@ namespace Lykke.AlgoStore.Services
             await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
             {
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId) ||
-                    await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
+                   await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
                     return;
 
                 if (await _blobRepository.BlobExistsAsync(data.AlgoId))

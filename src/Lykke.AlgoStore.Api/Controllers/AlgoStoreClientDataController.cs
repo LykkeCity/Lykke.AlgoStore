@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using System.Linq;
+using System;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -252,6 +254,10 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var data = Mapper.Map<AlgoClientInstanceData>(model);
             data.ClientId = User.GetClientId();
+
+            data.AssetPair = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
+            data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
+            data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
             var result = await _clientDataService.SaveAlgoInstanceDataAsync(data);
 

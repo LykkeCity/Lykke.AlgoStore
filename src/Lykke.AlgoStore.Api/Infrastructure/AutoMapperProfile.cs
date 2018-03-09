@@ -15,9 +15,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
 
             CreateMap<AlgoClientMetaDataInformation, AlgoClientMetaDataInformationModel>();
-            //.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
-            //.ForMember(dest => dest.Author, opt => opt.Ignore());
-
+        
             CreateMap<AlgoMetaDataModel, AlgoMetaData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore())
@@ -31,8 +29,14 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoClientInstanceData, AlgoClientInstanceModel>()
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
+
             CreateMap<AlgoClientInstanceModel, AlgoClientInstanceData>()
-                .ForMember(dest => dest.ClientId, opt => opt.Ignore());
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore())
+                .ForMember(dest => dest.AssetPair, opt => opt.Ignore())
+                .ForMember(dest => dest.HftApiKey, opt => opt.Ignore())
+                .ForMember(dest => dest.Margin, opt => opt.Ignore())
+                .ForMember(dest => dest.Volume, opt => opt.Ignore())
+                .ForMember(dest => dest.TradedAsset, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoMetaDataModel, AlgoMetaData>()
