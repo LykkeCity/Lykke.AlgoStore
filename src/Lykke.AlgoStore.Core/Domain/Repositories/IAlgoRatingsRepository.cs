@@ -6,7 +6,7 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
     public interface IAlgoRatingsRepository
     {
-        Task<List<AlgoRatingData>> GetAlgoRatingAsync(string algoId);
+        Task<List<AlgoRatingData>> GetAlgoRatingsAsync(string algoId);
         Task<AlgoRatingData> GetAlgoRatingForClientAsync(string clientId, string algoId);
         Task SaveAlgoRatingAsync(AlgoRatingData data);
     }

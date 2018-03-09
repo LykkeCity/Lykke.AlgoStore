@@ -114,7 +114,7 @@ namespace Lykke.AlgoStore.Services
                             Author = currentAlgoMetadata.Author
                         };
 
-                        var rating = await _ratingsRepository.GetAlgoRatingAsync(algoMetadata.AlgoId);
+                        var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoMetadata.AlgoId);
                         if (rating != null && rating.Count > 0)
                         {
                             ratingMetaData.Rating = Math.Round(rating.Average(item => item.Rating), 2);
@@ -194,7 +194,7 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
 
-                var ratings = await _ratingsRepository.GetAlgoRatingAsync(algoId);
+                var ratings = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
                 var result = new AlgoRatingData
                 {
@@ -284,7 +284,7 @@ namespace Lykke.AlgoStore.Services
 
                 var algoInformation = await _metaDataRepository.GetAlgoMetaDataInformationAsync(clientId, algoId);
 
-                var rating = await _ratingsRepository.GetAlgoRatingAsync(algoId);
+                var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
                 if (algoInformation != null)
                 {                    

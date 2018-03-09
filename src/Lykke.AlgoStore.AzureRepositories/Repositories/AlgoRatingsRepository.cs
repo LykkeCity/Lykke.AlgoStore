@@ -28,7 +28,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             return result.ToModel();
         }
 
-        public async Task<List<AlgoRatingData>> GetAlgoRatingAsync(string algoId)
+        public async Task<List<AlgoRatingData>> GetAlgoRatingsAsync(string algoId)
         {
             var result = await _table.GetDataAsync(algoId);
             return result.ToList().ToModel();

@@ -41,7 +41,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_GetAlgoRating(AlgoRatingsRepository repository, AlgoRatingMetaData data)
         {
-            repository.GetAlgoRatingAsync(data.AlgoId);
+            repository.GetAlgoRatingsAsync(data.AlgoId);
         }
 
         private static void Then_Result_ShouldNotBe_Null(AlgoRatingMetaData data)
