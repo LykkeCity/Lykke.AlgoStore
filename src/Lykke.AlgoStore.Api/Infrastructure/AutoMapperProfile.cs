@@ -15,7 +15,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
 
             CreateMap<AlgoClientMetaDataInformation, AlgoClientMetaDataInformationModel>();
-        
+
             CreateMap<AlgoMetaDataModel, AlgoMetaData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore())
@@ -28,7 +28,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<TailLogData, TailLogModel>().ReverseMap();
 
             CreateMap<AlgoClientInstanceData, AlgoClientInstanceModel>()
-                .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
+                .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoClientId, opt => opt.Ignore());
 
             CreateMap<AlgoClientInstanceModel, AlgoClientInstanceData>()
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())

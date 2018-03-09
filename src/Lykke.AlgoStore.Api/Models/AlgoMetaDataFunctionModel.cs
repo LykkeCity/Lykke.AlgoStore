@@ -15,7 +15,7 @@ namespace Lykke.AlgoStore.Api.Models
         public string Id { get; set; }
 
         /// <summary>
-        /// Type of parameters class. Namespace of the parameter class, whucj will be used to load the class
+        /// Type of parameters class. Namespace of the parameter class, which will be used to load the class
         /// </summary>
         public string FunctionParameterType { get; set; }
 

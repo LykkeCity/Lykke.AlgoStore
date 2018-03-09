@@ -98,7 +98,7 @@ namespace Lykke.AlgoStore.Services
                                                         ? authorPersonalData.FullName
                                                         : authorPersonalData.Email;
                     }
-                        
+
                     foreach (var algoMetadata in currentAlgoMetadata.AlgoMetaData)
                     {
                         var ratingMetaData = new AlgoRatingMetaData
@@ -411,7 +411,7 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data)
+        public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId, async () =>
             {
@@ -421,9 +421,12 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
+                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
 
+                if (!await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+                
                 var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
                 if (assetPairResponse.Response.StatusCode == HttpStatusCode.NotFound)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {data.AssetPair} was not found");

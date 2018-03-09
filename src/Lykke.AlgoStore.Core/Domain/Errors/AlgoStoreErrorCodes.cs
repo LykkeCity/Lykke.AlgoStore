@@ -16,7 +16,7 @@
         AssetNotFound = 505,
         AlgoInstanceDataNotFound = 506,
         MoreThanOnePodFound = 507,
-
+        AlgoNotPublic = 508,
         //Operation
         UnableToDeleteData = 601,
 

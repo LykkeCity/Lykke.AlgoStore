@@ -36,6 +36,8 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class AlgoStoreClientDataServiceTests
     {
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
+        private const string AlgoClientId = "086ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
+
         private const int AssetAccuracy = 3;
 
         private static readonly string BlobKey = "TestKey";
@@ -275,9 +277,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, null, assetService, null, null);
-            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(result);
         }
@@ -289,8 +292,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(false);
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, null, assetService, null, null);
-            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_AlgoNotPublic()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(false);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var publicAlgosRepository = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -301,8 +318,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, null, assetService, null, null);
-            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -313,8 +331,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, null, assetService, null, null);
-            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -325,8 +344,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, null, assetService, null, null);
-            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -336,9 +357,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Error_AlgoClientInstanceRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, null, assetService, null, null);
-            When_Invoke_SaveAlgoInstanceDataAsync(service, data, out Exception exception);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
@@ -577,6 +599,28 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
+        private static IPublicAlgosRepository Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock()
+        {
+            var result = new Mock<IPublicAlgosRepository>();
+            result.Setup(repo => repo.ExistsPublicAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(() =>
+            {
+                return Task.FromResult(true);
+            });
+
+            return result.Object;
+        }
+
+        private static IPublicAlgosRepository Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock()
+        {
+            var result = new Mock<IPublicAlgosRepository>();
+            result.Setup(repo => repo.ExistsPublicAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(() =>
+            {
+                return Task.FromResult(false);
+            });
+
+            return result.Object;
+        }
+
         private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(bool exists)
         {
             var fixture = new Fixture();
@@ -794,12 +838,12 @@ namespace Lykke.AlgoStore.Tests.Unit
                 return null;
             }
         }
-        private static AlgoClientInstanceData When_Invoke_SaveAlgoInstanceDataAsync(AlgoStoreClientDataService service, AlgoClientInstanceData data, out Exception exception)
+        private static AlgoClientInstanceData When_Invoke_SaveAlgoInstanceDataAsync(AlgoStoreClientDataService service, AlgoClientInstanceData data, string algoClientId, out Exception exception)
         {
             exception = null;
             try
             {
-                return service.SaveAlgoInstanceDataAsync(data).Result;
+                return service.SaveAlgoInstanceDataAsync(data, algoClientId).Result;
             }
             catch (Exception ex)
             {
