@@ -158,7 +158,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Algos_ShouldHave_UsersCount(data);
         }
 
-        [Test]
+        [Test, Explicit("Modify data in Table Storage")]
         public void SaveAlgoRating_Returns_Ok()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
