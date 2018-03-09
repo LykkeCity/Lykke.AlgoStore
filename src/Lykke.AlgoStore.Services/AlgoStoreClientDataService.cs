@@ -155,7 +155,16 @@ namespace Lykke.AlgoStore.Services
 
                 await _ratingsRepository.SaveAlgoRatingAsync(data);
 
-                return data;
+                var newRatingInformation = await _ratingsRepository.GetAlgoRatingsAsync(data.AlgoId);
+                var newRatingData = new AlgoRatingData
+                {
+                    AlgoId = data.AlgoId,
+                    ClientId = data.ClientId,
+                    RatedUsersCount = newRatingInformation.Count,
+                    Rating = Math.Round(newRatingInformation.Average(item => item.Rating), 2)
+                };
+
+                return newRatingData;
             });
         }
 
