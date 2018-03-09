@@ -424,9 +424,9 @@ namespace Lykke.AlgoStore.Services
                 if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
 
-                if (!await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
+                if (algoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
-                
+
                 var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
                 if (assetPairResponse.Response.StatusCode == HttpStatusCode.NotFound)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {data.AssetPair} was not found");
