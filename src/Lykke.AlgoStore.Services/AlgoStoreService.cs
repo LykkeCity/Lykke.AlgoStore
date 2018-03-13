@@ -33,7 +33,6 @@ namespace Lykke.AlgoStore.Services
         /// <param name="log">The log.</param>
         /// <param name="algoBlobRepository">The algo BLOB repository.</param>
         /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
-        /// <param name="algoRuntimeDataRepository">The algo runtime data repository.</param>
         /// <param name="storageConnectionManager">The storage connection manager.</param>
         /// <param name="teamCityClient">The team city client.</param>
         /// <param name="kubernetesApiClient">The kubernetes API client.</param>
