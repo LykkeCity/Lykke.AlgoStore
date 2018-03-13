@@ -15,10 +15,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/management")]
     public class AlgoStoreManagementController : Controller
     {
+        private readonly IAlgoStoreClientDataService _clientDataService;
         private readonly IAlgoStoreService _service;
 
-        public AlgoStoreManagementController(IAlgoStoreService service)
+        public AlgoStoreManagementController(IAlgoStoreClientDataService clientDataService, IAlgoStoreService service)
         {
+            _clientDataService = clientDataService;
             _service = service;
         }
 
@@ -65,6 +67,10 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = new StatusModel();
             result.Status = await _service.StopTestImageAsync(data);
+
+            var clientInstanceData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
+
+            await _service.DeleteImageAsync(clientInstanceData);
 
             return Ok(result);
         }

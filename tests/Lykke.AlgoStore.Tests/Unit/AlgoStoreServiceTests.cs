@@ -178,7 +178,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient)
         {
-            return new AlgoStoreService(new LogMock(), blobRepo, repo, null, storageConnectionManager, teamCityClient, deploymentApiClient, instanceDataRepository);
+            return new AlgoStoreService(new LogMock(), blobRepo, repo, storageConnectionManager, teamCityClient, deploymentApiClient, instanceDataRepository);
         }
 
         private static ManageImageData Given_ManageImageData()

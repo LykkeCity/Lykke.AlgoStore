@@ -302,7 +302,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoClientInstanceRepository instanceRepository)
         {
             var result = new AlgoStoreService(new LogMock(), algoBlobRepository, algoMetaDataRepository,
-                null, null, null, kubernetesApiClient, instanceRepository);
+                null, null, kubernetesApiClient, instanceRepository);
             return result;
         }
 
