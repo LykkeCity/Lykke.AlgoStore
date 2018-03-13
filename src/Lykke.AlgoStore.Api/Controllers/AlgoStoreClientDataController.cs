@@ -298,7 +298,6 @@ namespace Lykke.AlgoStore.Api.Controllers
                 return NotFound();
 
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
-
             return Ok(response);
         }
 
@@ -317,8 +316,10 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
             var result = await _clientDataService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
-
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
+
+            //we could extract it into modles in NuGet Algo Template project
+            response.AlgoClientId = model.AlgoClientId;
 
             return Ok(response);
         }

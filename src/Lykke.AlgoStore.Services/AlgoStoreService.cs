@@ -30,6 +30,8 @@ namespace Lykke.AlgoStore.Services
 
         private readonly IKubernetesApiClient _kubernetesApiClient;
 
+        private readonly IPublicAlgosRepository _publicAlgosRepository;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AlgoStoreService"/> class.
         /// </summary>
@@ -49,7 +51,8 @@ namespace Lykke.AlgoStore.Services
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
             IKubernetesApiClient kubernetesApiClient,
-            IAlgoClientInstanceRepository algoInstanceRepository) : base(log, nameof(AlgoStoreService))
+            IAlgoClientInstanceRepository algoInstanceRepository,
+            IPublicAlgosRepository publicAlgosRepository) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
@@ -58,6 +61,7 @@ namespace Lykke.AlgoStore.Services
             _teamCityClient = teamCityClient;
             _kubernetesApiClient = kubernetesApiClient;
             _algoInstanceRepository = algoInstanceRepository;
+            _publicAlgosRepository = publicAlgosRepository;
         }
 
         /// <summary>
@@ -75,8 +79,11 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoBlobRepository.BlobExistsAsync(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoBinaryDataNotFound, "No blob for provided id");
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
+
+                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
 
                 var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
@@ -128,8 +135,11 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, algoId))
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
 
                 var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataAsync(data.ClientId, algoId);
                 if (runtimeData == null)
@@ -175,8 +185,12 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, algoId))
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+
 
                 var runtimeData = await _algoRuntimeDataRepository.GetAlgoRuntimeDataAsync(data.ClientId, algoId);
                 if (runtimeData == null)
