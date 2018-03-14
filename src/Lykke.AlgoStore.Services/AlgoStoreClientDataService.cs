@@ -326,6 +326,12 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
             {
+
+                if (string.IsNullOrWhiteSpace(data.ClientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+
                 await _publicAlgosRepository.SavePublicAlgoAsync(data);
 
                 return data;
