@@ -73,7 +73,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAlgoRating(string algoId)
-        {           
+        {
             var clientId = User.GetClientId();
 
             var result = await _clientDataService.GetAlgoRatingAsync(algoId, clientId);
@@ -259,7 +259,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllAlgoInstanceDataAsync(string algoId)
         {
             var data = new CSharp.AlgoTemplate.Models.Models.BaseAlgoData
@@ -269,10 +268,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             };
 
             var result = await _clientDataService.GetAllAlgoInstanceDataAsync(data);
-
-            if (result.IsNullOrEmptyCollection())
-                return NotFound();
-
             var response = Mapper.Map<List<AlgoClientInstanceModel>>(result);
 
             return Ok(response);
