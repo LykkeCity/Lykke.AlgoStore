@@ -281,10 +281,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetAllAlgoInstanceDataAsync_Returns_Ok()
         {
-            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock_ByClientId();
             var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null);
-            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
-                Guid.NewGuid().ToString(), out Exception exception);
+            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, ClientId.ToString(), Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
         }
@@ -848,13 +847,31 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAlgoClientInstanceRepository Given_Correct_AlgoClientInstanceRepositoryMock()
+        private static IAlgoClientInstanceRepository Given_Correct_AlgoClientInstanceRepositoryMock_ByClientId()
         {
             var fixture = new Fixture();
             var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo => repo.GetAllAlgoInstancesByAlgoAsync(It.IsAny<string>()))
                 .Returns((string algoId) =>
+                {
+                    return Task.FromResult(new List<AlgoClientInstanceData>
+                    {
+                        fixture.Build<AlgoClientInstanceData>().With(b => b.AlgoId, algoId)
+                        .With(b => b.ClientId, ClientId).Create()
+                    });
+                });
+
+            return result.Object;
+        }
+
+        private static IAlgoClientInstanceRepository Given_Correct_AlgoClientInstanceRepositoryMock()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IAlgoClientInstanceRepository>();
+
+            result.Setup(repo => repo.GetAllAlgoInstancesByAlgoAsync(It.IsAny<string>()))
+                .Returns((string algoId, string clientId) =>
                 {
                     return Task.FromResult(new List<AlgoClientInstanceData>
                     {
