@@ -119,7 +119,8 @@ namespace Lykke.AlgoStore.Services
                         {
                             ratingMetaData.Rating = Math.Round(rating.Average(item => item.Rating), 2);
                             ratingMetaData.RatedUsersCount = rating.Count;
-                        } else
+                        }
+                        else
                         {
                             ratingMetaData.Rating = 0;
                             ratingMetaData.RatedUsersCount = 0;
@@ -221,7 +222,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     result.Rating = 0;
                     result.RatedUsersCount = 0;
-                }               
+                }
 
                 return result;
             });
@@ -296,8 +297,8 @@ namespace Lykke.AlgoStore.Services
                 var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
                 if (algoInformation != null)
-                {                    
-                    
+                {
+
                     if (rating != null && rating.Count > 0)
                     {
                         algoInformation.Rating = Math.Round(rating.Average(item => item.Rating), 2);
@@ -502,7 +503,14 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                return await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
+                if (string.IsNullOrWhiteSpace(data.ClientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+
+                var result = (await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId)).Where(a => a.ClientId == data.ClientId);
+
+                return result.ToList();
             });
         }
         /// <summary>
