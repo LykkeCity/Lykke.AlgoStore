@@ -2,6 +2,6 @@
 {
     public class LogModel
     {
-        public string Log { get; set; }
+        public string[] Log { get; set; }
     }
 }

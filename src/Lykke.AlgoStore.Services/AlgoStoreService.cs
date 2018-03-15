@@ -183,7 +183,7 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task<string> GetTestTailLogAsync(TailLogData data)
+        public async Task<string[]> GetTestTailLogAsync(TailLogData data)
         {
             return await LogTimedInfoAsync(nameof(GetTestTailLogAsync), data.ClientId, async () =>
             {
@@ -194,14 +194,20 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for algo {data.AlgoId} and instanceId {data.InstanceId}");
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
-                if (pods.Count != 1)
+                if (pods.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
+
+                if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for instanceId {data.InstanceId}");
 
                 var pod = pods[0];
                 if (pod == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
 
-                return await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
+                var result = await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
+                
+                // Remove last character from string to remove empty last line in log result
+                return result?.Substring(0, result.Length - 1).Split('\n', System.StringSplitOptions.None) ?? new string[0];
             });
         }
         /// <summary>
