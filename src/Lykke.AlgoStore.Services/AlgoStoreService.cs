@@ -38,8 +38,9 @@ namespace Lykke.AlgoStore.Services
         /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
         /// <param name="storageConnectionManager">The storage connection manager.</param>
         /// <param name="teamCityClient">The team city client.</param>
-        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="kubernetesApiClient">The Kubernetes API client.</param>
         /// <param name="algoInstanceRepository">The algo instance repository.</param>
+        /// <param name="publicAlgosRepository">The public algo repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
@@ -164,6 +165,9 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
 
+                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
                     return BuildStatuses.NotDeployed.ToUpperText();
@@ -175,7 +179,9 @@ namespace Lykke.AlgoStore.Services
                 if (pod == null)
                     return BuildStatuses.NotDeployed.ToUpperText();
 
-                return pod.Status.Phase.ToUpper();
+                var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod);
+
+                return result ? BuildStatuses.Deleted.ToUpperText() : pod.Status.Phase.ToUpper();
             });
         }
 

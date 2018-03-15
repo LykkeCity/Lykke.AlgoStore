@@ -6,6 +6,7 @@
         Failure,
         Success,
         NotDeployed,
-        Running
+        Running,
+        Deleted
     }
 }
