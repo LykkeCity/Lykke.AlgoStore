@@ -104,10 +104,13 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <returns></returns>
         public async Task<string> ReadPodLogAsync(Iok8skubernetespkgapiv1Pod pod, int? tailLines)
         {
-            using (var kubeResponse = await ReadPodLogWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty).ConfigureAwait(false))
+            using (var kubeResponse = await ReadPodLogWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, 
+                                                                            null,null,null,null,null,null,
+                                                                            tailLines).ConfigureAwait(false))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                     return null;
+
                 return kubeResponse.Body;
             }
         }

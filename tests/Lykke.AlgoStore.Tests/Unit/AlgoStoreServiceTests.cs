@@ -130,14 +130,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_Null(exception);
             Then_Response_ShouldBe_False(res);
         }
+
         [Test]
         public void GetLog_Returns_Ok()
         {
-            const string expectedLog = "TestLog";
+            const string apiReturnedLog = "testlog\ntestlog2\n";
+            string[] expectedLog = new string[] { "testlog", "testlog2" };
 
             var data = Given_TailLogData();
 
-            var kubernetesApiClient = Given_Correct_KubernetesApiClientMock_WithLog(expectedLog);
+            var kubernetesApiClient = Given_Correct_KubernetesApiClientMock_WithLog(apiReturnedLog);
             var instanceRepo = Given_Correct_AlgoInstanceDataRepositoryMock();
             var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, null, null, instanceRepo, null, null, null);
 
@@ -160,7 +162,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Response_ShouldBe_True(bool response) => Assert.True(response);
         private static void Then_Response_ShouldBe_False(bool response) => Assert.False(response);
         private static void Then_Exception_ShouldBe_Null(Exception exception) => Assert.Null(exception);
-        private static void Then_Response_ShouldBe_ExpectedLog(string response, string expectedLog)
+        private static void Then_Response_ShouldBe_ExpectedLog(string[] response, string[] expectedLog)
         {
             Assert.AreEqual(response, expectedLog);
         }
@@ -179,7 +181,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return false;
         }
-        private static string When_Invoke_GetLog(AlgoStoreService service, TailLogData data, out Exception exception)
+        private static string[] When_Invoke_GetLog(AlgoStoreService service, TailLogData data, out Exception exception)
         {
             exception = null;
             try
@@ -191,7 +193,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 exception = ex;
             }
 
-            return string.Empty;
+            return new string[0];
         }
 
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
