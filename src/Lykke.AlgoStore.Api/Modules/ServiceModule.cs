@@ -14,6 +14,7 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
+using Lykke.Service.ClientAccount.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -39,6 +40,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
         private void RegisterExternalServices(ContainerBuilder builder)
         {
+            builder.RegisterLykkeServiceClient(_settings.CurrentValue.ClientAccountServiceClient.ServiceUrl);
 
             builder.RegisterType<ClientSessionsClient>()
                 .As<IClientSessionsClient>()

@@ -16,6 +16,7 @@ using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Contract;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
@@ -29,13 +30,14 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoBlobRepository _blobRepository;
         private readonly IAlgoClientInstanceRepository _instanceRepository;
         private readonly IAlgoRatingsRepository _ratingsRepository;
-        private readonly IPublicAlgosRepository _publicAlgosRepository;
+        private readonly IPublicAlgosRepository _publicAlgosRepository;       
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository; // TODO Should be removed
         private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;
 
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
+        private readonly IClientAccountClient _clientAccountService;
 
         private static Random rnd = new Random();
 
@@ -49,7 +51,9 @@ namespace Lykke.AlgoStore.Services
         /// <param name="ratingsRepository">The ratings repository.</param>
         /// <param name="publicAlgosRepository">The public algos repository.</param>
         /// <param name="assetService">The asset service.</param>
+        /// <param name="personalDataService">The personal Data Service</param>
         /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="clientAccountClient">The Client Account Service</param>
         /// <param name="log">The log.</param>
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
@@ -60,6 +64,7 @@ namespace Lykke.AlgoStore.Services
             IAssetsService assetService,
             IPersonalDataService personalDataService,
             IKubernetesApiReadOnlyClient kubernetesApiClient,
+            IClientAccountClient clientAccountClient,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
@@ -71,6 +76,7 @@ namespace Lykke.AlgoStore.Services
             _assetService = assetService;
             _personalDataService = personalDataService;
             _kubernetesApiClient = kubernetesApiClient;
+            _clientAccountService = clientAccountClient;
         }
 
         /// <summary>
@@ -543,6 +549,10 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
+                var wallet = await GetClientWallet(data.ClientId, data.WalletId);
+                if (wallet == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletNotFound, $"Wallet {data.WalletId} not found for client {data.ClientId}");
+
                 if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
 
@@ -574,6 +584,12 @@ namespace Lykke.AlgoStore.Services
 
                 return res;
             });
+        }
+
+        private async Task<Lykke.Service.ClientAccount.Client.Models.WalletDtoModel> GetClientWallet(string clientId, string walletId)
+        {
+            var wallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
+            return wallets?.FirstOrDefault(x => x.Id == walletId);
         }
     }
 }

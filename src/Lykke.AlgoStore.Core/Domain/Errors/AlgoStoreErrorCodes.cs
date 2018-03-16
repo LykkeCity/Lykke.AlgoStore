@@ -17,6 +17,7 @@
         AlgoInstanceDataNotFound = 506,
         MoreThanOnePodFound = 507,
         AlgoNotPublic = 508,
+        WalletNotFound = 509,
         //Operation
         UnableToDeleteData = 601,
 
