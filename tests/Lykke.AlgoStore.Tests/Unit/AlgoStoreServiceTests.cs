@@ -134,8 +134,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetLog_Returns_Ok()
         {
-            const string apiReturnedLog = "testlog\ntestlog2\n";
-            string[] expectedLog = new string[] { "testlog", "testlog2" };
+            const string apiReturnedLog = "2018-01-01T12:00:00.123456789Z testlog\n2018-01-01T12:01:00.123456789Z testlog2\n";
+            string[] expectedLog = new string[] { "[2018-01-01 12:00:00] testlog", "[2018-01-01 12:01:00] testlog2" };
 
             var data = Given_TailLogData();
 
@@ -164,7 +164,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Exception_ShouldBe_Null(Exception exception) => Assert.Null(exception);
         private static void Then_Response_ShouldBe_ExpectedLog(string[] response, string[] expectedLog)
         {
-            Assert.AreEqual(response, expectedLog);
+            Assert.AreEqual(expectedLog, response);
         }
 
         private static bool When_Invoke_DeployImage(AlgoStoreService service, ManageImageData data, out Exception exception)
