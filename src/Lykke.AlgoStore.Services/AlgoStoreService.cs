@@ -168,6 +168,10 @@ namespace Lykke.AlgoStore.Services
                 if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
 
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
+
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
                     return AlgoInstanceStatus.Deploying.ToString();
@@ -181,7 +185,13 @@ namespace Lykke.AlgoStore.Services
 
                 var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod);
 
-                return result ? AlgoInstanceStatus.Stopped.ToString() : pod.Status.Phase.ToUpper();
+                if (!result)
+                    return pod.Status.Phase.ToUpper();
+
+                instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
+
+                return AlgoInstanceStatus.Stopped.ToString();
             });
         }
 
@@ -212,7 +222,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
 
                 var result = await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
-                
+
                 // Remove last character from string to remove empty last line in log result
                 return result?.Substring(0, result.Length - 1).Split('\n', System.StringSplitOptions.None) ?? new string[0];
             });
