@@ -161,6 +161,10 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
+
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
 
@@ -174,6 +178,10 @@ namespace Lykke.AlgoStore.Services
                 var pod = pods[0];
                 if (pod == null)
                     return BuildStatuses.NotDeployed.ToUpperText();
+
+                instanceData.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Stopped;
+
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
 
                 return pod.Status.Phase.ToUpper();
             });

@@ -1035,7 +1035,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.GetAllAlgoInstanceDataAsync(new CSharp.AlgoTemplate.Models.Models.BaseAlgoData { ClientId = clientId, AlgoId = algoId }).Result;
+                return service.GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(new CSharp.AlgoTemplate.Models.Models.BaseAlgoData { ClientId = clientId, AlgoId = algoId }).Result;
             }
             catch (Exception ex)
             {
