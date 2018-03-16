@@ -7,6 +7,7 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
@@ -135,14 +136,14 @@ namespace Lykke.AlgoStore.Services
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 return pod.Status.Phase.ToUpper();
             });
@@ -169,18 +170,18 @@ namespace Lykke.AlgoStore.Services
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod);
 
-                return result ? BuildStatuses.Deleted.ToUpperText() : pod.Status.Phase.ToUpper();
+                return result ? AlgoInstanceStatus.Stopped.ToString() : pod.Status.Phase.ToUpper();
             });
         }
 
