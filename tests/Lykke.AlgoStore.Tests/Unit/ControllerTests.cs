@@ -11,6 +11,7 @@ using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
+using Lykke.Service.ClientAccount.Client;
 using Moq;
 using NUnit.Framework;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
@@ -33,7 +34,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false));
+                Given_PublicAlgoRepository_Exists(false),
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -53,8 +55,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false)
-            );
+                Given_PublicAlgoRepository_Exists(false),
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -74,8 +76,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false)
-            );
+                Given_PublicAlgoRepository_Exists(false),
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -95,7 +97,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false));
+                Given_PublicAlgoRepository_Exists(false), 
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithoutResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -115,7 +118,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false));
+                Given_PublicAlgoRepository_Exists(false), 
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(false);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -137,7 +141,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 blobRepoMock.Object,
                 null,
-                Given_PublicAlgoRepository_Exists(true));
+                Given_PublicAlgoRepository_Exists(true),
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -161,7 +166,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 blobRepoMock.Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false));
+                Given_PublicAlgoRepository_Exists(false),
+                null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
@@ -288,10 +294,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoClientInstanceRepository clientInstanceRepository,
             IAlgoBlobRepository blobRepository,
             IKubernetesApiReadOnlyClient kubernetesClient,
-            IPublicAlgosRepository publicAlgosRepository)
+            IPublicAlgosRepository publicAlgosRepository,
+            IClientAccountClient clientAccountClient)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, publicAlgosRepository, null, null, kubernetesClient, new LogMock());
+                clientInstanceRepository, null, publicAlgosRepository, null, null, kubernetesClient, clientAccountClient, new LogMock());
 
             return result;
         }
