@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System;
+using System.Dynamic;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -205,9 +206,25 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
 
                 var result = await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
-                
+
                 // Remove last character from string to remove empty last line in log result
-                return result?.Substring(0, result.Length - 1).Split('\n', System.StringSplitOptions.None) ?? new string[0];
+                var logArray = result?.Substring(0, result.Length - 1).Split('\n', StringSplitOptions.None) ?? new string[0];
+
+                for(int i = 0; i < logArray.Length; i++)
+                {
+                    var currentLine = logArray[i];
+
+                    var firstSpaceIndex = currentLine.IndexOf(' ');
+
+                    var dateString = currentLine.Substring(0, firstSpaceIndex);
+                    var restOfMessage = currentLine.Substring(firstSpaceIndex);
+
+                    var date = DateTime.Parse(dateString).ToUniversalTime();
+
+                    logArray[i] = $"[{date:yyyy-MM-dd HH:mm:ss}]{restOfMessage}";
+                }
+
+                return logArray;
             });
         }
         /// <summary>

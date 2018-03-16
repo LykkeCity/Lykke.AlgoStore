@@ -106,7 +106,7 @@ namespace Lykke.AlgoStore.KubernetesClient
         {
             using (var kubeResponse = await ReadPodLogWithHttpMessagesAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, 
                                                                             null,null,null,null,null,null,
-                                                                            tailLines).ConfigureAwait(false))
+                                                                            tailLines, true).ConfigureAwait(false))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                     return null;
