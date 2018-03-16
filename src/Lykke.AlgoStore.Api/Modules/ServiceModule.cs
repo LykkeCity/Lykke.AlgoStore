@@ -40,7 +40,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
         private void RegisterExternalServices(ContainerBuilder builder)
         {
-            builder.RegisterLykkeServiceClient(_settings.CurrentValue.AlgoApi.Services.ClientAccountServiceUrl);
+            builder.RegisterLykkeServiceClient(_settings.CurrentValue.ClientAccountServiceClient.ServiceUrl);
 
             builder.RegisterType<ClientSessionsClient>()
                 .As<IClientSessionsClient>()
