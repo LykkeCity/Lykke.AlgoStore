@@ -10,8 +10,7 @@ namespace Lykke.AlgoStore.Api.Models
         public string AlgoClientId { get; set; }
         public string InstanceName { get; set; }
         public AlgoMetaDataInformationModel AlgoMetaDataInformation { get; set; }
-
-        public AlgoInstanceType AlgoInstanceType { get; set; }
         public AlgoInstanceStatus AlgoInstanceStatus { get; set; }
+        public AlgoInstanceType AlgoInstanceType { get; set; }
     }
 }

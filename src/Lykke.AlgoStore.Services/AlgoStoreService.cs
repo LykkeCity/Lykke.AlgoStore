@@ -8,6 +8,7 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
@@ -38,8 +39,9 @@ namespace Lykke.AlgoStore.Services
         /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
         /// <param name="storageConnectionManager">The storage connection manager.</param>
         /// <param name="teamCityClient">The team city client.</param>
-        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="kubernetesApiClient">The Kubernetes API client.</param>
         /// <param name="algoInstanceRepository">The algo instance repository.</param>
+        /// <param name="publicAlgosRepository">The public algo repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
@@ -135,18 +137,19 @@ namespace Lykke.AlgoStore.Services
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 return pod.Status.Phase.ToUpper();
             });
         }
+
         /// <summary>
         /// Stops the test image asynchronous.
         /// </summary>
@@ -161,29 +164,36 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
+                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+
+                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+
                 var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
 
-                if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
-
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
-                instanceData.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Stopped;
+                var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod);
 
+                if (!result)
+                    return pod.Status.Phase.ToUpper();
+
+                instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
                 await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
 
-                return pod.Status.Phase.ToUpper();
+                return AlgoInstanceStatus.Stopped.ToString();
             });
         }
 
@@ -218,7 +228,7 @@ namespace Lykke.AlgoStore.Services
                 // Remove last character from string to remove empty last line in log result
                 var logArray = result?.Substring(0, result.Length - 1).Split('\n', StringSplitOptions.None) ?? new string[0];
 
-                for(int i = 0; i < logArray.Length; i++)
+                for (int i = 0; i < logArray.Length; i++)
                 {
                     var currentLine = logArray[i];
 
@@ -255,12 +265,36 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
                 var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
-                if (result)
-                    await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+
+                await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
+            });
+        }
+
+        public async Task DeleteInstanceAsync(AlgoClientInstanceData instanceData)
+        {
+            await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
+            {
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
+
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
+
+                if (!pods.IsNullOrEmptyCollection() && pods[0] != null)
+                {
+                    var pod = pods[0];
+
+                    var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
+
+                    if (!result)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                            $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+                }
+
+                await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
             });
         }
     }

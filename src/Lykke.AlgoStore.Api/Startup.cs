@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -36,6 +37,7 @@ namespace Lykke.AlgoStore.Api
             {
                 cfg.AddProfiles(typeof(AutoMapperProfile));
                 cfg.AddProfiles(typeof(AutoMapperModelProfile));
+
             });
 
             Mapper.AssertConfigurationIsValid();
