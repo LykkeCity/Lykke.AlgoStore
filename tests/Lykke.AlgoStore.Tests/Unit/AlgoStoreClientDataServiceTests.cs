@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -287,7 +288,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock_ByClientId();
             var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null);
-            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, ClientId.ToString(),
+            var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -878,14 +879,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
             var result = new Mock<IAlgoClientInstanceRepository>();
 
-            result.Setup(repo => repo.GetAllAlgoInstancesByAlgoAsync(It.IsAny<string>()))
-                .Returns((string algoId) =>
+            result.Setup(repo => repo.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string algoId, string clientId) =>
                 {
                     return Task.FromResult(new List<AlgoClientInstanceData>
                     {
                         fixture.Build<AlgoClientInstanceData>().With(b => b.AlgoId, algoId)
                         .With(b => b.ClientId, ClientId).Create()
-                    });
+                    }.AsEnumerable());
                 });
 
             return result.Object;
@@ -973,6 +974,10 @@ namespace Lykke.AlgoStore.Tests.Unit
                     repo.GetAlgoInstanceDataByClientIdAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ThrowsAsync(new Exception("GetAlgoInstanceDataAsync"));
 
+            result.Setup(repo =>
+                 repo.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+             .ThrowsAsync(new Exception("GetAllAlgoInstancesByAlgoIdAndClienIdAsync"));
+
             result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).ThrowsAsync(new Exception("SaveAlgoInstanceDataAsync"));
 
             return result.Object;
@@ -1025,9 +1030,9 @@ namespace Lykke.AlgoStore.Tests.Unit
                         fixture.Build<WalletDtoModel>()
                             .With(w => w.Id, walletId)
                             .Create()
-                    });  
-            
-        return result.Object;
+                    });
+
+            return result.Object;
         }
 
         private static List<AlgoClientInstanceData> When_Invoke_GetAllAlgoInstanceDataAsync(AlgoStoreClientDataService service, string clientId, string algoId, out Exception exception)
@@ -1035,7 +1040,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.GetAllAlgoInstanceDataAsync(new CSharp.AlgoTemplate.Models.Models.BaseAlgoData { ClientId = clientId, AlgoId = algoId }).Result;
+                return service.GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(new CSharp.AlgoTemplate.Models.Models.BaseAlgoData { ClientId = clientId, AlgoId = algoId }).Result;
             }
             catch (Exception ex)
             {

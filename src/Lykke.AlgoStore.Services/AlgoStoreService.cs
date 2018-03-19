@@ -149,6 +149,7 @@ namespace Lykke.AlgoStore.Services
                 return pod.Status.Phase.ToUpper();
             });
         }
+
         /// <summary>
         /// Stops the test image asynchronous.
         /// </summary>

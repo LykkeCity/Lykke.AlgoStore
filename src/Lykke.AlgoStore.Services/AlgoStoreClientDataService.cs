@@ -357,7 +357,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.ClientId, data.AlgoId))
+                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Algo metadata not found for {data.AlgoId}");
 
@@ -502,9 +502,9 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data)
+        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data)
         {
-            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataAsync), data.ClientId, async () =>
+            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync), data.ClientId, async () =>
             {
                 if (!data.ValidateData(out var exception))
                     throw exception;
@@ -514,7 +514,7 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
 
-                var result = (await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId)).Where(a => a.ClientId == data.ClientId);
+                var result = await _instanceRepository.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(data.AlgoId, data.ClientId);
 
                 return result.ToList();
             });
@@ -534,6 +534,20 @@ namespace Lykke.AlgoStore.Services
                 return await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
             });
         }
+
+        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByClientIdAsync(string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataByClientIdAsync), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+
+                var result = await _instanceRepository.GetAllAlgoInstancesByClientAsync(clientId);
+
+                return result.ToList();
+            });
+        }
+
         /// <summary>
         /// Saves the algo instance data asynchronous.
         /// </summary>

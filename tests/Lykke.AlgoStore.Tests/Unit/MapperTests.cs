@@ -120,16 +120,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         [SetUp]
         public void SetUp()
         {
-            //REMARK: http://docs.automapper.org/en/stable/Configuration.html#resetting-static-mapping-configuration
-            //Reset should not be used in production code. It is intended to support testing scenarios only.
             Mapper.Reset();
-
-            Mapper.Initialize(cfg =>
-            {
-                cfg.AddProfiles(typeof(AutoMapperModelProfile));
-
-            });
-
+            Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperModelProfile>());
             Mapper.AssertConfigurationIsValid();
         }
 

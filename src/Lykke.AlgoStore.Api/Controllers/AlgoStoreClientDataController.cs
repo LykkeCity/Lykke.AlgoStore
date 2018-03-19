@@ -255,7 +255,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             });
         }
 
-        [HttpGet("instanceData/all")]
+        [HttpGet("instanceData/allByAlgoIdAndClientId")]
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -267,7 +267,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                 AlgoId = algoId
             };
 
-            var result = await _clientDataService.GetAllAlgoInstanceDataAsync(data);
+            var result = await _clientDataService.GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(data);
             var response = Mapper.Map<List<AlgoClientInstanceModel>>(result);
 
             return Ok(response);
@@ -310,11 +310,11 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
             data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
+            //When we create/edit algo instace and save it we call deploy process after that, that's why we set it's status to deploying.
+            data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
+
             var result = await _clientDataService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
-
-            //we could extract it into modles in NuGet Algo Template project
-            response.AlgoClientId = model.AlgoClientId;
 
             return Ok(response);
         }
