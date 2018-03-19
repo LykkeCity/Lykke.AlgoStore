@@ -273,19 +273,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("instanceData/allByClient")]
-        [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
-        [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetAllAlgoInstanceDataForClientAsync()
-        {
-            string clientId = User.GetClientId();
-            var result = await _clientDataService.GetAllAlgoInstanceDataByClientIdAsync(clientId);
-            var response = Mapper.Map<List<AlgoClientInstanceModel>>(result);
-
-            return Ok(response);
-        }
-
         [HttpGet("instanceData")]
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]

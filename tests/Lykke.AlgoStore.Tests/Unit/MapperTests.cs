@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoFixture;
+using AutoMapper;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -115,6 +116,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         #endregion
+
+        [SetUp]
+        public void SetUp()
+        {
+            Mapper.Reset();
+            Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperModelProfile>());
+            Mapper.AssertConfigurationIsValid();
+        }
 
         [TestCaseSource("AlgoClientMetaData")]
         public void Mapper_AlgoClientMetaData_ToEntity_Test(AlgoClientMetaData data)
