@@ -11,5 +11,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<string> StopTestImageAsync(ManageImageData data);
         Task<string[]> GetTestTailLogAsync(TailLogData data);
         Task DeleteImageAsync(AlgoClientInstanceData instanceData);
+        Task DeleteInstanceAsync(AlgoClientInstanceData instanceData);
     }
 }

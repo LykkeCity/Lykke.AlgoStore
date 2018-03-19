@@ -227,7 +227,7 @@ namespace Lykke.AlgoStore.Services
                 // Remove last character from string to remove empty last line in log result
                 var logArray = result?.Substring(0, result.Length - 1).Split('\n', StringSplitOptions.None) ?? new string[0];
 
-                for(int i = 0; i < logArray.Length; i++)
+                for (int i = 0; i < logArray.Length; i++)
                 {
                     var currentLine = logArray[i];
 
@@ -264,12 +264,36 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
                 var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
-                if (result)
-                    await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+
+                await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
+            });
+        }
+
+        public async Task DeleteInstanceAsync(AlgoClientInstanceData instanceData)
+        {
+            await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
+            {
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
+
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
+
+                if (!pods.IsNullOrEmptyCollection() && pods[0] != null)
+                {
+                    var pod = pods[0];
+
+                    var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
+
+                    if (!result)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                            $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+                }
+
+                await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
             });
         }
     }
