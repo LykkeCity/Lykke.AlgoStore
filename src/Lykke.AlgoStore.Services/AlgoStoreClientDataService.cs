@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
+using Common;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
@@ -38,6 +39,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAssetsService _assetService;
         private readonly IPersonalDataService _personalDataService;
         private readonly IClientAccountClient _clientAccountService;
+        private readonly AssetsValidator _assetsValidator;
 
         private static Random rnd = new Random();
 
@@ -65,6 +67,7 @@ namespace Lykke.AlgoStore.Services
             IPersonalDataService personalDataService,
             IKubernetesApiReadOnlyClient kubernetesApiClient,
             IClientAccountClient clientAccountClient,
+            [NotNull] AssetsValidator assetsValidator,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
@@ -77,6 +80,7 @@ namespace Lykke.AlgoStore.Services
             _personalDataService = personalDataService;
             _kubernetesApiClient = kubernetesApiClient;
             _clientAccountService = clientAccountClient;
+            _assetsValidator = assetsValidator;
         }
 
         /// <summary>
@@ -559,21 +563,23 @@ namespace Lykke.AlgoStore.Services
                 if (algoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
 
-                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
-                if (assetPairResponse.Response.StatusCode == HttpStatusCode.NotFound)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {data.AssetPair} was not found");
-                if (assetPairResponse.Response.StatusCode != HttpStatusCode.OK)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"Invalid response code: {assetPairResponse.Response.StatusCode} from asset service calling AssetPairGetWithHttpMessagesAsync");
+                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);             
+                _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
+                _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);
 
-                var assetPair = assetPairResponse.Body;
-                if (assetPair == null || assetPair.IsDisabled)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AssetPair is not valid");
+                var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
+                _assetsValidator.ValidateAssetResponse(baseAsset);
+                var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
+                _assetsValidator.ValidateAssetResponse(quotingAsset);
+                _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAsset, baseAsset.Body, quotingAsset.Body);
 
-                if (assetPair.QuotingAssetId != data.TradedAsset)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Traded Asset {data.TradedAsset} is not valid - should be {assetPair.QuotingAssetId}");
+                var straight = data.TradedAsset == baseAsset.Body.Id || data.TradedAsset == baseAsset.Body.Name;
+                var asset = straight ? baseAsset : quotingAsset;
+                _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
 
-                if (data.Volume.GetAccuracy() > assetPair.Accuracy)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset");
+                var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
+                var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;              
+                _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
 
                 await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
