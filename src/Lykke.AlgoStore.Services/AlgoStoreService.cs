@@ -8,6 +8,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
@@ -19,6 +21,8 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreService : BaseAlgoStoreService, IAlgoStoreService
     {
+        private readonly IUserLogRepository _userLogRepository;
+        private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
@@ -38,8 +42,11 @@ namespace Lykke.AlgoStore.Services
         /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
         /// <param name="storageConnectionManager">The storage connection manager.</param>
         /// <param name="teamCityClient">The team city client.</param>
-        /// <param name="kubernetesApiClient">The kubernetes API client.</param>
+        /// <param name="kubernetesApiClient">The Kubernetes API client.</param>
         /// <param name="algoInstanceRepository">The algo instance repository.</param>
+        /// <param name="publicAlgosRepository">The public algo repository.</param>
+        /// <param name="statisticsRepository">The statistics repository.</param>
+        /// <param name="userLogRepository">The user log repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
@@ -48,7 +55,9 @@ namespace Lykke.AlgoStore.Services
             ITeamCityClient teamCityClient,
             IKubernetesApiClient kubernetesApiClient,
             IAlgoClientInstanceRepository algoInstanceRepository,
-            IPublicAlgosRepository publicAlgosRepository) : base(log, nameof(AlgoStoreService))
+            IPublicAlgosRepository publicAlgosRepository,
+            IStatisticsRepository statisticsRepository,
+            IUserLogRepository userLogRepository) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
@@ -57,6 +66,8 @@ namespace Lykke.AlgoStore.Services
             _kubernetesApiClient = kubernetesApiClient;
             _algoInstanceRepository = algoInstanceRepository;
             _publicAlgosRepository = publicAlgosRepository;
+            _statisticsRepository = statisticsRepository;
+            _userLogRepository = userLogRepository;
         }
 
         /// <summary>
@@ -135,18 +146,19 @@ namespace Lykke.AlgoStore.Services
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 return pod.Status.Phase.ToUpper();
             });
         }
+
         /// <summary>
         /// Stops the test image asynchronous.
         /// </summary>
@@ -164,18 +176,33 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoMetaDataRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
 
+                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
+
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
                 if (pods.Count > 1)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for algoId {algoId}");
 
                 var pod = pods[0];
                 if (pod == null)
-                    return BuildStatuses.NotDeployed.ToUpperText();
+                    return AlgoInstanceStatus.Deploying.ToString();
 
-                return pod.Status.Phase.ToUpper();
+                var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod);
+
+                if (!result)
+                    return pod.Status.Phase.ToUpper();
+
+                instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
+
+                return AlgoInstanceStatus.Stopped.ToString();
             });
         }
 
@@ -210,7 +237,7 @@ namespace Lykke.AlgoStore.Services
                 // Remove last character from string to remove empty last line in log result
                 var logArray = result?.Substring(0, result.Length - 1).Split('\n', StringSplitOptions.None) ?? new string[0];
 
-                for(int i = 0; i < logArray.Length; i++)
+                for (int i = 0; i < logArray.Length; i++)
                 {
                     var currentLine = logArray[i];
 
@@ -247,12 +274,40 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
                 var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
-                if (result)
-                    await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+
+                await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
+            });
+        }
+
+        public async Task DeleteInstanceAsync(AlgoClientInstanceData instanceData)
+        {
+            await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
+            {
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
+
+                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
+
+                if (!pods.IsNullOrEmptyCollection() && pods[0] != null)
+                {
+                    var pod = pods[0];
+
+                    var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
+
+                    if (!result)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                            $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+                }
+
+                await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
+
+                //REMARK: Two lines below are commented out until we reach final decision on deletion
+                //await _userLogRepository.DeleteAllAsync(instanceData.InstanceId);
+                //await _statisticsRepository.DeleteAllAsync(instanceData.InstanceId);
             });
         }
     }

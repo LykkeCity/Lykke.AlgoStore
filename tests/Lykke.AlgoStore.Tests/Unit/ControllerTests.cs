@@ -40,7 +40,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -62,7 +62,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -84,7 +84,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -106,7 +106,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithoutResult(true);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -128,7 +128,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(false);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -152,7 +152,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -178,7 +178,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
-            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null);
+            var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
@@ -316,10 +316,12 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoBlobReadOnlyRepository algoBlobRepository,
             IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
             IAlgoClientInstanceRepository instanceRepository,
-            IPublicAlgosRepository publicAlgosRepository)
+            IPublicAlgosRepository publicAlgosRepository,
+            IStatisticsRepository statisticsRepository,
+            IUserLogRepository userLogRepository)
         {
             var result = new AlgoStoreService(new LogMock(), algoBlobRepository, algoMetaDataRepository,
-                null, null, kubernetesApiClient, instanceRepository, publicAlgosRepository);
+                null, null, kubernetesApiClient, instanceRepository, publicAlgosRepository, statisticsRepository, userLogRepository);
             return result;
         }
 
