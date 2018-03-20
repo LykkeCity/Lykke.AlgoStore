@@ -9,6 +9,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
@@ -20,6 +21,8 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreService : BaseAlgoStoreService, IAlgoStoreService
     {
+        private readonly IUserLogRepository _userLogRepository;
+        private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
@@ -42,6 +45,8 @@ namespace Lykke.AlgoStore.Services
         /// <param name="kubernetesApiClient">The Kubernetes API client.</param>
         /// <param name="algoInstanceRepository">The algo instance repository.</param>
         /// <param name="publicAlgosRepository">The public algo repository.</param>
+        /// <param name="statisticsRepository">The statistics repository.</param>
+        /// <param name="userLogRepository">The user log repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
@@ -50,7 +55,9 @@ namespace Lykke.AlgoStore.Services
             ITeamCityClient teamCityClient,
             IKubernetesApiClient kubernetesApiClient,
             IAlgoClientInstanceRepository algoInstanceRepository,
-            IPublicAlgosRepository publicAlgosRepository) : base(log, nameof(AlgoStoreService))
+            IPublicAlgosRepository publicAlgosRepository,
+            IStatisticsRepository statisticsRepository,
+            IUserLogRepository userLogRepository) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
@@ -59,6 +66,8 @@ namespace Lykke.AlgoStore.Services
             _kubernetesApiClient = kubernetesApiClient;
             _algoInstanceRepository = algoInstanceRepository;
             _publicAlgosRepository = publicAlgosRepository;
+            _statisticsRepository = statisticsRepository;
+            _userLogRepository = userLogRepository;
         }
 
         /// <summary>
@@ -294,6 +303,10 @@ namespace Lykke.AlgoStore.Services
                 }
 
                 await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
+
+                //REMARK: Two lines below are commented out until we reach final decision on deletion
+                //await _userLogRepository.DeleteAllAsync(instanceData.InstanceId);
+                //await _statisticsRepository.DeleteAllAsync(instanceData.InstanceId);
             });
         }
     }
