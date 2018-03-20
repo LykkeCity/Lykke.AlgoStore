@@ -36,7 +36,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceDataRepository = Given_Correct_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo);
+            var service = 
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
 
             var response = When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -53,7 +54,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceDataRepository = Given_Correct_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, null);
+            var service = 
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, null, null, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -69,7 +71,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceDataRepository = Given_Correct_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, null);
+            var service = 
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, null, null, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -87,7 +90,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceDataRepository = Given_Error_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo);
+            var service = 
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -105,7 +109,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceDataRepository = Given_Error_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo);
+            var service = 
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -124,7 +129,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceDataRepository = Given_Correct_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Random");
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo);
+            var service = 
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
 
             bool res = When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -141,7 +147,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var kubernetesApiClient = Given_Correct_KubernetesApiClientMock_WithLog(apiReturnedLog);
             var instanceRepo = Given_Correct_AlgoInstanceDataRepositoryMock();
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, null, null, instanceRepo, null, null, null);
+            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, null, null, instanceRepo, null, null, null, null, null);
 
             var response = When_Invoke_GetLog(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -203,10 +209,12 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoClientInstanceRepository instanceDataRepository,
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
-            IPublicAlgosRepository publicAlgosRepository)
+            IPublicAlgosRepository publicAlgosRepository,
+            IStatisticsRepository statisticsRepository,
+            IUserLogRepository userLogRepository)
         {
             return new AlgoStoreService(new LogMock(), blobRepo, repo, storageConnectionManager, teamCityClient,
-                deploymentApiClient, instanceDataRepository, publicAlgosRepository);
+                deploymentApiClient, instanceDataRepository, publicAlgosRepository, statisticsRepository, userLogRepository);
         }
 
         private static ManageImageData Given_ManageImageData()
