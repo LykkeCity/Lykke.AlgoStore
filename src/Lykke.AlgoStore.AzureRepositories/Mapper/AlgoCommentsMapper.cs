@@ -10,13 +10,15 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
     {
         public static AlgoCommentData ToModel(this AlgoCommentEntity entity)
         {
-            var result = new AlgoCommentData();
-            result.AlgoId = entity.PartitionKey;
-            result.CommentId = entity.RowKey;
-            result.Author = entity.AutorId;
-            result.Content = entity.Content;
-            result.CreatedOn = entity.CreatedOn;
-            result.EditedOn = entity.EditedOn;
+            var result = new AlgoCommentData
+            {
+                AlgoId = entity.PartitionKey,
+                CommentId = entity.RowKey,
+                Author = entity.AuthorId,
+                Content = entity.Content,
+                CreatedOn = entity.CreatedOn,
+                EditedOn = entity.EditedOn
+            };
 
             return result;
         }
@@ -27,13 +29,15 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
             foreach (var entity in entities)
             {
-                var data = new AlgoCommentData();
-                data.AlgoId = entity.PartitionKey;
-                data.CommentId = entity.RowKey;
-                data.Author = entity.AutorId;
-                data.Content = entity.Content;
-                data.CreatedOn = entity.CreatedOn;
-                data.EditedOn = entity.EditedOn;
+                var data = new AlgoCommentData
+                {
+                    AlgoId = entity.PartitionKey,
+                    CommentId = entity.RowKey,
+                    Author = entity.AuthorId,
+                    Content = entity.Content,
+                    CreatedOn = entity.CreatedOn,
+                    EditedOn = entity.EditedOn
+                };
 
                 result.Add(data);
             }            
@@ -43,13 +47,15 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
 
         public static AlgoCommentEntity ToEntity(this AlgoCommentData data)
         {
-            var result = new AlgoCommentEntity();
-            result.PartitionKey = data.AlgoId;
-            result.RowKey = data.CommentId;
-            result.AutorId = data.Author;
-            result.Content = data.Content;
-            result.CreatedOn = data.CreatedOn;
-            result.EditedOn = data.EditedOn;
+            var result = new AlgoCommentEntity
+            {
+                PartitionKey = data.AlgoId,
+                RowKey = data.CommentId,
+                AuthorId = data.Author,
+                Content = data.Content,
+                CreatedOn = data.CreatedOn,
+                EditedOn = data.EditedOn
+            };
 
             return result;
         }

@@ -12,7 +12,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class AlgoCommentsRepository: IAlgoCommentsRepository
     {
-        public static readonly string TableName = "AlgoCommentsTable";
+        public static readonly string TableName = "AlgoComments";
 
         private readonly INoSQLTableStorage<AlgoCommentEntity> _table;
 

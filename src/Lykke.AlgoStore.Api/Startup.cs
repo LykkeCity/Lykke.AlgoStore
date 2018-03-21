@@ -10,7 +10,6 @@ using Lykke.AlgoStore.Api.Infrastructure.OperationFilters;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.SettingsReader;
 using Microsoft.AspNetCore.Builder;
@@ -20,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
 
 namespace Lykke.AlgoStore.Api
 {
