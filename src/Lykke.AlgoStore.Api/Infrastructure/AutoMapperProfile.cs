@@ -48,6 +48,12 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForSourceMember(src => src.AlgoMetaDataInformationJSON, opt => opt.Ignore());
+
+            CreateMap<AlgoCommentData, AlgoCommentModel>()
+                .ForSourceMember(src => src.Author, opt => opt.Ignore());
+
+            CreateMap<AlgoCommentModel, AlgoCommentData>()
+                .ForSourceMember(src => src.Author, opt => opt.Ignore());
         }
     }
 }

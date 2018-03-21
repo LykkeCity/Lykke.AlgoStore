@@ -80,6 +80,9 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoStoreService>()
                 .As<IAlgoStoreService>()
                 .SingleInstance();
+            builder.RegisterType<AlgoStoreCommentsService>()
+                .As<IAlgoStoreCommentsService>()
+                .SingleInstance();
         }
     }
 }
