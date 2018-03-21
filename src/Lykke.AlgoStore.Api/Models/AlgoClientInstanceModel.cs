@@ -1,4 +1,5 @@
 ﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using System;
 
 namespace Lykke.AlgoStore.Api.Models
 {
@@ -12,5 +13,7 @@ namespace Lykke.AlgoStore.Api.Models
         public AlgoMetaDataInformationModel AlgoMetaDataInformation { get; set; }
         public AlgoInstanceStatus AlgoInstanceStatus { get; set; }
         public AlgoInstanceType AlgoInstanceType { get; set; }
+
+        public DateTime? AlgoInstanceRunDate { get; set; }
     }
 }
