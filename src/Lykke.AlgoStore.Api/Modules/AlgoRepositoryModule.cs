@@ -36,6 +36,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.AlgoClientInstanceRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<PublicAlgoEntity>.Create(reloadingDbManager, PublicAlgosRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoRatingEntity>.Create(reloadingDbManager, AlgoRatingsRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<AlgoCommentEntity>.Create(reloadingDbManager, AlgoCommentsRepository.TableName, _log));
 
             builder.RegisterInstance(AzureTableStorage<StatisticsEntity>.Create(reloadingDbManager, StatisticsRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<UserLogEntity>.Create(reloadingDbManager, UserLogRepository.TableName, _log));
@@ -55,6 +56,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoRatingsRepository>().As<IAlgoRatingsRepository>();
             builder.RegisterType<PublicAlgosRepository>().As<IPublicAlgosRepository>();
+            builder.RegisterType<AlgoCommentsRepository>().As<IAlgoCommentsRepository>();
         }
     }
 }

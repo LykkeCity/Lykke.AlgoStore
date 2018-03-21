@@ -11,10 +11,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -30,7 +28,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoBlobRepository _blobRepository;
         private readonly IAlgoClientInstanceRepository _instanceRepository;
         private readonly IAlgoRatingsRepository _ratingsRepository;
-        private readonly IPublicAlgosRepository _publicAlgosRepository;       
+        private readonly IPublicAlgosRepository _publicAlgosRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository; // TODO Should be removed
         private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;

@@ -12,7 +12,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class AlgoRatingsRepository : IAlgoRatingsRepository
     {
-        private static readonly Random Rnd = new Random();
         public static readonly string TableName = "AlgoRatingsTable";
 
         private readonly INoSQLTableStorage<AlgoRatingEntity> _table;
