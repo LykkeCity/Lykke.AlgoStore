@@ -14,6 +14,7 @@ using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Contract;
