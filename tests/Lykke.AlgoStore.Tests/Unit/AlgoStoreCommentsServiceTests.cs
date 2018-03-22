@@ -86,6 +86,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             result.Setup(repo => repo.SaveCommentAsync(It.IsAny<AlgoCommentData>())).Returns((AlgoCommentData data) => 
             {
+                data.Author = null;
                 return Task.FromResult(data);
             });
 

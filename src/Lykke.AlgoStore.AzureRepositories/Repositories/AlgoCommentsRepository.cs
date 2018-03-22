@@ -30,7 +30,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         public async Task<AlgoCommentData> GetCommentByIdAsync(string algoId, string commentId)
         {
             var result = await _table.GetDataAsync(algoId, commentId);
-            return result.ToModel();
+            return result?.ToModel();
         }
 
         public async Task<AlgoCommentData> SaveCommentAsync(AlgoCommentData data)
