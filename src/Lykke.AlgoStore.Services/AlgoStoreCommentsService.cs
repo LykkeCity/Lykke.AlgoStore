@@ -50,6 +50,8 @@ namespace Lykke.AlgoStore.Services
                      }                     
                  }
 
+                 result.Sort((x, y) => DateTime.Compare(y.CreatedOn, x.CreatedOn));
+
                  return result;
              });
         }
@@ -66,15 +68,19 @@ namespace Lykke.AlgoStore.Services
 
                 var result = await _algoCommentsRepository.GetCommentByIdAsync(algoId, commentId);                
 
-                if (String.IsNullOrEmpty(result.Author))
-                    result.Author = "Administrator";
-                else
+                if(result != null)
                 {
-                    var authorPersonalData = await _personalDataService.GetAsync(result.Author);
-                    result.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
-                                                            ? authorPersonalData.FullName
-                                                            : authorPersonalData.Email;
+                    if (String.IsNullOrEmpty(result.Author))
+                        result.Author = "Administrator";
+                    else
+                    {
+                        var authorPersonalData = await _personalDataService.GetAsync(result.Author);
+                        result.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
+                                                                ? authorPersonalData.FullName
+                                                                : authorPersonalData.Email;
+                    }
                 }
+                
                 return result;
             });
         }
@@ -91,9 +97,20 @@ namespace Lykke.AlgoStore.Services
 
                 
                 data.CommentId = Guid.NewGuid().ToString();
-                data.CreatedOn = DateTime.Now;                   
+                data.CreatedOn = DateTime.UtcNow;                   
 
                 var result = await _algoCommentsRepository.SaveCommentAsync(data);
+
+                if (String.IsNullOrEmpty(result.Author))
+                    result.Author = "Administrator";
+                else
+                {
+                    var authorPersonalData = await _personalDataService.GetAsync(result.Author);
+                    result.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
+                                                            ? authorPersonalData.FullName
+                                                            : authorPersonalData.Email;
+                }
+
                 return result;
             });
         }
@@ -102,18 +119,32 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(EditCommentAsync), data.Author, async () =>
             {
-                if (string.IsNullOrEmpty(data.Author))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
+                if (string.IsNullOrEmpty(data.CommentId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "CommentId is empty.");
 
                 if (string.IsNullOrEmpty(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
 
                 var comment = await _algoCommentsRepository.GetCommentByIdAsync(data.AlgoId, data.CommentId);
 
-                comment.EditedOn = DateTime.Now;
+                if(comment == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Comment with this CommentId and AlgoId does not exist.");
+
+                comment.EditedOn = DateTime.UtcNow;
                 comment.Content = data.Content;
 
                 var result = await _algoCommentsRepository.SaveCommentAsync(comment);
+
+                if (String.IsNullOrEmpty(result.Author))
+                    result.Author = "Administrator";
+                else
+                {
+                    var authorPersonalData = await _personalDataService.GetAsync(result.Author);
+                    result.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
+                                                            ? authorPersonalData.FullName
+                                                            : authorPersonalData.Email;
+                }
+
                 return result;
             });
         }
