@@ -36,7 +36,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.HftApiKey, opt => opt.Ignore())
                 .ForMember(dest => dest.Margin, opt => opt.Ignore())
                 .ForMember(dest => dest.Volume, opt => opt.Ignore())
-                .ForMember(dest => dest.TradedAsset, opt => opt.Ignore());
+                .ForMember(dest => dest.TradedAsset, opt => opt.Ignore())
+                .ForMember(dest => dest.IsStraight, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoMetaDataModel, AlgoMetaData>()
