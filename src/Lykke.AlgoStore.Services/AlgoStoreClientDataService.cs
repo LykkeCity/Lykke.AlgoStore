@@ -594,6 +594,7 @@ namespace Lykke.AlgoStore.Services
                 var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;              
                 _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
 
+                data.IsStraight = straight;
                 await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
                 var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
