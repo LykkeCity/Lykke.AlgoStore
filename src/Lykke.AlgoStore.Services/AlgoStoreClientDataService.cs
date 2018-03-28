@@ -629,8 +629,8 @@ namespace Lykke.AlgoStore.Services
         /// </param>
         private async Task<bool> IsWalletUsedByExistingStartedInstance(string walletId)
         {
-            var algoInsatnces = (await _instanceRepository.GetAllAlgoInstancesByWalletIdAsync(walletId));
-            return algoInsatnces != null && algoInsatnces.Count() > 0;
+            var algoInstances = (await _instanceRepository.GetAllAlgoInstancesByWalletIdAsync(walletId));
+            return algoInstances != null && algoInstances.Count() > 0;
         }
     }
 }
