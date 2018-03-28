@@ -382,11 +382,29 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldBe_ServiceException(exception);
         }
 
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_WalletAlreadyUsed()
+        {
+            var data = Given_AlgoClientInstanceData(1);
+            var repo = Given_WalletExist_Mock();
+            var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
+            var assetsValidator = new AssetsValidator();
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, assetService, null, null,
+                clientAccountService, assetsValidator);
+            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
         [Test]
         public void SaveAlgoInstanceDataAsync_Returns_AlgoNotFound()
         {
             var data = Given_AlgoClientInstanceData(1);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(false);
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
@@ -913,6 +931,33 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static IAlgoClientInstanceRepository Given_Correct_AlgoClientInstanceRepositoryMock()
         {
+            var result = Correct_AlgoClientInstanceRepositoryMock();
+
+            return result.Object;
+        }
+
+        private static IAlgoClientInstanceRepository Given_WalletExist_Mock()
+        {
+            var result = Correct_AlgoClientInstanceRepositoryMock();
+
+            var fixture = new Fixture();
+
+
+            result.Setup(repo => repo.GetAllAlgoInstancesByWalletIdAsync(It.IsAny<string>()))
+               .Returns((string walletId) =>
+               {
+                   return Task.FromResult(new List<AlgoClientInstanceData>
+                   {
+                       fixture.Build<AlgoClientInstanceData>().With(b => b.WalletId, walletId).Create()
+                   }.AsEnumerable());
+               });
+
+
+            return result.Object;
+        }
+
+        private static Mock<IAlgoClientInstanceRepository> Correct_AlgoClientInstanceRepositoryMock()
+        {
             var fixture = new Fixture();
             var result = new Mock<IAlgoClientInstanceRepository>();
 
@@ -953,8 +998,10 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
             result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).Returns(Task.CompletedTask);
 
-            return result.Object;
+            return result;
         }
+
+
         private static IAlgoClientInstanceRepository Given_Empty_AlgoClientInstanceRepositoryMock()
         {
             var fixture = new Fixture();
@@ -974,6 +1021,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
+
         private static IAlgoClientInstanceRepository Given_Error_AlgoClientInstanceRepositoryMock()
         {
             var fixture = new Fixture();
@@ -996,6 +1044,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo =>
                  repo.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(It.IsAny<string>(), It.IsAny<string>()))
              .ThrowsAsync(new Exception("GetAllAlgoInstancesByAlgoIdAndClienIdAsync"));
+
+            result.Setup(repo =>
+                 repo.GetAllAlgoInstancesByWalletIdAsync(It.IsAny<string>()))
+             .ThrowsAsync(new Exception("GetAllAlgoInstancesByWalletIdAsync"));
 
             result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).ThrowsAsync(new Exception("SaveAlgoInstanceDataAsync"));
 
@@ -1033,7 +1085,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     .Create(),
                     Response = new HttpResponseMessage(statusCode)
                 });
-            
+
             return result.Object;
         }
 
