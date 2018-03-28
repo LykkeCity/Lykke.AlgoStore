@@ -627,7 +627,6 @@ namespace Lykke.AlgoStore.Services
         /// <param name="walletId">
         /// Wallet id that the user wants to use for trading
         /// </param>
-        /// <returns></returns>
         private async Task<bool> IsWalletUsedByExistingStartedInstance(string walletId)
         {
             var algoInsatnces = (await _instanceRepository.GetAllAlgoInstancesByWalletIdAsync(walletId));
