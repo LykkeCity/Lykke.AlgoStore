@@ -5,5 +5,6 @@
         public int ErrorCode { get; set; }
         public string ErrorDescription { get; set; }
         public string ErrorMessage { get; set; }
+        public string DisplayMessage { get; set; }
     }
 }

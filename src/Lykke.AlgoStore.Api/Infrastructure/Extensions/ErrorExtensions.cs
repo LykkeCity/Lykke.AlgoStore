@@ -21,6 +21,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             errorResponse.ErrorCode = (int)error.ErrorCode;
             errorResponse.ErrorDescription = error.ErrorCode.ToString("g");
             errorResponse.ErrorMessage = error.Message;
+            errorResponse.DisplayMessage = error.DisplayMessage;
 
             HttpStatusCode statusCode;
 

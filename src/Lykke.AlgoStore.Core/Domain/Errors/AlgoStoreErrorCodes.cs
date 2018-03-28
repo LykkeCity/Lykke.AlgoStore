@@ -18,6 +18,7 @@
         MoreThanOnePodFound = 507,
         AlgoNotPublic = 508,
         WalletNotFound = 509,
+        WalletIsAlreadyUsed = 510,
         //Operation
         UnableToDeleteData = 601,
 

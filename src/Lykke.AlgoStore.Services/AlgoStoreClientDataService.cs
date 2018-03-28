@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common;
+﻿using Common;
 using Common.Log;
 using JetBrains.Annotations;
 using Lykke.AlgoStore.Core.Constants;
@@ -14,10 +10,15 @@ using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Contract;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
@@ -576,7 +577,12 @@ namespace Lykke.AlgoStore.Services
                 if (algoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
 
-                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);             
+                if (!string.IsNullOrEmpty(data.WalletId) && await IsWalletUsedByExistingStartedInstance(data.WalletId))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletIsAlreadyUsed, string.Format(Phrases.WalletIsAlreadyUsed, data.WalletId, data.AlgoId, data.ClientId), Phrases.WalletAlreadyUsed);
+                }
+
+                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
                 _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
                 _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);
 
@@ -591,7 +597,7 @@ namespace Lykke.AlgoStore.Services
                 _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
 
                 var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
-                var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;              
+                var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
                 _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
 
                 data.IsStraight = straight;
@@ -610,6 +616,21 @@ namespace Lykke.AlgoStore.Services
         {
             var wallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
             return wallets?.FirstOrDefault(x => x.Id == walletId);
+        }
+
+        /// <summary>
+        /// Check if the wallet is used by another running algo instance of the user.
+        /// </summary>
+        /// <param name="clientId">
+        /// User id
+        /// </param>
+        /// <param name="walletId">
+        /// Wallet id that the user wants to use for trading
+        /// </param>
+        private async Task<bool> IsWalletUsedByExistingStartedInstance(string walletId)
+        {
+            var algoInstances = (await _instanceRepository.GetAllAlgoInstancesByWalletIdAsync(walletId));
+            return algoInstances != null && algoInstances.Count() > 0;
         }
     }
 }
