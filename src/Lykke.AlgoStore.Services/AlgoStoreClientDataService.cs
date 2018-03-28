@@ -579,8 +579,9 @@ namespace Lykke.AlgoStore.Services
 
                 if (!string.IsNullOrEmpty(data.WalletId) && await IsWalletUsedByExistingStartedInstance(data.WalletId))
                 {
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletIsAlreadyUsed, string.Format(Phrases.WalletIsAlreadyUsed, data.WalletId, data.AlgoId, data.ClientId));
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletIsAlreadyUsed, string.Format(Phrases.WalletIsAlreadyUsed, data.WalletId, data.AlgoId, data.ClientId), Phrases.WalletAlreadyUsed);
                 }
+
                 var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
                 _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
                 _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);

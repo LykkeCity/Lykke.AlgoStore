@@ -61,6 +61,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The wallet is already used by another your instance.
+        /// </summary>
+        internal static string WalletAlreadyUsed {
+            get {
+                return ResourceManager.GetString("WalletAlreadyUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wallet is already used by a running instance - Wallet Id {0}. You should use another wallet. Algo id {1}, Client Id {2}.
         /// </summary>
         internal static string WalletIsAlreadyUsed {
