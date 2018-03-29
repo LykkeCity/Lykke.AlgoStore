@@ -39,6 +39,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureTableStorage<AlgoCommentEntity>.Create(reloadingDbManager, AlgoCommentsRepository.TableName, _log));
 
             builder.RegisterInstance(AzureTableStorage<StatisticsEntity>.Create(reloadingDbManager, StatisticsRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<StatisticsSummaryEntity>.Create(reloadingDbManager, StatisticsRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<UserLogEntity>.Create(reloadingDbManager, UserLogRepository.TableName, _log));
 
 
