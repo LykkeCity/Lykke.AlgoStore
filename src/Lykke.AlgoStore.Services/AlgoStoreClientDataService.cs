@@ -645,8 +645,8 @@ namespace Lykke.AlgoStore.Services
             await _statisticsRepository.CreateOrUpdateSummaryAsync(new StatisticsSummary
             {
                 InitialWalletBalance = initialWalletBalance,
-                AssetOneBalance = clientBalanceResponseModels.First().Balance,
-                AssetTwoBalance = clientBalanceResponseModels.Last().Balance,
+                AssetOneBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
+                AssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
                 InstanceId = data.InstanceId,
                 LastWalletBalance = initialWalletBalance,
                 TotalNumberOfStarts = 0,
