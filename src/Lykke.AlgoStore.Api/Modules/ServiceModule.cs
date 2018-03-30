@@ -68,7 +68,7 @@ namespace Lykke.AlgoStore.Api.Modules
              .SingleInstance();
         }
 
-        private static void RegisterLocalServices(ContainerBuilder builder)
+        private void RegisterLocalServices(ContainerBuilder builder)
         {
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
@@ -86,6 +86,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoStoreTradesService>()
                 .As<IAlgoStoreTradesService>()
+                .WithParameter("maxNumberOfRowsToFetch", _settings.CurrentValue.AlgoApi.MaxNumberOfRowsToFetch)
                 .SingleInstance();
         }
     }
