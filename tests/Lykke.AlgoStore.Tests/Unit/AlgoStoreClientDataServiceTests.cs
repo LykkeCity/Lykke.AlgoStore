@@ -27,6 +27,7 @@ using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Balances.AutorestClient.Models;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.PersonalData.Client.Models;
@@ -47,6 +48,10 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private const int AssetAccuracy = 3;
         private const int MinVolume = 1;
+
+        private const string TradedAsset = "BTC";
+        private const string QuotingAsset = "USD";
+        private const string AssetPair = "BTCUSD";
 
         private static readonly string BlobKey = "TestKey";
         private static readonly string AlogId = "AlgoId123";
@@ -721,6 +726,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             Assert.Null(data);
         }
+
         private static void Then_Exception_ShouldBe_Null(Exception exception)
         {
             Assert.Null(exception);
@@ -973,7 +979,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
 
 
-            result.Setup(repo => repo.GetAllAlgoInstancesByWalletIdAsync(It.IsAny<string>()))
+            result.Setup(repo => repo.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(It.IsAny<string>()))
                .Returns((string walletId) =>
                {
                    return Task.FromResult(new List<AlgoClientInstanceData>
@@ -1076,7 +1082,7 @@ namespace Lykke.AlgoStore.Tests.Unit
              .ThrowsAsync(new Exception("GetAllAlgoInstancesByAlgoIdAndClienIdAsync"));
 
             result.Setup(repo =>
-                 repo.GetAllAlgoInstancesByWalletIdAsync(It.IsAny<string>()))
+                 repo.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(It.IsAny<string>()))
              .ThrowsAsync(new Exception("GetAllAlgoInstancesByWalletIdAsync"));
 
             result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).ThrowsAsync(new Exception("SaveAlgoInstanceDataAsync"));
@@ -1088,6 +1094,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var fixture = new Fixture();
             var result = new Mock<IStatisticsRepository>();
+
+            result.Setup(repo => repo.CreateOrUpdateSummaryAsync(It.IsAny<StatisticsSummary>())).Returns(Task.CompletedTask);
+
+            result.Setup(repo => repo.GetSummaryAsync(It.IsAny<string>())).Returns(
+                () => Task.FromResult(new StatisticsSummary()));
 
             return result.Object;
         }
@@ -1173,6 +1184,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(service => service.GetTotalWalletBalanceInBaseAssetAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AssetPair>()))
                 .ReturnsAsync(100);
 
+            result.Setup(service => service.GetWalletBalancesAsync(It.IsAny<string>(), It.IsAny<AssetPair>()))
+                .ReturnsAsync(new List<ClientBalanceResponseModel>
+                {
+                    fixture.Build<ClientBalanceResponseModel>()
+                        .With(w => w.AssetId, TradedAsset)
+                        .Create(),
+
+                    fixture.Build<ClientBalanceResponseModel>()
+                        .With(w => w.AssetId, QuotingAsset)
+                        .Create()
+                });
+            
+
             return result.Object;
         }
 
@@ -1249,6 +1273,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
             return fixture.Build<AlgoClientInstanceData>()
                 .With(a => a.Volume, volume)
+                .With(a => a.TradedAsset, TradedAsset)
+                .With(a => a.AssetPair, AssetPair)
                 .Create();
         }
         #endregion
