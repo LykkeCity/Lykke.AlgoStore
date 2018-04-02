@@ -101,6 +101,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IAlgoStoreTradesService>()
                 .WithParameter("maxNumberOfRowsToFetch", _settings.CurrentValue.AlgoApi.MaxNumberOfRowsToFetch)
                 .SingleInstance();
+
+            builder.RegisterType<AlgoStoreStatisticsService>()
+                .As<IAlgoStoreStatisticsService>()
+                .SingleInstance();
         }
     }
 }
