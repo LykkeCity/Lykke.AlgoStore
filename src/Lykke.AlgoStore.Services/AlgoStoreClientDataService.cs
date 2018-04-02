@@ -8,17 +8,21 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.PersonalData.Contract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.Service.Assets.Client.Models;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
@@ -32,6 +36,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoClientInstanceRepository _instanceRepository;
         private readonly IAlgoRatingsRepository _ratingsRepository;
         private readonly IPublicAlgosRepository _publicAlgosRepository;
+        private readonly IStatisticsRepository _statisticsRepository;
 
         private readonly IAlgoRuntimeDataReadOnlyRepository _runtimeDataRepository; // TODO Should be removed
         private readonly IKubernetesApiReadOnlyClient _kubernetesApiClient;
@@ -40,6 +45,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IPersonalDataService _personalDataService;
         private readonly IClientAccountClient _clientAccountService;
         private readonly AssetsValidator _assetsValidator;
+        private readonly IWalletBalanceService _walletBalanceService;
 
         private static Random rnd = new Random();
 
@@ -52,22 +58,27 @@ namespace Lykke.AlgoStore.Services
         /// <param name="instanceRepository">The instance repository.</param>
         /// <param name="ratingsRepository">The ratings repository.</param>
         /// <param name="publicAlgosRepository">The public algos repository.</param>
+        /// <param name="statisticsRepository">The statistics repository</param>
         /// <param name="assetService">The asset service.</param>
         /// <param name="personalDataService">The personal Data Service</param>
         /// <param name="kubernetesApiClient">The kubernetes API client.</param>
         /// <param name="clientAccountClient">The Client Account Service</param>
+        /// <param name="walletBalanceService">The Wallet Balance Service</param>
         /// <param name="log">The log.</param>
+        /// <param name="assetsValidator">The Asset Validator</param>
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
+            IStatisticsRepository statisticsRepository,
             IAssetsService assetService,
             IPersonalDataService personalDataService,
             IKubernetesApiReadOnlyClient kubernetesApiClient,
-            IClientAccountClient clientAccountClient,
+            IClientAccountClient clientAccountClient,           
             [NotNull] AssetsValidator assetsValidator,
+            IWalletBalanceService walletBalanceService,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
@@ -76,11 +87,13 @@ namespace Lykke.AlgoStore.Services
             _instanceRepository = instanceRepository;
             _ratingsRepository = ratingsRepository;
             _publicAlgosRepository = publicAlgosRepository;
+            _statisticsRepository = statisticsRepository;
             _assetService = assetService;
             _personalDataService = personalDataService;
             _kubernetesApiClient = kubernetesApiClient;
-            _clientAccountService = clientAccountClient;
+            _clientAccountService = clientAccountClient;          
             _assetsValidator = assetsValidator;
+            _walletBalanceService = walletBalanceService;
         }
 
         /// <summary>
@@ -600,6 +613,8 @@ namespace Lykke.AlgoStore.Services
                 var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
                 _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
 
+                _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
+
                 data.IsStraight = straight;
                 await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
@@ -608,14 +623,63 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot save data for {data.ClientId} id: {data.AlgoId}");
 
+                SaveSummaryStatistic(data, assetPairResponse.Body);
+
                 return res;
             });
         }
 
-        private async Task<Lykke.Service.ClientAccount.Client.Models.WalletDtoModel> GetClientWallet(string clientId, string walletId)
+
+        /// <summary>
+        /// Create statistics summary and save initial wallet status in it
+        /// </summary>
+        /// <param name="data">The algo instance data</param>
+        /// <param name="assetPair">The asset pair for the algo instance</param>
+        private async void SaveSummaryStatistic(AlgoClientInstanceData data, AssetPair assetPair)
+        {
+            var baseAssetForUser = await GetBaseAssetAsync(data.ClientId);
+            var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(data.WalletId, assetPair);
+            var initialWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(data.WalletId, baseAssetForUser.BaseAssetId, assetPair);
+
+            var clientBalanceResponseModels = walletBalances.ToList();
+            await _statisticsRepository.CreateOrUpdateSummaryAsync(new StatisticsSummary
+            {
+                InitialWalletBalance = initialWalletBalance,
+                AssetOneBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
+                AssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
+                InstanceId = data.InstanceId,
+                LastWalletBalance = initialWalletBalance,
+                TotalNumberOfStarts = 0,
+                TotalNumberOfTrades = 0
+            });
+
+            var statisticsSummaryResult = await _statisticsRepository.GetSummaryAsync(data.InstanceId);
+            if (statisticsSummaryResult == null)
+                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                    $"Could not save summary row for AlgoInstance: {data.InstanceId}, User: {data.ClientId} AlgoId: {data.AlgoId}");
+        }
+
+        private async Task<WalletDtoModel> GetClientWallet(string clientId, string walletId)
         {
             var wallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
             return wallets?.FirstOrDefault(x => x.Id == walletId);
+        }
+
+        /// <summary>
+        /// Get the base asset Id for the user
+        /// </summary>
+        /// <param name="clientId">User Id</param>
+        /// <returns></returns>
+        private async Task<BaseAssetClientModel> GetBaseAssetAsync(string clientId)
+        {
+            var baseAsset = await _clientAccountService.GetBaseAssetAsync(clientId);
+            if (baseAsset == null)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound,
+                    $"Base asset for user {clientId} not found");
+            }
+
+            return baseAsset;
         }
 
         /// <summary>

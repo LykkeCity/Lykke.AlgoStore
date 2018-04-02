@@ -14,19 +14,23 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
+using Common.Log;
 using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.Balances.Client;
+using Lykke.Service.RateCalculator.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
     public class ServiceModule : Module
     {
+        private readonly ILog _log;
         private readonly IReloadingManager<AppSettings> _settings;
         private readonly IServiceCollection _services;
 
-        public ServiceModule(IReloadingManager<AppSettings> settings)
+        public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
-
+            _log = log;
             _services = new ServiceCollection();
         }
 
@@ -62,7 +66,10 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AssetsService>()
                 .As<IAssetsService>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
-            
+
+            builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
+            builder.RegisterRateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log);
+
             builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
              .As<IPersonalDataService>()
              .SingleInstance();
@@ -77,11 +84,17 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoStoreClientDataService>()
                 .As<IAlgoStoreClientDataService>()
                 .SingleInstance();
+
             builder.RegisterType<AlgoStoreService>()
                 .As<IAlgoStoreService>()
                 .SingleInstance();
+
             builder.RegisterType<AlgoStoreCommentsService>()
                 .As<IAlgoStoreCommentsService>()
+                .SingleInstance();
+
+            builder.RegisterType<WalletBalanceService>()
+                .As<IWalletBalanceService>()
                 .SingleInstance();
 
             builder.RegisterType<AlgoStoreTradesService>()

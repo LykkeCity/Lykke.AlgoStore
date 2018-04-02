@@ -19,6 +19,7 @@
         AlgoNotPublic = 508,
         WalletNotFound = 509,
         WalletIsAlreadyUsed = 510,
+        InitialWalletBalanceNotCalculated = 511,
         //Operation
         UnableToDeleteData = 601,
 
