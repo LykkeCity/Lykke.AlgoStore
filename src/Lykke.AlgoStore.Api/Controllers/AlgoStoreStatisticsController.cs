@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -27,7 +28,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAlgoInstanceStatisticsAsync(string instanceId)
         {
-            var result = await _statisticsService.GetAlgoInstanceStatisticsAsync(instanceId);
+            var result = await _statisticsService.GetAlgoInstanceStatisticsAsync(User.GetClientId(), instanceId);
 
             return Ok(result);
         }

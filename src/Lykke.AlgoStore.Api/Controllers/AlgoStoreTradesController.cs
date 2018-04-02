@@ -29,11 +29,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var result = await _tradesService.GetAllTradesForAlgoInstanceAsync(instanceId);
 
-            //TODO: 
-            //1. Get last wallet balance 
-            //2. Update summary row (LastWalletBalance) with that value
-            //2. Calculate NetProfite = (InitialWalletBalance - LastWalletBalance) / InitialWalletBalance
-
             return Ok(result);
         }
     }

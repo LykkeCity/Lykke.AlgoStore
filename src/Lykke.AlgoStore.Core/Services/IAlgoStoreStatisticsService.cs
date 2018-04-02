@@ -5,6 +5,6 @@ namespace Lykke.AlgoStore.Core.Services
 {
     public interface IAlgoStoreStatisticsService
     {
-        Task<StatisticsSummary> GetAlgoInstanceStatisticsAsync(string instanceId);
+        Task<StatisticsSummary> GetAlgoInstanceStatisticsAsync(string clientId, string instanceId);
     }
 }
