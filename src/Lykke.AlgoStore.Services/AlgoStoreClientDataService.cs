@@ -623,7 +623,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot save data for {data.ClientId} id: {data.AlgoId}");
 
-                SaveSummaryStatistic(data, assetPairResponse.Body);
+                await SaveSummaryStatistic(data, assetPairResponse.Body);
 
                 return res;
             });
@@ -635,7 +635,7 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The algo instance data</param>
         /// <param name="assetPair">The asset pair for the algo instance</param>
-        private async void SaveSummaryStatistic(AlgoClientInstanceData data, AssetPair assetPair)
+        private async Task SaveSummaryStatistic(AlgoClientInstanceData data, AssetPair assetPair)
         {
             var baseAssetForUser = await GetBaseAssetAsync(data.ClientId);
             var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(data.WalletId, assetPair);
