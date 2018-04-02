@@ -721,6 +721,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             Assert.Null(data);
         }
+
         private static void Then_Exception_ShouldBe_Null(Exception exception)
         {
             Assert.Null(exception);
@@ -973,7 +974,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
 
 
-            result.Setup(repo => repo.GetAllAlgoInstancesByWalletIdAsync(It.IsAny<string>()))
+            result.Setup(repo => repo.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(It.IsAny<string>()))
                .Returns((string walletId) =>
                {
                    return Task.FromResult(new List<AlgoClientInstanceData>
@@ -1076,7 +1077,7 @@ namespace Lykke.AlgoStore.Tests.Unit
              .ThrowsAsync(new Exception("GetAllAlgoInstancesByAlgoIdAndClienIdAsync"));
 
             result.Setup(repo =>
-                 repo.GetAllAlgoInstancesByWalletIdAsync(It.IsAny<string>()))
+                 repo.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(It.IsAny<string>()))
              .ThrowsAsync(new Exception("GetAllAlgoInstancesByWalletIdAsync"));
 
             result.Setup(repo => repo.SaveAlgoInstanceDataAsync(It.IsAny<AlgoClientInstanceData>())).ThrowsAsync(new Exception("SaveAlgoInstanceDataAsync"));
