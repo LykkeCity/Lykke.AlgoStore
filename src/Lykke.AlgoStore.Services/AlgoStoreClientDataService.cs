@@ -76,7 +76,7 @@ namespace Lykke.AlgoStore.Services
             IAssetsService assetService,
             IPersonalDataService personalDataService,
             IKubernetesApiReadOnlyClient kubernetesApiClient,
-            IClientAccountClient clientAccountClient,           
+            IClientAccountClient clientAccountClient,
             [NotNull] AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
             ILog log) : base(log, nameof(AlgoStoreClientDataService))
@@ -91,7 +91,7 @@ namespace Lykke.AlgoStore.Services
             _assetService = assetService;
             _personalDataService = personalDataService;
             _kubernetesApiClient = kubernetesApiClient;
-            _clientAccountService = clientAccountClient;          
+            _clientAccountService = clientAccountClient;
             _assetsValidator = assetsValidator;
             _walletBalanceService = walletBalanceService;
         }
@@ -693,7 +693,7 @@ namespace Lykke.AlgoStore.Services
         /// </param>
         private async Task<bool> IsWalletUsedByExistingStartedInstance(string walletId)
         {
-            var algoInstances = (await _instanceRepository.GetAllAlgoInstancesByWalletIdAsync(walletId));
+            var algoInstances = (await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId));
             return algoInstances != null && algoInstances.Count() > 0;
         }
     }
