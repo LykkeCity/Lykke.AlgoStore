@@ -36,7 +36,6 @@ namespace Lykke.AlgoStore.Services
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "InstanceId is empty.");
 
                     var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
-
                     if (statisticsSummary == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
@@ -44,7 +43,6 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-
                     if (algoInstance == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
@@ -52,12 +50,10 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPair);
-
                     var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
                         algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse.Body);
 
                     statisticsSummary.LastWalletBalance = latestWalletBalance;
-
                     statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
                                        statisticsSummary.InitialWalletBalance) * 100;
 
