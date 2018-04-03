@@ -20,6 +20,7 @@
         WalletNotFound = 509,
         WalletIsAlreadyUsed = 510,
         InitialWalletBalanceNotCalculated = 511,
+        StatisticsSumaryNotFound = 512,
         //Operation
         UnableToDeleteData = 601,
 

@@ -650,7 +650,8 @@ namespace Lykke.AlgoStore.Services
                 InstanceId = data.InstanceId,
                 LastWalletBalance = initialWalletBalance,
                 TotalNumberOfStarts = 0,
-                TotalNumberOfTrades = 0
+                TotalNumberOfTrades = 0,
+                UserCurrencyBaseAssetId = baseAssetForUser.BaseAssetId
             });
 
             var statisticsSummaryResult = await _statisticsRepository.GetSummaryAsync(data.InstanceId);
