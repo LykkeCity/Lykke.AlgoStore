@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Services;
@@ -18,17 +19,19 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class WalletBalanceServiceTests
     {
         private const string WalletId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
-        private const string BaseAssetId = "USD";
+        private const string BaseAssetId = "EUR";
         private const string BaseAssetIdFromAssetPair = "BTC";
         private const string QuotingAssetIdFromAssetPair = "USD";
         private const string AssetPair = "BTCUSD";
+
+        private const double AssetAmount = 50;
 
         [Test]
         public void GetTotalWalletBalanceInBaseAsset_Returns_OK()
         {
             var assetPair = Given_AssetPair();
             var balanceClient = Given_Customized_BalancesClientMock();
-            var rateCalculator = Given_Customized_RateCalculatorClientMock(OperationResult.Ok);
+            var rateCalculator = Given_Customized_RateCalculatorClientMock(AssetAmount);
 
             var service = Given_WalletBalanceService(rateCalculator, balanceClient);
 
@@ -42,7 +45,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var assetPair = Given_AssetPair();
             var balanceClient = Given_Customized_BalancesClientMock();
-            var rateCalculator = Given_Customized_RateCalculatorClientMock(OperationResult.Unknown);
+            var rateCalculator = Given_Customized_RateCalculatorClientMock(0);
             var service = Given_WalletBalanceService(rateCalculator, balanceClient);
 
             var result = When_Invoke_GetTotalWalletBalanceInBaseAsset(service, WalletId, BaseAssetId, assetPair, out Exception exception);
@@ -55,7 +58,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var assetPair = Given_AssetPair();
             var balanceClient = Given_Customized_BalancesClientMock();
-            var rateCalculator = Given_Customized_RateCalculatorClientMock(OperationResult.Ok);
+            var rateCalculator = Given_Customized_RateCalculatorClientMock(AssetAmount);
 
             var service = Given_WalletBalanceService(rateCalculator, balanceClient);
 
@@ -68,7 +71,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var assetPair = Given_AssetPair();
             var balanceClient = Given_Error_Empty_BalancesClientMock();
-            var rateCalculator = Given_Customized_RateCalculatorClientMock(OperationResult.Ok);
+            var rateCalculator = Given_Customized_RateCalculatorClientMock(AssetAmount);
 
             var service = Given_WalletBalanceService(rateCalculator, balanceClient);
 
@@ -81,7 +84,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var assetPair = Given_AssetPair();
             var balanceClient = Given_Error_WrongAssets_BalancesClientMock();
-            var rateCalculator = Given_Customized_RateCalculatorClientMock(OperationResult.Ok);
+            var rateCalculator = Given_Customized_RateCalculatorClientMock(AssetAmount);
 
             var service = Given_WalletBalanceService(rateCalculator, balanceClient);
 
@@ -140,18 +143,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IRateCalculatorClient Given_Customized_RateCalculatorClientMock(OperationResult operationResult)
+        private static IRateCalculatorClient Given_Customized_RateCalculatorClientMock(double amount)
         {
             var fixture = new Fixture();
             var result = new Mock<IRateCalculatorClient>();
 
-            result.Setup(service => service.GetMarketAmountInBaseAsync(It.IsAny<List<AssetWithAmount>>(), It.IsAny<string>(), It.IsAny<OrderAction>()))
-                .ReturnsAsync(new List<ConversionResult>
-                {
-                    fixture.Build<ConversionResult>()
-                        .With(w => w.Result, operationResult)
-                        .Create()
-                });
+            result.Setup(service => service.GetAmountInBaseAsync(It.IsAny<string>(), It.IsAny<double>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(amount));
 
             return result.Object;
         }

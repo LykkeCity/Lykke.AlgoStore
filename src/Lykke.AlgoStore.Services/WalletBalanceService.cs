@@ -67,32 +67,17 @@ namespace Lykke.AlgoStore.Services
                 double totalWalletBalance = 0;
 
                 var balances = await GetWalletBalancesAsync(walletId, assetPair);
+                var clientBalanceResponseModels = balances.ToList();
 
-                List<AssetWithAmount> assetsWithAmount = new List<AssetWithAmount>();
-                foreach (var balance in balances)
+                foreach (var balance in clientBalanceResponseModels)
                 {
                     if (balance.AssetId == baseAssetId)
                         totalWalletBalance += balance.Balance;
                     else
                     {
-                        assetsWithAmount.Add(new AssetWithAmount
-                        {
-                            Amount = balance.Balance,
-                            AssetId = balance.AssetId
-                        });
+                        var assetBalanceInBase = await _rateCalculator.GetAmountInBaseAsync(balance.AssetId, balance.Balance, baseAssetId);
+                        totalWalletBalance += assetBalanceInBase;
                     }
-                }
-
-                var result = await _rateCalculator.GetMarketAmountInBaseAsync(assetsWithAmount, baseAssetId,
-                    OrderAction.Sell);
-
-                foreach (var resultBalance in result)
-                {
-                    if (resultBalance.Result == OperationResult.Ok)
-                        totalWalletBalance += resultBalance.To.Amount;
-                    else
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InitialWalletBalanceNotCalculated,
-                            $"There was a problem calculating {resultBalance.FromProperty.AssetId} value in {baseAssetId}. Error: {resultBalance.Result}");
                 }
 
                 if (totalWalletBalance == 0)
