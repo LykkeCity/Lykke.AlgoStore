@@ -29,7 +29,7 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(instanceId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "InstanceId is empty.");
 
-                var result = await _statisticsRepository.GetAllStatisticsAsync(instanceId, _maxNumberOfRowsToFetch);
+                var result = await _statisticsRepository.GetAllTradesAsync(instanceId, _maxNumberOfRowsToFetch);
 
                 return result;
             });
