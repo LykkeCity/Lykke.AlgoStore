@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Dynamic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -221,37 +222,8 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoInstanceRepository.ExistsAlgoInstanceDataWithAlgoIdAsync(data.AlgoId, data.InstanceId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for algo {data.AlgoId} and instanceId {data.InstanceId}");
 
-                var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
-                if (pods.IsNullOrEmptyCollection())
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
-
-                if (pods.Count > 1)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound, $"More than one pod for instanceId {data.InstanceId}");
-
-                var pod = pods[0];
-                if (pod == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod for instanceId {data.InstanceId} was not found");
-
-                var result = await _kubernetesApiClient.ReadPodLogAsync(pod, data.Tail);
-
-                // Remove last character from string to remove empty last line in log result
-                var logArray = result?.Substring(0, result.Length - 1).Split('\n', StringSplitOptions.None) ?? new string[0];
-
-                for (int i = 0; i < logArray.Length; i++)
-                {
-                    var currentLine = logArray[i];
-
-                    var firstSpaceIndex = currentLine.IndexOf(' ');
-
-                    var dateString = currentLine.Substring(0, firstSpaceIndex);
-                    var restOfMessage = currentLine.Substring(firstSpaceIndex);
-
-                    var date = DateTime.Parse(dateString).ToUniversalTime();
-
-                    logArray[i] = $"[{date:yyyy-MM-dd HH:mm:ss}]{restOfMessage}";
-                }
-
-                return logArray;
+                var userLogs = await _userLogRepository.GetEntries(data.Tail, data.InstanceId);
+                return userLogs.Select(l => $"[{l.Date:yyyy-MM-dd HH:mm:ss}] {l.Message}").ToArray();
             });
         }
         /// <summary>

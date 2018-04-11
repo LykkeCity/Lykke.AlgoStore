@@ -140,14 +140,27 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetLog_Returns_Ok()
         {
-            const string apiReturnedLog = "2018-01-01T12:00:00.123456789Z testlog\n2018-01-01T12:01:00.123456789Z testlog2\n";
+            var apiReturnedLog = new List<UserLog>
+            {
+                new UserLog
+                {
+                    Date = DateTime.Parse("2018-01-01T12:00:00.123456789Z").ToUniversalTime(),
+                    Message = "testlog"
+                },
+                new UserLog
+                {
+                    Date = DateTime.Parse("2018-01-01T12:01:00.123456789Z").ToUniversalTime(),
+                    Message = "testlog2"
+                }
+            };
+
             string[] expectedLog = new string[] { "[2018-01-01 12:00:00] testlog", "[2018-01-01 12:01:00] testlog2" };
 
             var data = Given_TailLogData();
 
-            var kubernetesApiClient = Given_Correct_KubernetesApiClientMock_WithLog(apiReturnedLog);
+            var userLogRepository = Given_Correct_UserLogRepositoryMock_WithLog(apiReturnedLog);
             var instanceRepo = Given_Correct_AlgoInstanceDataRepositoryMock();
-            var service = Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, null, null, instanceRepo, null, null, null, null, null);
+            var service = Given_Correct_AlgoStoreServiceMock(null, null, null, instanceRepo, null, null, null, null, userLogRepository);
 
             var response = When_Invoke_GetLog(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -237,6 +250,16 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
             result.Setup(client => client.ReadPodLogAsync(It.IsAny<Iok8skubernetespkgapiv1Pod>(), It.IsAny<int>()))
                 .ReturnsAsync(log);
+
+            return result.Object;
+        }
+
+        private static IUserLogRepository Given_Correct_UserLogRepositoryMock_WithLog(List<UserLog> logs)
+        {
+            var result = new Mock<IUserLogRepository>();
+
+            result.Setup(repo => repo.GetEntries(It.IsAny<int>(), It.IsAny<string>()))
+                  .ReturnsAsync(logs);
 
             return result.Object;
         }
