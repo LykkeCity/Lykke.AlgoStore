@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -22,8 +23,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         { 
             _commentsService = commentsService;
         }
-
+        
         [HttpGet("algoComments")]
+        [RequiredPermissionFilter(nameof(GetAllCommentsForAlgoAsync))]
         [SwaggerOperation("GetAllCommentsForAlgoAsync")]
         [ProducesResponseType(typeof(List<AlgoCommentModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -40,6 +42,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getCommentById")]
+        [RequiredPermissionFilter(nameof(GetCommentById))]
         [SwaggerOperation("GetCommentById")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -59,6 +62,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("algoComments")]
+        [RequiredPermissionFilter(nameof(CreateComment))]
         [SwaggerOperation("CreateComment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -76,6 +80,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPatch("algoComments")]
+        [RequiredPermissionFilter(nameof(EditComment))]
         [SwaggerOperation("EditComment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -93,6 +98,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("algoComments")]
+        [RequiredPermissionFilter(nameof(DeleteComment))]
         [SwaggerOperation("DeleteComment")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]

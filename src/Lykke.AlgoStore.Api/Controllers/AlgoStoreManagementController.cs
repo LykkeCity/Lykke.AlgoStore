@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
+using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -24,6 +25,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("deploy/binary")]
         [SwaggerOperation("DeployBinaryImage")]
+        // [RequiredPermissionFilter(nameof(DeployBinaryImage))]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -39,6 +41,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("test/start")]
         [SwaggerOperation("StartTest")]
+        // [RequiredPermissionFilter(nameof(StartTest))]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -55,6 +58,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("test/stop")]
         [SwaggerOperation("StopTest")]
+        // [RequiredPermissionFilter(nameof(StopTest))]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -71,6 +75,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("test/tailLog")]
         [SwaggerOperation("GetTestTailLog")]
+        [RequiredPermissionFilter(nameof(GetTestTailLog))]
         [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]

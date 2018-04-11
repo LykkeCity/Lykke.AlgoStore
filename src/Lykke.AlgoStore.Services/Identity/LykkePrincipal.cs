@@ -1,5 +1,6 @@
 ﻿using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Identity;
+using Lykke.AlgoStore.Core.Services;
 using Lykke.Service.Session;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -12,13 +13,15 @@ namespace Lykke.AlgoStore.Services.Identity
     {
         private readonly ClaimsCache _claimsCache = new ClaimsCache();
         private readonly IClientSessionsClient _clientSessionsClient;
+        private readonly IUserRolesService _rolesService;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LykkePrincipal(IHttpContextAccessor httpContextAccessor, IClientSessionsClient clientSessionsClient)
+        public LykkePrincipal(IHttpContextAccessor httpContextAccessor, IClientSessionsClient clientSessionsClient, IUserRolesService rolesService)
         {
             _httpContextAccessor = httpContextAccessor;
             _clientSessionsClient = clientSessionsClient;
+            _rolesService = rolesService;
         }
 
         public string GetToken()
@@ -71,8 +74,9 @@ namespace Lykke.AlgoStore.Services.Identity
             {
                 await _clientSessionsClient.RefreshSessionAsync(token);
             }
-
+            
             result = new ClaimsPrincipal(LykkeIdentity.Create(session.ClientId));
+
             if (session.PartnerId != null)
             {
                 (result.Identity as ClaimsIdentity)?.AddClaim(new Claim("PartnerId", session.PartnerId));
@@ -81,7 +85,7 @@ namespace Lykke.AlgoStore.Services.Identity
             if (session.Pinned)
             {
                 (result.Identity as ClaimsIdentity)?.AddClaim(new Claim("TokenType", "Pinned"));
-            }
+            }          
 
             _claimsCache.Set(token, result);
             return result;

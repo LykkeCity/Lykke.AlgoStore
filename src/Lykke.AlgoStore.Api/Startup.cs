@@ -8,6 +8,8 @@ using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Managers;
 using Lykke.AlgoStore.Api.Infrastructure.OperationFilters;
 using Lykke.AlgoStore.Core.Constants;
+using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
 using Lykke.Common.ApiLibrary.Swagger;
@@ -15,9 +17,14 @@ using Lykke.SettingsReader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api
@@ -28,6 +35,7 @@ namespace Lykke.AlgoStore.Api
         public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
         public ILog Log { get; private set; }
+        public List<UserPermissionData> Permissions { get; private set; }
 
         public Startup(IHostingEnvironment env)
         {
@@ -84,7 +92,7 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime, IUserPermissionsService permissionsService, IUserRolesService rolesService)
         {
             try
             {
@@ -120,7 +128,7 @@ namespace Lykke.AlgoStore.Api
                 });
                 app.UseStaticFiles();
 
-                appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
+                appLifetime.ApplicationStarted.Register(() => StartApplication(permissionsService, rolesService).Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
             catch (Exception ex)
@@ -130,11 +138,13 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        private async Task StartApplication()
+        private async Task StartApplication(IUserPermissionsService permissionsService, IUserRolesService rolesService)
         {
             try
             {
-                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
+                await SeedPermissions(permissionsService, rolesService);
+                await SeedRoles(rolesService, permissionsService);
+                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");                
             }
             catch (Exception ex)
             {
@@ -162,6 +172,99 @@ namespace Lykke.AlgoStore.Api
                     (Log as IDisposable)?.Dispose();
                 }
                 throw;
+            }
+        }
+
+        private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService)
+        {
+            await Log.WriteInfoAsync("", "", "Permission seed started");
+
+            // Extract controller methods
+            Permissions = Assembly.GetExecutingAssembly().GetTypes()
+            .Where(t => t.IsClass && t.ReflectedType == null && String.Equals(t.Namespace, "Lykke.AlgoStore.Api.Controllers", StringComparison.Ordinal))
+            .SelectMany(c => c.GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.GetCustomAttribute(typeof(RequiredPermissionFilter)) != null))
+            .Select(i => new UserPermissionData()
+                {
+                    Id = i.Name,
+                    Name = i.ReflectedType.Name,
+                    DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart()
+            })
+            .ToList();
+
+            // check if we should delete any old permissions
+            var allPermissionIds = await permissionsService.GetAllPermissionsAsync();
+            
+            // TODO find a way to optimize this
+            var permissionsIdsForDeletion = allPermissionIds.Select(p => p.Id).Where(perm => !Permissions.Select(perms => perms.Id).Contains(perm)).ToList(); 
+            
+
+            if (permissionsIdsForDeletion.Count > 0)
+            {
+                var allRoles = await rolesService.GetAllRolesAsync();
+
+                // delete old unneeded permissions
+                foreach (var permissionId in permissionsIdsForDeletion)
+                {
+                    // first check if the permission has been referenced in any role
+                    var matches = allRoles.Where(role => role.Permissions.Select(p => p.Id).Contains(permissionId)).ToList();
+
+                    // if the permission is referenced, remove the reference
+                    if(matches.Count > 0)
+                    {
+                        foreach (var reference in matches)
+                        {
+                            await permissionsService.RevokePermissionFromRole(new RolePermissionMatchData()
+                            {
+                                RoleId = reference.Id,
+                                PermissionId = permissionId
+                            });
+                        }
+                    }
+
+                    // finally delete the permission
+                    await permissionsService.DeletePermissionAsync(permissionId);
+                }
+            }
+
+            // refresh current permissions
+            foreach (var permission in Permissions)
+            {
+                await permissionsService.SavePermissionAsync(permission);
+            }            
+        }
+
+        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService)
+        {
+            await Log.WriteInfoAsync("", "", "Role seed started");
+
+            var adminRole = new UserRoleData()
+            {
+                Id = "Admin",
+                Name = "Admin"
+            };
+
+            var userRole = new UserRoleData()
+            {
+                Id = "User",
+                Name = "User"
+            };
+
+            // Create the Admin role
+            await rolesService.SaveRoleAsync(adminRole);
+
+            // Create the User role
+            await rolesService.SaveRoleAsync(userRole);
+
+            // Seed the permissions for the admin role
+            foreach (var permission in Permissions)
+            {
+                var match = new RolePermissionMatchData()
+                {
+                    RoleId = adminRole.Id,
+                    PermissionId = permission.Id
+                };
+
+                await permissionsService.AssignPermissionToRoleAsync(match);
             }
         }
     }
