@@ -25,7 +25,7 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<ILog>()
                 .SingleInstance();
 
-            builder.RegisterType<LykkePrincipal>().As<ILykkePrincipal>().InstancePerLifetimeScope();
+            builder.RegisterType<LykkePrincipal>().As<ILykkePrincipal>().SingleInstance();
             builder.RegisterType<AssetsValidator>().SingleInstance();
 
         }
