@@ -17,7 +17,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private UserRoleMatchData _entity;
         private readonly Fixture _fixture = new Fixture();
-        private static bool _entitySaved;
         private readonly UserRolesMatchRepository repo = new UserRolesMatchRepository(AzureTableStorage<UserRoleMatchEntity>.Create(SettingsMock.GetSettings(), UserRolesMatchRepository.TableName, new LogMock()));
 
         [SetUp]
@@ -29,12 +28,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         [TearDown]
         public void CleanUp()
         {
-            if (_entitySaved)
-            {
-                repo.RevokeUserRole(_entity.ClientId, _entity.RoleId).Wait();
-                _entitySaved = false;
-            }
-
+            repo.RevokeUserRole(_entity.ClientId, _entity.RoleId).Wait();
             _entity = null;
         }
 
@@ -101,7 +95,6 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private UserRoleMatchData When_Invoke_AssignUserRole()
         {
-            _entitySaved = true;
             return repo.SaveUserRoleAsync(_entity).Result;
         }
 

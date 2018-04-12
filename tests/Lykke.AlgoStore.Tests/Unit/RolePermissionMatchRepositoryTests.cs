@@ -17,7 +17,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private RolePermissionMatchData _entity;
         private readonly Fixture _fixture = new Fixture();
-        private static bool _entitySaved;
         private readonly RolePermissionMatchRepository repo = new RolePermissionMatchRepository(AzureTableStorage<RolePermissionMatchEntity>.Create(SettingsMock.GetSettings(), RolePermissionMatchRepository.TableName, new LogMock()));
 
         [SetUp]
@@ -29,12 +28,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         [TearDown]
         public void CleanUp()
         {
-            if (_entitySaved)
-            {
-                repo.RevokePermission(_entity).Wait();
-                _entitySaved = false;
-            }
-
+            repo.RevokePermission(_entity).Wait();
             _entity = null;
         }
 
@@ -80,7 +74,6 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private RolePermissionMatchData When_Invoke_AssignPermissionToRole()
         {
-            _entitySaved = true;
             return repo.AssignPermissionToRoleAsync(_entity).Result;
         }
 

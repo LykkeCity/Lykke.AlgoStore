@@ -17,7 +17,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private UserPermissionData _entity;
         private readonly Fixture _fixture = new Fixture();
-        private static bool _entitySaved;
         private readonly UserPermissionsRepository repo = new UserPermissionsRepository(AzureTableStorage<UserPermissionEntity>.Create(SettingsMock.GetSettings(), UserPermissionsRepository.TableName, new LogMock()));
 
         [SetUp]
@@ -29,12 +28,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         [TearDown]
         public void CleanUp()
         {
-            if (_entitySaved)
-            {
-                repo.DeletePermissionAsync(_entity).Wait();
-                _entitySaved = false;
-            }
-
+             repo.DeletePermissionAsync(_entity).Wait();
             _entity = null;
         }
 
@@ -98,7 +92,6 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private UserPermissionData When_Invoke_SavePermission()
         {
-            _entitySaved = true;
             return repo.SavePermissionAsync(_entity).Result;
         }
 
