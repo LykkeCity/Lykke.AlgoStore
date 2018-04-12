@@ -5,6 +5,7 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -164,9 +165,13 @@ namespace Lykke.AlgoStore.Services
 
                 if (roles.Count == 0)
                 {
-                    var newRole = await _userRoleMatchRepository.SaveUserRoleAsync(new UserRoleMatchData()
+                    var allRoles = await _rolesRepository.GetAllRolesAsync();
+
+                    // original user role cannot be deleted
+                    var userRole = allRoles.Where(role => role.Name == "User" && !role.CanBeDeleted).FirstOrDefault();
+                    await _userRoleMatchRepository.SaveUserRoleAsync(new UserRoleMatchData()
                     {
-                        RoleId = "User",
+                        RoleId = userRole.Id,
                         ClientId = clientId
                     });
                 }
