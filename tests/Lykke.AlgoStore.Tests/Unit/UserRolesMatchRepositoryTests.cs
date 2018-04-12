@@ -50,7 +50,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = When_Invoke_GetUserRoles();
             Then_Result_ShouldNotBe_Null(result);
-            
+
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void DeleteRoleTest()
+        public void RevokeUserRoleTest()
         {
             When_Invoke_RevokeUserRole();
             Then_Role_ShouldNotExist();
@@ -69,7 +69,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private void Then_Role_ShouldNotExist()
         {
-            var result = repo.GetUserRoleAsync(_entity.ClientId, _entity.RoleId);
+            var result = repo.GetUserRoleAsync(_entity.ClientId, _entity.RoleId).Result;
             Assert.IsNull(result);
         }
 
@@ -85,11 +85,17 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private UserRoleMatchData When_Invoke_GetUserRole()
         {
+            // be sure to have a role
+            repo.SaveUserRoleAsync(_entity).Wait();
+
             return repo.GetUserRoleAsync(_entity.ClientId, _entity.RoleId).Result;
         }
 
         private List<UserRoleMatchData> When_Invoke_GetUserRoles()
         {
+            // be sure to have a role
+            repo.SaveUserRoleAsync(_entity).Wait();
+
             return repo.GetUserRolesAsync(_entity.ClientId).Result;
         }
 

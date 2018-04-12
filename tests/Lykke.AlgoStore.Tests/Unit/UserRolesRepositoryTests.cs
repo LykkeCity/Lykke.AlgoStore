@@ -18,13 +18,12 @@ namespace Lykke.AlgoStore.Tests.Unit
         private UserRoleData _entity;
         private readonly Fixture _fixture = new Fixture();
         private static bool _entitySaved;
-        private readonly UserRolesRepository repo = new UserRolesRepository(AzureTableStorage<UserRoleEntity>.Create(SettingsMock.GetSettings(), UserRolesRepository.TableName, new LogMock()));
+        private UserRolesRepository repo = new UserRolesRepository(AzureTableStorage<UserRoleEntity>.Create(SettingsMock.GetSettings(), UserRolesRepository.TableName, new LogMock()));
 
         [SetUp]
         public void SetUp()
         {
             _entity = _fixture.Build<UserRoleData>().With(role => role.Id, "TestID").With(role => role.Name, "TestName").Create();
-
         }
 
         [TearDown]
@@ -69,7 +68,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private void Then_Role_ShouldNotExist()
         {
-            var result = repo.GetRoleByIdAsync(_entity.Id);
+            var result = repo.GetRoleByIdAsync(_entity.Id).Result;
             Assert.IsNull(result);
         }
 
@@ -85,6 +84,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private UserRoleData When_Invoke_GetById()
         {
+            // be sure the item is here
+            repo.SaveRoleAsync(_entity).Wait();
+
             return repo.GetRoleByIdAsync(_entity.Id).Result;
         }
 

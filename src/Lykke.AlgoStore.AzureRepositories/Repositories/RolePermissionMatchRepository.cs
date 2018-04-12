@@ -1,9 +1,11 @@
 ﻿using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
+using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,7 +25,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<RolePermissionMatchData> AssignPermissionToRoleAsync(RolePermissionMatchData data)
         {
-            var entity = AutoMapper.Mapper.Map<RolePermissionMatchEntity>(data);
+            var entity = data.ToEntity();
             await _table.InsertOrReplaceAsync(entity);
 
             return data;
@@ -33,7 +35,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var result = await _table.GetDataAsync(roleId);
 
-            return AutoMapper.Mapper.Map<List<RolePermissionMatchData>>(result);
+            return result.ToList().ToModel();
         }
 
         public async Task RevokePermission(RolePermissionMatchData data)

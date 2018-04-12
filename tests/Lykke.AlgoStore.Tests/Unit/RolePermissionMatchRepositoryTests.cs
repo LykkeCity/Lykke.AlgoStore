@@ -39,7 +39,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void GetUserRolesTest()
+        public void GetPermissionsByRoleIdTest()
         {
             var result = When_Invoke_GetPermissionsByRoleId();
             Then_Result_ShouldNotBe_Null(result);
@@ -47,7 +47,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void RevokePermissionTest()
+        public void RevokePermissionFromRoleTest()
         {
             When_Invoke_RevokePermission();
             Then_Permission_ShouldNotExist();
@@ -56,7 +56,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         private void Then_Permission_ShouldNotExist()
         {
             var result = repo.GetPermissionIdsByRoleIdAsync(_entity.RoleId).Result;
-            Assert.IsNull(result);
+            Assert.NotNull(result);
+            Assert.Zero(result.Count);
         }
 
         private void When_Invoke_RevokePermission()
@@ -71,6 +72,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private List<RolePermissionMatchData> When_Invoke_GetPermissionsByRoleId()
         {
+            // be sure to have a permission
+            repo.AssignPermissionToRoleAsync(_entity).Wait();
+
             return repo.GetPermissionIdsByRoleIdAsync(_entity.RoleId).Result;
         }
 

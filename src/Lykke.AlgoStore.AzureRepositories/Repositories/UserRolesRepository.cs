@@ -7,6 +7,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.AzureRepositories.Mapper;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
@@ -25,18 +26,21 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var result = await _table.GetDataAsync();
 
-            return AutoMapper.Mapper.Map<List<UserRoleData>>(result);
+            return result.ToList().ToModel();
         }
 
         public async Task<UserRoleData> GetRoleByIdAsync(string roleId)
         {
             var result = await _table.GetDataAsync(roleId);
-            return AutoMapper.Mapper.Map<UserRoleData>(result.ToList()[0]);
+            if(result.ToList().Count > 0)
+             return result.ToList()[0].ToModel();
+
+            return null;
         }       
 
         public async Task<UserRoleData> SaveRoleAsync(UserRoleData role)
         {
-            var entity = AutoMapper.Mapper.Map<UserRoleEntity>(role);
+            var entity = role.ToEntity();
 
             await _table.InsertOrReplaceAsync(entity);
             return role;
@@ -44,7 +48,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task DeleteRoleAsync(UserRoleData role)
         {
-            await _table.DeleteAsync(role.Id, role.Name);
+            await _table.DeleteIfExistAsync(role.Id, role.Name);
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void DeleteRoleTest()
+        public void DeletePermissionTest()
         {
             When_Invoke_DeletePermission();
             Then_Permission_ShouldNotExist();
@@ -69,7 +69,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private void Then_Permission_ShouldNotExist()
         {
-            var result = repo.GetPermissionByIdAsync(_entity.Id);
+            var result = repo.GetPermissionByIdAsync(_entity.Id).Result;
             Assert.IsNull(result);
         }
 
@@ -85,6 +85,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private UserPermissionData When_Invoke_GetPermissionById()
         {
+            // be sure that the data is here
+            repo.SavePermissionAsync(_entity).Wait();
+
             return repo.GetPermissionByIdAsync(_entity.Id).Result;
         }
 

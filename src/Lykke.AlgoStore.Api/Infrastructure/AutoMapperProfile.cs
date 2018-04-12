@@ -57,47 +57,47 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoCommentModel, AlgoCommentData>()
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
 
-            CreateMap<UserRoleData, UserRoleEntity>()
-                .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.Name))
-                .ForSourceMember(src => src.Permissions, opt => opt.Ignore())
-                .ForMember(src => src.ETag, opt => opt.UseValue("*"))
-                .ForMember(src => src.Timestamp, opt => opt.Ignore());
+            //CreateMap<UserRoleData, UserRoleEntity>()
+            //    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.Id))
+            //    .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.Name))
+            //    .ForSourceMember(src => src.Permissions, opt => opt.Ignore())
+            //    .ForMember(src => src.ETag, opt => opt.UseValue("*"))
+            //    .ForMember(src => src.Timestamp, opt => opt.Ignore());
 
-            CreateMap<UserRoleEntity, UserRoleData>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PartitionKey))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RowKey))
-                .ForMember(src => src.Permissions, opt => opt.Ignore());
+            //CreateMap<UserRoleEntity, UserRoleData>()
+            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PartitionKey))
+            //    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RowKey))
+            //    .ForMember(src => src.Permissions, opt => opt.Ignore());
 
-            CreateMap<UserRoleMatchData, UserRoleMatchEntity>()
-                .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.ClientId))
-                .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.RoleId))
-                .ForMember(src => src.ETag, opt => opt.Ignore())
-                .ForMember(src => src.Timestamp, opt => opt.Ignore());
+            //CreateMap<UserRoleMatchData, UserRoleMatchEntity>()
+            //    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.ClientId))
+            //    .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.RoleId))
+            //    .ForMember(src => src.ETag, opt => opt.Ignore())
+            //    .ForMember(src => src.Timestamp, opt => opt.Ignore());
 
-            CreateMap<UserRoleMatchEntity, UserRoleMatchData>()
-               .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.PartitionKey))
-               .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RowKey));
+            //CreateMap<UserRoleMatchEntity, UserRoleMatchData>()
+            //   .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.PartitionKey))
+            //   .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RowKey));
 
-            CreateMap<UserPermissionData, UserPermissionEntity>()
-                .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.Name))
-                .ForMember(src => src.ETag, opt => opt.UseValue("*"))
-                .ForMember(src => src.Timestamp, opt => opt.Ignore());
+            //CreateMap<UserPermissionData, UserPermissionEntity>()
+            //    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.Id))
+            //    .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.Name))
+            //    .ForMember(src => src.ETag, opt => opt.UseValue("*"))
+            //    .ForMember(src => src.Timestamp, opt => opt.Ignore());
 
-            CreateMap<UserPermissionEntity, UserPermissionData>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PartitionKey))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RowKey));
+            //CreateMap<UserPermissionEntity, UserPermissionData>()
+            //    .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PartitionKey))
+            //    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RowKey));
 
-            CreateMap<RolePermissionMatchData, RolePermissionMatchEntity>()
-                .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.RoleId))
-                .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.PermissionId))
-                .ForMember(src => src.ETag, opt => opt.Ignore())
-                .ForMember(src => src.Timestamp, opt => opt.Ignore());
+            //CreateMap<RolePermissionMatchData, RolePermissionMatchEntity>()
+            //    .ForMember(dest => dest.PartitionKey, opt => opt.MapFrom(src => src.RoleId))
+            //    .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.PermissionId))
+            //    .ForMember(src => src.ETag, opt => opt.Ignore())
+            //    .ForMember(src => src.Timestamp, opt => opt.Ignore());
 
-            CreateMap<RolePermissionMatchEntity, RolePermissionMatchData>()
-               .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.PartitionKey))
-               .ForMember(dest => dest.PermissionId, opt => opt.MapFrom(src => src.RowKey));
+            //CreateMap<RolePermissionMatchEntity, RolePermissionMatchData>()
+            //   .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.PartitionKey))
+            //   .ForMember(dest => dest.PermissionId, opt => opt.MapFrom(src => src.RowKey));
         }
     }
 }
