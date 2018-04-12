@@ -73,9 +73,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> SavePermission([FromBody] UserPermissionModel role)
+        public async Task<IActionResult> SavePermission([FromBody] UserPermissionModel permission)
         {
-            var data = AutoMapper.Mapper.Map<UserPermissionData>(role);
+            var data = AutoMapper.Mapper.Map<UserPermissionData>(permission);
 
             var result = await _permissionsService.SavePermissionAsync(data);
 

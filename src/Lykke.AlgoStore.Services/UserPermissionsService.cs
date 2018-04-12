@@ -6,6 +6,7 @@ using Lykke.AlgoStore.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Services
@@ -83,7 +84,10 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(SavePermissionAsync), null, async () =>
             {
                 if (data.Id == null)
+                {
                     data.Id = Guid.NewGuid().ToString();
+                    data.DisplayName = Regex.Replace(data.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart();
+                }                    
 
                 await _permissionsRepository.SavePermissionAsync(data);
                 return data;

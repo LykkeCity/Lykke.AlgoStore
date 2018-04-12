@@ -88,7 +88,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> AssignUserRole([FromBody] RolePermissionMatchModel role)
+        public async Task<IActionResult> AssignUserRole([FromBody] UserRoleMatchModel role)
         {
             var data = AutoMapper.Mapper.Map<UserRoleMatchData>(role);
 
