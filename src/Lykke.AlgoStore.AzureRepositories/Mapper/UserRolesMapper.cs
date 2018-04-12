@@ -13,7 +13,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             var result = new UserRoleData()
             {
                 Id = entity.PartitionKey,
-                Name = entity.RowKey
+                Name = entity.RowKey,
+                CanBeDeleted = entity.CanBeDeleted,
+                CanBeModified = entity.CanBeModified
             };
 
             return result;
@@ -28,7 +30,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 var data = new UserRoleData()
                 {
                     Id = entity.PartitionKey,
-                    Name = entity.RowKey
+                    Name = entity.RowKey,
+                    CanBeDeleted = entity.CanBeDeleted,
+                    CanBeModified = entity.CanBeModified
                 };
 
                 result.Add(data);
@@ -43,7 +47,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             {
                 PartitionKey = data.Id,
                 RowKey = data.Name,
-                ETag = "*"
+                ETag = "*",
+                CanBeDeleted = data.CanBeDeleted,
+                CanBeModified = data.CanBeModified
             };
 
             return result;

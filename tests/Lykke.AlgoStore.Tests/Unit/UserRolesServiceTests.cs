@@ -214,7 +214,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var userPermissionsRepository = Given_Correct_UserPermissionsRepository();
             var rolePermissionMatchRepository = Given_Correct_RolePermissionMatchRepository();
-            return new UserPermissionsService(userPermissionsRepository, rolePermissionMatchRepository, new LogMock());
+            var userRolesRepository = Given_Correct_UserRolesRepository();
+            return new UserPermissionsService(userPermissionsRepository, rolePermissionMatchRepository, userRolesRepository, new LogMock());
         }
 
         private void Then_Result_ShouldHavePermissions(List<UserRoleData> result)

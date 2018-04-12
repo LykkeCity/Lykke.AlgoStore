@@ -9,6 +9,7 @@ using Lykke.AlgoStore.Api.Infrastructure.Managers;
 using Lykke.AlgoStore.Api.Infrastructure.OperationFilters;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
@@ -92,7 +93,7 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime, IUserPermissionsService permissionsService, IUserRolesService rolesService)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime, IUserPermissionsService permissionsService, IUserRolesService rolesService, IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             try
             {
@@ -128,7 +129,7 @@ namespace Lykke.AlgoStore.Api
                 });
                 app.UseStaticFiles();
 
-                appLifetime.ApplicationStarted.Register(() => StartApplication(permissionsService, rolesService).Wait());
+                appLifetime.ApplicationStarted.Register(() => StartApplication(permissionsService, rolesService, rolePermissionMatchRepository).Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
             catch (Exception ex)
@@ -138,12 +139,12 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        private async Task StartApplication(IUserPermissionsService permissionsService, IUserRolesService rolesService)
+        private async Task StartApplication(IUserPermissionsService permissionsService, IUserRolesService rolesService, IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             try
             {
-                await SeedPermissions(permissionsService, rolesService);
-                await SeedRoles(rolesService, permissionsService);
+                await SeedPermissions(permissionsService, rolesService, rolePermissionMatchRepository);
+                await SeedRoles(rolesService, permissionsService, rolePermissionMatchRepository);
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");                
             }
             catch (Exception ex)
@@ -175,7 +176,7 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService)
+        private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService, IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             await Log.WriteInfoAsync("", "", "Permission seed started");
 
@@ -213,7 +214,7 @@ namespace Lykke.AlgoStore.Api
                     {
                         foreach (var reference in matches)
                         {
-                            await permissionsService.RevokePermissionFromRole(new RolePermissionMatchData()
+                            await rolePermissionMatchRepository.RevokePermission(new RolePermissionMatchData()
                             {
                                 RoleId = reference.Id,
                                 PermissionId = permissionId
@@ -233,27 +234,48 @@ namespace Lykke.AlgoStore.Api
             }            
         }
 
-        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService)
+        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService, IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             await Log.WriteInfoAsync("", "", "Role seed started");
 
-            var adminRole = new UserRoleData()
+            var allRoles = await rolesService.GetAllRolesAsync();
+
+            // Check if admin role exists, if not - seed it
+            // Note: Only the original admin role cannot be deleted
+            var adminRole = allRoles.Where(role => role.Name == "Admin" && !role.CanBeDeleted).FirstOrDefault();
+
+            // If there is no admin role, we need to seed it
+            if (adminRole == null)
             {
-                Id = "Admin",
-                Name = "Admin"
-            };
+                adminRole = new UserRoleData()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Admin",
+                    CanBeDeleted = false,
+                    CanBeModified = false
+                };
 
-            var userRole = new UserRoleData()
+                // Create the Admin role
+                await rolesService.SaveRoleAsync(adminRole);
+            }
+
+            // Check if user role exists, if not - seed it. Don't touch it if it exists
+            // Note: Only the original user role cannot be deleted
+            var userRole = allRoles.Where(role => role.Name == "User" && !role.CanBeDeleted).FirstOrDefault();
+
+            if(userRole == null)
             {
-                Id = "User",
-                Name = "User"
-            };
+                userRole = new UserRoleData()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "User",
+                    CanBeDeleted = false,
+                    CanBeModified = true
+                };
 
-            // Create the Admin role
-            await rolesService.SaveRoleAsync(adminRole);
-
-            // Create the User role
-            await rolesService.SaveRoleAsync(userRole);
+                // Create the User role
+                await rolesService.SaveRoleAsync(userRole);
+            }
 
             // Seed the permissions for the admin role
             foreach (var permission in Permissions)
@@ -264,7 +286,7 @@ namespace Lykke.AlgoStore.Api
                     PermissionId = permission.Id
                 };
 
-                await permissionsService.AssignPermissionToRoleAsync(match);
+                await rolePermissionMatchRepository.AssignPermissionToRoleAsync(match);
             }
         }
     }

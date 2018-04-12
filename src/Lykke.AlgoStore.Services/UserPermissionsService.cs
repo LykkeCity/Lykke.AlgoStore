@@ -13,15 +13,18 @@ namespace Lykke.AlgoStore.Services
 {
     public class UserPermissionsService : BaseAlgoStoreService, IUserPermissionsService
     {
+        private readonly IUserRolesRepository _rolesRepository;
         private readonly IUserPermissionsRepository _permissionsRepository;
         private readonly IRolePermissionMatchRepository _rolePermissionMatchRepository;
 
         public UserPermissionsService(IUserPermissionsRepository permissionsRepository,
             IRolePermissionMatchRepository rolePermissionMatchRepository,
+            IUserRolesRepository rolesRepository,
              ILog log) : base(log, nameof(UserPermissionsService))
         {
             _permissionsRepository = permissionsRepository;
             _rolePermissionMatchRepository = rolePermissionMatchRepository;
+            _rolesRepository = rolesRepository;
         }
 
         public async Task AssignPermissionToRoleAsync(RolePermissionMatchData data)
@@ -33,6 +36,11 @@ namespace Lykke.AlgoStore.Services
 
                 if (string.IsNullOrEmpty(data.RoleId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+
+                var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
+
+                if (!role.CanBeModified)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
 
                 await _rolePermissionMatchRepository.AssignPermissionToRoleAsync(data);
             });
@@ -116,6 +124,11 @@ namespace Lykke.AlgoStore.Services
 
                 if (string.IsNullOrEmpty(data.PermissionId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
+
+                var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
+
+                if (!role.CanBeModified)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
 
                 await _rolePermissionMatchRepository.RevokePermission(data);
             });
