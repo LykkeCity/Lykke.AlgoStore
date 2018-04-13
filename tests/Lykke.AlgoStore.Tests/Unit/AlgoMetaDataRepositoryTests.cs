@@ -67,7 +67,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoMetaDataRepository Given_AlgoMetaData_Repository()
         {
-            return new AlgoMetaDataRepository(AzureTableStorage<AlgoMetaDataEntity>.Create(SettingsMock.GetSettings(), AlgoMetaDataRepository.TableName, new LogMock()));
+            return new AlgoMetaDataRepository(AzureTableStorage<AlgoMetaDataEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoMetaDataRepository.TableName, new LogMock()));
         }
 
         private static void When_Invoke_Save(AlgoMetaDataRepository repository, AlgoClientMetaData data)

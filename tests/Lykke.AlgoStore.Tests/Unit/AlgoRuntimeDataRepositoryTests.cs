@@ -54,7 +54,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoRuntimeDataRepository Given_AlgoRuntimeData_Repository()
         {
-            return new AlgoRuntimeDataRepository(AzureTableStorage<AlgoRuntimeDataEntity>.Create(SettingsMock.GetSettings(), AlgoRuntimeDataRepository.TableName, new LogMock()));
+            return new AlgoRuntimeDataRepository(AzureTableStorage<AlgoRuntimeDataEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoRuntimeDataRepository.TableName, new LogMock()));
         }
 
         private static void When_Invoke_Save(AlgoRuntimeDataRepository repository, AlgoClientRuntimeData data)

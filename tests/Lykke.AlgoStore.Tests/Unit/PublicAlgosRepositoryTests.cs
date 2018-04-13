@@ -65,7 +65,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static PublicAlgosRepository Given_AlgoMetaData_Repository()
         {
-            return new PublicAlgosRepository(AzureTableStorage<PublicAlgoEntity>.Create(SettingsMock.GetSettings(), PublicAlgosRepository.TableName, new LogMock()));
+            return new PublicAlgosRepository(AzureTableStorage<PublicAlgoEntity>.Create(SettingsMock.GetTableStorageConnectionString(), PublicAlgosRepository.TableName, new LogMock()));
         }
 
         private static void When_Invoke_Save(PublicAlgosRepository repository, PublicAlgoData data)

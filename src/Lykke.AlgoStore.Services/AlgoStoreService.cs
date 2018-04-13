@@ -195,7 +195,7 @@ namespace Lykke.AlgoStore.Services
                 if (pod == null)
                     return AlgoInstanceStatus.Deploying.ToString();
 
-                var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod);
+                var result = await _kubernetesApiClient.DeleteAsync(data.InstanceId, pod.Metadata.NamespaceProperty);
 
                 if (!result)
                     return pod.Status.Phase.ToUpper();
@@ -245,7 +245,7 @@ namespace Lykke.AlgoStore.Services
                 if (pod == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
-                var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
+                var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod.Metadata.NamespaceProperty);
 
                 if (!result)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
@@ -268,7 +268,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     var pod = pods[0];
 
-                    var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod);
+                    var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod.Metadata.NamespaceProperty);
 
                     if (!result)
                         throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,

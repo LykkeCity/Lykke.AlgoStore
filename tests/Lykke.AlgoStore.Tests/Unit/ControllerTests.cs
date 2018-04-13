@@ -216,7 +216,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 {
                     fixture.Build<Iok8skubernetespkgapiv1Pod>().Create()
                 });
-            result.Setup(client => client.DeleteAsync(It.IsAny<string>(), It.IsAny<Iok8skubernetespkgapiv1Pod>()))
+            result.Setup(client => client.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(res);
 
             return result.Object;
@@ -227,7 +227,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             result.Setup(client => client.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(
                 new List<Iok8skubernetespkgapiv1Pod>());
-            result.Setup(client => client.DeleteAsync(It.IsAny<string>(), It.IsAny<Iok8skubernetespkgapiv1Pod>()))
+            result.Setup(client => client.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(res);
 
             return result.Object;
