@@ -552,6 +552,18 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets the algo instance data by ClientId asynchronous.
+        /// </summary>
+        /// <param name="clientId">The Id of the user.</param>
+        /// <param name="instanceId">The Id of the algo instance.</param>
+        /// <returns></returns>
+        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(string clientId, string instanceId)
+        {
+            return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), clientId, async () =>
+                await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId));
+        }
+
         public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByClientIdAsync(string clientId)
         {
             return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataByClientIdAsync), clientId, async () =>
@@ -645,8 +657,10 @@ namespace Lykke.AlgoStore.Services
             await _statisticsRepository.CreateOrUpdateSummaryAsync(new StatisticsSummary
             {
                 InitialWalletBalance = initialWalletBalance,
-                AssetOneBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
-                AssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
+                InitialTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
+                InitialAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
+                LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
+                LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
                 InstanceId = data.InstanceId,
                 LastWalletBalance = initialWalletBalance,
                 TotalNumberOfStarts = 0,

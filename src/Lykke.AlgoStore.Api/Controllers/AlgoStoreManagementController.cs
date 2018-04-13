@@ -5,6 +5,7 @@ using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -16,10 +17,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreManagementController : Controller
     {
         private readonly IAlgoStoreService _service;
+        private readonly IAlgoStoreStatisticsService _statisticsService;
 
-        public AlgoStoreManagementController(IAlgoStoreService service)
+        public AlgoStoreManagementController(IAlgoStoreService service, IAlgoStoreStatisticsService algoStoreStatisticsService)
         {
             _service = service;
+            _statisticsService = algoStoreStatisticsService;
         }
 
         [HttpPost("deploy/binary")]
@@ -65,6 +68,11 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = new StatusModel();
             result.Status = await _service.StopTestImageAsync(data);
+
+            if (result.Status == AlgoInstanceStatus.Stopped.ToString())
+            {
+                await _statisticsService.UpdateStatisticsSummaryAsync(data.ClientId, data.InstanceId);
+            }
 
             return Ok(result);
         }
