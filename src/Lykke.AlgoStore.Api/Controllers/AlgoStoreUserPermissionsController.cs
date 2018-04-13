@@ -113,7 +113,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("revokePermission")]
-        [RequiredPermissionFilter(nameof(RevokePermissionFromRole))]
+        //[RequiredPermissionFilter(nameof(RevokePermissionFromRole))]
         [SwaggerOperation("RevokePermissionFromRole")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -125,7 +125,22 @@ namespace Lykke.AlgoStore.Api.Controllers
             await _permissionsService.RevokePermissionFromRole(data);
 
             return NoContent();
-        } 
+        }
+
+        [HttpPost("revokePermissions")]
+        //[RequiredPermissionFilter(nameof(RevokeMultiplePermissions))]
+        [SwaggerOperation("RevokeMultiplePermissions")]
+        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> RevokeMultiplePermissions([FromBody] List<RolePermissionMatchModel> role)
+        {
+            var data = AutoMapper.Mapper.Map<List<RolePermissionMatchData>>(role);
+
+            await _permissionsService.RevokePermissionsFromRole(data);
+
+            return NoContent();
+        }
 
         [HttpDelete("deletePermission")]
         [RequiredPermissionFilter(nameof(DeletePermission))]

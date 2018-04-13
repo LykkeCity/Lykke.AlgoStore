@@ -155,5 +155,27 @@ namespace Lykke.AlgoStore.Services
                 await _rolePermissionMatchRepository.RevokePermission(data);
             });
         }
+
+        public async Task RevokePermissionsFromRole(List<RolePermissionMatchData> data)
+        {
+            await LogTimedInfoAsync(nameof(RevokePermissionFromRole), null, async () =>
+            {
+                foreach (var permission in data)
+                {
+                    if (string.IsNullOrEmpty(permission.RoleId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+
+                    if (string.IsNullOrEmpty(permission.PermissionId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
+
+                    var role = await _rolesRepository.GetRoleByIdAsync(permission.RoleId);
+
+                    if (!role.CanBeModified)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
+
+                    await _rolePermissionMatchRepository.RevokePermission(permission);
+                }                
+            });
+        }
     }
 }
