@@ -71,7 +71,7 @@ namespace Lykke.AlgoStore.Services.Identity
             {
                 await _clientSessionsClient.RefreshSessionAsync(token);
             }
-            
+
             result = new ClaimsPrincipal(LykkeIdentity.Create(session.ClientId));
 
             if (session.PartnerId != null)

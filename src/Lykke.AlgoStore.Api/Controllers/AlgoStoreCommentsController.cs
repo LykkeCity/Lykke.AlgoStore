@@ -23,7 +23,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         { 
             _commentsService = commentsService;
         }
-        
+
         [HttpGet("algoComments")]
         [RequirePermission]
         [SwaggerOperation("GetAllCommentsForAlgoAsync")]
