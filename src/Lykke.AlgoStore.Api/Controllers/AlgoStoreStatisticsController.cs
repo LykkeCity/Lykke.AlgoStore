@@ -16,10 +16,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreStatisticsController : Controller
     {
         private readonly IAlgoStoreStatisticsService _statisticsService;
+        private readonly IAlgoStoreClientDataService _algoStoreClientDataService;
 
-        public AlgoStoreStatisticsController(IAlgoStoreStatisticsService statisticsService)
+        public AlgoStoreStatisticsController(IAlgoStoreStatisticsService statisticsService, IAlgoStoreClientDataService algoStoreClientDataService)
         {
             _statisticsService = statisticsService;
+            _algoStoreClientDataService = algoStoreClientDataService;
         }
 
         [HttpGet]
@@ -28,7 +30,13 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAlgoInstanceStatisticsAsync(string instanceId)
         {
-            var result = await _statisticsService.GetAlgoInstanceStatisticsAsync(User.GetClientId(), instanceId);
+            StatisticsSummary result;
+            var algoInstance = await _algoStoreClientDataService.GetAlgoInstanceDataAsync(User.GetClientId(), instanceId);
+            
+            if (algoInstance.AlgoInstanceStatus == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Stopped)
+                result = await _statisticsService.GetStatisticsSummaryAsync(User.GetClientId(), instanceId);
+            else
+                result = await _statisticsService.UpdateStatisticsSummaryAsync(User.GetClientId(), instanceId);
 
             return Ok(result);
         }
