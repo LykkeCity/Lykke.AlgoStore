@@ -46,6 +46,28 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        public async Task AssignPermissionsToRoleAsync(List<RolePermissionMatchData> data)
+        {
+            await LogTimedInfoAsync(nameof(AssignPermissionToRoleAsync), null, async () =>
+            {
+                foreach (var permission in data)
+                {
+                    if (string.IsNullOrEmpty(permission.PermissionId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
+
+                    if (string.IsNullOrEmpty(permission.RoleId))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+
+                    var role = await _rolesRepository.GetRoleByIdAsync(permission.RoleId);
+
+                    if (!role.CanBeModified)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
+
+                    await _rolePermissionMatchRepository.AssignPermissionToRoleAsync(permission);
+                }               
+            });
+        }
+
         public async Task<List<UserPermissionData>> GetAllPermissionsAsync()
         {
             return await LogTimedInfoAsync(nameof(GetAllPermissionsAsync), null, async () =>

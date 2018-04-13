@@ -97,6 +97,21 @@ namespace Lykke.AlgoStore.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("assignPermissions")]
+        [RequiredPermissionFilter(nameof(AssignMultiplePermissionToRole))]
+        [SwaggerOperation("AssignMultiplePermissionToRole")]
+        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> AssignMultiplePermissionToRole([FromBody] List<RolePermissionMatchModel> permissions)
+        {
+            var data = AutoMapper.Mapper.Map<List<RolePermissionMatchData>>(permissions);
+
+            await _permissionsService.AssignPermissionsToRoleAsync(data);
+
+            return NoContent();
+        }
+
         [HttpPost("revokePermission")]
         [RequiredPermissionFilter(nameof(RevokePermissionFromRole))]
         [SwaggerOperation("RevokePermissionFromRole")]
