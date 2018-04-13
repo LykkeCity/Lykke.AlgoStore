@@ -1,6 +1,5 @@
 ﻿using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Identity;
-using Lykke.AlgoStore.Core.Services;
 using Lykke.Service.Session;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -13,15 +12,13 @@ namespace Lykke.AlgoStore.Services.Identity
     {
         private readonly ClaimsCache _claimsCache = new ClaimsCache();
         private readonly IClientSessionsClient _clientSessionsClient;
-        private readonly IUserRolesService _rolesService;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LykkePrincipal(IHttpContextAccessor httpContextAccessor, IClientSessionsClient clientSessionsClient, IUserRolesService rolesService)
+        public LykkePrincipal(IHttpContextAccessor httpContextAccessor, IClientSessionsClient clientSessionsClient)
         {
             _httpContextAccessor = httpContextAccessor;
             _clientSessionsClient = clientSessionsClient;
-            _rolesService = rolesService;
         }
 
         public string GetToken()

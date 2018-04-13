@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
@@ -23,6 +23,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet]
+        [RequirePermission]
         [SwaggerOperation("GetAlgoInstanceStatisticsAsync")]
         [ProducesResponseType(typeof(StatisticsSummary), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]

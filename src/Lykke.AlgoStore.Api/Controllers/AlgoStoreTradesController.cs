@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -22,6 +23,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet]
+        [RequirePermission]
         [SwaggerOperation("GetAllTradesForAlgoInstanceAsync")]
         [ProducesResponseType(typeof(List<Statistics>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]

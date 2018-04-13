@@ -68,7 +68,12 @@ namespace Lykke.AlgoStore.Api
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                     });
 
-                services.AddScoped<ValidateMimeMultipartContentFilter>();
+                services.AddMvc(options =>
+                {
+                    options.Filters.Add(typeof(PermissionFilter));
+                });
+
+                services.AddScoped<ValidateMimeMultipartContentFilter>();                
 
                 services.AddSwaggerGen(options =>
                 {
@@ -183,7 +188,7 @@ namespace Lykke.AlgoStore.Api
             // Extract controller methods
             Permissions = Assembly.GetExecutingAssembly().GetTypes()
             .Where(t => t.IsClass && t.ReflectedType == null && String.Equals(t.Namespace, "Lykke.AlgoStore.Api.Controllers", StringComparison.Ordinal))
-            .SelectMany(c => c.GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.GetCustomAttribute(typeof(RequiredPermissionFilter)) != null))
+            .SelectMany(c => c.GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.GetCustomAttribute(typeof(RequirePermission)) != null))
             .Select(i => new UserPermissionData()
                 {
                     Id = i.Name,

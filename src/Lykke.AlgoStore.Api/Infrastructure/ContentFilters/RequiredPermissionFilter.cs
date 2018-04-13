@@ -1,44 +1,53 @@
-﻿using AutoMapper;
-using Lykke.AlgoStore.Api.Infrastructure.Extensions;
-using Lykke.AlgoStore.Api.Models;
+﻿using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
-using System.Net;
+using System.Linq;
 using System.Threading.Tasks;
+
 namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 {
-    public class RequiredPermissionFilter: ActionFilterAttribute
+    public class PermissionFilter: IActionFilter
     {
-        public string Permission { get; set; }
+        private readonly IUserRolesService _roleService;
 
-        public RequiredPermissionFilter(string permission)
+        public PermissionFilter(IUserRolesService roleService)
         {
-            Permission = permission;
+            _roleService = roleService;
         }
 
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public void OnActionExecuting(ActionExecutingContext context)
         {
-            var userRoles = context.HttpContext.User.GetRoles();
+            var clientId = context.HttpContext.User.GetClientId();
+            var userRoles = _roleService.GetRolesByClientIdAsync(clientId).Result;
+            var requiredPermission = (context.ActionDescriptor as ControllerActionDescriptor)?.ActionName;
+
+            // Check if the action needs a permission
+            var needsPermission = context.Controller.GetType().GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.Name == requiredPermission).FirstOrDefault().GetCustomAttributes(typeof(RequirePermission), false) != null;
+
             var hasRole = false;
             for (var i = 0; i < userRoles.Count; i++)
             {
-                if (userRoles[i].Permissions.Find(p => p.Name == Permission) != null)
+                if (userRoles[i].Permissions.Find(p => p.Name == requiredPermission) != null)
                 {
                     hasRole = true;
                     break;
                 }
             }
 
-            if(!hasRole)
+            if (!hasRole)
             {
                 context.Result = new StatusCodeResult(403);
             }
 
+        }
+
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
+            
         }
     }
 }

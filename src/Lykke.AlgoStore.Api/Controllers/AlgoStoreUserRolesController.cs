@@ -1,4 +1,4 @@
-﻿using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
+﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -6,10 +6,8 @@ using Lykke.AlgoStore.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Controllers
@@ -27,7 +25,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getAll")]
-        [RequiredPermissionFilter(nameof(GetAllUserRoles))]
+        [RequirePermission]
         [SwaggerOperation("GetAllUserRoles")]
         [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -40,7 +38,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getById")]
-        [RequiredPermissionFilter(nameof(GetRoleById))]
+        [RequirePermission]
         [SwaggerOperation("GetRoleById")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -68,7 +66,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("saveRole")]
-        [RequiredPermissionFilter(nameof(SaveUserRole))]
+        [RequirePermission]
         [SwaggerOperation("SaveUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -83,7 +81,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("assignRole")]
-        [RequiredPermissionFilter(nameof(AssignUserRole))]
+        [RequirePermission]
         [SwaggerOperation("AssignUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -98,7 +96,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("revokeRole")]
-        [RequiredPermissionFilter(nameof(RevokeRoleFromUser))]
+        [RequirePermission]
         [SwaggerOperation("RevokeRoleFromUser")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -128,7 +126,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("deleteRole")]
-        [RequiredPermissionFilter(nameof(DeleteUserRole))]
+        [RequirePermission]
         [SwaggerOperation("DeleteUserRole")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
