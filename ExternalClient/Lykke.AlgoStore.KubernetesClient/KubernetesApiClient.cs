@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient.Models;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
@@ -12,12 +13,20 @@ namespace Lykke.AlgoStore.KubernetesClient
 {
     public class KubernetesApiClient : Kubernetes, IKubernetesApiClient
     {
+        private readonly IUserLogRepository _userLogRepository;
+
         /// <summary>
         /// Initializes new instance of <see cref="KubernetesApiClient"/>
         /// </summary>
         /// <param name="baseUri">The URI of the Kubernetes instance</param>
         /// <param name="credentials">The credentials for Kubernetes instance</param>
-        public KubernetesApiClient(System.Uri baseUri, ServiceClientCredentials credentials, string certificateHash)
+        /// <param name="certificateHash">Certificate hash</param>
+        /// <param name="userLogRepository">User log instance</param>
+        public KubernetesApiClient(
+            System.Uri baseUri, 
+            ServiceClientCredentials credentials, 
+            string certificateHash,
+            IUserLogRepository userLogRepository)
             : base(baseUri, credentials, new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
@@ -25,7 +34,9 @@ namespace Lykke.AlgoStore.KubernetesClient
                     return cert.GetCertHashString() == certificateHash;
                 }
             })
-        { }
+        {
+            _userLogRepository = userLogRepository;
+        }
 
         /// <summary>
         /// Lists the pods by algo identifier asynchronous.
@@ -48,21 +59,21 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// Deletes the service and deployment asynchronous.
         /// </summary>
         /// <param name="instanceId">The instance identifier.</param>
-        /// <param name="pod">The pod.</param>
+        /// <param name="namespaceParameter">The name-space identifier.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteAsync(string instanceId, Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteAsync(string instanceId, string namespaceParameter)
         {
-            await DeleteServiceAsync(instanceId, pod);
-            return await DeleteDeploymentAsync(instanceId, pod);
+            await DeleteServiceAsync(instanceId, namespaceParameter);
+            return await DeleteDeploymentAsync(instanceId, namespaceParameter);
         }
 
         /// <summary>
         /// Deletes the deployment asynchronous.
         /// </summary>
         /// <param name="instanceId">The instance identifier.</param>
-        /// <param name="pod">The pod.</param>
+        /// <param name="namespaceParameter">The pod.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteDeploymentAsync(string instanceId, Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteDeploymentAsync(string instanceId, string namespaceParameter)
         {
             var options = new Iok8sapimachinerypkgapismetav1DeleteOptions
             {
@@ -70,8 +81,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             };
 
             using (var kubeResponse =
-                await DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(options, instanceId,
-                    pod.Metadata.NamespaceProperty))
+                await DeleteAppsV1beta1NSDeploymentWithHttpMessagesAsync(options, instanceId, namespaceParameter))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                     return false;
@@ -83,15 +93,21 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// Deletes the service asynchronous.
         /// </summary>
         /// <param name="instanceId">The instance identifier.</param>
-        /// <param name="pod">The pod.</param>
+        /// <param name="namespaceParameter">The name-space identifier.</param>
         /// <returns></returns>
-        public async Task<bool> DeleteServiceAsync(string instanceId, Iok8skubernetespkgapiv1Pod pod)
+        public async Task<bool> DeleteServiceAsync(string instanceId, string namespaceParameter)
         {
+            var serviceName = $"algo-{instanceId}";
+
             using (var kubeResponse =
-                await DeleteCoreV1NSServiceWithHttpMessagesAsync(instanceId, pod.Metadata.NamespaceProperty))
+                await DeleteCoreV1NSServiceWithHttpMessagesAsync(serviceName, namespaceParameter))
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
+                {
+                    await _userLogRepository.WriteAsync(instanceId, $"Could not delete service {instanceId}. Details: {kubeResponse.Body}");
                     return false;
+                }
+
                 return true;
             }
         }

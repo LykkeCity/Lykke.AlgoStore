@@ -42,18 +42,30 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
             return reloadingMock.Object;
         }
 
-        public static IReloadingManager<string> GetSettings()
+        private static IReloadingManager<AppSettings> InitConfig()
         {
-            IReloadingManager<AppSettings> config;
+            return File.Exists(FileName) ? InitConfigurationFromFile() : InitMockConfiguration();
+        }
 
-            if (File.Exists(FileName))
-                config = InitConfigurationFromFile();
-            else
-                config = InitMockConfiguration();
+        public static IReloadingManager<string> GetTableStorageConnectionString()
+        {
+            var config = InitConfig();
 
             return config.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString);
+        }
 
+        public static IReloadingManager<string> GetLogsConnectionString()
+        {
+            var config = InitConfig();
 
+            return config.ConnectionString(x => x.AlgoApi.Db.LogsConnectionString);
+        }
+
+        public static IReloadingManager<string> GetKubeBasicAuthenticationValue()
+        {
+            var config = InitConfig();
+
+            return config.ConnectionString(x => x.AlgoApi.Kubernetes.BasicAuthenticationValue);
         }
     }
 }

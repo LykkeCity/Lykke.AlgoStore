@@ -61,7 +61,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private AlgoCommentsRepository Given_AlgoCommentsRepository()
         {
-            return new AlgoCommentsRepository(AzureTableStorage<AlgoCommentEntity>.Create(SettingsMock.GetSettings(), AlgoCommentsRepository.TableName, new LogMock()));
+            return new AlgoCommentsRepository(AzureTableStorage<AlgoCommentEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoCommentsRepository.TableName, new LogMock()));
         }
 
         private AlgoCommentData When_Invoke_Save(AlgoCommentsRepository repo)
