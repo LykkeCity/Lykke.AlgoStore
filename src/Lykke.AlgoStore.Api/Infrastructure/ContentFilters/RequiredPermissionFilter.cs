@@ -1,10 +1,9 @@
-﻿using Lykke.AlgoStore.Api.Infrastructure.Extensions;
-using Lykke.AlgoStore.Core.Domain.Entities;
+﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,21 +27,23 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
             // Check if the action needs a permission
             var needsPermission = context.Controller.GetType().GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.Name == requiredPermission).FirstOrDefault().GetCustomAttributes(typeof(RequirePermission), false) != null;
 
-            var hasRole = false;
-            for (var i = 0; i < userRoles.Count; i++)
+            if(needsPermission)
             {
-                if (userRoles[i].Permissions.Find(p => p.Name == requiredPermission) != null)
+                var hasPermission = false;
+                for (var i = 0; i < userRoles.Count; i++)
                 {
-                    hasRole = true;
-                    break;
+                    if (userRoles[i].Permissions.Find(p => p.Name == requiredPermission) != null)
+                    {
+                        hasPermission = true;
+                        break;
+                    }
+                }
+
+                if (!hasPermission)
+                {
+                    context.Result = new StatusCodeResult(403);
                 }
             }
-
-            if (!hasRole)
-            {
-                context.Result = new StatusCodeResult(403);
-            }
-
         }
 
         public void OnActionExecuted(ActionExecutedContext context)
