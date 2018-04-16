@@ -199,9 +199,14 @@ namespace Lykke.AlgoStore.Api
             .ToList();
 
             // check if we should delete any old permissions
-            var allPermissionIds = await permissionsService.GetAllPermissionsAsync();
-            var permissionsIdsForDeletion = allPermissionIds.Select(p => p.Id).Where(perm => !Permissions.Any(perms => perms.Id == perm)).ToList(); 
-            
+            var allPermissions = await permissionsService.GetAllPermissionsAsync();
+            var allPermissionsIds = allPermissions.Select(x => x.Id);
+            var permissionsIds = Permissions.Select(x => x.Id);
+
+            var permissionsIdsForDeletion = allPermissionsIds
+            .Where(x => !permissionsIds.Contains(x))
+            .ToList();
+
 
             if (permissionsIdsForDeletion.Count > 0)
             {
