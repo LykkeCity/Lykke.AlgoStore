@@ -33,7 +33,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
                 var hasPermission = false;
                 for (var i = 0; i < userRoles.Count; i++)
                 {
-                    if (userRoles[i].Permissions.Find(p => p.Name == requiredPermission) != null)
+                    if (userRoles[i].Permissions.Any(p => p.Name == requiredPermission))
                     {
                         hasPermission = true;
                         break;
