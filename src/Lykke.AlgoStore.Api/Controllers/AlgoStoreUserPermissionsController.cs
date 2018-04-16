@@ -28,11 +28,11 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getAll")]
-        [SwaggerOperation("GetAllpermissions")]
+        [SwaggerOperation("GetAllPermissions")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetAllpermissions()
+        public async Task<IActionResult> GetAllPermissions()
         {
             var result = await _permissionsService.GetAllPermissionsAsync();
 
@@ -47,6 +47,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         public async Task<IActionResult> GetPermissionById(string permissionId)
         {
             var result = await _permissionsService.GetPermissionByIdAsync(permissionId);
+
+            if (result == null)
+                return NotFound();
 
             return Ok(result);
         }
@@ -67,7 +70,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("SavePermission")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> SavePermission([FromBody] UserPermissionModel permission)
         {
             var data = AutoMapper.Mapper.Map<UserPermissionData>(permission);
@@ -79,7 +81,6 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("assignPermission")]
         [SwaggerOperation("AssignPermissionToRole")]
-        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignPermissionToRole([FromBody] RolePermissionMatchModel role)
@@ -93,7 +94,6 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("assignPermissions")]
         [SwaggerOperation("AssignMultiplePermissionToRole")]
-        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignMultiplePermissionToRole([FromBody] List<RolePermissionMatchModel> permissions)
@@ -107,7 +107,6 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("revokePermission")]
         [SwaggerOperation("RevokePermissionFromRole")]
-        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokePermissionFromRole([FromBody] RolePermissionMatchModel role)
@@ -121,7 +120,6 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("revokePermissions")]
         [SwaggerOperation("RevokeMultiplePermissions")]
-        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeMultiplePermissions([FromBody] List<RolePermissionMatchModel> role)
@@ -136,7 +134,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpDelete("deletePermission")]
         [SwaggerOperation("DeletePermission")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DeletePermission(string permissionId)

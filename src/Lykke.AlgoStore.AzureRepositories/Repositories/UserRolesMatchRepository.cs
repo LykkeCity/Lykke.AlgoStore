@@ -36,7 +36,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         public async Task<List<UserRoleMatchData>> GetUserRolesAsync(string clientId)
         {
             var result = await _table.GetDataAsync(clientId);
-            return result.ToList().ToModel();
+            return result.ToModel();
         }
 
         public async Task<UserRoleMatchData> SaveUserRoleAsync(UserRoleMatchData data)

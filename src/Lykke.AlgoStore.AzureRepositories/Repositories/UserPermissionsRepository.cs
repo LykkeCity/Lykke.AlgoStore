@@ -25,7 +25,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         public async Task<List<UserPermissionData>> GetAllPermissionsAsync()
         {
             var result = await _table.GetDataAsync();
-            return result.ToList().ToModel();
+            return result.ToModel();
         }
 
         public async Task<UserPermissionData> GetPermissionByIdAsync(string permissionId)

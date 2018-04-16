@@ -133,6 +133,10 @@ namespace Lykke.AlgoStore.Services
 
 
                 var permission = await GetPermissionByIdAsync(permissionId);
+
+                if (permission == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Permission with this ID does not exist");
+
                 await _permissionsRepository.DeletePermissionAsync(permission);
             });
         }

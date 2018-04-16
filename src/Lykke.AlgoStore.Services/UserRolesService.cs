@@ -66,6 +66,10 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
 
                 var role = await _rolesRepository.GetRoleByIdAsync(roleId);
+
+                if (role == null)
+                    return null;
+
                 var permissionIds = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
 
                 var permissions = new List<UserPermissionData>();
@@ -130,8 +134,7 @@ namespace Lykke.AlgoStore.Services
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "This role can't be modified.");
                     }
-                }
-                
+                }                
 
                 await _rolesRepository.SaveRoleAsync(role);
                 return role;
@@ -168,7 +171,7 @@ namespace Lykke.AlgoStore.Services
                     var allRoles = await _rolesRepository.GetAllRolesAsync();
 
                     // original user role cannot be deleted
-                    var userRole = allRoles.Where(role => role.Name == "User" && !role.CanBeDeleted).FirstOrDefault();
+                    var userRole = allRoles.FirstOrDefault(role => role.Name == "User" && !role.CanBeDeleted);
                     await _userRoleMatchRepository.SaveUserRoleAsync(new UserRoleMatchData()
                     {
                         RoleId = userRole.Id,

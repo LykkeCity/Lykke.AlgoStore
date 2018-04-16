@@ -47,6 +47,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var result = await _userRolesService.GetRoleByIdAsync(roleId);
 
+            if (result == null)
+                return NotFound();
+
             return Ok(result);
         }
 
@@ -70,7 +73,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("SaveUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> SaveUserRole([FromBody] UserRoleModel role)
         {
             var data = AutoMapper.Mapper.Map<UserRoleData>(role);
@@ -83,7 +85,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("assignRole")]
         [RequirePermissionAttribute]
         [SwaggerOperation("AssignUserRole")]
-        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignUserRole([FromBody] UserRoleMatchModel role)
@@ -98,7 +99,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("revokeRole")]
         [RequirePermissionAttribute]
         [SwaggerOperation("RevokeRoleFromUser")]
-        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeRoleFromUser([FromBody] UserRoleMatchModel role)
@@ -129,9 +129,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [RequirePermissionAttribute]
         [SwaggerOperation("DeleteUserRole")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DeleteUserRole(string roleId)
         {
             await _userRolesService.DeleteRoleAsync(roleId);

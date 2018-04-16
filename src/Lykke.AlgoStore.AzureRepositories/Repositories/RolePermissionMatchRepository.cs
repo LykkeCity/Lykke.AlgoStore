@@ -35,7 +35,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var result = await _table.GetDataAsync(roleId);
 
-            return result.ToList().ToModel();
+            return result.ToModel();
         }
 
         public async Task RevokePermission(RolePermissionMatchData data)
