@@ -32,10 +32,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         public async Task<UserRoleData> GetRoleByIdAsync(string roleId)
         {
             var result = await _table.GetDataAsync(roleId);
-            if(result.ToList().Count > 0)
-             return result.ToList()[0].ToModel();
-
-            return null;
+            return result.FirstOrDefault()?.ToModel();
         }       
 
         public async Task<UserRoleData> SaveRoleAsync(UserRoleData role)
