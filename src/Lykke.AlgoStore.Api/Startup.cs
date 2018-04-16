@@ -188,7 +188,7 @@ namespace Lykke.AlgoStore.Api
 
             // Extract controller methods
             Permissions = Assembly.GetExecutingAssembly().GetTypes()
-            .Where(t => t.IsClass && t.ReflectedType == null && String.Equals(t.Namespace, "Lykke.AlgoStore.Api.Controllers", StringComparison.Ordinal))
+            .Where(t => t.IsClass && t.ReflectedType == null && t.Namespace == "Lykke.AlgoStore.Api.Controllers")
             .SelectMany(c => c.GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null || m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
             .Select(i => new UserPermissionData()
                 {
@@ -200,9 +200,7 @@ namespace Lykke.AlgoStore.Api
 
             // check if we should delete any old permissions
             var allPermissionIds = await permissionsService.GetAllPermissionsAsync();
-            
-            // TODO find a way to optimize this
-            var permissionsIdsForDeletion = allPermissionIds.Select(p => p.Id).Where(perm => !Permissions.Select(perms => perms.Id).Contains(perm)).ToList(); 
+            var permissionsIdsForDeletion = allPermissionIds.Select(p => p.Id).Where(perm => !Permissions.Any(perms => perms.Id == perm)).ToList(); 
             
 
             if (permissionsIdsForDeletion.Count > 0)
@@ -213,7 +211,7 @@ namespace Lykke.AlgoStore.Api
                 foreach (var permissionId in permissionsIdsForDeletion)
                 {
                     // first check if the permission has been referenced in any role
-                    var matches = allRoles.Where(role => role.Permissions.Select(p => p.Id).Contains(permissionId)).ToList();
+                    var matches = allRoles.Where(role => role.Permissions.Any(p => p.Id == permissionId)).ToList();
 
                     // if the permission is referenced, remove the reference
                     if(matches.Count > 0)
@@ -267,7 +265,7 @@ namespace Lykke.AlgoStore.Api
 
             // Check if user role exists, if not - seed it. Don't touch it if it exists
             // Note: Only the original user role cannot be deleted
-            var userRole = allRoles.Where(role => role.Name == "User" && !role.CanBeDeleted).FirstOrDefault();
+            var userRole = allRoles.FirstOrDefault(role => role.Name == "User" && !role.CanBeDeleted);
 
             if(userRole == null)
             {
