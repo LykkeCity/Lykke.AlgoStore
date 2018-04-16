@@ -25,7 +25,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getAll")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllUserRoles")]
         [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getById")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetRoleById")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -66,7 +66,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("saveRole")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("SaveUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -81,7 +81,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("assignRole")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("AssignUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -96,7 +96,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("revokeRole")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("RevokeRoleFromUser")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -126,7 +126,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("deleteRole")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("DeleteUserRole")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]

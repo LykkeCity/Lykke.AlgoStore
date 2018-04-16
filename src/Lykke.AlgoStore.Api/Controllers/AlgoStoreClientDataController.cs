@@ -34,7 +34,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getAllAlgos")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllAlgos")]        
         [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -52,7 +52,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("algoRating")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("algoRating")]
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -71,7 +71,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("algoRating")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("algoRating")]
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -91,7 +91,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("userAlgoRating")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("userAlgoRating")]
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -112,7 +112,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("addToPublic")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("addToPublic")]
         [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -130,7 +130,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("metadata")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -150,7 +150,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("algoMetadata")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoClientMetaDataInformationModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -171,7 +171,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("metadata")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("SaveAlgoMetadata")]
         [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -191,7 +191,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("metadata/cascadeDelete")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("CascadeDeleteAlgoMetadata")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
@@ -214,7 +214,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("imageData/upload/binary")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("UploadBinaryFile")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -232,7 +232,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("imageData/upload/string")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("UploadString")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -249,7 +249,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("imageData/upload/string")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetUploadString")]
         [ProducesResponseType(typeof(DataStringModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
@@ -269,7 +269,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("instanceData/allByAlgoIdAndClientId")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -288,7 +288,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("instanceData")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -312,7 +312,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("instanceData")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("SaveAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -336,7 +336,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("instanceData")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("DeleteAlgoInstanceDataAsync")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]

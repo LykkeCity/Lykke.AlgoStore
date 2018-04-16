@@ -23,7 +23,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllTradesForAlgoInstanceAsync")]
         [ProducesResponseType(typeof(List<Statistics>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]

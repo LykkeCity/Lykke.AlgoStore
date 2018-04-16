@@ -25,7 +25,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("algoComments")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllCommentsForAlgoAsync")]
         [ProducesResponseType(typeof(List<AlgoCommentModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -42,7 +42,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getCommentById")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetCommentById")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -62,7 +62,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("algoComments")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("CreateComment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -80,7 +80,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPatch("algoComments")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("EditComment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -98,7 +98,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("algoComments")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("DeleteComment")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]

@@ -24,7 +24,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("deploy/binary")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("DeployBinaryImage")]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -40,7 +40,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("test/start")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("StartTest")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -57,7 +57,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("test/stop")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("StopTest")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -74,7 +74,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("test/tailLog")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetTestTailLog")]
         [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]

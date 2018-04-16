@@ -25,7 +25,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
             var requiredPermission = (context.ActionDescriptor as ControllerActionDescriptor)?.ActionName;
 
             // Check if the action needs a permission
-            var needsPermission = context.Controller.GetType().GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.Name == requiredPermission).FirstOrDefault().GetCustomAttributes(typeof(RequirePermission), false) != null;
+            var needsPermission = context.Controller.GetType().GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && m.Name == requiredPermission).FirstOrDefault().GetCustomAttributes(typeof(RequirePermissionAttribute), false) != null;
 
             if(needsPermission)
             {

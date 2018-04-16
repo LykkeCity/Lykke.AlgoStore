@@ -27,7 +27,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getAll")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllpermissions")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -40,7 +40,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getById")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetPermissionById")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -53,7 +53,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getByRoleId")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("GetPermissionsByRoleId")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -66,7 +66,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("savePermission")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("SavePermission")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -81,7 +81,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("assignPermission")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("AssignPermissionToRole")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -96,7 +96,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("assignPermissions")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("AssignMultiplePermissionToRole")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -111,7 +111,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("revokePermission")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("RevokePermissionFromRole")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -126,7 +126,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("revokePermissions")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("RevokeMultiplePermissions")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -141,7 +141,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("deletePermission")]
-        [RequirePermission]
+        [RequirePermissionAttribute]
         [SwaggerOperation("DeletePermission")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]

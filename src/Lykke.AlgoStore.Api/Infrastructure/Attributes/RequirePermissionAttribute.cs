@@ -5,7 +5,8 @@ using System.Text;
 
 namespace Lykke.AlgoStore.Api.Infrastructure.Attributes
 {
-    public class RequirePermission : ActionFilterAttribute
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+    public class RequirePermissionAttribute: Attribute
     {
 
     }
