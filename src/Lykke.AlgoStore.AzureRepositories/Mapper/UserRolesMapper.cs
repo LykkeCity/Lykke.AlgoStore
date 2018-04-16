@@ -2,6 +2,7 @@
 using Lykke.AlgoStore.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
@@ -21,24 +22,16 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             return result;
         }
 
-        public static List<UserRoleData> ToModel(this List<UserRoleEntity> entities)
+        public static List<UserRoleData> ToModel(this IEnumerable<UserRoleEntity> entities)
         {
-            var result = new List<UserRoleData>();
-
-            foreach (var entity in entities)
+            return entities.Select(entity => new UserRoleData()
             {
-                var data = new UserRoleData()
-                {
-                    Id = entity.PartitionKey,
-                    Name = entity.RowKey,
-                    CanBeDeleted = entity.CanBeDeleted,
-                    CanBeModified = entity.CanBeModified
-                };
+                Id = entity.PartitionKey,
+                Name = entity.RowKey,
+                CanBeDeleted = entity.CanBeDeleted,
+                CanBeModified = entity.CanBeModified
 
-                result.Add(data);
-            }
-
-            return result;
+            }).ToList();
         }
 
         public static UserRoleEntity ToEntity(this UserRoleData data)
