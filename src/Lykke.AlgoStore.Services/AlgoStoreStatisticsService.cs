@@ -73,14 +73,17 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPair);
+                    var tradedAsset = await _assetService.AssetGetWithHttpMessagesAsync(algoInstance.IsStraight 
+                        ? assetPairResponse.Body.BaseAssetId
+                        : assetPairResponse.Body.QuotingAssetId);
 
                     var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse.Body);
                     var clientBalanceResponseModels = walletBalances.ToList();
                     var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
                         algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse.Body);
 
-                    statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == algoInstance.TradedAsset).Balance;
-                    statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != algoInstance.TradedAsset).Balance;
+                    statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Body.Id).Balance;
+                    statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Body.Id).Balance;
                     statisticsSummary.LastWalletBalance = latestWalletBalance;
                     statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
                                        statisticsSummary.InitialWalletBalance) * 100;

@@ -635,7 +635,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot save data for {data.ClientId} id: {data.AlgoId}");
 
-                await SaveSummaryStatistic(data, assetPairResponse.Body);
+                await SaveSummaryStatistic(data, assetPairResponse.Body, asset.Body, straight ? quotingAsset.Body : baseAsset.Body);
 
                 return res;
             });
@@ -647,20 +647,27 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The algo instance data</param>
         /// <param name="assetPair">The asset pair for the algo instance</param>
-        private async Task SaveSummaryStatistic(AlgoClientInstanceData data, AssetPair assetPair)
+        /// <param name="tradedAsset">The traded asset from the Asset pair</param>
+        /// <param name="assetTwo">The second asset from the Asset pair</param>
+        private async Task SaveSummaryStatistic(AlgoClientInstanceData data, AssetPair assetPair, Asset tradedAsset, Asset assetTwo)
         {
             var baseAssetForUser = await GetBaseAssetAsync(data.ClientId);
             var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(data.WalletId, assetPair);
             var initialWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(data.WalletId, baseAssetForUser.BaseAssetId, assetPair);
 
             var clientBalanceResponseModels = walletBalances.ToList();
+            var clientTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Id).Balance;
+            var clientAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Id).Balance;
+
             await _statisticsRepository.CreateOrUpdateSummaryAsync(new StatisticsSummary
             {
                 InitialWalletBalance = initialWalletBalance,
-                InitialTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
-                InitialAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
-                LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == data.TradedAsset).Balance,
-                LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != data.TradedAsset).Balance,
+                InitialTradedAssetBalance = clientTradedAssetBalance,
+                InitialAssetTwoBalance = clientAssetTwoBalance,
+                LastTradedAssetBalance = clientTradedAssetBalance,
+                LastAssetTwoBalance = clientAssetTwoBalance,
+                TradedAssetName = tradedAsset.Name,
+                AssetTwoName = assetTwo.Name,
                 InstanceId = data.InstanceId,
                 LastWalletBalance = initialWalletBalance,
                 TotalNumberOfStarts = 0,
