@@ -150,6 +150,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 {
                     Body = fixture.Build<Asset>()
                         .With(asset => asset.IsDisabled, false)
+                        .With(asset => asset.Id, TradedAsset)
                         .Create(),
                     Response = new HttpResponseMessage(HttpStatusCode.OK)
                 });
