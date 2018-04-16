@@ -3,6 +3,7 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.Service.PersonalData.Contract;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,19 +19,22 @@ namespace Lykke.AlgoStore.Services
         private readonly IUserRoleMatchRepository _userRoleMatchRepository;
         private readonly IUserPermissionsService _permissionsService;
         private readonly IRolePermissionMatchRepository _rolePermissionMatchRepository;
+        private readonly IPersonalDataService _personalDataService;
 
         public UserRolesService(IUserRolesRepository rolesRepository,
              IUserPermissionsRepository permissionsRepository,
              IUserRoleMatchRepository userRoleMatchRepository,
              IUserPermissionsService permissionsService,
              IRolePermissionMatchRepository rolePermissionMatchRepository,
-             ILog log) : base(log, nameof(UserRolesService))
+             IPersonalDataService personalDataService,
+        ILog log) : base(log, nameof(UserRolesService))
         {
             _rolesRepository = rolesRepository;
             _permissionsRepository = permissionsRepository;
             _userRoleMatchRepository = userRoleMatchRepository;
             _permissionsService = permissionsService;
             _rolePermissionMatchRepository = rolePermissionMatchRepository;
+            _personalDataService = personalDataService;
         }
         
         public async Task<List<UserRoleData>> GetAllRolesAsync()
@@ -100,6 +104,32 @@ namespace Lykke.AlgoStore.Services
                 }
 
                 return roles;
+            });
+        }
+
+        public async Task<List<AlgoStoreUserData>> GetAllUsersWithRolesAsync()
+        {
+            return await LogTimedInfoAsync(nameof(GetAllUsersWithRolesAsync), null, async () =>
+            {
+                var result = new List<AlgoStoreUserData>();
+                var matches = await _userRoleMatchRepository.GetAllMatchesAsync();
+                var groupedClientIds = matches.GroupBy(m => m.ClientId).ToList();
+
+                foreach (var item in groupedClientIds)
+                {
+                    var data = new AlgoStoreUserData();
+                    var personalInformation = await _personalDataService.GetAsync(item.Key);
+                    data.FirstName = personalInformation?.FirstName;
+                    data.LastName = personalInformation?.LastName;
+                    data.FullName = personalInformation?.FullName;
+                    data.Email = personalInformation.Email;
+
+                    data.Roles = item.Select(match => _rolesRepository.GetRoleByIdAsync(match.RoleId).Result).ToList();
+
+                    result.Add(data);
+                }
+
+                return result;
             });
         }
 

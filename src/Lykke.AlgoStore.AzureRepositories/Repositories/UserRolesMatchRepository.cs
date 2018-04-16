@@ -22,6 +22,12 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
+        public async Task<List<UserRoleMatchData>> GetAllMatchesAsync()
+        {
+            var result = await _table.GetDataAsync();
+            return result.ToModel();
+        }
+
         public async Task RevokeUserRole(string clientId, string roleId)
         {
             await _table.DeleteIfExistAsync(clientId, roleId);
@@ -45,6 +51,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             await _table.InsertOrReplaceAsync(entity);
 
             return data;
-        }
+        }        
     }
 }

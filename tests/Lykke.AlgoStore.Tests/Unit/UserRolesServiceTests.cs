@@ -5,6 +5,8 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
+using Lykke.Service.PersonalData.Client;
+using Lykke.Service.PersonalData.Contract;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -207,7 +209,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var userRoleMatchRepository = Given_Correct_UserRoleMatchRepository();
             var userPermissionsService = Given_Correct_PermissionsService();
             var rolePermissionMatchRepository = Given_Correct_RolePermissionMatchRepository();
-            return new UserRolesService(userRolesRepository, userPermissionsRepository, userRoleMatchRepository, userPermissionsService, rolePermissionMatchRepository, new LogMock());
+            var personalDataService = Given_Correct_PersonalDataservice();
+            return new UserRolesService(userRolesRepository, userPermissionsRepository, userRoleMatchRepository, userPermissionsService, rolePermissionMatchRepository, personalDataService, new LogMock());
         }
 
         public static IUserPermissionsService Given_Correct_PermissionsService()
@@ -216,6 +219,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             var rolePermissionMatchRepository = Given_Correct_RolePermissionMatchRepository();
             var userRolesRepository = Given_Correct_UserRolesRepository();
             return new UserPermissionsService(userPermissionsRepository, rolePermissionMatchRepository, userRolesRepository, new LogMock());
+        }
+
+        public static IPersonalDataService Given_Correct_PersonalDataservice()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IPersonalDataService>();
+
+            return result.Object;                
         }
 
         private void Then_Result_ShouldHavePermissions(List<UserRoleData> result)
