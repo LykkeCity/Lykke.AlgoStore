@@ -13,6 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/management")]
     public class AlgoStoreManagementController : Controller
     {
@@ -24,7 +25,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("deploy/binary")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("DeployBinaryImage")]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -40,7 +40,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("test/start")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("StartTest")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -57,7 +56,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("test/stop")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("StopTest")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -74,7 +72,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("test/tailLog")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("GetTestTailLog")]
         [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]

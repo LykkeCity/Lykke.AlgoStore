@@ -12,6 +12,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/statistics")]
     public class AlgoStoreStatisticsController : Controller
     {
@@ -23,7 +24,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet]
-        [RequirePermissionAttribute]
         [SwaggerOperation("GetAlgoInstanceStatisticsAsync")]
         [ProducesResponseType(typeof(StatisticsSummary), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]

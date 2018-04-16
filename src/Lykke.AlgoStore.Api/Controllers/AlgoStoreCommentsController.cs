@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/comments")]
     public class AlgoStoreCommentsController: Controller
     {
@@ -25,7 +26,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("algoComments")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllCommentsForAlgoAsync")]
         [ProducesResponseType(typeof(List<AlgoCommentModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -42,7 +42,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getCommentById")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("GetCommentById")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -62,7 +61,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPost("algoComments")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("CreateComment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -80,7 +78,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpPatch("algoComments")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("EditComment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -98,7 +95,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpDelete("algoComments")]
-        [RequirePermissionAttribute]
         [SwaggerOperation("DeleteComment")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]

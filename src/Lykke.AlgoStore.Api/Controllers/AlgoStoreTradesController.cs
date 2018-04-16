@@ -12,6 +12,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/trades")]
     public class AlgoStoreTradesController : Controller
     {
@@ -23,7 +24,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet]
-        [RequirePermissionAttribute]
         [SwaggerOperation("GetAllTradesForAlgoInstanceAsync")]
         [ProducesResponseType(typeof(List<Statistics>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
