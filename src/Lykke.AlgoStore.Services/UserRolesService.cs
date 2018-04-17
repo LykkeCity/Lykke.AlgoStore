@@ -119,6 +119,7 @@ namespace Lykke.AlgoStore.Services
                 {
                     var data = new AlgoStoreUserData();
                     var personalInformation = await _personalDataService.GetAsync(item.Key);
+                    data.ClientId = item.Key;
                     data.FirstName = personalInformation?.FirstName;
                     data.LastName = personalInformation?.LastName;
                     data.FullName = personalInformation?.FullName;
