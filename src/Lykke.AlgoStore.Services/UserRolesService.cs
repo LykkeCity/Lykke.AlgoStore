@@ -134,6 +134,30 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        public async Task<AlgoStoreUserData> GeyUserByIdWithRoles(string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GeyUserByIdWithRoles), clientId, async () =>
+            {
+                if (string.IsNullOrEmpty(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
+
+                var result = new List<AlgoStoreUserData>();
+                var matches = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
+
+                var data = new AlgoStoreUserData();
+                var personalInformation = await _personalDataService.GetAsync(clientId);
+                data.ClientId = clientId;
+                data.FirstName = personalInformation?.FirstName;
+                data.LastName = personalInformation?.LastName;
+                data.FullName = personalInformation?.FullName;
+                data.Email = personalInformation.Email;
+
+                data.Roles = matches.Select(match => _rolesRepository.GetRoleByIdAsync(match.RoleId).Result).ToList();
+
+                return data;
+            });
+        }
+
         public async Task AssignRoleToUser(UserRoleMatchData data)
         {
             await LogTimedInfoAsync(nameof(AssignRoleToUser), data.ClientId, async () =>

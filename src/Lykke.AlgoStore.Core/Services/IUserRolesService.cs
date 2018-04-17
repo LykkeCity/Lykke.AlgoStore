@@ -12,6 +12,7 @@ namespace Lykke.AlgoStore.Core.Services
         Task<UserRoleData> GetRoleByIdAsync(string roleId);
         Task<List<UserRoleData>> GetRolesByClientIdAsync(string clientId);
         Task<List<AlgoStoreUserData>> GetAllUsersWithRolesAsync();
+        Task<AlgoStoreUserData> GeyUserByIdWithRoles(string clientId);
         Task AssignRoleToUser(UserRoleMatchData data);
         Task<UserRoleData> SaveRoleAsync(UserRoleData role);
         Task RevokeRoleFromUser(UserRoleMatchData data);
