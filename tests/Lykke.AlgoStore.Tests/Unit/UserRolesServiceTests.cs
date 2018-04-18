@@ -19,7 +19,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     {
         private readonly string _clientId = Guid.NewGuid().ToString();
         private readonly string _roleId = Guid.NewGuid().ToString();
-        private readonly UserRolesService _service = Given_Correct_UserRolesService();        
+        private readonly UserRolesService _service = Given_Correct_UserRolesService();
 
         [Test]
         public void GetAllRolesTest()
@@ -28,7 +28,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Result_ShouldNotBeEmpty(result);
             Then_Result_ShouldHavePermissions(result);
         }
-        
+
         [Test]
         public void GetRoleByIdTest()
         {
@@ -36,7 +36,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Result_ShouldNotBeNull(result);
             Then_Result_ShouldHavePermissions(result);
         }
-        
+
         [Test]
         public void GetRolesByClientIdTest()
         {
@@ -95,20 +95,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetRoleByIdAsync(It.IsAny<string>())).Returns((string roleId) =>
             {
                 var role = fixture.Build<UserRoleData>()
-                .With(r => r.Id, roleId)
-                .Create();
+                    .With(r => r.Id, roleId)
+                    .Create();
                 return Task.FromResult(role);
             });
 
-            result.Setup(repo => repo.SaveRoleAsync(It.IsAny<UserRoleData>())).Returns((UserRoleData data) =>
-            {
-                return Task.FromResult(data);
-            });
+            result.Setup(repo => repo.SaveRoleAsync(It.IsAny<UserRoleData>()))
+                .Returns((UserRoleData data) => Task.FromResult(data));
 
-            result.Setup(repo => repo.DeleteRoleAsync(It.IsAny<UserRoleData>())).Returns((UserRoleData data) =>
-            {
-                return Task.CompletedTask;
-            });
+            result.Setup(repo => repo.DeleteRoleAsync(It.IsAny<UserRoleData>()))
+                .Returns((UserRoleData data) => Task.CompletedTask);
 
             return result.Object;
         }
@@ -131,15 +127,11 @@ namespace Lykke.AlgoStore.Tests.Unit
                 return Task.FromResult(permission);
             });
 
-            result.Setup(repo => repo.SavePermissionAsync(It.IsAny<UserPermissionData>())).Returns((UserPermissionData data) =>
-            {
-                return Task.FromResult(data);
-            });
+            result.Setup(repo => repo.SavePermissionAsync(It.IsAny<UserPermissionData>()))
+                .Returns((UserPermissionData data) => Task.FromResult(data));
 
-            result.Setup(repo => repo.DeletePermissionAsync(It.IsAny<UserPermissionData>())).Returns(() =>
-            {
-                return Task.CompletedTask;
-            });
+            result.Setup(repo => repo.DeletePermissionAsync(It.IsAny<UserPermissionData>()))
+                .Returns(() => Task.CompletedTask);
 
             return result.Object;
         }
@@ -149,11 +141,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             var fixture = new Fixture();
             var result = new Mock<IUserRoleMatchRepository>();
 
-            result.Setup(repo => repo.GetUserRoleAsync(It.IsAny<string>(), It.IsAny<string>())).Returns((string clientId, string roleId) =>
-            {
-                var role = fixture.Build<UserRoleMatchData>().With(d => d.ClientId, clientId).With(d => d.RoleId, roleId).Create();
-                return Task.FromResult(role);
-            });
+            result.Setup(repo => repo.GetUserRoleAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(
+                (string clientId, string roleId) =>
+                {
+                    var role = fixture.Build<UserRoleMatchData>().With(d => d.ClientId, clientId)
+                        .With(d => d.RoleId, roleId).Create();
+                    return Task.FromResult(role);
+                });
 
             result.Setup(repo => repo.GetUserRolesAsync(It.IsAny<string>())).Returns((string clientId) =>
             {
@@ -161,16 +155,11 @@ namespace Lykke.AlgoStore.Tests.Unit
                 return Task.FromResult(roles);
             });
 
-            result.Setup(repo => repo.SaveUserRoleAsync(It.IsAny<UserRoleMatchData>())).Returns((UserRoleMatchData data) =>
-            {
-                return Task.FromResult(data);
-            });
+            result.Setup(repo => repo.SaveUserRoleAsync(It.IsAny<UserRoleMatchData>()))
+                .Returns((UserRoleMatchData data) => Task.FromResult(data));
 
-            result.Setup(repo => repo.RevokeUserRole(It.IsAny<string>(), It.IsAny<string>())).Returns(() =>
-            {
-                return Task.CompletedTask;
-            });
-
+            result.Setup(repo => repo.RevokeUserRole(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(() => Task.CompletedTask);
 
             return result.Object;
         }
@@ -186,15 +175,11 @@ namespace Lykke.AlgoStore.Tests.Unit
                 return Task.FromResult(role);
             });
 
-            result.Setup(repo => repo.AssignPermissionToRoleAsync(It.IsAny<RolePermissionMatchData>())).Returns((RolePermissionMatchData data) =>
-            {               
-                return Task.FromResult(data);
-            });            
+            result.Setup(repo => repo.AssignPermissionToRoleAsync(It.IsAny<RolePermissionMatchData>()))
+                .Returns((RolePermissionMatchData data) => Task.FromResult(data));
 
-            result.Setup(repo => repo.RevokePermission(It.IsAny<RolePermissionMatchData>())).Returns(() =>
-            {
-                return Task.CompletedTask;
-            });
+            result.Setup(repo => repo.RevokePermission(It.IsAny<RolePermissionMatchData>()))
+                .Returns(() => Task.CompletedTask);
 
             return result.Object;
         }
@@ -206,7 +191,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var userRoleMatchRepository = Given_Correct_UserRoleMatchRepository();
             var rolePermissionMatchRepository = Given_Correct_RolePermissionMatchRepository();
             var personalDataService = Given_Correct_PersonalDataservice();
-            return new UserRolesService(userRolesRepository, userPermissionsRepository, userRoleMatchRepository, rolePermissionMatchRepository, personalDataService, new LogMock());
+            return new UserRolesService(userRolesRepository, userPermissionsRepository, userRoleMatchRepository,
+                rolePermissionMatchRepository, personalDataService, new LogMock());
         }
 
         public static IUserPermissionsService Given_Correct_PermissionsService()
@@ -214,14 +200,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             var userPermissionsRepository = Given_Correct_UserPermissionsRepository();
             var rolePermissionMatchRepository = Given_Correct_RolePermissionMatchRepository();
             var userRolesRepository = Given_Correct_UserRolesRepository();
-            return new UserPermissionsService(userPermissionsRepository, rolePermissionMatchRepository, userRolesRepository, new LogMock());
+            return new UserPermissionsService(userPermissionsRepository, rolePermissionMatchRepository,
+                userRolesRepository, new LogMock());
         }
 
         public static IPersonalDataService Given_Correct_PersonalDataservice()
         {
             var result = new Mock<IPersonalDataService>();
 
-            return result.Object;                
+            return result.Object;
         }
 
         private static void Then_Result_ShouldHavePermissions(List<UserRoleData> result)
