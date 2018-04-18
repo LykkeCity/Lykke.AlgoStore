@@ -1,18 +1,15 @@
 ﻿using AutoFixture;
-using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
-using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
 using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -20,9 +17,9 @@ namespace Lykke.AlgoStore.Tests.Unit
     [TestFixture]
     public class UserRolesServiceTests
     {
-        private readonly string ClientId = Guid.NewGuid().ToString();
-        private readonly string RoleId = Guid.NewGuid().ToString();
-        private readonly UserRolesService service = Given_Correct_UserRolesService();        
+        private readonly string _clientId = Guid.NewGuid().ToString();
+        private readonly string _roleId = Guid.NewGuid().ToString();
+        private readonly UserRolesService _service = Given_Correct_UserRolesService();        
 
         [Test]
         public void GetAllRolesTest()
@@ -62,25 +59,25 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var roleMatchData = new UserRoleMatchData()
             {
-                RoleId = RoleId,
-                ClientId = ClientId
+                RoleId = _roleId,
+                ClientId = _clientId
             };
-            service.AssignRoleToUser(roleMatchData).Wait();
+            _service.AssignRoleToUser(roleMatchData).Wait();
         }
 
         private List<UserRoleData> When_Invoke_GetByClientId()
         {
-            return service.GetRolesByClientIdAsync(ClientId).Result;
+            return _service.GetRolesByClientIdAsync(_clientId).Result;
         }
 
         private UserRoleData When_Invoke_GetById()
         {
-            return service.GetRoleByIdAsync(RoleId).Result;
+            return _service.GetRoleByIdAsync(_roleId).Result;
         }
 
         private List<UserRoleData> When_Invoke_GetAllRoles()
         {
-            return service.GetAllRolesAsync().Result;
+            return _service.GetAllRolesAsync().Result;
         }
 
         public static IUserRolesRepository Given_Correct_UserRolesRepository()
@@ -91,7 +88,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAllRolesAsync()).Returns(() =>
             {
                 var roles = new List<UserRoleData>();
-                roles.AddRange(fixture.Build<UserRoleData>().CreateMany<UserRoleData>());
+                roles.AddRange(fixture.Build<UserRoleData>().CreateMany());
                 return Task.FromResult(roles);
             });
 
@@ -124,7 +121,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAllPermissionsAsync()).Returns(() =>
             {
                 var permissions = new List<UserPermissionData>();
-                permissions.AddRange(fixture.Build<UserPermissionData>().CreateMany<UserPermissionData>());
+                permissions.AddRange(fixture.Build<UserPermissionData>().CreateMany());
                 return Task.FromResult(permissions);
             });
 
@@ -207,10 +204,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var userRolesRepository = Given_Correct_UserRolesRepository();
             var userPermissionsRepository = Given_Correct_UserPermissionsRepository();
             var userRoleMatchRepository = Given_Correct_UserRoleMatchRepository();
-            var userPermissionsService = Given_Correct_PermissionsService();
             var rolePermissionMatchRepository = Given_Correct_RolePermissionMatchRepository();
             var personalDataService = Given_Correct_PersonalDataservice();
-            return new UserRolesService(userRolesRepository, userPermissionsRepository, userRoleMatchRepository, userPermissionsService, rolePermissionMatchRepository, personalDataService, new LogMock());
+            return new UserRolesService(userRolesRepository, userPermissionsRepository, userRoleMatchRepository, rolePermissionMatchRepository, personalDataService, new LogMock());
         }
 
         public static IUserPermissionsService Given_Correct_PermissionsService()
@@ -223,13 +219,12 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         public static IPersonalDataService Given_Correct_PersonalDataservice()
         {
-            var fixture = new Fixture();
             var result = new Mock<IPersonalDataService>();
 
             return result.Object;                
         }
 
-        private void Then_Result_ShouldHavePermissions(List<UserRoleData> result)
+        private static void Then_Result_ShouldHavePermissions(List<UserRoleData> result)
         {
             foreach (var item in result)
             {
@@ -238,19 +233,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
         }
 
-        private void Then_Result_ShouldNotBeEmpty(List<UserRoleData> result)
+        private static void Then_Result_ShouldNotBeEmpty(List<UserRoleData> result)
         {
             Assert.NotNull(result);
             Assert.NotZero(result.Count);
         }
 
-        private void Then_Result_ShouldHavePermissions(UserRoleData result)
+        private static void Then_Result_ShouldHavePermissions(UserRoleData result)
         {
             Assert.NotNull(result);
             Assert.NotZero(result.Permissions.Count);
         }
 
-        private void Then_Result_ShouldNotBeNull(UserRoleData result)
+        private static void Then_Result_ShouldNotBeNull(UserRoleData result)
         {
             Assert.NotNull(result);
         }

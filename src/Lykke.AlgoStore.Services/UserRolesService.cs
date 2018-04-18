@@ -1,61 +1,56 @@
-﻿using Common.Log;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.Service.PersonalData.Contract;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Services
 {
-    public class UserRolesService: BaseAlgoStoreService, IUserRolesService
+    public class UserRolesService : BaseAlgoStoreService, IUserRolesService
     {
         private readonly IUserRolesRepository _rolesRepository;
         private readonly IUserPermissionsRepository _permissionsRepository;
         private readonly IUserRoleMatchRepository _userRoleMatchRepository;
-        private readonly IUserPermissionsService _permissionsService;
         private readonly IRolePermissionMatchRepository _rolePermissionMatchRepository;
         private readonly IPersonalDataService _personalDataService;
 
         public UserRolesService(IUserRolesRepository rolesRepository,
-             IUserPermissionsRepository permissionsRepository,
-             IUserRoleMatchRepository userRoleMatchRepository,
-             IUserPermissionsService permissionsService,
-             IRolePermissionMatchRepository rolePermissionMatchRepository,
-             IPersonalDataService personalDataService,
-        ILog log) : base(log, nameof(UserRolesService))
+            IUserPermissionsRepository permissionsRepository,
+            IUserRoleMatchRepository userRoleMatchRepository,
+            IRolePermissionMatchRepository rolePermissionMatchRepository,
+            IPersonalDataService personalDataService,
+            ILog log) : base(log, nameof(UserRolesService))
         {
             _rolesRepository = rolesRepository;
             _permissionsRepository = permissionsRepository;
             _userRoleMatchRepository = userRoleMatchRepository;
-            _permissionsService = permissionsService;
             _rolePermissionMatchRepository = rolePermissionMatchRepository;
             _personalDataService = personalDataService;
         }
-        
+
         public async Task<List<UserRoleData>> GetAllRolesAsync()
         {
             return await LogTimedInfoAsync(nameof(GetAllRolesAsync), null, async () =>
             {
                 var roles = await _rolesRepository.GetAllRolesAsync();
 
-                for (var i = 0; i < roles.Count; i++)
+                foreach (var role in roles)
                 {
-                    var permissionIds = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roles[i].Id);
+                    var permissionIds = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(role.Id);
 
                     var permissions = new List<UserPermissionData>();
-                    for (var j = 0; j < permissionIds.Count; j++)
+                    foreach (var permission in permissionIds)
                     {
-                        var perm = await _permissionsRepository.GetPermissionByIdAsync(permissionIds[j].PermissionId);
+                        var perm = await _permissionsRepository.GetPermissionByIdAsync(permission.PermissionId);
                         permissions.Add(perm);
                     }
 
-                    roles[i].Permissions = permissions;
-
+                    role.Permissions = permissions;
                 }
 
                 return roles;
@@ -77,9 +72,9 @@ namespace Lykke.AlgoStore.Services
                 var permissionIds = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
 
                 var permissions = new List<UserPermissionData>();
-                for (var i = 0; i < permissionIds.Count; i++)
+                foreach (var permission in permissionIds)
                 {
-                    var perm = await _permissionsRepository.GetPermissionByIdAsync(permissionIds[i].PermissionId);
+                    var perm = await _permissionsRepository.GetPermissionByIdAsync(permission.PermissionId);
                     permissions.Add(perm);
                 }
 
@@ -97,9 +92,9 @@ namespace Lykke.AlgoStore.Services
 
                 var roleMatches = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
                 var roles = new List<UserRoleData>();
-                for (var i = 0; i < roleMatches.Count; i++)
+                foreach (var roleMatch in roleMatches)
                 {
-                    var role = await GetRoleByIdAsync(roleMatches[i].RoleId);
+                    var role = await GetRoleByIdAsync(roleMatch.RoleId);
                     roles.Add(role);
                 }
 
@@ -123,7 +118,7 @@ namespace Lykke.AlgoStore.Services
                     data.FirstName = personalInformation?.FirstName;
                     data.LastName = personalInformation?.LastName;
                     data.FullName = personalInformation?.FullName;
-                    data.Email = personalInformation.Email;
+                    data.Email = personalInformation?.Email;
 
                     data.Roles = item.Select(match => _rolesRepository.GetRoleByIdAsync(match.RoleId).Result).ToList();
 
@@ -141,7 +136,6 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
 
-                var result = new List<AlgoStoreUserData>();
                 var matches = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
 
                 var data = new AlgoStoreUserData();
@@ -150,7 +144,7 @@ namespace Lykke.AlgoStore.Services
                 data.FirstName = personalInformation?.FirstName;
                 data.LastName = personalInformation?.LastName;
                 data.FullName = personalInformation?.FullName;
-                data.Email = personalInformation.Email;
+                data.Email = personalInformation?.Email;
 
                 data.Roles = matches.Select(match => _rolesRepository.GetRoleByIdAsync(match.RoleId).Result).ToList();
 
@@ -181,15 +175,16 @@ namespace Lykke.AlgoStore.Services
                     role.Id = Guid.NewGuid().ToString();
                     role.CanBeModified = true;
                     role.CanBeDeleted = true;
-                }                    
+                }
                 else
                 {
                     var dbRole = await _rolesRepository.GetRoleByIdAsync(role.Id);
-                    if(dbRole != null && !dbRole.CanBeModified)
+                    if (dbRole != null && !dbRole.CanBeModified)
                     {
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "This role can't be modified.");
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                            "This role can't be modified.");
                     }
-                }                
+                }
 
                 await _rolesRepository.SaveRoleAsync(role);
                 return role;
@@ -227,7 +222,12 @@ namespace Lykke.AlgoStore.Services
 
                     // original user role cannot be deleted
                     var userRole = allRoles.FirstOrDefault(role => role.Name == "User" && !role.CanBeDeleted);
-                    await _userRoleMatchRepository.SaveUserRoleAsync(new UserRoleMatchData()
+
+                    if (userRole == null)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                            "Current user does not belong to 'User' role.");
+
+                    await _userRoleMatchRepository.SaveUserRoleAsync(new UserRoleMatchData
                     {
                         RoleId = userRole.Id,
                         ClientId = clientId
@@ -245,15 +245,15 @@ namespace Lykke.AlgoStore.Services
 
                 //first check if the role has permissions assigned
                 var permissionsForRole = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
-                for (var i = 0; i < permissionsForRole.Count; i++)
+                foreach (var permissionForRole in permissionsForRole)
                 {
                     // if it does, delete them
-                    await _rolePermissionMatchRepository.RevokePermission(permissionsForRole[i]);
-                }              
+                    await _rolePermissionMatchRepository.RevokePermission(permissionForRole);
+                }
 
                 var role = await _rolesRepository.GetRoleByIdAsync(roleId);
 
-                if(!role.CanBeDeleted)
+                if (!role.CanBeDeleted)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "This role cannot be deleted.");
 
                 await _rolesRepository.DeleteRoleAsync(role);
