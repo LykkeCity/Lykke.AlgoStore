@@ -5,55 +5,56 @@ using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
     [TestFixture]
     public class UserRolesRepositoryTests
     {
-        private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private UserRoleData _entity;
         private readonly Fixture _fixture = new Fixture();
-        private UserRolesRepository repo = new UserRolesRepository(AzureTableStorage<UserRoleEntity>.Create(SettingsMock.GetSettings(), UserRolesRepository.TableName, new LogMock()));
+
+        private readonly UserRolesRepository _repo = new UserRolesRepository(
+            AzureTableStorage<UserRoleEntity>.Create(SettingsMock.GetSettings(), UserRolesRepository.TableName,
+                new LogMock()));
 
         [SetUp]
         public void SetUp()
         {
-            _entity = _fixture.Build<UserRoleData>().With(role => role.Id, "TestID").With(role => role.Name, "TestName").Create();
+            _entity = _fixture.Build<UserRoleData>().With(role => role.Id, "TestID").With(role => role.Name, "TestName")
+                .Create();
         }
 
         [TearDown]
         public void CleanUp()
         {
-            repo.DeleteRoleAsync(_entity).Wait();
+            _repo.DeleteRoleAsync(_entity).Wait();
             _entity = null;
         }
 
-        [Test]
+        [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void CreateRoleTest()
         {
             When_Invoke_Save();
             Then_Data_ShouldBeSaved();
         }
-        
-        [Test]
+
+        [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void GetAllRolesTest()
         {
             var result = When_Invoke_GetAll();
-            Then_Result_ShouldNotBe_Null(result);           
+            Then_Result_ShouldNotBe_Null(result);
         }
 
-        [Test]
+        [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void GetByIdTest()
         {
             var result = When_Invoke_GetById();
-            Then_Data_ShouldNotBeNull(result);            
+            Then_Data_ShouldNotBeNull(result);
         }
 
-        [Test]
+        [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void DeleteRoleTest()
         {
             When_Invoke_DeleteRole();
@@ -62,13 +63,13 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private void Then_Role_ShouldNotExist()
         {
-            var result = repo.GetRoleByIdAsync(_entity.Id).Result;
+            var result = _repo.GetRoleByIdAsync(_entity.Id).Result;
             Assert.IsNull(result);
         }
 
         private void When_Invoke_DeleteRole()
         {
-            repo.DeleteRoleAsync(_entity).Wait();
+            _repo.DeleteRoleAsync(_entity).Wait();
         }
 
         private void Then_Data_ShouldNotBeNull(UserRoleData result)
@@ -79,28 +80,28 @@ namespace Lykke.AlgoStore.Tests.Unit
         private UserRoleData When_Invoke_GetById()
         {
             // be sure the item is here
-            repo.SaveRoleAsync(_entity).Wait();
+            _repo.SaveRoleAsync(_entity).Wait();
 
-            return repo.GetRoleByIdAsync(_entity.Id).Result;
+            return _repo.GetRoleByIdAsync(_entity.Id).Result;
         }
 
         private List<UserRoleData> When_Invoke_GetAll()
         {
-            return repo.GetAllRolesAsync().Result;
+            return _repo.GetAllRolesAsync().Result;
         }
 
         private UserRoleData When_Invoke_Save()
         {
-            return repo.SaveRoleAsync(_entity).Result;
+            return _repo.SaveRoleAsync(_entity).Result;
         }
 
         private void Then_Data_ShouldBeSaved()
         {
-            var result = repo.GetRoleByIdAsync(_entity.Id).Result;
+            var result = _repo.GetRoleByIdAsync(_entity.Id).Result;
             Assert.NotNull(result);
         }
 
-        private void Then_Result_ShouldNotBe_Null(List<UserRoleData> data)
+        private static void Then_Result_ShouldNotBe_Null(List<UserRoleData> data)
         {
             Assert.NotNull(data);
             Assert.NotZero(data.Count);

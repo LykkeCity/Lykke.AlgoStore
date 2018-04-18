@@ -5,7 +5,6 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -99,9 +98,9 @@ namespace Lykke.AlgoStore.Services
                 var matches = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
                 var permissions = new List<UserPermissionData>();
 
-                for (var i = 0; i < matches.Count; i++)
+                foreach (var match in matches)
                 {
-                    var permission = await GetPermissionByIdAsync(matches[i].PermissionId);
+                    var permission = await GetPermissionByIdAsync(match.PermissionId);
                     permissions.Add(permission);
                 }
 
