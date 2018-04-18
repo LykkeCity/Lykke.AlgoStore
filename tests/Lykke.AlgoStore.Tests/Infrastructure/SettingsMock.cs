@@ -15,7 +15,7 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
 
         public static bool UseRealSettings = true;
 
-        public static IReloadingManager<AppSettings> InitConfigurationFromFile()
+        public static IReloadingManager<AppSettings> InitConfigurationFromUrl()
         {
             var config = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -49,7 +49,7 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
 
         private static IReloadingManager<AppSettings> InitConfig()
         {
-            return UseRealSettings ? InitConfigurationFromFile() : InitMockConfiguration();
+            return UseRealSettings ? InitConfigurationFromUrl() : InitMockConfiguration();
         }
 
         public static IReloadingManager<string> GetTableStorageConnectionString()
