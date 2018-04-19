@@ -31,7 +31,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetAllPermissions")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllPermissions()
         {
             var result = await _permissionsService.GetAllPermissionsAsync();
@@ -58,7 +57,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetPermissionsByRoleId")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetPermissionsByRoleId(string roleId)
         {          
             var result = await _permissionsService.GetPermissionsByRoleIdAsync(roleId);
@@ -135,7 +133,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("DeletePermission")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> DeletePermission(string permissionId)
         {
             await _permissionsService.DeletePermissionAsync(permissionId);

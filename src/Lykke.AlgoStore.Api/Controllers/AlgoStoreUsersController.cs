@@ -31,11 +31,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetAllUserRoles")]
         [ProducesResponseType(typeof(List<AlgoStoreUserData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllUsersWithRoles()
         {
             var result = await _userRolesService.GetAllUsersWithRolesAsync();
-
             return Ok(result);
         }
 
@@ -43,7 +41,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetUserByIdWithRoles")]
         [ProducesResponseType(typeof(List<AlgoStoreUserData>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetUserByIdWithRoles(string clientId)
         {
             if (string.IsNullOrEmpty(clientId))

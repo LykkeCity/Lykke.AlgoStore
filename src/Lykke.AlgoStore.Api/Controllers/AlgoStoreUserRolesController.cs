@@ -29,11 +29,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetAllUserRoles")]
         [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllUserRoles()
         {
             var result = await _userRolesService.GetAllRolesAsync();
-
             return Ok(result);
         }
 
@@ -57,7 +55,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("GetRolesByClientId")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetRolesByClientId(string clientId)
         {
             if (string.IsNullOrEmpty(clientId))
@@ -114,7 +111,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("VerifyUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> VerifyUserRole(string clientId)
         {
             if (string.IsNullOrEmpty(clientId))
@@ -129,7 +125,6 @@ namespace Lykke.AlgoStore.Api.Controllers
         [RequirePermissionAttribute]
         [SwaggerOperation("DeleteUserRole")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteUserRole(string roleId)
         {
