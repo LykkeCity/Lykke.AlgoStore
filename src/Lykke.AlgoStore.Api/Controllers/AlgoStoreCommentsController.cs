@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/comments")]
     public class AlgoStoreCommentsController: Controller
     {

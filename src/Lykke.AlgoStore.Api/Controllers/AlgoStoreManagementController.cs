@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -13,6 +14,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/management")]
     public class AlgoStoreManagementController : Controller
     {

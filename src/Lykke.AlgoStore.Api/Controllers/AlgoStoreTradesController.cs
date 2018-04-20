@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -11,6 +12,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/trades")]
     public class AlgoStoreTradesController : Controller
     {

@@ -105,6 +105,14 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
                 .SingleInstance();
+
+            builder.RegisterType<UserRolesService>()
+               .As<IUserRolesService>()
+               .SingleInstance();
+
+            builder.RegisterType<UserPermissionsService>()
+                .As<IUserPermissionsService>()
+                .SingleInstance();
         }
     }
 }

@@ -73,6 +73,7 @@ namespace Lykke.AlgoStore.Services.Identity
             }
 
             result = new ClaimsPrincipal(LykkeIdentity.Create(session.ClientId));
+
             if (session.PartnerId != null)
             {
                 (result.Identity as ClaimsIdentity)?.AddClaim(new Claim("PartnerId", session.PartnerId));
@@ -81,7 +82,7 @@ namespace Lykke.AlgoStore.Services.Identity
             if (session.Pinned)
             {
                 (result.Identity as ClaimsIdentity)?.AddClaim(new Claim("TokenType", "Pinned"));
-            }
+            }          
 
             _claimsCache.Set(token, result);
             return result;

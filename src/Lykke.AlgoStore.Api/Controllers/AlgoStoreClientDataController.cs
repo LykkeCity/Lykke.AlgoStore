@@ -14,10 +14,12 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using System.Linq;
 using System;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
+    [RequirePermissionAttribute]
     [Route("api/v1/clientData")]
     public class AlgoClientDataController : Controller
     {
@@ -33,7 +35,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         [HttpGet("getAllAlgos")]
-        [SwaggerOperation("GetAllAlgos")]
+        [SwaggerOperation("GetAllAlgos")]        
         [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -319,7 +321,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("instanceData")]
+        [HttpDelete("instanceData")]        
         [SwaggerOperation("DeleteAlgoInstanceDataAsync")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
