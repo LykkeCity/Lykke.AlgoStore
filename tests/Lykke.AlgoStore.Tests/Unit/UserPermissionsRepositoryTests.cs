@@ -16,7 +16,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private readonly Fixture _fixture = new Fixture();
 
         private readonly UserPermissionsRepository _repo = new UserPermissionsRepository(
-            AzureTableStorage<UserPermissionEntity>.Create(SettingsMock.GetSettings(),
+            AzureTableStorage<UserPermissionEntity>.Create(SettingsMock.GetTableStorageConnectionString(),
                 UserPermissionsRepository.TableName, new LogMock()));
 
         [SetUp]

@@ -17,7 +17,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private readonly Fixture _fixture = new Fixture();
 
         private readonly UserRolesMatchRepository _repo = new UserRolesMatchRepository(
-            AzureTableStorage<UserRoleMatchEntity>.Create(SettingsMock.GetSettings(),
+            AzureTableStorage<UserRoleMatchEntity>.Create(SettingsMock.GetTableStorageConnectionString(),
                 UserRolesMatchRepository.TableName, new LogMock()));
 
         [SetUp]
