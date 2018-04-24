@@ -184,6 +184,9 @@ namespace Lykke.AlgoStore.Services
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                             "This role can't be modified.");
                     }
+
+                    // because the RK is the role name, in order to update it, first delete the old role and then replace it with the new one
+                    await _rolesRepository.DeleteRoleAsync(dbRole);
                 }
 
                 await _rolesRepository.SaveRoleAsync(role);
