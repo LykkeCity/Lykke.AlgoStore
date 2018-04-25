@@ -256,15 +256,18 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(roleId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
 
+                var role = await _rolesRepository.GetRoleByIdAsync(roleId);
+
+                if(role == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {roleId} does not exist.");
+
                 //first check if the role has permissions assigned
                 var permissionsForRole = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
                 foreach (var permissionForRole in permissionsForRole)
                 {
                     // if it does, delete them
                     await _rolePermissionMatchRepository.RevokePermission(permissionForRole);
-                }
-
-                var role = await _rolesRepository.GetRoleByIdAsync(roleId);
+                }                
 
                 if (!role.CanBeDeleted)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "This role cannot be deleted.");
