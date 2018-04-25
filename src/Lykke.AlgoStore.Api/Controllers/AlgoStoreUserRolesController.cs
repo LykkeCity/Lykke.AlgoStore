@@ -27,7 +27,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("getAll")]
         [RequirePermissionAttribute]
         [SwaggerOperation("GetAllUserRoles")]
-        [ProducesResponseType(typeof(List<UserRoleUpdateModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUserRoles()
         {
@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("getById")]
         [RequirePermissionAttribute]
         [SwaggerOperation("GetRoleById")]
-        [ProducesResponseType(typeof(UserRoleUpdateModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetRoleById(string roleId)
@@ -53,7 +53,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getByClientId")]
         [SwaggerOperation("GetRolesByClientId")]
-        [ProducesResponseType(typeof(UserRoleUpdateModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetRolesByClientId(string clientId)
         {
@@ -68,9 +68,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("saveRole")]
         [RequirePermissionAttribute]
         [SwaggerOperation("SaveUserRole")]
-        [ProducesResponseType(typeof(UserRoleData), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> SaveUserRole([FromBody] UserRoleCreateModel role)
+        public async Task<IActionResult> SaveUserRole([FromBody] UserRoleModel role)
         {
             var data = AutoMapper.Mapper.Map<UserRoleData>(role);
 
@@ -81,8 +81,8 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("updateRole")]
         [RequirePermissionAttribute]
-        [SwaggerOperation("UpdateUserRole")]
-        [ProducesResponseType(typeof(UserRoleData), (int)HttpStatusCode.OK)]
+        [SwaggerOperation("SaveUserRole")]
+        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateUserRole([FromBody] UserRoleUpdateModel role)
         {
@@ -123,7 +123,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("verifyRole")]
         [SwaggerOperation("VerifyUserRole")]
-        [ProducesResponseType(typeof(UserRoleUpdateModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> VerifyUserRole(string clientId)
         {
