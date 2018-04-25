@@ -77,19 +77,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("assignPermission")]
-        [SwaggerOperation("AssignPermissionToRole")]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> AssignPermissionToRole([FromBody] RolePermissionMatchModel role)
-        {
-            var data = AutoMapper.Mapper.Map<RolePermissionMatchData>(role);
-
-            await _permissionsService.AssignPermissionToRoleAsync(data);
-
-            return NoContent();
-        }
-
         [HttpPost("assignPermissions")]
         [SwaggerOperation("AssignMultiplePermissionToRole")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -99,19 +86,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = AutoMapper.Mapper.Map<List<RolePermissionMatchData>>(permissions);
 
             await _permissionsService.AssignPermissionsToRoleAsync(data);
-
-            return NoContent();
-        }
-
-        [HttpPost("revokePermission")]
-        [SwaggerOperation("RevokePermissionFromRole")]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        public async Task<IActionResult> RevokePermissionFromRole([FromBody] RolePermissionMatchModel role)
-        {
-            var data = AutoMapper.Mapper.Map<RolePermissionMatchData>(role);
-
-            await _permissionsService.RevokePermissionFromRole(data);
 
             return NoContent();
         }
