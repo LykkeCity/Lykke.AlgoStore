@@ -162,6 +162,16 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(data.RoleId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
 
+                var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
+
+                if(role == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {data.RoleId} does not exist.");
+
+                var clientData = await _personalDataService.GetAsync(data.ClientId);
+
+                if(clientData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Client with id {data.ClientId} does not exist.");
+
                 await _userRoleMatchRepository.SaveUserRoleAsync(data);
             });
         }
