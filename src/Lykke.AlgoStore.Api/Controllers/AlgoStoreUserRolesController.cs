@@ -70,7 +70,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [SwaggerOperation("SaveUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> SaveUserRole([FromBody] UserRoleModel role)
+        public async Task<IActionResult> SaveUserRole([FromBody] UserRoleCreateModel role)
         {
             var data = AutoMapper.Mapper.Map<UserRoleData>(role);
 
