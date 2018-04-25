@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
@@ -22,7 +23,8 @@ namespace Lykke.AlgoStore.Services
             if (action == null)
                 return;
 
-            var begin = DateTime.UtcNow;
+            var sw = new Stopwatch();
+            sw.Start();
             var hasError = false;
 
             try
@@ -36,8 +38,8 @@ namespace Lykke.AlgoStore.Services
             }
             finally
             {
-                var lenght = DateTime.UtcNow - begin;
-                Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"Client {clientId} execute {methodName} takes {lenght.TotalMilliseconds}ms with HasError={hasError}").Wait();
+                var lenght = sw.ElapsedMilliseconds;
+                Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"Client {clientId} execute {methodName} takes {lenght}ms with HasError={hasError}").Wait();
             }
         }
         protected async Task<T> LogTimedInfoAsync<T>(string methodName, string clientId, Func<Task<T>> action)
@@ -45,7 +47,8 @@ namespace Lykke.AlgoStore.Services
             if (action == null)
                 return default(T);
 
-            var begin = DateTime.UtcNow;
+            var sw = new Stopwatch();
+            sw.Start();
             var hasError = false;
 
             try
@@ -59,8 +62,8 @@ namespace Lykke.AlgoStore.Services
             }
             finally
             {
-                var lenght = DateTime.UtcNow - begin;
-                Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"Client {clientId} execute {methodName} takes {lenght.TotalMilliseconds}ms with HasError={hasError}").Wait();
+                var lenght = sw.ElapsedMilliseconds;
+                Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, ComponentName, $"Client {clientId} execute {methodName} takes {lenght}ms with HasError={hasError}").Wait();
             }
         }
 
