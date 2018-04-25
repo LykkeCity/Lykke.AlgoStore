@@ -55,6 +55,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoCommentModel, AlgoCommentData>()
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
+
+            CreateMap<UserRoleCreateModel, UserRoleData>()
+                .ForMember(dest => dest.CanBeDeleted, opt => opt.Ignore())
+                .ForMember(dest => dest.CanBeModified, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+
+            CreateMap<UserRoleUpdateModel, UserRoleData>()                
+                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
         }
     }
 }
