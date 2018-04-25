@@ -26,28 +26,9 @@ namespace Lykke.AlgoStore.Services
             _rolesRepository = rolesRepository;
         }
 
-        public async Task AssignPermissionToRoleAsync(RolePermissionMatchData data)
-        {
-            await LogTimedInfoAsync(nameof(AssignPermissionToRoleAsync), null, async () =>
-            {
-                if (string.IsNullOrEmpty(data.PermissionId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
-
-                if (string.IsNullOrEmpty(data.RoleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
-
-                var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
-
-                if (!role.CanBeModified)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
-
-                await _rolePermissionMatchRepository.AssignPermissionToRoleAsync(data);
-            });
-        }
-
         public async Task AssignPermissionsToRoleAsync(List<RolePermissionMatchData> data)
         {
-            await LogTimedInfoAsync(nameof(AssignPermissionToRoleAsync), null, async () =>
+            await LogTimedInfoAsync(nameof(AssignPermissionsToRoleAsync), null, async () =>
             {
                 foreach (var permission in data)
                 {
@@ -140,28 +121,9 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        public async Task RevokePermissionFromRole(RolePermissionMatchData data)
-        {
-            await LogTimedInfoAsync(nameof(RevokePermissionFromRole), null, async () =>
-            {
-                if (string.IsNullOrEmpty(data.RoleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
-
-                if (string.IsNullOrEmpty(data.PermissionId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
-
-                var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
-
-                if (!role.CanBeModified)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
-
-                await _rolePermissionMatchRepository.RevokePermission(data);
-            });
-        }
-
         public async Task RevokePermissionsFromRole(List<RolePermissionMatchData> data)
         {
-            await LogTimedInfoAsync(nameof(RevokePermissionFromRole), null, async () =>
+            await LogTimedInfoAsync(nameof(RevokePermissionsFromRole), null, async () =>
             {
                 foreach (var permission in data)
                 {
