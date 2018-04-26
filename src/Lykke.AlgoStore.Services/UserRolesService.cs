@@ -182,12 +182,17 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(SaveRoleAsync), null, async () =>
             {
-                if (!String.IsNullOrEmpty(role.Name) && await _rolesRepository.RoleExistsAsync(role.Name))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Role {role.Name} already exists.");
-
                 if (role.Id == null)
                 {
+                    if (String.IsNullOrEmpty(role.Name))
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Role name is required.");
+
+                    if (await _rolesRepository.RoleExistsAsync(role.Name))
+                    {
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                            $"Role {role.Name} already exists.");
+                    }
+
                     role.Id = Guid.NewGuid().ToString();
                     role.CanBeModified = true;
                     role.CanBeDeleted = true;
