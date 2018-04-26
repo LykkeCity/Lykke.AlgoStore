@@ -187,7 +187,7 @@ namespace Lykke.AlgoStore.Services
                     if (String.IsNullOrEmpty(role.Name))
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Role name is required.");
 
-                    if (!String.IsNullOrEmpty(role.Name) && await _rolesRepository.RoleExistsAsync(role.Name))
+                    if (await _rolesRepository.RoleExistsAsync(role.Name))
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                             $"Role {role.Name} already exists.");
