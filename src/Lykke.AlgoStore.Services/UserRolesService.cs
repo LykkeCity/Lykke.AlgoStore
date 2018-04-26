@@ -267,7 +267,21 @@ namespace Lykke.AlgoStore.Services
                 {
                     // if it does, delete them
                     await _rolePermissionMatchRepository.RevokePermission(permissionForRole);
-                }                
+                }
+
+                //then check if any user is assigned to this role
+                var allMatches = await _userRoleMatchRepository.GetAllMatchesAsync();
+                var usersWithRole = allMatches.Where(m => m.RoleId == roleId).ToList();
+
+                if(usersWithRole.Count > 0)
+                {
+                    // it there are any, revoke it
+                    foreach(var match in usersWithRole)
+                    {
+                        await _userRoleMatchRepository.RevokeUserRole(match.ClientId, match.RoleId);
+                    }
+                   
+                }
 
                 if (!role.CanBeDeleted)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "This role cannot be deleted.");
