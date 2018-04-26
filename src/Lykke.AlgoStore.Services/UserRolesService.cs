@@ -237,6 +237,11 @@ namespace Lykke.AlgoStore.Services
                 if (string.IsNullOrEmpty(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
 
+                var clientData = await _personalDataService.GetAsync(clientId);
+
+                if (clientData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Client with id {clientId} does not exist.");
 
                 var roles = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
 
