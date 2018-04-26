@@ -16,14 +16,10 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/permissions")]
     public class AlgoStoreUserPermissionsController: Controller
     {
-        private readonly IUserRolesService _userRolesService;
         private readonly IUserPermissionsService _permissionsService;
 
-        public AlgoStoreUserPermissionsController(
-            IUserRolesService userRolesService,
-            IUserPermissionsService permissionsService)
+        public AlgoStoreUserPermissionsController(IUserPermissionsService permissionsService)
         {
-            _userRolesService = userRolesService;
             _permissionsService = permissionsService;
         }
 
