@@ -164,13 +164,15 @@ namespace Lykke.AlgoStore.Services
 
                 var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
 
-                if(role == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {data.RoleId} does not exist.");
+                if (role == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Role with id {data.RoleId} does not exist.");
 
                 var clientData = await _personalDataService.GetAsync(data.ClientId);
 
-                if(clientData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Client with id {data.ClientId} does not exist.");
+                if (clientData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Client with id {data.ClientId} does not exist.");
 
                 await _userRoleMatchRepository.SaveUserRoleAsync(data);
             });
@@ -180,6 +182,10 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(SaveRoleAsync), null, async () =>
             {
+                if (!String.IsNullOrEmpty(role.Name) && await _rolesRepository.RoleExistsAsync(role.Name))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Role {role.Name} already exists.");
+
                 if (role.Id == null)
                 {
                     role.Id = Guid.NewGuid().ToString();
@@ -258,8 +264,9 @@ namespace Lykke.AlgoStore.Services
 
                 var role = await _rolesRepository.GetRoleByIdAsync(roleId);
 
-                if(role == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {roleId} does not exist.");
+                if (role == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Role with id {roleId} does not exist.");
 
                 //first check if the role has permissions assigned
                 var permissionsForRole = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
@@ -273,14 +280,13 @@ namespace Lykke.AlgoStore.Services
                 var allMatches = await _userRoleMatchRepository.GetAllMatchesAsync();
                 var usersWithRole = allMatches.Where(m => m.RoleId == roleId).ToList();
 
-                if(usersWithRole.Count > 0)
+                if (usersWithRole.Count > 0)
                 {
                     // it there are any, revoke it
-                    foreach(var match in usersWithRole)
+                    foreach (var match in usersWithRole)
                     {
                         await _userRoleMatchRepository.RevokeUserRole(match.ClientId, match.RoleId);
                     }
-                   
                 }
 
                 if (!role.CanBeDeleted)

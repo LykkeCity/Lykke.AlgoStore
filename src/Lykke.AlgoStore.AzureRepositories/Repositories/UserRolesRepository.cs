@@ -45,5 +45,12 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             await _table.DeleteIfExistAsync(role.Id, role.Name);
         }
+
+        public async Task<bool> RoleExistsAsync(string roleIdOrName)
+        {
+            var result = await _table.GetDataAsync(x => x.RowKey == roleIdOrName || x.PartitionKey == roleIdOrName);
+
+            return result?.Count > 0;
+        }
     }
 }
