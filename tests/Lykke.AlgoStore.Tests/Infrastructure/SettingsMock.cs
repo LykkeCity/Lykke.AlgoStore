@@ -34,7 +34,8 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
                         {
                             Db = new DbSettings
                             {
-                                TableStorageConnectionString = "Mock connectionString"
+                                TableStorageConnectionString = "UseDevelopmentStorage=true",
+                                LogsConnectionString = "UseDevelopmentStorage=true"
                             }
                         }
                     }

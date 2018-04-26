@@ -45,7 +45,6 @@ namespace Lykke.AlgoStore.Api
             {
                 cfg.AddProfiles(typeof(AutoMapperProfile));
                 cfg.AddProfiles(typeof(AutoMapperModelProfile));
-
             });
 
             Mapper.AssertConfigurationIsValid();
@@ -69,12 +68,9 @@ namespace Lykke.AlgoStore.Api
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                     });
 
-                services.AddMvc(options =>
-                {
-                    options.Filters.Add(typeof(PermissionFilter));
-                });
+                services.AddMvc(options => { options.Filters.Add(typeof(PermissionFilter)); });
 
-                services.AddScoped<ValidateMimeMultipartContentFilter>();                
+                services.AddScoped<ValidateMimeMultipartContentFilter>();
 
                 services.AddSwaggerGen(options =>
                 {
@@ -99,7 +95,9 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime, IUserPermissionsService permissionsService, IUserRolesService rolesService, IRolePermissionMatchRepository rolePermissionMatchRepository)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime,
+            IUserPermissionsService permissionsService, IUserRolesService rolesService,
+            IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             try
             {
@@ -135,7 +133,8 @@ namespace Lykke.AlgoStore.Api
                 });
                 app.UseStaticFiles();
 
-                appLifetime.ApplicationStarted.Register(() => StartApplication(permissionsService, rolesService, rolePermissionMatchRepository).Wait());
+                appLifetime.ApplicationStarted.Register(() =>
+                    StartApplication(permissionsService, rolesService, rolePermissionMatchRepository).Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
             catch (Exception ex)
@@ -145,13 +144,14 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        private async Task StartApplication(IUserPermissionsService permissionsService, IUserRolesService rolesService, IRolePermissionMatchRepository rolePermissionMatchRepository)
+        private async Task StartApplication(IUserPermissionsService permissionsService, IUserRolesService rolesService,
+            IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             try
             {
                 await SeedPermissions(permissionsService, rolesService, rolePermissionMatchRepository);
                 await SeedRoles(rolesService, permissionsService, rolePermissionMatchRepository);
-                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");                
+                await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
             {
@@ -178,25 +178,30 @@ namespace Lykke.AlgoStore.Api
                     await Log.WriteFatalErrorAsync(nameof(Startup), nameof(CleanUp), "", ex);
                     (Log as IDisposable)?.Dispose();
                 }
+
                 throw;
             }
         }
 
-        private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService, IRolePermissionMatchRepository rolePermissionMatchRepository)
+        private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService,
+            IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
-            await Log.WriteInfoAsync("", "", "Permission seed started");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed started");
 
             // Extract controller methods
             Permissions = Assembly.GetExecutingAssembly().GetTypes()
-            .Where(t => t.IsClass && t.ReflectedType == null && t.Namespace == "Lykke.AlgoStore.Api.Controllers")
-            .SelectMany(c => c.GetMethods().Where(m => m.ReturnType == typeof(Task<IActionResult>) && (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null || m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
-            .Select(i => new UserPermissionData()
+                .Where(t => t.IsClass && t.ReflectedType == null && t.Namespace == "Lykke.AlgoStore.Api.Controllers")
+                .SelectMany(c => c.GetMethods().Where(m =>
+                    m.ReturnType == typeof(Task<IActionResult>) &&
+                    (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null ||
+                     m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
+                .Select(i => new UserPermissionData()
                 {
                     Id = i.Name,
                     Name = i.ReflectedType.Name,
                     DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart()
-            })
-            .ToList();
+                })
+                .ToList();
 
             // check if we should delete any old permissions
             var allPermissions = await permissionsService.GetAllPermissionsAsync();
@@ -204,9 +209,8 @@ namespace Lykke.AlgoStore.Api
             var permissionsIds = Permissions.Select(x => x.Id);
 
             var permissionsIdsForDeletion = allPermissionsIds
-            .Where(x => !permissionsIds.Contains(x))
-            .ToList();
-
+                .Where(x => !permissionsIds.Contains(x))
+                .ToList();
 
             if (permissionsIdsForDeletion.Count > 0)
             {
@@ -219,7 +223,7 @@ namespace Lykke.AlgoStore.Api
                     var matches = allRoles.Where(role => role.Permissions.Any(p => p.Id == permissionId)).ToList();
 
                     // if the permission is referenced, remove the reference
-                    if(matches.Count > 0)
+                    if (matches.Count > 0)
                     {
                         foreach (var reference in matches)
                         {
@@ -240,12 +244,15 @@ namespace Lykke.AlgoStore.Api
             foreach (var permission in Permissions)
             {
                 await permissionsService.SavePermissionAsync(permission);
-            }            
+            }
+
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
         }
 
-        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService, IRolePermissionMatchRepository rolePermissionMatchRepository)
+        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService,
+            IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
-            await Log.WriteInfoAsync("", "", "Role seed started");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed started");
 
             var allRoles = await rolesService.GetAllRolesAsync();
 
@@ -272,7 +279,7 @@ namespace Lykke.AlgoStore.Api
             // Note: Only the original user role cannot be deleted
             var userRole = allRoles.FirstOrDefault(role => role.Name == "User" && !role.CanBeDeleted);
 
-            if(userRole == null)
+            if (userRole == null)
             {
                 userRole = new UserRoleData()
                 {
@@ -297,6 +304,8 @@ namespace Lykke.AlgoStore.Api
 
                 await rolePermissionMatchRepository.AssignPermissionToRoleAsync(match);
             }
+
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed finished");
         }
     }
 }
