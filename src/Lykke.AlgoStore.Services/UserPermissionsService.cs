@@ -38,7 +38,15 @@ namespace Lykke.AlgoStore.Services
                     if (string.IsNullOrEmpty(permission.RoleId))
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
 
+                    var dbPermission = await _permissionsRepository.GetPermissionByIdAsync(permission.PermissionId);
+
+                    if (dbPermission == null)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Permission with id {permission.PermissionId} does not exist.");
+
                     var role = await _rolesRepository.GetRoleByIdAsync(permission.RoleId);
+
+                    if(role == null)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {permission.RoleId} does not exist.");
 
                     if (!role.CanBeModified)
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");

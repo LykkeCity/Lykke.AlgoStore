@@ -16,14 +16,10 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/permissions")]
     public class AlgoStoreUserPermissionsController: Controller
     {
-        private readonly IUserRolesService _userRolesService;
         private readonly IUserPermissionsService _permissionsService;
 
-        public AlgoStoreUserPermissionsController(
-            IUserRolesService userRolesService,
-            IUserPermissionsService permissionsService)
+        public AlgoStoreUserPermissionsController(IUserPermissionsService permissionsService)
         {
-            _userRolesService = userRolesService;
             _permissionsService = permissionsService;
         }
 
@@ -62,20 +58,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _permissionsService.GetPermissionsByRoleIdAsync(roleId);
 
             return Ok(result);
-        }
-
-        [HttpPost("savePermission")]
-        [SwaggerOperation("SavePermission")]
-        [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> SavePermission([FromBody] UserPermissionModel permission)
-        {
-            var data = AutoMapper.Mapper.Map<UserPermissionData>(permission);
-
-            var result = await _permissionsService.SavePermissionAsync(data);
-
-            return Ok(result);
-        }
+        }        
 
         [HttpPost("assignPermissions")]
         [SwaggerOperation("AssignMultiplePermissionToRole")]
@@ -101,18 +84,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             await _permissionsService.RevokePermissionsFromRole(data);
 
             return NoContent();
-        }
-
-        [HttpDelete("deletePermission")]
-        [SwaggerOperation("DeletePermission")]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> DeletePermission(string permissionId)
-        {
-            await _permissionsService.DeletePermissionAsync(permissionId);
-
-            return NoContent();
-        }
+        }        
 
     }
 }

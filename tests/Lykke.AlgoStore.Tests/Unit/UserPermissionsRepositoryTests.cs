@@ -50,6 +50,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
         public void GetAllPermissionsTest()
         {
+            When_Invoke_SavePermission();
             var result = When_Invoke_GetAllPermissions();
             Then_Result_ShouldNotBe_Null(result);
         }
