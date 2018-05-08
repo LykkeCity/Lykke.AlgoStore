@@ -68,7 +68,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void GetAlgoInstanceTrades_Service_Exception_EmptyInastanceId()
+        public void GetAlgoInstanceTrades_Service_Exception_EmptyInstanceId()
         {
             var repoMock = GetAlgoInstanceRepositoryMock();
             var clientMock = GetTradesClientResultMock();
