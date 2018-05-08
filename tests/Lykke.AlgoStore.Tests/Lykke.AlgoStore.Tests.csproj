@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ExternalClient\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj" />
+    <ProjectReference Include="..\..\src\Lykke.AlgoStore.Api\Lykke.AlgoStore.Api.csproj" />
     <ProjectReference Include="..\..\src\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj" />
     <ProjectReference Include="..\..\src\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
     <ProjectReference Include="..\..\src\Lykke.AlgoStore.Services\Lykke.AlgoStore.Services.csproj" />
