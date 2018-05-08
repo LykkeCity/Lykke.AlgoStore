@@ -16,12 +16,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Authorize]
     [RequirePermissionAttribute]
     [Route("api/v1/comments")]
-    public class AlgoStoreCommentsController: Controller
+    public class AlgoStoreCommentsController : Controller
     {
         private readonly IAlgoStoreCommentsService _commentsService;
 
         public AlgoStoreCommentsController(IAlgoStoreCommentsService commentsService)
-        { 
+        {
             _commentsService = commentsService;
         }
 

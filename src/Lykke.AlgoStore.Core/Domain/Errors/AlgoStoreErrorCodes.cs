@@ -21,6 +21,7 @@
         WalletIsAlreadyUsed = 510,
         InitialWalletBalanceNotCalculated = 511,
         StatisticsSumaryNotFound = 512,
+        AlgoTradesClientError = 513,
         //Operation
         UnableToDeleteData = 601,
 

@@ -61,6 +61,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Instance Not Found.
+        /// </summary>
+        internal static string InstanceNotFound {
+            get {
+                return ResourceManager.GetString("InstanceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The wallet is already used by another your instance.
         /// </summary>
         internal static string WalletAlreadyUsed {

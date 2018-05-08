@@ -16,7 +16,8 @@ namespace Lykke.AlgoStore.Services
         private readonly IWalletBalanceService _walletBalanceService;
         private readonly IAssetsService _assetService;
 
-        public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository, IAlgoClientInstanceRepository algoClientInstanceRepository,
+        public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository, 
+            IAlgoClientInstanceRepository algoClientInstanceRepository,
             IWalletBalanceService walletBalanceService, IAssetsService assetsService, ILog log) : base(log,
             nameof(AlgoStoreStatisticsService))
         {

@@ -1,23 +1,23 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Common.Log;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings;
-using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Service.AlgoTrades.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Assets.Client;
+using Lykke.Service.Balances.Client;
+using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.RateCalculator.Client;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
-using Common.Log;
-using Lykke.Service.ClientAccount.Client;
-using Lykke.Service.Balances.Client;
-using Lykke.Service.RateCalculator.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -69,6 +69,8 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
             builder.RegisterRateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log);
+
+            builder.RegisterAlgoTradesClient(_settings.CurrentValue.AlgoTradesServiceClient, _log);
 
             builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
              .As<IPersonalDataService>()
