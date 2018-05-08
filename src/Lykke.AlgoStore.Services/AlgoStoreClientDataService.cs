@@ -722,8 +722,8 @@ namespace Lykke.AlgoStore.Services
                 clientAssetTwoBalance = data.BackTestAssetTwoBalance;               
 
                 var tradedAssetBalanceAbsoluteValue = await _candlesHistoryService.GetCandlesHistoryAsync(assetPair.Id,
-                    Service.CandlesHistory.Client.Models.CandlePriceType.Mid,
-                    Service.CandlesHistory.Client.Models.CandleTimeInterval.Day,
+                    Lykke.Service.CandlesHistory.Client.Models.CandlePriceType.Mid,
+                    Lykke.Service.CandlesHistory.Client.Models.CandleTimeInterval.Day,
                     DateTime.Parse(data.AlgoMetaDataInformation.Parameters.First(p => p.Key == "StartFrom").Value),
                     DateTime.Parse(data.AlgoMetaDataInformation.Parameters.First(p => p.Key == "StartFrom").Value));
 
