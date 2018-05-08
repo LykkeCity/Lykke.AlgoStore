@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.Service.AlgoTrades.Client.AutorestClient.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -25,12 +26,11 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet]
         [SwaggerOperation("GetAllTradesForAlgoInstanceAsync")]
-        [ProducesResponseType(typeof(List<Statistics>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(IEnumerable<AlgoInstanceTradeResponseModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllTradesForAlgoInstanceAsync(string instanceId)
         {
-            var result = await _tradesService.GetAllTradesForAlgoInstanceAsync(instanceId);
-
+            var result = await _tradesService.GetAllTradesForAlgoInstanceAsync(User.GetClientId(), instanceId);
             return Ok(result);
         }
     }

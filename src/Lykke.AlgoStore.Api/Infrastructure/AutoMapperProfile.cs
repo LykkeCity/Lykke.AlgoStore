@@ -37,7 +37,10 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Margin, opt => opt.Ignore())
                 .ForMember(dest => dest.Volume, opt => opt.Ignore())
                 .ForMember(dest => dest.TradedAsset, opt => opt.Ignore())
-                .ForMember(dest => dest.IsStraight, opt => opt.Ignore());
+                .ForMember(dest => dest.IsStraight, opt => opt.Ignore())
+                .ForMember(dest => dest.BackTestTradingAssetBalance, opt => opt.Ignore())
+                .ForMember(dest => dest.BackTestAssetTwoBalance, opt => opt.Ignore());
+
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoMetaDataModel, AlgoMetaData>()
@@ -62,7 +65,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
 
-            CreateMap<UserRoleUpdateModel, UserRoleData>()                
+            CreateMap<UserRoleUpdateModel, UserRoleData>()
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
         }
     }

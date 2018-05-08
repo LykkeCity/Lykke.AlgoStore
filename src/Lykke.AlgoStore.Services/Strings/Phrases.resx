@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="InstanceNotFound" xml:space="preserve">
+    <value>Instance Not Found</value>
+  </data>
   <data name="WalletAlreadyUsed" xml:space="preserve">
     <value>The wallet is already used by another your instance</value>
   </data>

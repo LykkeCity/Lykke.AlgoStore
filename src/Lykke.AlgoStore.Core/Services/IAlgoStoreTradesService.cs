@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Lykke.AlgoStore.Service.AlgoTrades.Client.AutorestClient.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Core.Services
 {
     public interface IAlgoStoreTradesService
     {
-        Task<List<Statistics>> GetAllTradesForAlgoInstanceAsync(string instanceId);
+        Task<IEnumerable<AlgoInstanceTradeResponseModel>> GetAllTradesForAlgoInstanceAsync(string clientId, string instanceId);
     }
 }
