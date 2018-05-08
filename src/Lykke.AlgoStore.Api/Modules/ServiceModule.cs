@@ -18,11 +18,7 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
-using Common.Log;
-using Lykke.Service.ClientAccount.Client;
-using Lykke.Service.Balances.Client;
 using Lykke.Service.CandlesHistory.Client;
-using Lykke.Service.RateCalculator.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {

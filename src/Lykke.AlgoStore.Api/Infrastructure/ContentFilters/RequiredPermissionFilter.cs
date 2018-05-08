@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 {
