@@ -312,7 +312,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
             data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
-            //When we create/edit algo instace and save it we call deploy process after that, that's why we set it's status to deploying.
+            //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
 
             var result = await _clientDataService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
