@@ -738,7 +738,11 @@ namespace Lykke.AlgoStore.Services
             else
             {
                 var baseUserAssetId = await GetBaseAssetAsync(data.ClientId);
-                var assetResponse = await _assetService.GetAssetWithHttpMessagesAsync(baseUserAssetId.BaseAssetId);
+                var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(baseUserAssetId.BaseAssetId);//this is the method from v2 so we will use it
+
+                if(assetResponse == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"There is no asset with an id {baseUserAssetId.BaseAssetId}");
+
                 if (assetResponse.Body is Asset asset)
                     baseUserAssetName = asset.Name;
 

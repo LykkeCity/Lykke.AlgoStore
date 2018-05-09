@@ -521,15 +521,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
             var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
                 clientAccountService, null, assetsValidator, walletBalanceService);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
-            Then_Exception_ShouldBe_Null(exception);
-            Then_Data_ShouldNotBe_Empty(result);
+            Then_Exception_ShouldNotBe_Null(exception);
+            Then_Data_ShouldBe_Empty(result);
         }
 
         #region Private Methods
@@ -731,9 +731,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.Null(data);
         }
 
+        private static void Then_Data_ShouldBe_Empty(AlgoClientInstanceData data)
+        {
+            Assert.Null(data);
+        }
+
         private static void Then_Exception_ShouldBe_Null(Exception exception)
         {
             Assert.Null(exception);
+        }
+
+        private static void Then_Exception_ShouldNotBe_Null(Exception exception)
+        {
+            Assert.NotNull(exception);
         }
 
         private static void Then_Result_ShouldNotBe_Empty(List<AlgoRatingData> data)

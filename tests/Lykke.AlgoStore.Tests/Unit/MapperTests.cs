@@ -191,8 +191,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             //there are no valid model and entity props so test can't be called.
 
-            //Then_Data_ShouldBe_Equal(metadata, resultWithAlgoIdPartKey);
-            //Then_Data_ShouldBe_Equal(metadata, resultWithClientIdPartKey);
+            Then_Data_ShouldBe_Equal(metadata, resultWithAlgoIdPartKey);
+            Then_Data_ShouldBe_Equal(metadata, resultWithClientIdPartKey);
         }
 
         [TestCaseSource("AlgoClientInstanceEntity")]
