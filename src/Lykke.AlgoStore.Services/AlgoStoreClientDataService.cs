@@ -24,7 +24,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.Service.Assets.Client.Models;
-using Microsoft.Rest;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
@@ -587,117 +586,24 @@ namespace Lykke.AlgoStore.Services
         /// Saves the algo instance data asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="algoClientId">Algo client id.</param>
         /// <returns></returns>
         public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
         {
-            return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId, async () =>
-            {
-                if (string.IsNullOrWhiteSpace(data.InstanceId))
-                    data.InstanceId = Guid.NewGuid().ToString();
-
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-               
-                var wallet = await GetClientWallet(data.ClientId, data.WalletId);
-                if (wallet == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletNotFound, $"Wallet {data.WalletId} not found for client {data.ClientId}");
-
-                if (!string.IsNullOrEmpty(data.WalletId) && await IsWalletUsedByExistingStartedInstance(data.WalletId))
-                {
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletIsAlreadyUsed, string.Format(Phrases.WalletIsAlreadyUsed, data.WalletId, data.AlgoId, data.ClientId), Phrases.WalletAlreadyUsed);
-                }                            
-
-                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
-
-                if (algoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
-
-                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
-                _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
-                _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);
-
-                var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
-                _assetsValidator.ValidateAssetResponse(baseAsset);
-                var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
-                _assetsValidator.ValidateAssetResponse(quotingAsset);
-                _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAsset, baseAsset.Body, quotingAsset.Body);
-
-                var straight = data.TradedAsset == baseAsset.Body.Id || data.TradedAsset == baseAsset.Body.Name;
-                var asset = straight ? baseAsset : quotingAsset;
-                _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
-
-                var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
-                var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
-                _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
-               
-                _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
-                
-                data.IsStraight = straight;
-                await _instanceRepository.SaveAlgoInstanceDataAsync(data);
-
-                var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
-                if (res == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot save data for {data.ClientId} id: {data.AlgoId}");
-
-                await SaveSummaryStatistic(data, assetPairResponse.Body, asset.Body, straight ? quotingAsset.Body : baseAsset.Body);
-
-                return res;
-            });
+            return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId,
+                async () => await SaveInstanceDataAsync(data, algoClientId));
         }
 
         /// <summary>
-        /// Saves the algo backtest instance data asynchronous.
+        /// Saves the algo back-test instance data asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="algoClientId">Algo client id.</param>
         /// <returns></returns>
         public async Task<AlgoClientInstanceData> SaveAlgoBackTestInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
         {
-            return await LogTimedInfoAsync(nameof(SaveAlgoBackTestInstanceDataAsync), data.ClientId, async () =>
-            {
-                if (string.IsNullOrWhiteSpace(data.InstanceId))
-                    data.InstanceId = Guid.NewGuid().ToString();
-
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"Algo {data.AlgoId} no found for client {data.ClientId}");
-
-                if (algoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
-
-                var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
-                _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
-                _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);
-
-                var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
-                _assetsValidator.ValidateAssetResponse(baseAsset);
-                var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
-                _assetsValidator.ValidateAssetResponse(quotingAsset);
-                _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAsset, baseAsset.Body, quotingAsset.Body);
-
-                var straight = data.TradedAsset == baseAsset.Body.Id || data.TradedAsset == baseAsset.Body.Name;
-                var asset = straight ? baseAsset : quotingAsset;
-                _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
-
-                var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
-                var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
-                _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
-
-                data.IsStraight = straight;
-                await _instanceRepository.SaveAlgoInstanceDataAsync(data);
-
-                var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
-                if (res == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot save back test algo instance data for {data.ClientId} id: {data.AlgoId}");
-
-                await SaveSummaryStatistic(data, assetPairResponse.Body, asset.Body, quotingAsset.Body);
-
-                return res;
-            });
+            return await LogTimedInfoAsync(nameof(SaveAlgoBackTestInstanceDataAsync), data.ClientId,
+                async () => await SaveInstanceDataAsync(data, algoClientId, true));
         }
 
         /// <summary>
@@ -802,9 +708,6 @@ namespace Lykke.AlgoStore.Services
         /// <summary>
         /// Check if the wallet is used by another running algo instance of the user.
         /// </summary>
-        /// <param name="clientId">
-        /// User id
-        /// </param>
         /// <param name="walletId">
         /// Wallet id that the user wants to use for trading
         /// </param>
@@ -812,6 +715,74 @@ namespace Lykke.AlgoStore.Services
         {
             var algoInstances = (await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId));
             return algoInstances != null && algoInstances.Count() > 0;
+        }
+
+        private async Task<AlgoClientInstanceData> SaveInstanceDataAsync(
+            AlgoClientInstanceData data,
+            string algoClientId,
+            bool isBackTestInstance = false)
+        {
+            if (string.IsNullOrWhiteSpace(data.InstanceId))
+                data.InstanceId = Guid.NewGuid().ToString();
+
+            if (!data.ValidateData(out var exception))
+                throw exception;
+
+            if (!isBackTestInstance)
+            {
+                var wallet = await GetClientWallet(data.ClientId, data.WalletId);
+                if (wallet == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletNotFound,
+                        $"Wallet {data.WalletId} not found for client {data.ClientId}");
+
+                if (!string.IsNullOrEmpty(data.WalletId) && await IsWalletUsedByExistingStartedInstance(data.WalletId))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.WalletIsAlreadyUsed,
+                        string.Format(Phrases.WalletIsAlreadyUsed, data.WalletId, data.AlgoId, data.ClientId),
+                        Phrases.WalletAlreadyUsed);
+                }
+            }
+
+            if (!await _metaDataRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                    $"Algo {data.AlgoId} no found for client {data.ClientId}");
+
+            if (algoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, data.AlgoId))
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic,
+                    $"Algo {data.AlgoId} not public for client {data.ClientId}");
+
+            var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
+            _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
+            _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);
+
+            var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
+            _assetsValidator.ValidateAssetResponse(baseAsset);
+            var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
+            _assetsValidator.ValidateAssetResponse(quotingAsset);
+            _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAsset, baseAsset.Body, quotingAsset.Body);
+
+            var straight = data.TradedAsset == baseAsset.Body.Id || data.TradedAsset == baseAsset.Body.Name;
+            var asset = straight ? baseAsset : quotingAsset;
+            _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
+
+            var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
+            var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
+            _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
+
+            if (!isBackTestInstance)
+                _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
+
+            data.IsStraight = straight;
+            await _instanceRepository.SaveAlgoInstanceDataAsync(data);
+
+            var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
+            if (res == null)
+                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                    $"Cannot save {(isBackTestInstance ? "back test" : "")} algo instance data for {data.ClientId} id: {data.AlgoId}");
+
+            await SaveSummaryStatistic(data, assetPairResponse.Body, asset.Body, straight ? quotingAsset.Body : baseAsset.Body);
+
+            return res;
         }
     }
 }
