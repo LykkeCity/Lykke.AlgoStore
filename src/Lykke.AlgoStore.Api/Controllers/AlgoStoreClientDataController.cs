@@ -312,11 +312,34 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
             data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
-            //When we create/edit algo instace and save it we call deploy process after that, that's why we set it's status to deploying.
+            //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
 
             var result = await _clientDataService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
+
+            return Ok(response);
+        }
+
+        [HttpPost("backTestInstanceData")]
+        [SwaggerOperation("SaveAlgoBackTestInstanceDataAsync")]
+        [ProducesResponseType(typeof(AlgoBackTestInstanceModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> SaveAlgoBackTestInstanceDataAsync([FromBody]AlgoBackTestInstanceModel model)
+        {
+            var data = Mapper.Map<AlgoClientInstanceData>(model);
+            data.ClientId = User.GetClientId();
+
+            data.AssetPair = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
+            data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
+            data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
+
+            //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
+            data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
+
+            var result = await _clientDataService.SaveAlgoBackTestInstanceDataAsync(data, model.AlgoClientId);
+            var response = Mapper.Map<AlgoBackTestInstanceModel>(result);
 
             return Ok(response);
         }

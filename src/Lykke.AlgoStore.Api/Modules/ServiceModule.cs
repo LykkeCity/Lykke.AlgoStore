@@ -18,6 +18,7 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
+using Lykke.Service.CandlesHistory.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -75,6 +76,10 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
              .As<IPersonalDataService>()
              .SingleInstance();
+
+            builder.RegisterType<Candleshistoryservice>()
+                .As<ICandleshistoryservice>()
+                .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using Lykke.AlgoStore.Core.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 

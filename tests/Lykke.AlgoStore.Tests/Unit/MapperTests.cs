@@ -71,7 +71,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 var numberOfElements = 10;
                 var fixture = new Fixture();
-                var mock = Enumerable.Repeat(new object[] { fixture.Build<AlgoClientInstanceData>().Create() }, numberOfElements).ToList();
+                var mock = Enumerable.Repeat(new object[] { fixture.Build<AlgoClientInstanceData>()
+                    .With(d => d.BackTestAssetTwoBalance, 0)
+                    .With(d => d.BackTestTradingAssetBalance, 0)
+                    .Create()
+                }, numberOfElements).ToList();
                 return mock;
             }
         }
@@ -187,8 +191,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             //there are no valid model and entity props so test can't be called.
 
-            //Then_Data_ShouldBe_Equal(metadata, resultWithAlgoIdPartKey);
-            //Then_Data_ShouldBe_Equal(metadata, resultWithClientIdPartKey);
+            Then_Data_ShouldBe_Equal(metadata, resultWithAlgoIdPartKey);
+            Then_Data_ShouldBe_Equal(metadata, resultWithClientIdPartKey);
         }
 
         [TestCaseSource("AlgoClientInstanceEntity")]
