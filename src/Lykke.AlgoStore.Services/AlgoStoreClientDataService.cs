@@ -368,6 +368,34 @@ namespace Lykke.AlgoStore.Services
         }
 
         /// <summary>
+        /// Remove algo from public algos asynchronous.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data)
+        {
+            return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
+            {
+
+                if (string.IsNullOrWhiteSpace(data.ClientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+
+                var algoInstances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
+
+                if (algoInstances.Any())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.UnableToDeleteData,
+                        $"Cannot unpublish algo because it has algo instances. Algo id {data.AlgoId}, Client id {data.ClientId}",
+                        Phrases.AlgoInstancesExist);
+
+                await _publicAlgosRepository.DeletePublicAlgoAsync(data);
+
+                return data;
+            });
+        }
+
+        /// <summary>
         /// Validates the cascade delete client metadata request asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>

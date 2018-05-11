@@ -125,6 +125,23 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         }
 
+        [HttpPost("removeFromPublic")]
+        [SwaggerOperation("removeFromPublic")]
+        [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> RemoveFromPublic([FromBody] PublicAlgoDataModel model)
+        {
+            var data = Mapper.Map<PublicAlgoData>(model);
+
+            var result = await _clientDataService.RemoveFromPublicAsync(data);
+
+            var response = Mapper.Map<PublicAlgoDataModel>(result);
+
+            return Ok(response);
+
+        }
+
         [HttpGet("metadata")]
         [SwaggerOperation("GetAlgoMetadata")]
         [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
