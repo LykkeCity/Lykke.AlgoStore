@@ -384,12 +384,12 @@ namespace Lykke.AlgoStore.Services
 
                 var algoInstances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
-                if (!algoInstances.Any())
-                    await _publicAlgosRepository.DeletePublicAlgoAsync(data);
-                else
+                if (algoInstances.Any())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.UnableToDeleteData,
                         $"Cannot unpublish algo because it has algo instances. Algo id {data.AlgoId}, Client id {data.ClientId}",
                         Phrases.AlgoInstancesExist);
+
+                await _publicAlgosRepository.DeletePublicAlgoAsync(data);
 
                 return data;
             });
