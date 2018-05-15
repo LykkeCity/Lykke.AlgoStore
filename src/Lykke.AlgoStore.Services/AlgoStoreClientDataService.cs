@@ -651,14 +651,14 @@ namespace Lykke.AlgoStore.Services
             double clientTradedAssetBalance;
             double clientAssetTwoBalance;
             double initialWalletBalance;
-            string baseUserAssetName = null;           
+            string userCurrencyAssetId = null;
 
             if (data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Test)
             {
-                baseUserAssetName = assetTwo.Name;
+                userCurrencyAssetId = assetPair.QuotingAssetId;
 
-                clientTradedAssetBalance = data.BackTestTradingAssetBalance;
-                clientAssetTwoBalance = data.BackTestAssetTwoBalance;               
+                clientTradedAssetBalance = data.BackTestTradingAssetBalance; //btcusd, trAss = usd 
+                clientAssetTwoBalance = data.BackTestAssetTwoBalance;
 
                 var tradedAssetBalanceAbsoluteValue = await _candlesHistoryService.GetCandlesHistoryAsync(assetPair.Id,
                     Lykke.Service.CandlesHistory.Client.Models.CandlePriceType.Mid,
@@ -671,19 +671,22 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InitialWalletBalanceNotCalculated,
                         $"Initial wallet balance could not be calculated. Could not get history price for {assetPair.Name}");
                 }
+                //show balance for the quoting asset from the Asset pair - for back test
+                if (data.IsStraight)
+                    initialWalletBalance = clientAssetTwoBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientTradedAssetBalance;
+                else
+                    initialWalletBalance = clientTradedAssetBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientAssetTwoBalance;
 
-                initialWalletBalance = clientAssetTwoBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientTradedAssetBalance;
             }
             else
             {
                 var baseUserAssetId = await GetBaseAssetAsync(data.ClientId);
-                var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(baseUserAssetId.BaseAssetId);//this is the method from v2 so we will use it
+                var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(baseUserAssetId.BaseAssetId);
 
-                if(assetResponse == null)
+                if (assetResponse == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"There is no asset with an id {baseUserAssetId.BaseAssetId}");
 
-                if (assetResponse.Body is Asset asset)
-                    baseUserAssetName = asset.Name;
+                userCurrencyAssetId = baseUserAssetId.BaseAssetId;
 
                 var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(data.WalletId, assetPair);
                 initialWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(data.WalletId, baseUserAssetId.BaseAssetId, assetPair);
@@ -692,7 +695,7 @@ namespace Lykke.AlgoStore.Services
                 clientTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Id).Balance;
                 clientAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Id).Balance;
             }
-            
+
             await _statisticsRepository.CreateOrUpdateSummaryAsync(new StatisticsSummary
             {
                 InitialWalletBalance = initialWalletBalance,
@@ -706,7 +709,7 @@ namespace Lykke.AlgoStore.Services
                 LastWalletBalance = initialWalletBalance,
                 TotalNumberOfStarts = 0,
                 TotalNumberOfTrades = 0,
-                UserCurrencyBaseAssetId = baseUserAssetName
+                UserCurrencyBaseAssetId = userCurrencyAssetId
             });
 
             var statisticsSummaryResult = await _statisticsRepository.GetSummaryAsync(data.InstanceId);
@@ -790,12 +793,16 @@ namespace Lykke.AlgoStore.Services
 
             var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
             _assetsValidator.ValidateAssetResponse(baseAsset);
+
             var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
             _assetsValidator.ValidateAssetResponse(quotingAsset);
             _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAsset, baseAsset.Body, quotingAsset.Body);
 
             var straight = data.TradedAsset == baseAsset.Body.Id || data.TradedAsset == baseAsset.Body.Name;
+
+            //get traded asset
             var asset = straight ? baseAsset : quotingAsset;
+
             _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
 
             var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
