@@ -256,6 +256,51 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        public async Task<AlgoClientMetaData> CreateAlgoAsync(string clientId, string clientName, AlgoMetaData data,
+            string algoContent)
+        {
+            return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+
+                if(string.IsNullOrEmpty(algoContent))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    data.AlgoId = Guid.NewGuid().ToString();
+
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var clientData = new AlgoClientMetaData
+                {
+                    ClientId = clientId,
+                    Author = clientName,
+                    AlgoMetaData = new List<AlgoMetaData>
+                    {
+                        data
+                    }
+                };
+
+                await _metaDataRepository.SaveAlgoMetaDataAsync(clientData);
+
+                var res = await _metaDataRepository.GetAlgoMetaDataAsync(clientId, data.AlgoId);
+
+                if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection())
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+
+                await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                //TODO: Introduce new build service that will use algo content
+                //in order to validate and build C# algo
+                //Also, at the end, we should extract algo parameters and save them
+
+                return res;
+            });
+        }
+
         /// <summary>
         /// Gets the client metadata asynchronous.
         /// </summary>
