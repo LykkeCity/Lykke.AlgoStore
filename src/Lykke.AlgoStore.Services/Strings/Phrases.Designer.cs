@@ -79,6 +79,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Public algo Not Found.
+        /// </summary>
+        internal static string PublicAlgoNotFound {
+            get {
+                return ResourceManager.GetString("PublicAlgoNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The wallet is already used by another your instance.
         /// </summary>
         internal static string WalletAlreadyUsed {

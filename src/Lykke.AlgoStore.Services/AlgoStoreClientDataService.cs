@@ -355,7 +355,6 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
             {
-
                 if (string.IsNullOrWhiteSpace(data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
@@ -376,11 +375,17 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
             {
-
                 if (string.IsNullOrWhiteSpace(data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+
+                bool algoExists = await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId);
+
+                if (!algoExists)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic,
+                        $"There is no public algo with AlgoId {data.AlgoId}, Client id {data.ClientId}",
+                        Phrases.PublicAlgoNotFound);
 
                 var algoInstances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
