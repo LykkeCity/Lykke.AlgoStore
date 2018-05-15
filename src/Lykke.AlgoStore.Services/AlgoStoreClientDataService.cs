@@ -657,7 +657,7 @@ namespace Lykke.AlgoStore.Services
             {
                 userCurrencyAssetId = assetPair.QuotingAssetId;
 
-                clientTradedAssetBalance = data.BackTestTradingAssetBalance; //btcusd, trAss = usd 
+                clientTradedAssetBalance = data.BackTestTradingAssetBalance;
                 clientAssetTwoBalance = data.BackTestAssetTwoBalance;
 
                 var tradedAssetBalanceAbsoluteValue = await _candlesHistoryService.GetCandlesHistoryAsync(assetPair.Id,
