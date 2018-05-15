@@ -8,7 +8,7 @@
         public string Date { get; set; }
         public string Status { get; set; }
         public string Author { get; set; }
-        public string Content { get; set; }
+        public string Content { get; set; } //Base64 encoded
 
         public string DecodedContent => System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Content));
     }
