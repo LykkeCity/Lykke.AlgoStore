@@ -123,6 +123,9 @@
   <data name="InstanceNotFound" xml:space="preserve">
     <value>Instance Not Found</value>
   </data>
+  <data name="PublicAlgoNotFound" xml:space="preserve">
+    <value>Public algo Not Found</value>
+  </data>
   <data name="WalletAlreadyUsed" xml:space="preserve">
     <value>The wallet is already used by another your instance</value>
   </data>
