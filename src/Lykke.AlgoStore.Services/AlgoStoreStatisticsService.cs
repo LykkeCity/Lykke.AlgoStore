@@ -44,6 +44,9 @@ namespace Lykke.AlgoStore.Services
                             $"Could not find statistic summary row for AlgoInstance: {instanceId}");
                     }
 
+                    statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
+                                                   statisticsSummary.InitialWalletBalance) * 100;
+
                     return statisticsSummary;
                 }
             );
