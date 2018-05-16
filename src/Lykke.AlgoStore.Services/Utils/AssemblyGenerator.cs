@@ -48,7 +48,8 @@ namespace Lykke.AlgoStore.Services.Utils
 
                     var message = string.Join(Environment.NewLine, failures.Select(x => $"{x.Id}: {x.GetMessage()}"));
 
-                    throw new InvalidOperationException($"Compilation failures!{Environment.NewLine}{message}{Environment.NewLine}Code:{Environment.NewLine}{code}");
+                    throw new InvalidOperationException(
+                        $"Compilation failures!{Environment.NewLine}{message}{Environment.NewLine}Code:{Environment.NewLine}{code}");
                 }
 
                 stream.Seek(0, SeekOrigin.Begin);
