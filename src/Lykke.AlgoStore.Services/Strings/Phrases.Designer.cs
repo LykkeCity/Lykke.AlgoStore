@@ -88,6 +88,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot publish/unpublish algo because you are not the author of the algo..
+        /// </summary>
+        internal static string UserNotAuthorOfAlgo {
+            get {
+                return ResourceManager.GetString("UserNotAuthorOfAlgo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The wallet is already used by another your instance.
         /// </summary>
         internal static string WalletAlreadyUsed {

@@ -350,15 +350,20 @@ namespace Lykke.AlgoStore.Services
         /// Adds algo to public algos asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="clientId">The id of the logget user</param>
         /// <returns></returns>
-        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data)
+        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId)
         {
-            return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
+            return await LogTimedInfoAsync(nameof(AddToPublicAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+                if (data.ClientId != clientId)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
+                        $"User with id {clientId} cannot publish algo because he/she is not the author.",
+                        Phrases.UserNotAuthorOfAlgo);
 
                 await _publicAlgosRepository.SavePublicAlgoAsync(data);
 
@@ -370,15 +375,20 @@ namespace Lykke.AlgoStore.Services
         /// Remove algo from public algos asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
+        /// <param name="clientId">The id of the logget user</param>
         /// <returns></returns>
-        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data)
+        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId)
         {
-            return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
+            return await LogTimedInfoAsync(nameof(RemoveFromPublicAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+                if (data.ClientId != clientId)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
+                        $"User with id {clientId} cannot unpublish algo because he/she is not the author.",
+                        Phrases.UserNotAuthorOfAlgo);
 
                 bool algoExists = await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId);
 

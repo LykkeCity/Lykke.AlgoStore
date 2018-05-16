@@ -7,6 +7,9 @@
         Unhandled = 1,
         InternalError = 2,
 
+        //Authorization
+        Unauthorized = 401,
+
         //Data
         RuntimeSettingsExists = 500,
         AlgoNotFound = 501,
