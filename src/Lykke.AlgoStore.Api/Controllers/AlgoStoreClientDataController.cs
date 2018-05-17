@@ -310,7 +310,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = await _clientDataService.GetAlgoInstanceDataAsync(data);
 
-            if (result == null)
+            if (result == null || result.AlgoId == null)
                 return NotFound();
 
             var response = Mapper.Map<AlgoClientInstanceModel>(result);

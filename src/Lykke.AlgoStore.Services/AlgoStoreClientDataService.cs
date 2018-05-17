@@ -426,10 +426,10 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Algo metadata not found for {data.AlgoId}");
 
-                var result = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
-                if (result == null)
+                var result = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
+                if (result == null || result.AlgoId == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                        $"Algo instance data not found for {data.InstanceId}");
+                        $"Algo instance data not found for client with id ${data.ClientId} and instanceId {data.InstanceId}");
 
                 if (!result.ValidateData(out var instanceException))
                     throw instanceException;
@@ -596,7 +596,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                return await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
+                return await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
             });
         }
 
