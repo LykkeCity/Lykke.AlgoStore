@@ -70,6 +70,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset {0} or {1} are missing from wallet {2}.
+        /// </summary>
+        internal static string AssetsMissingFromWallet {
+            get {
+                return ResourceManager.GetString("AssetsMissingFromWallet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance Not Found.
         /// </summary>
         internal static string InstanceNotFound {

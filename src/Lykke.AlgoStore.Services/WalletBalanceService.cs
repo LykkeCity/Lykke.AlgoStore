@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Services.Strings;
 using Lykke.Service.Balances.AutorestClient.Models;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.RateCalculator.Client;
@@ -38,8 +39,8 @@ namespace Lykke.AlgoStore.Services
 
             if (!walletAssetIds.Contains(assetPair.BaseAssetId) || !walletAssetIds.Contains(assetPair.QuotingAssetId))
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                    $"Asset {assetPair.BaseAssetId} or {assetPair.QuotingAssetId} are missing from wallet {walletId}");
+                var errorMessage = string.Format(Phrases.AssetsMissingFromWallet, assetPair.BaseAssetId, assetPair.QuotingAssetId, walletId);
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, errorMessage, errorMessage);
             }
         }
 
