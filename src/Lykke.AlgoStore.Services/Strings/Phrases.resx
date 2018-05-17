@@ -120,6 +120,9 @@
   <data name="AlgoInstancesExist" xml:space="preserve">
     <value>Cannot unpublish algo because it has algo instances.</value>
   </data>
+  <data name="AssetsMissingFromWallet" xml:space="preserve">
+    <value>Asset {0} or {1} are missing from wallet {2}</value>
+  </data>
   <data name="InstanceNotFound" xml:space="preserve">
     <value>Instance Not Found</value>
   </data>
