@@ -39,7 +39,7 @@ namespace Lykke.AlgoStore.Services
 
                 var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
                 if (algoInstance == null || algoInstance.InstanceId == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Could not find AlgoInstance: {instanceId}", Phrases.InstanceNotFound);
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Could not find AlgoInstance with InstanceId {instanceId} and and ClientId {clientId}", Phrases.InstanceNotFound);
 
                 var result = await _algoTradesClient.GetAlgoInstanceTradesByTradedAsset(instanceId, algoInstance.TradedAsset, _maxNumberOfRowsToFetch);
 

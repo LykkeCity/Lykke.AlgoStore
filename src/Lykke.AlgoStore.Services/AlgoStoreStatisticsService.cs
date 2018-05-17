@@ -70,10 +70,10 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                    if (algoInstance == null)
+                    if (algoInstance == null || algoInstance.AlgoId == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                            $"Could not find AlgoInstance: {instanceId}");
+                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}");
                     }
 
                     var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPair);

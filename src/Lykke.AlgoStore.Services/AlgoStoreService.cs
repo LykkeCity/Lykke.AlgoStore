@@ -220,8 +220,8 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataWithAlgoIdAsync(data.AlgoId, data.InstanceId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for algo {data.AlgoId} and instanceId {data.InstanceId}");
+                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(data.ClientId, data.InstanceId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for clientId {data.ClientId}, algo {data.AlgoId} and instanceId {data.InstanceId}");
 
                 var userLogs = await _userLogRepository.GetEntries(data.Tail, data.InstanceId);
                 return userLogs.Select(l => $"[{l.Date:yyyy-MM-dd HH:mm:ss}] {l.Message}").ToArray();
