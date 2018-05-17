@@ -188,10 +188,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Response_ShouldBe_False(bool response) => Assert.False(response);
         private static void Then_Exception_Should_Exist(Exception exception) => Assert.NotNull(exception);
         private static void Then_Exception_ShouldBe_Null(Exception exception) => Assert.Null(exception);
-        private static void Then_Response_ShouldBe_ExpectedLog(string[] response, string[] expectedLog)
-        {
-            Assert.AreEqual(expectedLog, response);
-        }
 
         private static bool When_Invoke_DeployImage(AlgoStoreService service, ManageImageData data, out Exception exception)
         {
