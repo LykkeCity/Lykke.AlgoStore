@@ -138,7 +138,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void GetLog_Returns_Ok()
+        public void GetLog_Returns_Exception()
         {
             var apiReturnedLog = new List<UserLog>
             {
@@ -163,9 +163,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var service = Given_Correct_AlgoStoreServiceMock(null, null, null, instanceRepo, null, null, null, null, userLogRepository);
 
             var response = When_Invoke_GetLog(service, data, out var exception);
-            Then_Exception_ShouldBe_Null(exception);
-            Then_Response_ShouldBe_ExpectedLog(response, expectedLog);
-        }
+            Then_Exception_Should_Exist(exception);
+            Then_Exception_Should_Be_AggregateException(exception);
+        }        
 
         #region Private Methods
 
@@ -178,8 +178,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             var serviceException = aggr.InnerExceptions[0] as AlgoStoreException;
             Assert.NotNull(serviceException);
         }
+
+        private void Then_Exception_Should_Be_AggregateException(Exception exception)
+        {
+            Assert.IsInstanceOf<AggregateException>(exception);
+        }
+
         private static void Then_Response_ShouldBe_True(bool response) => Assert.True(response);
         private static void Then_Response_ShouldBe_False(bool response) => Assert.False(response);
+        private static void Then_Exception_Should_Exist(Exception exception) => Assert.NotNull(exception);
         private static void Then_Exception_ShouldBe_Null(Exception exception) => Assert.Null(exception);
         private static void Then_Response_ShouldBe_ExpectedLog(string[] response, string[] expectedLog)
         {
