@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+	<OutputType>Exe</OutputType>
+    <Version>1.0.1</Version>
+    <AssemblyName>Lykke.AlgoStore.Api</AssemblyName>
+    <RootNamespace>Lykke.AlgoStore.Api</RootNamespace>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netcoreapp2.0\Lykke.Service.LykkeService.xml</DocumentationFile>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netcoreapp2.0\Lykke.Service.LykkeService.xml</DocumentationFile>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+    <None Update="Dockerfile">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="6.2.2" />
+    <PackageReference Include="Lykke.Common" Version="6.5.0" />
+    <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.0.20" />
+    <PackageReference Include="Lykke.Logs" Version="4.2.1" />
+    <PackageReference Include="Lykke.SettingsReader" Version="1.1.4" />
+    <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="2.0.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="1.1.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.1" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
+    <ProjectReference Include="..\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj" />
+    <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
+    <ProjectReference Include="..\Lykke.AlgoStore.Services\Lykke.AlgoStore.Services.csproj" />
+  </ItemGroup>
+
+</Project>
