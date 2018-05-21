@@ -112,26 +112,13 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private bool HasBaseType(ClassDeclarationSyntax classDecl, string baseTypeName)
         {
-            var foundBaseAlgo = false;
-
-            foreach (var baseType in classDecl.BaseList.Types)
-            {
-                var type = baseType.Type;
-
-                switch (type)
-                {
-                    case IdentifierNameSyntax ins: // Example: Base type like "Test"
-                        if (ins.Identifier.Text == baseTypeName)
-                            foundBaseAlgo = true;
-                        break;
-                    case QualifiedNameSyntax qns: // Example: Qualified base type like "Namespace.Test"
-                        if (qns.Right.Identifier.Text == baseTypeName)
-                            foundBaseAlgo = true;
-                        break;
-                }
-            }
-
-            return foundBaseAlgo;
+            return classDecl.BaseList != null && classDecl.BaseList.Types
+                       .Any(x =>
+                               // Example: Base type like "Test"
+                               x.Type is IdentifierNameSyntax && ((IdentifierNameSyntax)x.Type).Identifier.Text == baseTypeName
+                               // Example: Qualified base type like "Namespace.Test"
+                               || x.Type is QualifiedNameSyntax && ((QualifiedNameSyntax)x.Type).Right.Identifier.Text == baseTypeName
+                           );
         }
 
         private void AddValidationMessage(
