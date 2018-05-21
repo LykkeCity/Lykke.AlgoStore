@@ -23,13 +23,9 @@ namespace Lykke.AlgoStore.Services.Validation
         private readonly SourceText _sourceText;
 
         private bool _foundAlgoClass;
-        private int _algoClassLocation = -1;
         private bool _foundEventMethod;
 
         private List<ValidationMessage> _validationMessages = new List<ValidationMessage>();
-
-        public ClassDeclarationSyntax AlgoClassDeclaration { get; private set; }
-        public BaseListSyntax BaseList { get; private set; }
 
         public CSharpAlgoValidationWalker(SourceText sourceText)
         {
@@ -64,9 +60,6 @@ namespace Lykke.AlgoStore.Services.Validation
                 ValidateMethod(method);
 
             _foundAlgoClass = true;
-            _algoClassLocation = node.SpanStart;
-            AlgoClassDeclaration = node;
-            BaseList = node.BaseList;
         }
 
         public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)

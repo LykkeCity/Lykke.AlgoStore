@@ -27,8 +27,6 @@ namespace Lykke.AlgoStore.Services.Validation
         private SyntaxTree _syntaxTree;
         private SemanticModel _semanticModel;
 
-        private bool _isDisposed;
-
         public CSharpCodeValidationSession(string code)
         {
             if (string.IsNullOrEmpty(code))
