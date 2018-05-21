@@ -68,6 +68,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IAssetsService>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
 
+            builder.RegisterType<CodeValidationService>()
+                .As<ICodeValidationService>()
+                .SingleInstance();
+
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
             builder.RegisterRateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log);
 
