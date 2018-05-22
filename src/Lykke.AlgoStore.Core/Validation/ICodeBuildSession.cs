@@ -7,7 +7,7 @@ namespace Lykke.AlgoStore.Core.Validation
     /// <summary>
     /// Represents a code validation session on a given piece of code
     /// </summary>
-    public interface ICodeValidationSession
+    public interface ICodeBuildSession
     {
         /// <summary>
         /// Runs a validation on the code
