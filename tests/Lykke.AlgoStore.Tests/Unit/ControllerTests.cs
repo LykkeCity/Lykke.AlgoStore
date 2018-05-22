@@ -41,6 +41,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -62,6 +63,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Given_BlobRepository_WithResult(true).Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
                 null,
                 null,
                 null,
@@ -91,6 +93,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -116,6 +119,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithoutResult(true);
@@ -137,6 +141,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Given_BlobRepository_WithResult(true).Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false), 
+                null,
                 null,
                 null,
                 null,
@@ -168,6 +173,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -193,6 +199,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 blobRepoMock.Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
                 null,
                 null,
                 null,
@@ -329,10 +336,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candleshistoryservice,
             AssetsValidator assetsValidator,
-            IWalletBalanceService walletBalanceService)
+            IWalletBalanceService walletBalanceService,
+            ICodeValidationService codeValidationService)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null, kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService, new LogMock());
+                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null,
+                kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService,
+                new LogMock(), codeValidationService);
 
             return result;
         }
