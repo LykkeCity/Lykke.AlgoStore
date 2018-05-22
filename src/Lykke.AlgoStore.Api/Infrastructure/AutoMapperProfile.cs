@@ -19,7 +19,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoMetaDataModel, AlgoMetaData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore())
-            .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore());
+                .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
             CreateMap<UploadAlgoStringModel, UploadAlgoStringData>();
@@ -59,7 +60,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoMetaDataModel, AlgoMetaData>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
-                .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount));
+                .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaData, AlgoRatingMetaDataModel>()
                 .IncludeBase<AlgoMetaData, AlgoMetaDataModel>()
