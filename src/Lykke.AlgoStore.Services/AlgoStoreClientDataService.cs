@@ -367,6 +367,14 @@ namespace Lykke.AlgoStore.Services
 
                 await _publicAlgosRepository.SavePublicAlgoAsync(data);
 
+                 var algo = await _metaDataRepository.GetAlgoMetaDataAsync(data.ClientId, data.AlgoId);
+                foreach (var algoMetaData in algo.AlgoMetaData)
+                {
+                    algoMetaData.AlgoVisibility = Core.Enumerators.AlgoVisibility.Public;
+                }
+
+                await _metaDataRepository.SaveAlgoMetaDataAsync(algo);
+
                 return data;
             });
         }
@@ -405,6 +413,14 @@ namespace Lykke.AlgoStore.Services
                         Phrases.AlgoInstancesExist);
 
                 await _publicAlgosRepository.DeletePublicAlgoAsync(data);
+
+                var algo = await _metaDataRepository.GetAlgoMetaDataAsync(data.ClientId, data.AlgoId);
+                foreach (var algoMetaData in algo.AlgoMetaData)
+                {
+                    algoMetaData.AlgoVisibility = Core.Enumerators.AlgoVisibility.Private;
+                }
+
+                await _metaDataRepository.SaveAlgoMetaDataAsync(algo);
 
                 return data;
             });
@@ -453,6 +469,8 @@ namespace Lykke.AlgoStore.Services
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
+
+                data.AlgoVisibility = Core.Enumerators.AlgoVisibility.Private;
 
                 if (!data.ValidateData(out var exception))
                     throw exception;

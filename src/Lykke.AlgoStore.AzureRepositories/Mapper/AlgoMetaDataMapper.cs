@@ -25,6 +25,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 res.Description = algoData.Description;
                 res.Name = algoData.Name;
                 res.Author = data.Author;
+                res.AlgoVisibility = algoData.AlgoVisibility;
                 res.ETag = "*";
                 res.AlgoMetaDataInformationJSON = algoData.AlgoMetaDataInformationJSON;
 
@@ -62,6 +63,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Description = entity.Description;
             result.Name = entity.Name;
             result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");
+            result.AlgoVisibility = entity.AlgoVisibility;
             result.AlgoMetaDataInformationJSON = entity.AlgoMetaDataInformationJSON;
 
             return result;
@@ -75,6 +77,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Description = entity.Description;
             result.Name = entity.Name;
             result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");
+            result.AlgoVisibility = entity.AlgoVisibility;
 
             if (!string.IsNullOrEmpty(entity.AlgoMetaDataInformationJSON))
             {
