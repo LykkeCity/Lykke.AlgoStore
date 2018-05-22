@@ -69,7 +69,7 @@ namespace Lykke.AlgoStore.Services.Validation
             var coreLib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
             var fxLibs = _allowedFxLibs
                 .Select(l => MetadataReference.CreateFromFile(
-                    System.Reflection.Assembly.Load(
+                    Assembly.Load(
                         $"{l.Item1}, Version={l.Item2}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location))
                 .ToArray();
 
@@ -79,6 +79,8 @@ namespace Lykke.AlgoStore.Services.Validation
                             .AddReferences(coreLib)
                             .AddReferences(fxLibs)
                             .AddReferences(await NuGetReferenceProvider.GetReferences());
+
+            _compilation = _compilation.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             _semanticModel = _compilation.GetSemanticModel(_syntaxTree, false);
             var semanticDiagnostics = _semanticModel.GetDiagnostics();
@@ -134,25 +136,55 @@ namespace Lykke.AlgoStore.Services.Validation
             {
                 var function = ToAlgoMetadataFunction(functionProperty);
 
-                var functionParameters = functionProperty
+                var functionParamBasePropertyField = functionProperty
                     .FieldType
                     .GetFields()
-                    .First(x => x.FieldType.BaseType == typeof(FunctionParamsBase))
-                    .FieldType
-                    .GetProperties();
+                    .FirstOrDefault(x => x.FieldType.BaseType == typeof(FunctionParamsBase));
 
-                function.FunctionParameterType = functionProperty.FieldType.GetFields()
-                    .First(x => x.FieldType.BaseType == typeof(FunctionParamsBase)).FieldType.FullName;
-
-                foreach (var functionParameter in functionParameters)
+                //There is a public property which base type is of FunctionParamBase type
+                if (functionParamBasePropertyField != null)
                 {
-                    var parameter = ToAlgoMetaDataParameter(functionParameter);
+                    function.FunctionParameterType = functionParamBasePropertyField.FieldType.FullName;
+                    var functionParameters = functionParamBasePropertyField.FieldType.GetProperties();
 
-                    if (functionParameter.PropertyType.IsEnum)
-                        parameter.PredefinedValues = ToEnumValues(functionParameter);
+                    foreach (var functionParameter in functionParameters)
+                    {
+                        var parameter = ToAlgoMetaDataParameter(functionParameter);
 
-                    function.Parameters.Add(parameter);
+                        if (functionParameter.PropertyType.IsEnum)
+                            parameter.PredefinedValues = ToEnumValues(functionParameter);
 
+                        function.Parameters.Add(parameter);
+
+                    }
+                }
+                //There is a NO public property which base type is of FunctionParamBase type,
+                //so we should get base algo parameters
+                else
+                {
+                    var functionParameters = functionProperty
+                        .FieldType
+                        .GetProperties()
+                        .Where(x => x.PropertyType == typeof(FunctionParamsBase));
+
+                    foreach (var functionParameter in functionParameters)
+                    {
+                        function.FunctionParameterType = functionParameter.PropertyType.FullName;
+
+                        var functionParameterProperties = functionParameter
+                            .PropertyType
+                            .GetProperties();
+
+                        foreach (var functionParameterProperty in functionParameterProperties)
+                        {
+                            var parameter = ToAlgoMetaDataParameter(functionParameterProperty);
+
+                            if (functionParameterProperty.PropertyType.IsEnum)
+                                parameter.PredefinedValues = ToEnumValues(functionParameterProperty);
+
+                            function.Parameters.Add(parameter);
+                        }
+                    }
                 }
 
                 metadata.Functions.Add(function);
