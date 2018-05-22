@@ -91,6 +91,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var validationResult = session.Validate().Result;
 
+            Assert.AreEqual(true, validationResult.IsSuccessful);
+
             var metadata = session.ExtractMetadata().Result;
             var result = JsonConvert.SerializeObject(metadata);
 
