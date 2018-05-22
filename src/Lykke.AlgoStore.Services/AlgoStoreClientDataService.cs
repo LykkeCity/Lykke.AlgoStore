@@ -24,6 +24,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.Service.Assets.Client.Models;
+using Newtonsoft.Json;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
@@ -48,6 +49,7 @@ namespace Lykke.AlgoStore.Services
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly AssetsValidator _assetsValidator;
         private readonly IWalletBalanceService _walletBalanceService;
+        private readonly ICodeValidationService _codeValidationService;
 
         private static Random rnd = new Random();
 
@@ -69,6 +71,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="log">The log.</param>
         /// <param name="candlesHistoryService">The Cangles History Service</param>
         /// <param name="assetsValidator">The Asset Validator</param>
+        /// <param name="codeValidationService">Algo code validator</param>
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
@@ -83,7 +86,8 @@ namespace Lykke.AlgoStore.Services
             ICandleshistoryservice candlesHistoryService,
             [NotNull] AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
-            ILog log) : base(log, nameof(AlgoStoreClientDataService))
+            ILog log,
+            ICodeValidationService codeValidationService) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
@@ -99,6 +103,7 @@ namespace Lykke.AlgoStore.Services
             _candlesHistoryService = candlesHistoryService;
             _assetsValidator = assetsValidator;
             _walletBalanceService = walletBalanceService;
+            _codeValidationService = codeValidationService;
         }
 
         /// <summary>
@@ -256,6 +261,14 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Create an algo from provided code
+        /// </summary>
+        /// <param name="clientId">Algo client Id</param>
+        /// <param name="clientName">Algo client name</param>
+        /// <param name="data">Algo data</param>
+        /// <param name="algoContent">Algo code content</param>
+        /// <returns></returns>
         public async Task<AlgoClientMetaData> CreateAlgoAsync(string clientId, string clientName, AlgoMetaData data,
             string algoContent)
         {
@@ -272,6 +285,19 @@ namespace Lykke.AlgoStore.Services
 
                 if (!data.ValidateData(out var exception))
                     throw exception;
+
+                //Validate algo code
+                var validationSession = _codeValidationService.StartSession(algoContent);
+                var validationResult = await validationSession.Validate();
+
+                if (!validationResult.IsSuccessful)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Cannot save algo data. Algo code validation failed. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+
+                //Extract algo metadata (parameters)
+                var extractedMetadata = await validationSession.ExtractMetadata();
+
+                data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
 
                 var clientData = new AlgoClientMetaData
                 {
@@ -292,10 +318,6 @@ namespace Lykke.AlgoStore.Services
                         $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
 
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
-
-                //TODO: Introduce new build service that will use algo content
-                //in order to validate and build C# algo
-                //Also, at the end, we should extract algo parameters and save them
 
                 return res;
             });

@@ -6,8 +6,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
 namespace Lykke.AlgoStore.Services.Validation
 {
@@ -26,6 +30,7 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private SyntaxTree _syntaxTree;
         private SemanticModel _semanticModel;
+        private CSharpCompilation _compilation;
 
         public CSharpCodeValidationSession(string code)
         {
@@ -69,13 +74,13 @@ namespace Lykke.AlgoStore.Services.Validation
                 .ToArray();
 
 
-            var compilation = CSharpCompilation.Create("CodeValidation")
+            _compilation = CSharpCompilation.Create("CodeValidation")
                             .AddSyntaxTrees(_syntaxTree)
                             .AddReferences(coreLib)
                             .AddReferences(fxLibs)
                             .AddReferences(await NuGetReferenceProvider.GetReferences());
 
-            _semanticModel = compilation.GetSemanticModel(_syntaxTree, false);
+            _semanticModel = _compilation.GetSemanticModel(_syntaxTree, false);
             var semanticDiagnostics = _semanticModel.GetDiagnostics();
 
             validationMessages.AddRange(semanticDiagnostics.Select(DiagnosticToValidationMessage));
@@ -83,6 +88,77 @@ namespace Lykke.AlgoStore.Services.Validation
             return CreateAndSetValidationResult(out _syntaxValidationResult, 
                                                 !ErrorExists(validationMessages), 
                                                 validationMessages);
+        }
+
+        public async Task<AlgoMetaDataInformation> ExtractMetadata()
+        {
+            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
+            var namespaceDeclaration = (NamespaceDeclarationSyntax)root.Members[0];
+            var classDeclaration = namespaceDeclaration.Members
+                .OfType<ClassDeclarationSyntax>()
+                .First();
+
+            var newAssembly = GenerateAssembly();
+            var newType = newAssembly.GetType($"{namespaceDeclaration.Name}.{classDeclaration.Identifier.Text}");
+            var metadata = ExtractMetadata(newType);
+
+            return metadata;
+        }
+
+        private AlgoMetaDataInformation ExtractMetadata(Type algoType)
+        {
+            var metadata = new AlgoMetaDataInformation
+            {
+                Functions = new List<AlgoMetaDataFunction>(),
+                Parameters = new List<AlgoMetaDataParameter>()
+            };
+
+            var algoProperties = algoType
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            foreach (var algoProperty in algoProperties)
+            {
+                var parameter = ToAlgoMetaDataParameter(algoProperty);
+
+                if (algoProperty.PropertyType.IsEnum)
+                    parameter.PredefinedValues = ToEnumValues(algoProperty);
+
+                metadata.Parameters.Add(parameter);
+            }
+
+            var functionProperties = algoType
+                .GetRuntimeFields()
+                .Where(x => x.FieldType.BaseType == typeof(AbstractFunction));
+
+            foreach (var functionProperty in functionProperties)
+            {
+                var function = ToAlgoMetadataFunction(functionProperty);
+
+                var functionParameters = functionProperty
+                    .FieldType
+                    .GetFields()
+                    .First(x => x.FieldType.BaseType == typeof(FunctionParamsBase))
+                    .FieldType
+                    .GetProperties();
+
+                function.FunctionParameterType = functionProperty.FieldType.GetFields()
+                    .First(x => x.FieldType.BaseType == typeof(FunctionParamsBase)).FieldType.FullName;
+
+                foreach (var functionParameter in functionParameters)
+                {
+                    var parameter = ToAlgoMetaDataParameter(functionParameter);
+
+                    if (functionParameter.PropertyType.IsEnum)
+                        parameter.PredefinedValues = ToEnumValues(functionParameter);
+
+                    function.Parameters.Add(parameter);
+
+                }
+
+                metadata.Functions.Add(function);
+            }
+
+            return metadata;
         }
 
         private ValidationMessage DiagnosticToValidationMessage(Diagnostic diagnostic)
@@ -128,6 +204,74 @@ namespace Lykke.AlgoStore.Services.Validation
             validationResult = new ValidationResult(isSuccessful, messages);
 
             return validationResult;
+        }
+
+        private Assembly GenerateAssembly()
+        {
+            Assembly newAssembly;
+
+            using (var ms = new MemoryStream())
+            {
+                //Emit results into a stream
+                var emitResult = _compilation.Emit(ms);
+
+                if (!emitResult.Success)
+                {
+                    // if not successful, throw an exception
+                    var failures = emitResult.Diagnostics
+                        .Where(x => x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
+
+                    var message = string.Join(Environment.NewLine, failures.Select(x => $"{x.Id}: {x.GetMessage()}"));
+
+                    throw new InvalidOperationException(
+                        $"Compilation failures!{Environment.NewLine}{message}{Environment.NewLine}Code:{Environment.NewLine}{_code}");
+                }
+
+                ms.Seek(0, SeekOrigin.Begin);
+                newAssembly = Assembly.Load(ms.ToArray());
+            }
+
+            return newAssembly;
+        }
+
+        private static AlgoMetaDataFunction ToAlgoMetadataFunction(FieldInfo fieldInfo)
+        {
+            var result = new AlgoMetaDataFunction
+            {
+                Parameters = new List<AlgoMetaDataParameter>(),
+                Id = fieldInfo.Name,
+                Type = fieldInfo.FieldType.FullName
+            };
+
+            return result;
+        }
+
+        private static List<EnumValue> ToEnumValues(PropertyInfo propertyInfo)
+        {
+            var result = new List<EnumValue>();
+            var enumValues = Enum.GetValues(propertyInfo.PropertyType);
+
+            foreach (var enumValue in enumValues)
+            {
+                result.Add(new EnumValue
+                {
+                    Key = ((int)enumValue).ToString(),
+                    Value = enumValue.ToString()
+                });
+            }
+
+            return result;
+        }
+
+        private static AlgoMetaDataParameter ToAlgoMetaDataParameter(PropertyInfo algoProperty)
+        {
+            var parameter = new AlgoMetaDataParameter
+            {
+                Key = algoProperty.Name,
+                Type = algoProperty.PropertyType.FullName
+            };
+
+            return parameter;
         }
     }
 }

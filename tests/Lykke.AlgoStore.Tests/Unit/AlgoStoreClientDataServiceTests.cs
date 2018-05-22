@@ -87,7 +87,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepository = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null, null,
+                null, null, null, null, null, null, null, null, null, null);
             var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
@@ -100,7 +101,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var deploymentClient = Given_Correct_DeploymentApiClientMock(statuses.Item1);
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null, null, null, null,null, null, deploymentClient, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null, null, null, null, null,
+                null, deploymentClient, null, null, null, null, null);
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -113,7 +115,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
             var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null, null, null, null, null, null, deploymentClient, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null, null, null, null, null,
+                null, deploymentClient, null, null, null, null, null);
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -126,7 +129,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
             var publicAlgosRepository = Given_Correct_PublicAlgosRepositoryMock();
 
-            var service = Given_AlgoStoreClientDataService(repo, null, null, null, ratingsRepo, publicAlgosRepository, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, null, null, null, ratingsRepo, publicAlgosRepository,
+                null, null, null, null, null, null, null, null, null);
             var data = When_Invoke_GetAllAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -139,7 +143,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoRating_Returns_Ok()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAlgoRating(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -152,7 +157,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoRatingByClient_Returns_Ok()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null,
+                null, null, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoStoreClientDataServiceTests.AlogId, ClientId, out Exception exception);
 
@@ -166,7 +172,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoRatingsByWrongClientId_Returns_EmptyArray()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null,
+                null, null, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoStoreClientDataServiceTests.AlogId, Guid.NewGuid().ToString(), out Exception exception);
 
@@ -182,7 +189,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var publicRepo = Given_Correct_PublicAlgosRepositoryMock();
             var metadataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(metadataRepo, null, null, null, repo, publicRepo, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(metadataRepo, null, null, null, repo, publicRepo, null, null,
+                null, null, null, null, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
 
             var randIndex = rnd.Next(0, allAlgos.Count);
@@ -212,7 +220,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null, deploymentClient, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null,
+                deploymentClient, null, null, null, null, null);
             var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -228,7 +237,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
 
-            var service = Given_AlgoStoreClientDataService(repo, null, null, null, ratingsRepo, null, null, null, clientAccountService, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, null, null, null, ratingsRepo, null, null, null,
+                clientAccountService, null, null, null, null, null, null);
             var data = When_Invoke_GetAlgoMetaDataInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -244,7 +254,8 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
 
-            var service = Given_AlgoStoreClientDataService(repo, null, null, null, ratingsRepo, null, null, null, clientAccountService, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, null, null, null, ratingsRepo, null, null, null,
+                clientAccountService, null, null, null, null, null, null);
             var data = When_Invoke_GetAlgoMetaDataInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -253,7 +264,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetAlgoMetaDataInformation_Throws_Exception()
         {
-            var service = Given_AlgoStoreClientDataService(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAlgoMetaDataInformation(service, null, null, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -264,7 +276,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var clientId = Guid.NewGuid().ToString();
 
-            var service = Given_AlgoStoreClientDataService(null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAlgoMetaDataInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -277,7 +290,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientMetaData();
             var repo = Given_Correct_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null,
+                null, null, null, null, null, null);
             When_Invoke_SaveClientMetadata(service, clientId, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
         }
@@ -289,7 +303,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientMetaData();
             var repo = Given_Error_AlgoMetaDataRepositoryMock();
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null,
+                null, null, null, null, null, null);
             When_Invoke_SaveClientMetadata(service, clientId, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -298,7 +313,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAllAlgoInstanceDataAsync_Returns_Ok()
         {
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock_ByClientId();
-            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -309,7 +325,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAllAlgoInstanceDataAsync_Returns_NotFound()
         {
             var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -320,7 +337,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAllAlgoInstanceDataAsync_Throws_Exception()
         {
             var repo = Given_Error_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null,
+                null, null, null, null, null);
             When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -330,7 +348,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoInstanceDataAsync_Returns_Ok()
         {
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -341,7 +360,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoInstanceDataAsync_Returns_NotFound()
         {
             var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null,
+                null, null, null, null, null);
             var data = When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -352,7 +372,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoInstanceDataAsync_Throws_Exception()
         {
             var repo = Given_Error_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null,null, null, null, null, null, null, null, null, null);
+            var service = Given_AlgoStoreClientDataService(null, null, null, repo, null, null, null, null, null, null,
+                null, null, null, null, null);
             When_Invoke_GetAllAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -370,8 +391,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, walletBalanceService);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, walletBalanceService, null);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(result);
@@ -388,8 +410,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, null);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -405,8 +428,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, null, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                null, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -422,8 +446,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -439,8 +464,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicAlgosRepository = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -456,8 +482,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -473,8 +500,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -490,8 +518,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -507,8 +536,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, null);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, null, null);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -525,8 +555,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
-            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository, statisticsRepo, assetService, null, null,
-                clientAccountService, null, assetsValidator, walletBalanceService);
+            var service = Given_AlgoStoreClientDataService(repoMetadata, null, null, repo, null, publicAlgosRepository,
+                statisticsRepo, assetService, null, null,
+                clientAccountService, null, assetsValidator, walletBalanceService, null);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldNotBe_Null(exception);
             Then_Data_ShouldBe_Empty(result);
@@ -567,10 +598,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candleshistoryservice,
             AssetsValidator assetsValidator,
-            IWalletBalanceService walletBalanceService)
+            IWalletBalanceService walletBalanceService,
+            ICodeValidationService codeValidationService)
         {
             return new AlgoStoreClientDataService(repo, runtimeDataRepository, blobRepo, algoInstanceRepository,
-                algoRatingsRepository, publicAlgosRepository, statisticsRepository, assetsService, personalDataService, deploymentClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService, new LogMock());
+                algoRatingsRepository, publicAlgosRepository, statisticsRepository, assetsService, personalDataService,
+                deploymentClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService,
+                new LogMock(), codeValidationService);
         }
 
         private static AlgoClientMetaData When_Invoke_GetClientMetadata(AlgoStoreClientDataService service, string clientId, out Exception exception)
