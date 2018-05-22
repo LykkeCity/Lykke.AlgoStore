@@ -15,7 +15,7 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
 namespace Lykke.AlgoStore.Services.Validation
 {
-    public class CSharpCodeValidationSession : ICodeValidationSession
+    public class CSharpCodeBuildSession : ICodeBuildSession
     {
         private static readonly List<(string, string)> _allowedFxLibs = new List<(string, string)>
         {
@@ -32,7 +32,7 @@ namespace Lykke.AlgoStore.Services.Validation
         private SemanticModel _semanticModel;
         private CSharpCompilation _compilation;
 
-        public CSharpCodeValidationSession(string code)
+        public CSharpCodeBuildSession(string code)
         {
             if (string.IsNullOrEmpty(code))
                 throw new ArgumentNullException(nameof(code));
