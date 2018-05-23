@@ -78,9 +78,8 @@ namespace Lykke.AlgoStore.Services.Validation
                             .AddSyntaxTrees(_syntaxTree)
                             .AddReferences(coreLib)
                             .AddReferences(fxLibs)
-                            .AddReferences(await NuGetReferenceProvider.GetReferences());
-
-            _compilation = _compilation.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                            .AddReferences(await NuGetReferenceProvider.GetReferences())
+                            .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             _semanticModel = _compilation.GetSemanticModel(_syntaxTree, false);
             var semanticDiagnostics = _semanticModel.GetDiagnostics();

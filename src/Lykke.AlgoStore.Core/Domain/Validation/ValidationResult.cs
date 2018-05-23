@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lykke.AlgoStore.Core.Domain.Validation
 {
@@ -29,5 +30,10 @@ namespace Lykke.AlgoStore.Core.Domain.Validation
         /// Contains all of the informational, warning and error messages for this validation
         /// </summary>
         public IReadOnlyCollection<ValidationMessage> Messages { get; }
+
+        public override string ToString()
+        {
+            return string.Join(Environment.NewLine, Messages.Select(x => x.ToString()));
+        }
     }
 }
