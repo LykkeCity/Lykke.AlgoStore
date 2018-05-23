@@ -292,7 +292,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Cannot save algo data. Algo code validation failed. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();
