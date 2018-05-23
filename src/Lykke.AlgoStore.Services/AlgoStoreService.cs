@@ -24,7 +24,7 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IUserLogRepository _userLogRepository;
         private readonly IStatisticsRepository _statisticsRepository;
-        private readonly IAlgoMetaDataReadOnlyRepository _algoMetaDataRepository;
+        private readonly IAlgoReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
 
@@ -51,7 +51,7 @@ namespace Lykke.AlgoStore.Services
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
-            IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
+            IAlgoReadOnlyRepository algoMetaDataRepository,
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
             IKubernetesApiClient kubernetesApiClient,

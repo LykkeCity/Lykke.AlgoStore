@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Lykke.AlgoStore.Api.Models;
+using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
@@ -9,20 +10,35 @@ namespace Lykke.AlgoStore.Api.Infrastructure
     {
         public AutoMapperProfile()
         {
-            CreateMap<AlgoMetaData, AlgoMetaDataModel>()
+            CreateMap<AlgoData, AlgoMetaDataModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
                 .ForMember(dest => dest.Author, opt => opt.Ignore());
 
+            CreateMap<AlgoEntity, IAlgo>()
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
+
+            CreateMap<IAlgo, AlgoEntity>()
+                .ForMember(dest => dest.PartitionKey, opt => opt.Ignore())
+                .ForMember(dest => dest.RowKey, opt => opt.Ignore())
+                .ForMember(dest => dest.Timestamp, opt => opt.Ignore())
+                .ForMember(dest => dest.ETag, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoVisibilityValue, opt => opt.Ignore());
+
+
+            CreateMap<AlgoData, IAlgo>();
+
+            CreateMap<IAlgo, AlgoData>();
 
             CreateMap<AlgoClientMetaDataInformation, AlgoClientMetaDataInformationModel>();
 
-            CreateMap<AlgoMetaDataModel, AlgoMetaData>()
+            CreateMap<AlgoMetaDataModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
+
             CreateMap<UploadAlgoStringModel, UploadAlgoStringData>();
 
             CreateMap<ManageImageData, ManageImageModel>().ReverseMap();
@@ -58,13 +74,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
-                .IncludeBase<AlgoMetaDataModel, AlgoMetaData>()
+                .IncludeBase<AlgoMetaDataModel, AlgoData>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaData, AlgoRatingMetaDataModel>()
-                .IncludeBase<AlgoMetaData, AlgoMetaDataModel>()
+                .IncludeBase<AlgoData, AlgoMetaDataModel>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForSourceMember(src => src.AlgoMetaDataInformationJSON, opt => opt.Ignore());
