@@ -840,6 +840,9 @@ namespace Lykke.AlgoStore.Services
             if (!isBackTestInstance)
                 _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
 
+            if (string.IsNullOrEmpty(data.AuthToken))
+                data.AuthToken = Guid.NewGuid().ToString();
+
             data.IsStraight = straight;
             data.OppositeAssetId = straight ? quotingAsset.Body.Id : baseAsset.Body.Id;
             await _instanceRepository.SaveAlgoInstanceDataAsync(data);
