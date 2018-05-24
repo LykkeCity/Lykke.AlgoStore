@@ -4,7 +4,7 @@ using Lykke.AlgoStore.Services.Validation;
 
 namespace Lykke.AlgoStore.Services
 {
-    public class CodeBuildService : ICodeValidationService
+    public class CodeBuildService : ICodeBuildService
     {
         public ICodeBuildSession StartSession(string code)
         {

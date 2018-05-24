@@ -337,7 +337,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             ICandleshistoryservice candleshistoryservice,
             AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
-            ICodeValidationService codeValidationService)
+            ICodeBuildService codeValidationService)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
                 clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null,
