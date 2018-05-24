@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.Algo.Core.Functions;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
@@ -17,7 +18,7 @@ namespace Lykke.AlgoStore.Services.Validation
 {
     public class CSharpCodeBuildSession : ICodeBuildSession
     {
-        private static readonly List<(string, string)> _allowedFxLibs = new List<(string, string)>
+        private static readonly List<(string, string)> AllowedFxLibs = new List<(string, string)>
         {
             // Add framework libraries here
             ("System.Runtime", "4.2.0.0")
@@ -31,6 +32,7 @@ namespace Lykke.AlgoStore.Services.Validation
         private SyntaxTree _syntaxTree;
         private SemanticModel _semanticModel;
         private CSharpCompilation _compilation;
+        private CSharpAlgoValidationWalker _syntaxWalker;
 
         public CSharpCodeBuildSession(string code)
         {
@@ -56,10 +58,10 @@ namespace Lykke.AlgoStore.Services.Validation
 
             var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
 
-            var syntaxWalker = new CSharpAlgoValidationWalker(_sourceText);
-            syntaxWalker.Visit(root);
+            _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText);
+            _syntaxWalker.Visit(root);
 
-            validationMessages.AddRange(syntaxWalker.GetMessages());
+            validationMessages.AddRange(_syntaxWalker.GetMessages());
 
             if(ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
@@ -67,12 +69,11 @@ namespace Lykke.AlgoStore.Services.Validation
             // Semantic validation
 
             var coreLib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-            var fxLibs = _allowedFxLibs
+            var fxLibs = AllowedFxLibs
                 .Select(l => MetadataReference.CreateFromFile(
                     Assembly.Load(
                         $"{l.Item1}, Version={l.Item2}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a").Location))
                 .ToArray();
-
 
             _compilation = CSharpCompilation.Create("CodeValidation")
                             .AddSyntaxTrees(_syntaxTree)
@@ -91,19 +92,17 @@ namespace Lykke.AlgoStore.Services.Validation
                                                 validationMessages);
         }
 
-        public async Task<AlgoMetaDataInformation> ExtractMetadata()
+        public Task<AlgoMetaDataInformation> ExtractMetadata()
         {
-            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
-            var namespaceDeclaration = (NamespaceDeclarationSyntax)root.Members[0];
-            var classDeclaration = namespaceDeclaration.Members
-                .OfType<ClassDeclarationSyntax>()
-                .First();
+            var algoClassFullName = _syntaxWalker.NamespaceNode == null
+                ? $"{_syntaxWalker.ClassNode.Identifier}"
+                : $"{_syntaxWalker.NamespaceNode.Name}.{_syntaxWalker.ClassNode.Identifier}";
 
             var newAssembly = GenerateAssembly();
-            var newType = newAssembly.GetType($"{namespaceDeclaration.Name}.{classDeclaration.Identifier.Text}");
+            var newType = newAssembly.GetType(algoClassFullName);
             var metadata = ExtractMetadata(newType);
 
-            return metadata;
+            return Task.FromResult(metadata);
         }
 
         private AlgoMetaDataInformation ExtractMetadata(Type algoType)
@@ -114,37 +113,57 @@ namespace Lykke.AlgoStore.Services.Validation
                 Parameters = new List<AlgoMetaDataParameter>()
             };
 
+            //Get public properties that have public setter
             var algoProperties = algoType
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.GetSetMethod() != null);
 
             foreach (var algoProperty in algoProperties)
             {
-                var parameter = ToAlgoMetaDataParameter(algoProperty);
-
-                if (algoProperty.PropertyType.IsEnum)
-                    parameter.PredefinedValues = ToEnumValues(algoProperty);
-
-                metadata.Parameters.Add(parameter);
-            }
-
-            var functionProperties = algoType
-                .GetRuntimeFields()
-                .Where(x => x.FieldType.BaseType == typeof(AbstractFunction));
-
-            foreach (var functionProperty in functionProperties)
-            {
-                var function = ToAlgoMetadataFunction(functionProperty);
-
-                var functionParamBasePropertyField = functionProperty
-                    .FieldType
-                    .GetFields()
-                    .FirstOrDefault(x => x.FieldType.BaseType == typeof(FunctionParamsBase));
-
-                //There is a public property which base type is of FunctionParamBase type
-                if (functionParamBasePropertyField != null)
+                //Base parameters
+                if (algoProperty.PropertyType.BaseType != typeof(AbstractFunction)
+                    && !typeof(IFunction).IsAssignableFrom(algoProperty.PropertyType))
                 {
-                    function.FunctionParameterType = functionParamBasePropertyField.FieldType.FullName;
-                    var functionParameters = functionParamBasePropertyField.FieldType.GetProperties();
+                    var parameter = ToAlgoMetaDataParameter(algoProperty);
+
+                    if (algoProperty.PropertyType.IsEnum)
+                        parameter.PredefinedValues = ToEnumValues(algoProperty);
+
+                    metadata.Parameters.Add(parameter);
+                }
+                //Functions
+                else if (algoProperty.PropertyType.BaseType == typeof(AbstractFunction)
+                         || typeof(IFunction).IsAssignableFrom(algoProperty.PropertyType))
+                {
+                    var function = ToAlgoMetadataFunction(algoProperty);
+
+                    //Get first public property that is not function base parameters but it inherits it
+                    var functionProperty = algoProperty.PropertyType
+                        .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly |
+                                       BindingFlags.GetProperty |
+                                       BindingFlags.SetProperty) //BindingFlags.DeclaredOnly -> ignore inherited members
+                        .FirstOrDefault(x => x.GetSetMethod() != null &&
+                                             typeof(FunctionParamsBase).IsAssignableFrom(x.PropertyType));
+
+                    //If there is no such property, get property that is function base parameters
+                    if (functionProperty == null)
+                    {
+                        functionProperty = algoProperty.PropertyType
+                            .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty |
+                                           BindingFlags.SetProperty)
+                            .FirstOrDefault(x => x.PropertyType == typeof(FunctionParamsBase));
+                    }
+
+                    //If we still cannot find function parameters property, just continue
+                    if (functionProperty == null)
+                        continue;
+
+                    //TODO: Check if there is a public constructor which takes FunctionParamsBase
+
+                    function.FunctionParameterType = functionProperty.PropertyType.FullName;
+                    var functionParameters = functionProperty.PropertyType
+                        .GetProperties(BindingFlags.Instance | BindingFlags.Public |
+                                       BindingFlags.GetProperty | BindingFlags.SetProperty);
 
                     foreach (var functionParameter in functionParameters)
                     {
@@ -154,39 +173,10 @@ namespace Lykke.AlgoStore.Services.Validation
                             parameter.PredefinedValues = ToEnumValues(functionParameter);
 
                         function.Parameters.Add(parameter);
-
                     }
+
+                    metadata.Functions.Add(function);
                 }
-                //There is a NO public property which base type is of FunctionParamBase type,
-                //so we should get base algo parameters
-                else
-                {
-                    var functionParameters = functionProperty
-                        .FieldType
-                        .GetProperties()
-                        .Where(x => x.PropertyType == typeof(FunctionParamsBase));
-
-                    foreach (var functionParameter in functionParameters)
-                    {
-                        function.FunctionParameterType = functionParameter.PropertyType.FullName;
-
-                        var functionParameterProperties = functionParameter
-                            .PropertyType
-                            .GetProperties();
-
-                        foreach (var functionParameterProperty in functionParameterProperties)
-                        {
-                            var parameter = ToAlgoMetaDataParameter(functionParameterProperty);
-
-                            if (functionParameterProperty.PropertyType.IsEnum)
-                                parameter.PredefinedValues = ToEnumValues(functionParameterProperty);
-
-                            function.Parameters.Add(parameter);
-                        }
-                    }
-                }
-
-                metadata.Functions.Add(function);
             }
 
             return metadata;
@@ -239,8 +229,6 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private Assembly GenerateAssembly()
         {
-            Assembly newAssembly;
-
             using (var ms = new MemoryStream())
             {
                 //Emit results into a stream
@@ -259,19 +247,17 @@ namespace Lykke.AlgoStore.Services.Validation
                 }
 
                 ms.Seek(0, SeekOrigin.Begin);
-                newAssembly = Assembly.Load(ms.ToArray());
+                return Assembly.Load(ms.ToArray());
             }
-
-            return newAssembly;
         }
 
-        private static AlgoMetaDataFunction ToAlgoMetadataFunction(FieldInfo fieldInfo)
+        private static AlgoMetaDataFunction ToAlgoMetadataFunction(PropertyInfo propertyInfo)
         {
             var result = new AlgoMetaDataFunction
             {
                 Parameters = new List<AlgoMetaDataParameter>(),
-                Id = fieldInfo.Name,
-                Type = fieldInfo.FieldType.FullName
+                Id = propertyInfo.Name,
+                Type = propertyInfo.PropertyType.FullName
             };
 
             return result;

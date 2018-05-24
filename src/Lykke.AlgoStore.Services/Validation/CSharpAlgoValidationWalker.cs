@@ -27,6 +27,19 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private List<ValidationMessage> _validationMessages = new List<ValidationMessage>();
 
+        public ClassDeclarationSyntax ClassNode { get; private set; }
+
+        public NamespaceDeclarationSyntax NamespaceNode
+        {
+            get
+            {
+                if(ClassNode.Parent is NamespaceDeclarationSyntax)
+                    return (NamespaceDeclarationSyntax)ClassNode.Parent;
+
+                return null;
+            }
+        }
+
         public CSharpAlgoValidationWalker(SourceText sourceText)
         {
             _sourceText = sourceText ?? throw new ArgumentNullException(nameof(sourceText));
@@ -43,14 +56,14 @@ namespace Lykke.AlgoStore.Services.Validation
             if (!HasBaseType(node, BASE_ALGO_NAME)) return;
 
             // More than one class inheriting BaseAlgo is not allowed
-            if(_foundAlgoClass)
+            if (_foundAlgoClass)
             {
-                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE, 
+                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE,
                     "More than one class inheriting BaseAlgo is not allowed", position: node.SpanStart);
             }
 
             // Class inheriting base algo must be sealed
-            if(!node.Modifiers.Any(m => m.Text == "sealed"))
+            if (!node.Modifiers.Any(m => m.Text == "sealed"))
             {
                 AddValidationMessage(ERROR_ALGO_NOT_SEALED, "Classes inheriting BaseAlgo must be sealed",
                     position: node.SpanStart);
@@ -60,6 +73,7 @@ namespace Lykke.AlgoStore.Services.Validation
                 ValidateMethod(method);
 
             _foundAlgoClass = true;
+            ClassNode = node;
         }
 
         public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
@@ -91,7 +105,7 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private void ValidateTypeName(BaseTypeDeclarationSyntax typeDecl)
         {
-            if(typeDecl.Identifier.Text == BASE_ALGO_NAME)
+            if (typeDecl.Identifier.Text == BASE_ALGO_NAME)
             {
                 AddValidationMessage(ERROR_TYPE_NAMED_BASEALGO, "A type named BaseAlgo is not allowed",
                     position: typeDecl.SpanStart);
@@ -114,15 +128,17 @@ namespace Lykke.AlgoStore.Services.Validation
         {
             return classDecl.BaseList != null && classDecl.BaseList.Types
                        .Any(x =>
-                               // Example: Base type like "Test"
-                               x.Type is IdentifierNameSyntax && ((IdentifierNameSyntax)x.Type).Identifier.Text == baseTypeName
+                           // Example: Base type like "Test"
+                               x.Type is IdentifierNameSyntax &&
+                               ((IdentifierNameSyntax) x.Type).Identifier.Text == baseTypeName
                                // Example: Qualified base type like "Namespace.Test"
-                               || x.Type is QualifiedNameSyntax && ((QualifiedNameSyntax)x.Type).Right.Identifier.Text == baseTypeName
-                           );
+                               || x.Type is QualifiedNameSyntax &&
+                               ((QualifiedNameSyntax) x.Type).Right.Identifier.Text == baseTypeName
+                       );
         }
 
         private void AddValidationMessage(
-            string id, 
+            string id,
             string message,
             ValidationSeverity severity = ValidationSeverity.Error,
             int position = -1)
@@ -134,12 +150,12 @@ namespace Lykke.AlgoStore.Services.Validation
                 Severity = severity
             };
 
-            if(position != -1)
+            if (position != -1)
             {
                 var line = _sourceText.Lines.GetLineFromPosition(position);
 
-                validationMessage.Line = (uint)line.LineNumber + 1;
-                validationMessage.Column = (uint)(position - line.Start + 1);
+                validationMessage.Line = (uint) line.LineNumber + 1;
+                validationMessage.Column = (uint) (position - line.Start + 1);
             }
 
             _validationMessages.Add(validationMessage);
