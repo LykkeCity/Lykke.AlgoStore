@@ -16,37 +16,268 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static IList<AlgoMetaDataParameter> BaseAlgoParameters => new List<AlgoMetaDataParameter>
         {
-            new AlgoMetaDataParameter { Key = "AssetPair", Type = "System.String" },
+            new AlgoMetaDataParameter
+            {
+                Key = "AssetPair",
+                Type = "System.String"
+            },
             new AlgoMetaDataParameter
             {
                 Key = "CandleInterval",
                 Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
                 PredefinedValues = new List<EnumValue>
                 {
-                    new EnumValue { Key = "0", Value = "Unspecified"},
-                    new EnumValue { Key = "1", Value = "Sec"},
-                    new EnumValue { Key = "60", Value = "Minute"},
-                    new EnumValue { Key = "300", Value = "Min5"},
-                    new EnumValue { Key = "900", Value = "Min15"},
-                    new EnumValue { Key = "1800", Value = "Min30"},
-                    new EnumValue { Key = "3600", Value = "Hour"},
-                    new EnumValue { Key = "14400", Value = "Hour4"},
-                    new EnumValue { Key = "21600", Value = "Hour6"},
-                    new EnumValue { Key = "43200", Value = "Hour12"},
-                    new EnumValue { Key = "86400", Value = "Day"},
-                    new EnumValue { Key = "604800", Value = "Week"},
-                    new EnumValue { Key = "3000000", Value = "Month"}
+                    new EnumValue
+                    {
+                        Key = "0",
+                        Value = "Unspecified"
+                    },
+                    new EnumValue
+                    {
+                        Key = "1",
+                        Value = "Sec"
+                    },
+                    new EnumValue
+                    {
+                        Key = "60",
+                        Value = "Minute"
+                    },
+                    new EnumValue
+                    {
+                        Key = "300",
+                        Value = "Min5"
+                    },
+                    new EnumValue
+                    {
+                        Key = "900",
+                        Value = "Min15"
+                    },
+                    new EnumValue
+                    {
+                        Key = "1800",
+                        Value = "Min30"
+                    },
+                    new EnumValue
+                    {
+                        Key = "3600",
+                        Value = "Hour"
+                    },
+                    new EnumValue
+                    {
+                        Key = "14400",
+                        Value = "Hour4"
+                    },
+                    new EnumValue
+                    {
+                        Key = "21600",
+                        Value = "Hour6"
+                    },
+                    new EnumValue
+                    {
+                        Key = "43200",
+                        Value = "Hour12"
+                    },
+                    new EnumValue
+                    {
+                        Key = "86400",
+                        Value = "Day"
+                    },
+                    new EnumValue
+                    {
+                        Key = "604800",
+                        Value = "Week"
+                    },
+                    new EnumValue
+                    {
+                        Key = "3000000",
+                        Value = "Month"
+                    }
                 }
             },
-            new AlgoMetaDataParameter { Key = "StartFrom", Type = "System.DateTime" },
-            new AlgoMetaDataParameter { Key = "EndOn", Type = "System.DateTime" },
-            new AlgoMetaDataParameter { Key = "Volume", Type = "System.Double" },
-            new AlgoMetaDataParameter { Key = "TradedAsset", Type = "System.String" }
+            new AlgoMetaDataParameter
+            {
+                Key = "StartFrom",
+                Type = "System.DateTime"
+            },
+            new AlgoMetaDataParameter
+            {
+                Key = "EndOn",
+                Type = "System.DateTime"
+            },
+            new AlgoMetaDataParameter
+            {
+                Key = "Volume",
+                Type = "System.Double"
+            },
+            new AlgoMetaDataParameter
+            {
+                Key = "TradedAsset",
+                Type = "System.String"
+            }
         };
 
         private static AlgoMetaDataInformation BaseAlgoMetadataWithNoFunctions => new AlgoMetaDataInformation
         {
             Functions = new List<AlgoMetaDataFunction>(),
+            Parameters = BaseAlgoParameters
+        };
+
+        private static AlgoMetaDataFunction SmaFunctionMetadata => new AlgoMetaDataFunction
+        {
+            FunctionParameterType = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaParameters",
+            Id = "Sma",
+            Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
+            Parameters = new List<AlgoMetaDataParameter>
+            {
+                new AlgoMetaDataParameter
+                {
+                    Key = "ShortTermPeriod",
+                    Type = "System.Int32"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "LongTermPeriod",
+                    Type = "System.Int32"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "Decimals",
+                    Type =
+                        "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "Capacity",
+                    Type = "System.Int32"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "AssetPair",
+                    Type = "System.String"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "CandleOperationMode",
+                    Type =
+                        "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
+                    PredefinedValues = new List<EnumValue>
+                    {
+                        new EnumValue
+                        {
+                            Key = "0",
+                            Value = "OPEN"
+                        },
+                        new EnumValue
+                        {
+                            Key = "1",
+                            Value = "CLOSE"
+                        },
+                        new EnumValue
+                        {
+                            Key = "2",
+                            Value = "LOW"
+                        },
+                        new EnumValue
+                        {
+                            Key = "3",
+                            Value = "HIGH"
+                        }
+                    }
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "FunctionInstanceIdentifier",
+                    Type = "System.String"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "StartingDate",
+                    Type = "System.DateTime"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "EndingDate",
+                    Type = "System.DateTime"
+                },
+                new AlgoMetaDataParameter
+                {
+                    Key = "CandleTimeInterval",
+                    Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
+                    PredefinedValues = new List<EnumValue>
+                    {
+                        new EnumValue
+                        {
+                            Key = "0",
+                            Value = "Unspecified"
+                        },
+                        new EnumValue
+                        {
+                            Key = "1",
+                            Value = "Sec"
+                        },
+                        new EnumValue
+                        {
+                            Key = "60",
+                            Value = "Minute"
+                        },
+                        new EnumValue
+                        {
+                            Key = "300",
+                            Value = "Min5"
+                        },
+                        new EnumValue
+                        {
+                            Key = "900",
+                            Value = "Min15"
+                        },
+                        new EnumValue
+                        {
+                            Key = "1800",
+                            Value = "Min30"
+                        },
+                        new EnumValue
+                        {
+                            Key = "3600",
+                            Value = "Hour"
+                        },
+                        new EnumValue
+                        {
+                            Key = "14400",
+                            Value = "Hour4"
+                        },
+                        new EnumValue
+                        {
+                            Key = "21600",
+                            Value = "Hour6"
+                        },
+                        new EnumValue
+                        {
+                            Key = "43200",
+                            Value = "Hour12"
+                        },
+                        new EnumValue
+                        {
+                            Key = "86400",
+                            Value = "Day"
+                        },
+                        new EnumValue
+                        {
+                            Key = "604800",
+                            Value = "Week"
+                        },
+                        new EnumValue
+                        {
+                            Key = "3000000",
+                            Value = "Month"
+                        }
+                    }
+                }
+            }
+        };
+
+        private static AlgoMetaDataInformation BaseAlgoMetadataWithSmaFunction => new AlgoMetaDataInformation
+        {
+            Functions = new List<AlgoMetaDataFunction> {SmaFunctionMetadata},
             Parameters = BaseAlgoParameters
         };
 
@@ -123,13 +354,39 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         [Test]
         public void
-            ExtractMetadata_Succeeds_SyntaxValidation_Succeeds_WhenAlgoProperlyImplementedAndHasNoAdditionalPropertiesAndFunctions()
+            ExtractMetadata_Succeeds_WhenAlgoProperlyImplementedWithSmaFunctionAndNoAdditionalProperties()
         {
-            var code = @"using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
-                         sealed class A : BaseAlgo 
-                         { 
-                            public override void OnCandleReceived(ICandleContext context) {} 
-                         }";
+            var code = @"
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA;
+sealed class A : BaseAlgo 
+{ 
+    public SmaFunction Sma {get; set; }
+    public override void OnCandleReceived(ICandleContext context) {} 
+}
+";
+
+            var session = GetCSharpCodeBuildSession(code);
+            var validationResult = session.Validate().Result;
+
+            Assert.AreEqual(true, validationResult.IsSuccessful);
+
+            var metadata = session.ExtractMetadata().Result;
+
+            metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithSmaFunction);
+        }
+
+        [Test]
+        public void
+            ExtractMetadata_Succeeds_WhenAlgoProperlyImplementedAndHasNoAdditionalPropertiesAndFunctions()
+        {
+            var code = @"
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
+sealed class Algo : BaseAlgo 
+{ 
+    public override void OnCandleReceived(ICandleContext context) {} 
+}
+";
 
             var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
@@ -139,6 +396,50 @@ namespace Lykke.AlgoStore.Tests.Unit
             var metadata = session.ExtractMetadata().Result;
 
             metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithNoFunctions);
+        }
+
+        [Test]
+        public void
+            SyntaxValidation_Fails_WhenCustomFunctionIsNotProperlyImplementedFromAbstractFunction()
+        {
+            var code = @"
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
+sealed class A : BaseAlgo 
+{ 
+    public SmaFunction Sma {get; set; }
+    public override void OnCandleReceived(ICandleContext context) {} 
+}
+public class SmaFunction : AbstractFunction
+{
+}
+";
+
+            var result = When_Code_IsSyntaxValidated(code);
+
+            Then_Result_MustFailAndContainMessages(result);
+        }
+
+        [Test]
+        public void
+            SyntaxValidation_Fails_WhenCustomFunctionIsNotProperlyImplementedFromFunctionInterface()
+        {
+            var code = @"
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
+using Lykke.AlgoStore.CSharp.Algo.Core.Functions;
+sealed class A : BaseAlgo 
+{ 
+    public SmaFunction Sma {get; set; }
+    public override void OnCandleReceived(ICandleContext context) {} 
+}
+public class SmaFunction : IFunction
+{
+}
+";
+
+            var result = When_Code_IsSyntaxValidated(code);
+
+            Then_Result_MustFailAndContainMessages(result);
         }
 
         private ICodeBuildSession GetCSharpCodeBuildSession(string code)

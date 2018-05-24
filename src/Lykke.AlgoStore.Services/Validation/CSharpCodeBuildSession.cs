@@ -192,7 +192,7 @@ namespace Lykke.AlgoStore.Services.Validation
             validationMessage.Column = (uint)position.Character;
 
             validationMessage.Id = diagnostic.Id;
-            validationMessage.Message = diagnostic.Descriptor.Description.ToString();
+            validationMessage.Message = diagnostic.ToString();
 
             switch(diagnostic.Severity)
             {
