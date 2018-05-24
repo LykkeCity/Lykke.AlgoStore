@@ -5,7 +5,7 @@ namespace Lykke.AlgoStore.Core.Services
     /// <summary>
     /// The starting point of all code validation
     /// </summary>
-    public interface ICodeValidationService
+    public interface ICodeBuildService
     {
         /// <summary>
         /// Begins a new code validation session given a piece of code

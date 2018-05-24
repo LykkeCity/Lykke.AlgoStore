@@ -49,7 +49,7 @@ namespace Lykke.AlgoStore.Services
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly AssetsValidator _assetsValidator;
         private readonly IWalletBalanceService _walletBalanceService;
-        private readonly ICodeValidationService _codeValidationService;
+        private readonly ICodeBuildService _codeBuildService;
 
         private static Random rnd = new Random();
 
@@ -71,7 +71,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="log">The log.</param>
         /// <param name="candlesHistoryService">The Cangles History Service</param>
         /// <param name="assetsValidator">The Asset Validator</param>
-        /// <param name="codeValidationService">Algo code validator</param>
+        /// <param name="codeBuildService">Algo code validator</param>
         public AlgoStoreClientDataService(IAlgoMetaDataRepository metaDataRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
@@ -87,7 +87,7 @@ namespace Lykke.AlgoStore.Services
             [NotNull] AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
             ILog log,
-            ICodeValidationService codeValidationService) : base(log, nameof(AlgoStoreClientDataService))
+            ICodeBuildService codeBuildService) : base(log, nameof(AlgoStoreClientDataService))
         {
             _metaDataRepository = metaDataRepository;
             _runtimeDataRepository = runtimeDataRepository;
@@ -103,7 +103,7 @@ namespace Lykke.AlgoStore.Services
             _candlesHistoryService = candlesHistoryService;
             _assetsValidator = assetsValidator;
             _walletBalanceService = walletBalanceService;
-            _codeValidationService = codeValidationService;
+            _codeBuildService = codeBuildService;
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 //Validate algo code
-                var validationSession = _codeValidationService.StartSession(algoContent);
+                var validationSession = _codeBuildService.StartSession(algoContent);
                 var validationResult = await validationSession.Validate();
 
                 if (!validationResult.IsSuccessful)
