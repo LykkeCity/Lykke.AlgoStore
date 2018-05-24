@@ -51,19 +51,19 @@ namespace Lykke.AlgoStore.Services.Validation
             _syntaxTree = CSharpSyntaxTree.ParseText(_code);
 
             var validationMessages = new List<ValidationMessage>(_syntaxTree.GetDiagnostics()
-                                                                            .Select(DiagnosticToValidationMessage));
+                .Select(DiagnosticToValidationMessage));
 
             if (ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
 
-            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
+            var root = (CompilationUnitSyntax) await _syntaxTree.GetRootAsync();
 
             _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText);
             _syntaxWalker.Visit(root);
 
             validationMessages.AddRange(_syntaxWalker.GetMessages());
 
-            if(ErrorExists(validationMessages))
+            if (ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
 
             // Semantic validation
@@ -76,20 +76,20 @@ namespace Lykke.AlgoStore.Services.Validation
                 .ToArray();
 
             _compilation = CSharpCompilation.Create("CodeValidation")
-                            .AddSyntaxTrees(_syntaxTree)
-                            .AddReferences(coreLib)
-                            .AddReferences(fxLibs)
-                            .AddReferences(await NuGetReferenceProvider.GetReferences())
-                            .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                .AddSyntaxTrees(_syntaxTree)
+                .AddReferences(coreLib)
+                .AddReferences(fxLibs)
+                .AddReferences(await NuGetReferenceProvider.GetReferences())
+                .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             _semanticModel = _compilation.GetSemanticModel(_syntaxTree, false);
             var semanticDiagnostics = _semanticModel.GetDiagnostics();
 
             validationMessages.AddRange(semanticDiagnostics.Select(DiagnosticToValidationMessage));
 
-            return CreateAndSetValidationResult(out _syntaxValidationResult, 
-                                                !ErrorExists(validationMessages), 
-                                                validationMessages);
+            return CreateAndSetValidationResult(out _syntaxValidationResult,
+                !ErrorExists(validationMessages),
+                validationMessages);
         }
 
         public Task<AlgoMetaDataInformation> ExtractMetadata()
@@ -135,8 +135,6 @@ namespace Lykke.AlgoStore.Services.Validation
                 else if (algoProperty.PropertyType.BaseType == typeof(AbstractFunction)
                          || typeof(IFunction).IsAssignableFrom(algoProperty.PropertyType))
                 {
-                    var function = ToAlgoMetadataFunction(algoProperty);
-
                     //Get first public property that is not function base parameters but it inherits it
                     var functionProperty = algoProperty.PropertyType
                         .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly |
@@ -158,7 +156,12 @@ namespace Lykke.AlgoStore.Services.Validation
                     if (functionProperty == null)
                         continue;
 
-                    //TODO: Check if there is a public constructor which takes FunctionParamsBase
+                    //Check if there is a public constructor which takes FunctionParamsBase
+                    if (!algoProperty.PropertyType.GetConstructors().Any(x =>
+                        x.GetParameters().Any(y => y.ParameterType == functionProperty.PropertyType)))
+                        continue;
+
+                    var function = ToAlgoMetadataFunction(algoProperty);
 
                     function.FunctionParameterType = functionProperty.PropertyType.FullName;
                     var functionParameters = functionProperty.PropertyType
@@ -188,13 +191,13 @@ namespace Lykke.AlgoStore.Services.Validation
 
             var position = diagnostic.Location.GetLineSpan().StartLinePosition;
 
-            validationMessage.Line = (uint)position.Line;
-            validationMessage.Column = (uint)position.Character;
+            validationMessage.Line = (uint) position.Line;
+            validationMessage.Column = (uint) position.Character;
 
             validationMessage.Id = diagnostic.Id;
             validationMessage.Message = diagnostic.ToString();
 
-            switch(diagnostic.Severity)
+            switch (diagnostic.Severity)
             {
                 case DiagnosticSeverity.Error:
                     validationMessage.Severity = ValidationSeverity.Error;
@@ -272,7 +275,7 @@ namespace Lykke.AlgoStore.Services.Validation
             {
                 result.Add(new EnumValue
                 {
-                    Key = ((int)enumValue).ToString(),
+                    Key = ((int) enumValue).ToString(),
                     Value = enumValue.ToString()
                 });
             }
