@@ -4,8 +4,8 @@ using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.Services;
 using NUnit.Framework;
 using System.Linq;
+using FluentAssertions;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
-using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -138,15 +138,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var metadata = session.ExtractMetadata().Result;
 
-            AreEqualByJson(metadata, BaseAlgoMetadataWithNoFunctions);
-        }
-
-        private static void AreEqualByJson(object expected, object actual)
-        {
-            var expectedJson = JsonConvert.SerializeObject(expected);
-            var actualJson = JsonConvert.SerializeObject(actual);
-
-            Assert.AreEqual(expectedJson, actualJson);
+            metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithNoFunctions);
         }
 
         private ICodeBuildSession GetCSharpCodeBuildSession(string code)
