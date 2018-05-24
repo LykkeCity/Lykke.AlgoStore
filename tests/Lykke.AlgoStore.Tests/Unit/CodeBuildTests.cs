@@ -123,7 +123,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         [Test]
         public void
-            ExtractMetadata_Succeeds_SyntaxValidation_Succeeds_WhenAlgoProperlyImplementedAndHasNoPropertiesAndFunctions()
+            ExtractMetadata_Succeeds_SyntaxValidation_Succeeds_WhenAlgoProperlyImplementedAndHasNoAdditionalPropertiesAndFunctions()
         {
             var code = @"using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
                          sealed class A : BaseAlgo 
