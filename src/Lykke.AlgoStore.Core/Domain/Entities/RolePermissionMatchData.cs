@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.AlgoStore.Core.Domain.Entities
+﻿namespace Lykke.AlgoStore.Core.Domain.Entities
 {
     public class RolePermissionMatchData
     {

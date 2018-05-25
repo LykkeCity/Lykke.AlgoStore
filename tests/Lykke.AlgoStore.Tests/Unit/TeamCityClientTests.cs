@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Lykke.AlgoStore.AzureRepositories.Utils;
-using Lykke.AlgoStore.Core.Settings.ServiceSettings;
-using Lykke.AlgoStore.TeamCityClient.Models;
-using Lykke.AlgoStore.Tests.Infrastructure;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit

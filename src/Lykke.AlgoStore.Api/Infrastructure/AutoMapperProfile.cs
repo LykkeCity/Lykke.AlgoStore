@@ -2,7 +2,6 @@
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
 {

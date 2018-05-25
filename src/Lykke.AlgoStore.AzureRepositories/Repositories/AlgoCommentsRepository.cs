@@ -6,7 +6,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
-using System;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
