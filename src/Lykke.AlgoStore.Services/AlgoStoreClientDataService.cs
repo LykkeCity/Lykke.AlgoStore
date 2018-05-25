@@ -312,16 +312,16 @@ namespace Lykke.AlgoStore.Services
         //    });
         //}
 
-        public async Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
         {
-            return await LogTimedInfoAsync(nameof(GetAlgoMetaDataInformationAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
                 if (string.IsNullOrWhiteSpace(algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
 
-                var algoInformation = await _algoRepository.GetAlgoMetaDataInformationAsync(clientId, algoId);
+                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(clientId, algoId);
 
                 var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
@@ -458,7 +458,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="clientName">Name of the client.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task<IAlgo> SaveClientMetadataAsync(string clientId, string clientName, AlgoData data)
+        public async Task<AlgoData> SaveClientMetadataAsync(string clientId, string clientName, AlgoData data)
         {
             return await LogTimedInfoAsync(nameof(SaveClientMetadataAsync), clientId, async () =>
             {
@@ -475,18 +475,7 @@ namespace Lykke.AlgoStore.Services
 
                 IAlgo algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
 
-                algoToSave.ClientId = data.ClientId;
-                
-
-                //var clientData = new AlgoData()
-                //{
-                //    ClientId = clientId,
-                //    Author = clientName,
-                //    AlgoMetaData = new List<AlgoData>
-                //    {
-                //        data
-                //    }
-                //};
+                algoToSave.ClientId = data.ClientId;                
 
                 await _algoRepository.SaveAlgoAsync(algoToSave);
 
@@ -495,7 +484,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                         $"Cannot save data for {clientId} id: {data.AlgoId}");
 
-                return res;
+                return AutoMapper.Mapper.Map<AlgoData>(res);
             });
         }
 

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using JetBrains.Annotations;
+using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
@@ -85,7 +86,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    [Test]
     //    public void SaveAlgoAsBinary_Test()
     //    {
-    //        var algoClientMetaDataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //        var algoClientMetaDataRepo = Given_Correct_AlgoRepositoryMock();
     //        var blobRepository = Given_Correct_AlgoBlobRepositoryMock();
     //        var service = Given_AlgoStoreClientDataService(algoClientMetaDataRepo, blobRepository, null, null, null, null, null, null, null, null, null, null, null, null);
     //        var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
@@ -96,7 +97,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    [TestCaseSource(nameof(StatusesData))]
     //    public void GetClientMetadata_Returns_Data(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
     //    {
-    //        var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //        var repo = Given_Correct_AlgoRepositoryMock();
     //        var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
     //        var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
     //        var deploymentClient = Given_Correct_DeploymentApiClientMock(statuses.Item1);
@@ -109,7 +110,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    [Test]
     //    public void GetClientMetadata_Returns_DataWithStatus()
     //    {
-    //        var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //        var repo = Given_Correct_AlgoRepositoryMock();
     //        var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
     //        var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
     //        var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
@@ -122,7 +123,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    [Test]
     //    public void GetAllAlgos_Returns_Ok()
     //    {
-    //        var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //        var repo = Given_Correct_AlgoRepositoryMock();
     //        var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
     //        var publicAlgosRepository = Given_Correct_PublicAlgosRepositoryMock();
 
@@ -181,7 +182,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    //{
     //    //    var repo = Given_Correct_AlgoRatingsRepositoryMock();
     //    //    var publicRepo = Given_Correct_PublicAlgosRepositoryMock();
-    //    //    var metadataRepo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //    //    var metadataRepo = Given_Correct_AlgoRepositoryMock();
     //    //    var service = Given_AlgoStoreClientDataService(metadataRepo, null, null, null, repo, publicRepo, null, null, null, null, null, null, null, null);
     //    //    var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
 
@@ -221,7 +222,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    //[Test]
     //    //public void GetAlgoMetaDataInformation_Returns_Data()
     //    //{
-    //    //    var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //    //    var repo = Given_Correct_AlgoRepositoryMock();
     //    //    var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
 
     //    //    var clientId = Guid.NewGuid().ToString();
@@ -275,7 +276,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    //{
     //    //    var clientId = Guid.NewGuid().ToString();
     //    //    var data = Given_AlgoClientMetaData();
-    //    //    var repo = Given_Correct_AlgoMetaDataRepositoryMock();
+    //    //    var repo = Given_Correct_AlgoRepositoryMock();
     //    //    var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
     //    //    var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null, null, null, null, null, null);
     //    //    When_Invoke_SaveClientMetadata(service, clientId, data, out var exception);
@@ -364,7 +365,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -383,7 +384,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, null);
@@ -400,7 +401,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    {
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_WalletExist_Mock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -417,7 +418,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(false);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(false);
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -434,7 +435,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(false);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(false);
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var publicAlgosRepository = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -451,7 +452,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(5.00003, AlgoInstanceType.Live);
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -469,7 +470,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
     //        var assetsValidator = new AssetsValidator();
@@ -485,7 +486,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -502,7 +503,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Error_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -519,7 +520,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
     //        var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
     //        var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-    //        var repoMetadata = Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(true);
+    //        var repoMetadata = Given_Correct_AlgoRepositoryMock_With_Exists(true);
     //        var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
     //        var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
     //        var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -554,7 +555,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    }
 
     //    private static AlgoStoreClientDataService Given_AlgoStoreClientDataService(
-    //        IAlgoMetaDataRepository repo,
+    //        IAlgoRepository repo,
     //        IAlgoBlobRepository blobRepo,
     //        IAlgoRuntimeDataRepository runtimeDataRepository,
     //        IAlgoClientInstanceRepository algoInstanceRepository,
@@ -588,12 +589,12 @@ namespace Lykke.AlgoStore.Tests.Unit
     //    //}
 
 
-    //    private static AlgoClientMetaDataInformation When_Invoke_GetAlgoMetaDataInformation(AlgoStoreClientDataService service, string clientId, string algoId, out Exception exception)
+    //    private static AlgoDataInformation When_Invoke_GetAlgoMetaDataInformation(AlgoStoreClientDataService service, string clientId, string algoId, out Exception exception)
     //    {
     //        exception = null;
     //        try
     //        {
-    //            return service.GetAlgoMetaDataInformationAsync(clientId, algoId).Result;
+    //            return service.GetAlgoDataInformationAsync(clientId, algoId).Result;
     //        }
     //        catch (Exception ex)
     //        {
@@ -769,65 +770,57 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        Assert.NotNull(serviceException);
     //    }
 
-    //    //private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock()
-    //    //{
-    //    //    var fixture = new Fixture();
-    //    //    var result = new Mock<IAlgoMetaDataRepository>();
-    //    //    result.Setup(repo => repo.GetAllAlgos())
-    //    //        .Returns(() =>
-    //    //        {
-    //    //            return Task.FromResult(fixture.Build<AlgoClientMetaData>().With(algo => algo.AlgoMetaData, new List<AlgoData> {
-    //    //            new AlgoData()
-    //    //            {
-    //    //                AlgoId = Guid.NewGuid().ToString()
-    //    //            }
-    //    //        }).Create());
-    //    //        });
-    //    //    result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-    //    //    result.Setup(repo => repo.GetAllClientAlgoMetaDataAsync(It.IsAny<string>()))
-    //    //        .Returns((string clientId) => { return Task.FromResult(fixture.Build<AlgoClientMetaData>().With(a => a.ClientId, clientId).Create()); });
-    //    //    result.Setup(repo => repo.GetAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()))
-    //    //        .Returns((string clientid, string id) =>
-    //    //        {
-    //    //            var res = new AlgoClientMetaData
-    //    //            {
-    //    //                ClientId = clientid,
-    //    //                AlgoMetaData = new List<AlgoData>()
-    //    //            };
-    //    //            var data = fixture.Build<AlgoData>()
-    //    //                .With(a => a.AlgoId, id)
-    //    //                .Create();
-    //    //            res.AlgoMetaData.Add(data);
-
-    //    //            return Task.FromResult(res);
-    //    //        });
-    //    //    result.Setup(repo => repo.SaveAlgoMetaDataAsync(It.IsAny<AlgoClientMetaData>())).Returns(Task.CompletedTask);
-    //    //    result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-    //    //    result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
-    //    //    result.Setup(repo => repo.GetAlgoMetaDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
-    //    //        .Returns((string clientid, string algoId) =>
-    //    //        {
-    //    //            var res = new AlgoClientMetaDataInformation
-    //    //            {
-    //    //                AlgoId = algoId,
-    //    //                AlgoMetaDataInformation = new AlgoMetaDataInformation()
-    //    //                {
-    //    //                    Parameters = new List<AlgoMetaDataParameter>(),
-    //    //                    Functions = new List<AlgoMetaDataFunction>()
-    //    //                }
-    //    //            };
-    //    //            return Task.FromResult(res);
-    //    //        });
-    //    //    return result.Object;
-    //    //}
-
-    //    private static IAlgoMetaDataRepository Given_NoAlgoInfo_AlgoMetaDataRepositoryMock()
+    //    private static IAlgoRepository Given_Correct_AlgoRepositoryMock()
     //    {
-    //        var result = new Mock<IAlgoMetaDataRepository>();
-    //        result.Setup(repo => repo.GetAlgoMetaDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
+    //        var fixture = new Fixture();
+    //        var result = new Mock<IAlgoRepository>();
+    //        result.Setup(repo => repo.GetAllAlgosAsync())
+    //            .Returns(() =>
+    //            {
+    //                return Task.FromResult(fixture.Build<IEnumerable<AlgoEntity>>().Create() as IEnumerable<IAlgo>);
+    //            });
+    //        result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+    //        result.Setup(repo => repo.GetAllClientAlgosAsync(It.IsAny<string>()))
+    //            .Returns((string clientId) => { return Task.FromResult(fixture.Build<IEnumerable<AlgoEntity>>()
+    //                    .With(a => a.First().ClientId, clientId)
+    //                    .Create() as IEnumerable<IAlgo>); });
+    //        result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+    //            .Returns((string clientid, string id) =>
+    //            {
+    //                var res = fixture.Build<AlgoEntity>()
+    //                    .With(a => a.RowKey, id)
+    //                    .With(a => a.ClientId, clientid)
+    //                    .Create();
+
+    //                return Task.FromResult(res as IAlgo);
+    //            });
+    //        result.Setup(repo => repo.SaveAlgoAsync(It.IsAny<IAlgo>())).Returns(Task.CompletedTask);
+    //        result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+    //        result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+    //        result.Setup(repo => repo.GetAlgoDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
+    //            .Returns((string clientid, string algoId) =>
+    //            {
+    //                var res = new AlgoDataInformation
+    //                {
+    //                    AlgoId = algoId,
+    //                    AlgoMetaDataInformation = new AlgoMetaDataInformation()
+    //                    {
+    //                        Parameters = new List<AlgoMetaDataParameter>(),
+    //                        Functions = new List<AlgoMetaDataFunction>()
+    //                    }
+    //                };
+    //                return Task.FromResult(res);
+    //            });
+    //        return result.Object;
+    //    }
+
+    //    private static IAlgoRepository Given_NoAlgoInfo_AlgoMetaDataRepositoryMock()
+    //    {
+    //        var result = new Mock<IAlgoRepository>();
+    //        result.Setup(repo => repo.GetAlgoDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
     //             .Returns((string clientid, string algoId) =>
     //             {
-    //                 return Task.FromResult<AlgoClientMetaDataInformation>(null);
+    //                 return Task.FromResult<AlgoDataInformation>(null);
     //             });
 
     //        return result.Object;
@@ -889,10 +882,10 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        return result.Object;
     //    }
 
-    //    private static IAlgoMetaDataRepository Given_Correct_AlgoMetaDataRepositoryMock_With_Exists(bool exists)
+    //    private static IAlgoRepository Given_Correct_AlgoRepositoryMock_With_Exists(bool exists)
     //    {
     //        var fixture = new Fixture();
-    //        var result = new Mock<IAlgoMetaDataRepository>(); ;
+    //        var result = new Mock<IAlgoRepository>(); ;
     //        result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(exists));
 
     //        return result.Object;
@@ -1284,12 +1277,12 @@ namespace Lykke.AlgoStore.Tests.Unit
     //        Assert.NotNull(data);
     //    }
 
-    //    private static void Then_Data_ShouldNotBe_Empty(AlgoClientMetaDataInformation data)
+    //    private static void Then_Data_ShouldNotBe_Empty(AlgoDataInformation data)
     //    {
     //        Assert.NotNull(data);
     //    }
 
-    //    private static void Then_Data_ShouldBe_Empty(AlgoClientMetaDataInformation data)
+    //    private static void Then_Data_ShouldBe_Empty(AlgoDataInformation data)
     //    {
     //        Assert.Null(data);
     //    }

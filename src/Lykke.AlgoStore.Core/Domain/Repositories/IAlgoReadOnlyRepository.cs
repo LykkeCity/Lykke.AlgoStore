@@ -10,6 +10,6 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
         Task<IEnumerable<IAlgo>> GetAllClientAlgosAsync(string clientId);
         Task<IAlgo> GetAlgoAsync(string clientId, string algoId);
         Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId);
-        Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId);
+        Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId);
     }
 }

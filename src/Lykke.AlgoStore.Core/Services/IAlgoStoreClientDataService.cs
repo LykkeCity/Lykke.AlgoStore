@@ -14,7 +14,7 @@ namespace Lykke.AlgoStore.Core.Services
         Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId);
         Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId);
 
-        Task<IAlgo> SaveClientMetadataAsync(string clientId, string clientName, AlgoData data);
+        Task<AlgoData> SaveClientMetadataAsync(string clientId, string clientName, AlgoData data);
 
         Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data);
         Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel);
@@ -29,7 +29,7 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(string clientId, string instanceId);
         Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data, string algoClientId);
         Task<AlgoClientInstanceData> SaveAlgoBackTestInstanceDataAsync(AlgoClientInstanceData data, string algoClientId);
-        Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId);
+        Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId);
         Task<AlgoRatingData> SaveAlgoRatingAsync(AlgoRatingData data);
         Task<AlgoRatingData> GetAlgoRatingForClientAsync(string algoId, string clientId);
         Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId);

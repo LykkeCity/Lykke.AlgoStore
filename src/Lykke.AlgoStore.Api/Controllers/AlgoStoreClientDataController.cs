@@ -146,7 +146,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("algoMetadata")]
         [SwaggerOperation("GetAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoClientMetaDataInformationModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoDataInformationModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAlgoMetadata(string clientId, string algoId)
@@ -154,22 +154,22 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _clientDataService.GetAlgoMetaDataInformationAsync(clientId, algoId);
+            var result = await _clientDataService.GetAlgoDataInformationAsync(clientId, algoId);
 
             if (result == null)
                 return NotFound();
 
-            var response = Mapper.Map<AlgoClientMetaDataInformationModel>(result);
+            var response = Mapper.Map<AlgoDataInformationModel>(result);
 
             return Ok(response);
         }
 
         [HttpPost("metadata")]
         [SwaggerOperation("SaveAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoMetaDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoMetaDataModel model)
+        public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoDataModel model)
         {
             var clientId = User.GetClientId();
             var clientName = User.Identity.Name;
@@ -178,11 +178,9 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = await _clientDataService.SaveClientMetadataAsync(clientId, clientName, data);
 
-            //mapper between IAlgo and AlgoMetaDataModel should be done...
+            var response = Mapper.Map<AlgoDataModel>(result);
 
-            //var response = Mapper.Map<AlgoMetaDataModel>(result);
-
-            return Ok(result);
+            return Ok(response);
         }
 
         [HttpPost("metadata/cascadeDelete")]

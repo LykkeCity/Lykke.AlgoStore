@@ -22,7 +22,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
-
         public async Task<IEnumerable<IAlgo>> GetAllAlgosAsync()
         {
             var result = await _table.GetDataAsync();
@@ -45,11 +44,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             return entitiy;
         }
 
-        public async Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
         {
             var entitiy = await _table.GetDataAsync(clientId, algoId);
 
-            return entitiy?.ToAlgoMetaInformation();
+            return entitiy?.ToAlgoDataInformation();
         }
 
         public async Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId)

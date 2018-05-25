@@ -88,9 +88,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
         //        return result;
         //    }
 
-        public static AlgoClientMetaDataInformation ToAlgoMetaInformation(this AlgoEntity entity)
+        public static AlgoDataInformation ToAlgoDataInformation(this AlgoEntity entity)
         {
-            var result = new AlgoClientMetaDataInformation();
+            var result = new AlgoDataInformation();
 
             result.AlgoId = entity.RowKey;
             result.Description = entity.Description;

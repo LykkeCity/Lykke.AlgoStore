@@ -10,7 +10,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
     {
         public AutoMapperProfile()
         {
-            CreateMap<AlgoData, AlgoMetaDataModel>()
+            CreateMap<AlgoData, AlgoDataModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
                 .ForMember(dest => dest.Author, opt => opt.Ignore());
 
@@ -29,9 +29,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<IAlgo, AlgoData>();
 
-            CreateMap<AlgoClientMetaDataInformation, AlgoClientMetaDataInformationModel>();
+            CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 
-            CreateMap<AlgoMetaDataModel, AlgoData>()
+            CreateMap<AlgoDataModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
@@ -74,13 +74,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
-                .IncludeBase<AlgoMetaDataModel, AlgoData>()
+                .IncludeBase<AlgoDataModel, AlgoData>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaData, AlgoRatingMetaDataModel>()
-                .IncludeBase<AlgoData, AlgoMetaDataModel>()
+                .IncludeBase<AlgoData, AlgoDataModel>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForSourceMember(src => src.AlgoMetaDataInformationJSON, opt => opt.Ignore());
