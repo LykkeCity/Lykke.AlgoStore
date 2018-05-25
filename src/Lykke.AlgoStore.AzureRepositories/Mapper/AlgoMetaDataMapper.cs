@@ -63,6 +63,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             result.Description = entity.Description;
             result.Name = entity.Name;
             result.Date = entity.Timestamp.DateTime.ToString("yyyy-dd-MM HH:mm:ss");
+            result.Author = entity.Author;
             result.AlgoVisibility = entity.AlgoVisibility;
             result.AlgoMetaDataInformationJSON = entity.AlgoMetaDataInformationJSON;
 

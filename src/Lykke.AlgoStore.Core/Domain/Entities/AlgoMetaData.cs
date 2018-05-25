@@ -7,6 +7,8 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
 {
     public class AlgoMetaData : BaseValidatableData, IComparable<AlgoMetaData>
     {
+        public string Author { get; set; }
+
         [Required]
         public string AlgoId { get; set; }
         [Required]

@@ -311,6 +311,72 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Gets the client Algos asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <returns></returns>
+        public async Task<List<AlgoMetaData>> GetClientAlgosAsync(string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetClientMetadataAsync), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+
+                var algoClientMetadata = await _metaDataRepository.GetAllClientAlgoMetaDataAsync(clientId);
+
+                if (algoClientMetadata == null || algoClientMetadata.AlgoMetaData.IsNullOrEmptyCollection())
+                    return null;
+
+                foreach (var metadata in algoClientMetadata.AlgoMetaData)
+                {
+                    if (String.IsNullOrEmpty(metadata.Author))
+                        metadata.Author = "Administrator";
+                    else
+                    {
+                        var authorPersonalData = await _personalDataService.GetAsync(metadata.Author);
+                        metadata.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
+                            ? authorPersonalData.FullName
+                            : authorPersonalData.Email;
+                    }
+
+                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, metadata.AlgoId);
+
+                    if (runtimeData == null)
+                    {
+                        metadata.Status = AlgoRuntimeStatuses.Unknown.ToUpperText();
+                        // TODO Skip?!?
+                        continue;
+                    }
+
+                    var status = ClientAlgoRuntimeStatuses.NotFound.ToUpperText();
+                    try
+                    {
+                        var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(metadata.AlgoId);
+                        if (!pods.IsNullOrEmptyCollection())
+                        {
+                            if (pods.Count != 1)
+                                throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound,
+                                    $"More than one pod for algoId {metadata.AlgoId}");
+
+                            var pod = pods[0];
+                            if (pod != null)
+                            {
+                                status = pod.Status.Phase.ToUpper();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
+                    }
+                    metadata.Status = status;
+                }
+
+                return algoClientMetadata.AlgoMetaData;
+            });
+        }
+
         public async Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoMetaDataInformationAsync), clientId, async () =>

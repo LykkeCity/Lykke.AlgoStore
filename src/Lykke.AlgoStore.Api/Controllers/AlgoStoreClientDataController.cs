@@ -51,6 +51,24 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("getCurrentUserAlgos")]
+        [SwaggerOperation("GetCurrentUserAlgos")]
+        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetCurrentUserAlgos()
+        {
+            var clientId = User.GetClientId();
+            var result = await _clientDataService.GetClientAlgosAsync(clientId);
+
+            if (result == null)
+                return NotFound();
+
+            var response = Mapper.Map<List<AlgoMetaDataModel>>(result);
+
+            return Ok(response);
+        }
+
         [HttpPost("algoRating")]
         [SwaggerOperation("algoRating")]
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
