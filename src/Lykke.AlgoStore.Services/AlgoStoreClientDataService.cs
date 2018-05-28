@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Core.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.Service.Assets.Client.Models;
 using Newtonsoft.Json;
@@ -345,11 +346,15 @@ namespace Lykke.AlgoStore.Services
 
                 //Algo must be public in order to edit it
                 if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection() ||
-                    res.AlgoMetaData[0].AlgoVisibility != AlgoVisibility.Public)
+                    res.AlgoMetaData[0].AlgoVisibility == AlgoVisibility.Public)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Cannot find algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
 
-                //TODO: Check if there are running algo instances
+                //Check if there are running algo instances
+                var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
+
+                if(instances.Any(x => x.AlgoInstanceStatus == AlgoInstanceStatus.Started))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "There are running algo instances");
 
                 //Validate algo code
                 var validationSession = _codeBuildService.StartSession(algoContent);
