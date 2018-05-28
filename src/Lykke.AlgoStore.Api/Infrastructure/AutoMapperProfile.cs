@@ -87,6 +87,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
 
             CreateMap<AlgoMetaData, CreateAlgoModel>()
+
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
                 .ForMember(dest => dest.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.Content, opt => opt.Ignore())
@@ -95,6 +96,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<CreateAlgoModel, AlgoMetaData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore())
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
         }
     }
