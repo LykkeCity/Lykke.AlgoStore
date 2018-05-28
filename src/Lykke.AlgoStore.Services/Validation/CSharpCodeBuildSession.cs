@@ -120,8 +120,7 @@ namespace Lykke.AlgoStore.Services.Validation
             foreach (var algoProperty in algoProperties)
             {
                 //Base parameters
-                if (algoProperty.PropertyType.BaseType != typeof(AbstractFunction)
-                    && !typeof(IFunction).IsAssignableFrom(algoProperty.PropertyType))
+                if (!typeof(IFunction).IsAssignableFrom(algoProperty.PropertyType))
                 {
                     var parameter = ToAlgoMetaDataParameter(algoProperty);
 
@@ -129,56 +128,46 @@ namespace Lykke.AlgoStore.Services.Validation
                         parameter.PredefinedValues = ToEnumValues(algoProperty);
 
                     metadata.Parameters.Add(parameter);
+                    continue;
                 }
+
                 //Functions
-                else if (algoProperty.PropertyType.BaseType == typeof(AbstractFunction)
-                         || typeof(IFunction).IsAssignableFrom(algoProperty.PropertyType))
+                //Get first public property that is not function base parameters but it inherits it
+                var functionProperty = algoProperty.PropertyType
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public |
+                                   BindingFlags.DeclaredOnly) //BindingFlags.DeclaredOnly -> ignore inherited members
+                    .FirstOrDefault(x =>
+                        x.GetSetMethod() != null && typeof(FunctionParamsBase).IsAssignableFrom(x.PropertyType));
+
+                //If we still cannot find function parameters property, just continue
+                if (functionProperty == null)
+                    continue;
+
+                //Check if there is a public constructor which takes FunctionParamsBase
+                if (!algoProperty.PropertyType.GetConstructors().Any(x =>
+                    x.GetParameters().Any(y => functionProperty.PropertyType.IsAssignableFrom(y.ParameterType)) &&
+                    x.GetParameters().Length == 1
+                ))
+                    continue;
+
+                var function = ToAlgoMetadataFunction(algoProperty);
+
+                function.FunctionParameterType = functionProperty.PropertyType.FullName;
+                var functionParameters = functionProperty.PropertyType
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public |
+                                   BindingFlags.GetProperty | BindingFlags.SetProperty);
+
+                foreach (var functionParameter in functionParameters)
                 {
-                    //Get first public property that is not function base parameters but it inherits it
-                    var functionProperty = algoProperty.PropertyType
-                        .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly |
-                                       BindingFlags.GetProperty |
-                                       BindingFlags.SetProperty) //BindingFlags.DeclaredOnly -> ignore inherited members
-                        .FirstOrDefault(x => x.GetSetMethod() != null &&
-                                             typeof(FunctionParamsBase).IsAssignableFrom(x.PropertyType));
+                    var parameter = ToAlgoMetaDataParameter(functionParameter);
 
-                    //If there is no such property, get property that is function base parameters
-                    if (functionProperty == null)
-                    {
-                        functionProperty = algoProperty.PropertyType
-                            .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty |
-                                           BindingFlags.SetProperty)
-                            .FirstOrDefault(x => x.PropertyType == typeof(FunctionParamsBase));
-                    }
+                    if (functionParameter.PropertyType.IsEnum)
+                        parameter.PredefinedValues = ToEnumValues(functionParameter);
 
-                    //If we still cannot find function parameters property, just continue
-                    if (functionProperty == null)
-                        continue;
-
-                    //Check if there is a public constructor which takes FunctionParamsBase
-                    if (!algoProperty.PropertyType.GetConstructors().Any(x =>
-                        x.GetParameters().Any(y => y.ParameterType == functionProperty.PropertyType)))
-                        continue;
-
-                    var function = ToAlgoMetadataFunction(algoProperty);
-
-                    function.FunctionParameterType = functionProperty.PropertyType.FullName;
-                    var functionParameters = functionProperty.PropertyType
-                        .GetProperties(BindingFlags.Instance | BindingFlags.Public |
-                                       BindingFlags.GetProperty | BindingFlags.SetProperty);
-
-                    foreach (var functionParameter in functionParameters)
-                    {
-                        var parameter = ToAlgoMetaDataParameter(functionParameter);
-
-                        if (functionParameter.PropertyType.IsEnum)
-                            parameter.PredefinedValues = ToEnumValues(functionParameter);
-
-                        function.Parameters.Add(parameter);
-                    }
-
-                    metadata.Functions.Add(function);
+                    function.Parameters.Add(parameter);
                 }
+
+                metadata.Functions.Add(function);
             }
 
             return metadata;
@@ -242,10 +231,12 @@ namespace Lykke.AlgoStore.Services.Validation
                     var failures = emitResult.Diagnostics
                         .Where(x => x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
 
-                    var message = string.Join(Environment.NewLine, failures.Select(x => $"{x.Id}: {x.GetMessage()}"));
+                    var message = string.Join(Environment.NewLine,
+                        failures.Select(x =>
+                            $"ID: {x.Id}, Message: {x.GetMessage()}, Location: {x.Location.GetLineSpan()}, Severity: {x.Severity}"));
 
                     throw new InvalidOperationException(
-                        $"Compilation failures!{Environment.NewLine}{message}{Environment.NewLine}Code:{Environment.NewLine}{_code}");
+                        $"Compilation failures!{Environment.NewLine}{message}");
                 }
 
                 ms.Seek(0, SeekOrigin.Begin);
