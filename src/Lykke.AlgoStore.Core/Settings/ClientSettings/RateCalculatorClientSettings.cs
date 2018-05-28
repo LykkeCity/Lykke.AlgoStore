@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.AlgoStore.Core.Settings.ClientSettings
+﻿namespace Lykke.AlgoStore.Core.Settings.ClientSettings
 {
     public class RateCalculatorClientSettings
     {

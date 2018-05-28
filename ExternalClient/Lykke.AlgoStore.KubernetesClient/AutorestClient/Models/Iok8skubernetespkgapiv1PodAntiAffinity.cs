@@ -7,9 +7,7 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Linq;
 
     /// <summary>
     /// Pod anti affinity is a group of inter pod anti affinity scheduling

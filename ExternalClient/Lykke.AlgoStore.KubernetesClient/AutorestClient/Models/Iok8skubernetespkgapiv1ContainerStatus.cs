@@ -8,7 +8,6 @@ namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// ContainerStatus contains details for the current status of this

@@ -7,7 +7,6 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// DaemonSetStatus represents the current status of a daemon set.

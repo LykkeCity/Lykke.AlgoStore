@@ -8,9 +8,7 @@ namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Linq;
 
     /// <summary>
     /// ServiceAccountList is a list of ServiceAccount objects

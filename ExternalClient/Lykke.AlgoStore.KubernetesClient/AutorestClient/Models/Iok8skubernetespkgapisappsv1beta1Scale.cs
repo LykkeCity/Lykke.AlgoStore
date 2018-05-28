@@ -7,7 +7,6 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// Scale represents a scaling request for a resource.

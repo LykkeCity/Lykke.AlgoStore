@@ -7,7 +7,6 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// Eviction evicts a pod from its node subject to certain policies and

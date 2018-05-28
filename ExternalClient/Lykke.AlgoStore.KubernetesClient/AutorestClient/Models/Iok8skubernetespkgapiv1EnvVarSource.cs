@@ -7,7 +7,6 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// EnvVarSource represents a source for the value of an EnvVar.

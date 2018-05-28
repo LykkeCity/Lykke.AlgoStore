@@ -7,7 +7,6 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// NetworkPolicyPeer describes a peer to allow traffic from. Exactly one

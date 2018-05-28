@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lykke.AlgoStore.Services.Strings;
 
 namespace Lykke.AlgoStore.Services.Validation
 {
@@ -27,6 +28,19 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private List<ValidationMessage> _validationMessages = new List<ValidationMessage>();
 
+        public ClassDeclarationSyntax ClassNode { get; private set; }
+
+        public NamespaceDeclarationSyntax NamespaceNode
+        {
+            get
+            {
+                if(ClassNode.Parent is NamespaceDeclarationSyntax)
+                    return (NamespaceDeclarationSyntax)ClassNode.Parent;
+
+                return null;
+            }
+        }
+
         public CSharpAlgoValidationWalker(SourceText sourceText)
         {
             _sourceText = sourceText ?? throw new ArgumentNullException(nameof(sourceText));
@@ -43,16 +57,16 @@ namespace Lykke.AlgoStore.Services.Validation
             if (!HasBaseType(node, BASE_ALGO_NAME)) return;
 
             // More than one class inheriting BaseAlgo is not allowed
-            if(_foundAlgoClass)
+            if (_foundAlgoClass)
             {
-                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE, 
-                    "More than one class inheriting BaseAlgo is not allowed", position: node.SpanStart);
+                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE, Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
+                    position: node.SpanStart);
             }
 
             // Class inheriting base algo must be sealed
-            if(!node.Modifiers.Any(m => m.Text == "sealed"))
+            if (!node.Modifiers.Any(m => m.Text == "sealed"))
             {
-                AddValidationMessage(ERROR_ALGO_NOT_SEALED, "Classes inheriting BaseAlgo must be sealed",
+                AddValidationMessage(ERROR_ALGO_NOT_SEALED, Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
                     position: node.SpanStart);
             }
 
@@ -60,6 +74,7 @@ namespace Lykke.AlgoStore.Services.Validation
                 ValidateMethod(method);
 
             _foundAlgoClass = true;
+            ClassNode = node;
         }
 
         public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
@@ -80,20 +95,20 @@ namespace Lykke.AlgoStore.Services.Validation
         public IEnumerable<ValidationMessage> GetMessages()
         {
             if (!_foundAlgoClass)
-                AddValidationMessage(ERROR_BASEALGO_NOT_INHERITED, "A class inheriting BaseAlgo was not found");
+                AddValidationMessage(ERROR_BASEALGO_NOT_INHERITED, Phrases.ERROR_BASEALGO_NOT_INHERITED);
 
             if (_foundAlgoClass && !_foundEventMethod)
                 AddValidationMessage(ERROR_EVENT_NOT_IMPLEMENTED,
-                    $"Algo must override {CANDLE_RECEIVED_METHOD} and/or {QUOTE_RECEIVED_METHOD}");
+                    string.Format(Phrases.ERROR_EVENT_NOT_IMPLEMENTED, CANDLE_RECEIVED_METHOD, QUOTE_RECEIVED_METHOD));
 
             return _validationMessages;
         }
 
         private void ValidateTypeName(BaseTypeDeclarationSyntax typeDecl)
         {
-            if(typeDecl.Identifier.Text == BASE_ALGO_NAME)
+            if (typeDecl.Identifier.Text == BASE_ALGO_NAME)
             {
-                AddValidationMessage(ERROR_TYPE_NAMED_BASEALGO, "A type named BaseAlgo is not allowed",
+                AddValidationMessage(ERROR_TYPE_NAMED_BASEALGO, Phrases.ERROR_TYPE_NAMED_BASEALGO,
                     position: typeDecl.SpanStart);
             }
         }
@@ -114,15 +129,17 @@ namespace Lykke.AlgoStore.Services.Validation
         {
             return classDecl.BaseList != null && classDecl.BaseList.Types
                        .Any(x =>
-                               // Example: Base type like "Test"
-                               x.Type is IdentifierNameSyntax && ((IdentifierNameSyntax)x.Type).Identifier.Text == baseTypeName
+                           // Example: Base type like "Test"
+                               x.Type is IdentifierNameSyntax &&
+                               ((IdentifierNameSyntax) x.Type).Identifier.Text == baseTypeName
                                // Example: Qualified base type like "Namespace.Test"
-                               || x.Type is QualifiedNameSyntax && ((QualifiedNameSyntax)x.Type).Right.Identifier.Text == baseTypeName
-                           );
+                               || x.Type is QualifiedNameSyntax &&
+                               ((QualifiedNameSyntax) x.Type).Right.Identifier.Text == baseTypeName
+                       );
         }
 
         private void AddValidationMessage(
-            string id, 
+            string id,
             string message,
             ValidationSeverity severity = ValidationSeverity.Error,
             int position = -1)
@@ -134,12 +151,12 @@ namespace Lykke.AlgoStore.Services.Validation
                 Severity = severity
             };
 
-            if(position != -1)
+            if (position != -1)
             {
                 var line = _sourceText.Lines.GetLineFromPosition(position);
 
-                validationMessage.Line = (uint)line.LineNumber + 1;
-                validationMessage.Column = (uint)(position - line.Start + 1);
+                validationMessage.Line = (uint) line.LineNumber + 1;
+                validationMessage.Column = (uint) (position - line.Start + 1);
             }
 
             _validationMessages.Add(validationMessage);

@@ -8,7 +8,6 @@ namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// LocalSubjectAccessReview checks whether or not a user or group can

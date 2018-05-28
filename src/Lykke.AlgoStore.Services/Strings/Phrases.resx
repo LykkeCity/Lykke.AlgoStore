@@ -138,4 +138,19 @@
   <data name="WalletIsAlreadyUsed" xml:space="preserve">
     <value>Wallet is already used by a running instance - Wallet Id {0}. You should use another wallet. Algo id {1}, Client Id {2}</value>
   </data>
+  <data name="ERROR_BASEALGO_MULTIPLE_INHERITANCE" xml:space="preserve">
+    <value>More than one class inheriting BaseAlgo is not allowed</value>
+  </data>
+  <data name="ERROR_ALGO_NOT_SEALED" xml:space="preserve">
+    <value>Classes inheriting BaseAlgo must be sealed</value>
+  </data>
+  <data name="ERROR_BASEALGO_NOT_INHERITED" xml:space="preserve">
+    <value>A class inheriting BaseAlgo was not found</value>
+  </data>
+  <data name="ERROR_TYPE_NAMED_BASEALGO" xml:space="preserve">
+    <value>A type named BaseAlgo is not allowed</value>
+  </data>
+  <data name="ERROR_EVENT_NOT_IMPLEMENTED" xml:space="preserve">
+    <value>Algo must override {0} and/or {1}</value>
+  </data>
 </root>

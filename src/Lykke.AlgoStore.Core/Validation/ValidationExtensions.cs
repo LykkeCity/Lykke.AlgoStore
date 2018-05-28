@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Utils;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Core.Validation
 {

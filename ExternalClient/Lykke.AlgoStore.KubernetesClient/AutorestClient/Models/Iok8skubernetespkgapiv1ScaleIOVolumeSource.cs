@@ -8,7 +8,6 @@ namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
-    using System.Linq;
 
     /// <summary>
     /// ScaleIOVolumeSource represents a persistent ScaleIO volume
