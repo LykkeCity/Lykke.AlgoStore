@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,7 +21,6 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
-using Lykke.AlgoStore.DeploymentApiClient;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
@@ -33,7 +31,6 @@ using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.Balances.AutorestClient.Models;
 using Lykke.Service.CandlesHistory.Client;
-using Lykke.Service.CandlesHistory.Client.Models;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.PersonalData.Client.Models;
@@ -64,27 +61,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static readonly Random rnd = new Random();
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
 
-        #region Data Generation
-        public static IEnumerable<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>> StatusesData
-        {
-            get
-            {
-                return new List<Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses>>
-                {
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Created, AlgoRuntimeStatuses.Deployed),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Forbidden, AlgoRuntimeStatuses.Unknown),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.InternalError, AlgoRuntimeStatuses.Unknown),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.NotFound, AlgoRuntimeStatuses.Unknown),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Paused, AlgoRuntimeStatuses.Paused),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Running, AlgoRuntimeStatuses.Started),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Stopped, AlgoRuntimeStatuses.Stopped),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Success, AlgoRuntimeStatuses.Unknown),
-                    new Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> (ClientAlgoRuntimeStatuses.Unauthorized, AlgoRuntimeStatuses.Unknown),
-                };
-            }
-        }
-        #endregion
-
         [SetUp]
         public void SetUp()
         {
@@ -103,32 +79,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
         }
-
-        //[TestCaseSource(nameof(StatusesData))]
-        //public void GetClientMetadata_Returns_Data(Tuple<ClientAlgoRuntimeStatuses, AlgoRuntimeStatuses> statuses)
-        //{
-        //    var repo = Given_Correct_AlgoRepositoryMock();
-        //    var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-        //    var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
-        //    var deploymentClient = Given_Correct_DeploymentApiClientMock(statuses.Item1);
-        //    var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null, null, null, null, null, null, deploymentClient, null, null, null, null);
-        //    var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
-        //    Then_Exception_ShouldBe_Null(exception);
-        //    Then_Data_ShouldNotBe_Empty(data);
-        //    Then_Data_ShouldBe_WithCorrectStatus(data, statuses.Item1);
-        //}
-        //[Test]
-        //public void GetClientMetadata_Returns_DataWithStatus()
-        //{
-        //    var repo = Given_Correct_AlgoRepositoryMock();
-        //    var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-        //    var runtimeRepo = Given_Correct_AlgoRuntimeDataRepositoryMock();
-        //    var deploymentClient = Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses.Created);
-        //    var service = Given_AlgoStoreClientDataService(repo, blobRepo, runtimeRepo, null, null, null, null, null, null, deploymentClient, null, null, null, null);
-        //    var data = When_Invoke_GetClientMetadata(service, Guid.NewGuid().ToString(), out var exception);
-        //    Then_Exception_ShouldBe_Null(exception);
-        //    Then_Data_ShouldNotBe_Empty(data);
-        //}
 
         [Test]
         public void GetAllAlgos_Returns_Ok()
@@ -165,7 +115,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null, null, null, null, null);
-            var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
+            When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoStoreClientDataServiceTests.AlogId, ClientId, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -179,7 +129,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgoStoreClientDataService(null, null, null, null, repo, null, null, null, null, null, null, null, null, null);
-            var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
+            When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoStoreClientDataServiceTests.AlogId, Guid.NewGuid().ToString(), out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -686,11 +636,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Data_ShouldNotBe_Empty(AlgoData data)
         {
             Assert.NotNull(data);
-        }
-
-        private static void Then_Data_ShouldBe_WithCorrectStatus(AlgoData data, ClientAlgoRuntimeStatuses status)
-        {
-            Assert.AreEqual(data.Status, status.ToUpperText());
         }
 
         private static void Then_Algos_ShouldHave_Ratings(List<AlgoRatingMetaData> data)
