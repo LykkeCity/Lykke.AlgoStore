@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Lykke.AlgoStore.Services.Strings;
 
 namespace Lykke.AlgoStore.Services.Validation
 {
@@ -58,14 +59,14 @@ namespace Lykke.AlgoStore.Services.Validation
             // More than one class inheriting BaseAlgo is not allowed
             if (_foundAlgoClass)
             {
-                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE,
-                    "More than one class inheriting BaseAlgo is not allowed", position: node.SpanStart);
+                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE, Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
+                    position: node.SpanStart);
             }
 
             // Class inheriting base algo must be sealed
             if (!node.Modifiers.Any(m => m.Text == "sealed"))
             {
-                AddValidationMessage(ERROR_ALGO_NOT_SEALED, "Classes inheriting BaseAlgo must be sealed",
+                AddValidationMessage(ERROR_ALGO_NOT_SEALED, Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
                     position: node.SpanStart);
             }
 
@@ -94,11 +95,11 @@ namespace Lykke.AlgoStore.Services.Validation
         public IEnumerable<ValidationMessage> GetMessages()
         {
             if (!_foundAlgoClass)
-                AddValidationMessage(ERROR_BASEALGO_NOT_INHERITED, "A class inheriting BaseAlgo was not found");
+                AddValidationMessage(ERROR_BASEALGO_NOT_INHERITED, Phrases.ERROR_BASEALGO_NOT_INHERITED);
 
             if (_foundAlgoClass && !_foundEventMethod)
                 AddValidationMessage(ERROR_EVENT_NOT_IMPLEMENTED,
-                    $"Algo must override {CANDLE_RECEIVED_METHOD} and/or {QUOTE_RECEIVED_METHOD}");
+                    string.Format(Phrases.ERROR_EVENT_NOT_IMPLEMENTED, CANDLE_RECEIVED_METHOD, QUOTE_RECEIVED_METHOD));
 
             return _validationMessages;
         }
@@ -107,7 +108,7 @@ namespace Lykke.AlgoStore.Services.Validation
         {
             if (typeDecl.Identifier.Text == BASE_ALGO_NAME)
             {
-                AddValidationMessage(ERROR_TYPE_NAMED_BASEALGO, "A type named BaseAlgo is not allowed",
+                AddValidationMessage(ERROR_TYPE_NAMED_BASEALGO, Phrases.ERROR_TYPE_NAMED_BASEALGO,
                     position: typeDecl.SpanStart);
             }
         }
