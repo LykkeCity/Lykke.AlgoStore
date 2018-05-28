@@ -435,7 +435,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                if (!await _algoRepository.ExistsAlgoMetaDataAsync(data.AlgoClientId, data.AlgoId))
+                if (!await _algoRepository.ExistsAlgoAsync(data.AlgoClientId, data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Algo metadata not found for {data.AlgoId}");
 
@@ -458,9 +458,9 @@ namespace Lykke.AlgoStore.Services
         /// <param name="clientName">Name of the client.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task<AlgoData> SaveClientMetadataAsync(string clientId, string clientName, AlgoData data)
+        public async Task<AlgoData> SaveAlgoAsync(string clientId, string clientName, AlgoData data)
         {
-            return await LogTimedInfoAsync(nameof(SaveClientMetadataAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(SaveAlgoAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
@@ -801,7 +801,7 @@ namespace Lykke.AlgoStore.Services
                 }
             }
 
-            if (!await _algoRepository.ExistsAlgoMetaDataAsync(algoClientId, data.AlgoId))
+            if (!await _algoRepository.ExistsAlgoAsync(algoClientId, data.AlgoId))
                 throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                     $"Algo {data.AlgoId} no found for client {data.ClientId}");
 

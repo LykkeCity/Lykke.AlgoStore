@@ -343,7 +343,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoReadOnlyRepository>();
 
             result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
-            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
 
             return result.Object;
         }
@@ -352,7 +352,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoReadOnlyRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
 
             result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientId, string id) =>

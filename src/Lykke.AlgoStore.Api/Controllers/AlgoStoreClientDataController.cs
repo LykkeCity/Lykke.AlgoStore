@@ -176,7 +176,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var data = Mapper.Map<AlgoData>(model);
 
-            var result = await _clientDataService.SaveClientMetadataAsync(clientId, clientName, data);
+            var result = await _clientDataService.SaveAlgoAsync(clientId, clientName, data);
 
             var response = Mapper.Map<AlgoDataModel>(result);
 

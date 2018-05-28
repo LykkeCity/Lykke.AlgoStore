@@ -51,7 +51,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             return entitiy?.ToAlgoDataInformation();
         }
 
-        public async Task<bool> ExistsAlgoMetaDataAsync(string clientId, string algoId)
+        public async Task<bool> ExistsAlgoAsync(string clientId, string algoId)
         {
             var entity = new AlgoEntity
             {
