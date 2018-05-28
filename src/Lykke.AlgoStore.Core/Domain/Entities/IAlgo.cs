@@ -10,7 +10,6 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
 
         string Description { get; set; }
         string Date { get; }
-        string Status { get; set; }
         AlgoVisibility AlgoVisibility { get; set; }
         string AlgoMetaDataInformationJSON { get; set; }
     }

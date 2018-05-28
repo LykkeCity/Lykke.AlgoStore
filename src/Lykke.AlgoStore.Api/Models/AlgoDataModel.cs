@@ -9,7 +9,6 @@ namespace Lykke.AlgoStore.Api.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public string Date { get; set; }
-        public string Status { get; set; }
         public string Author { get; set; }
         public AlgoVisibility AlgoVisibility { get; set; }
     }

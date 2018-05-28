@@ -20,7 +20,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
         }
 
         public string Name { get; set; }
-        public string Status { get; set; }
         public string Date => Timestamp.Date.ToShortDateString();
 
         public string Description { get; set; }
