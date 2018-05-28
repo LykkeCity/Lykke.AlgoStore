@@ -13,7 +13,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class AlgoRepository : IAlgoRepository
     {
-        public static readonly string TableName = "AlgoMetaDataTable";
+        public static readonly string TableName = "Algos";
 
         private readonly INoSQLTableStorage<AlgoEntity> _table;
 

@@ -5,7 +5,6 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
     public interface IAlgo
     {
         string ClientId { get; set; }
-        string Author { get; set; }
         string AlgoId { get; set ;}
         string Name { get; set; }
 

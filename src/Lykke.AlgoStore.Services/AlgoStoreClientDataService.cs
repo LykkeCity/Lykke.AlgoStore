@@ -125,11 +125,11 @@ namespace Lykke.AlgoStore.Services
 
                     string authorName;
 
-                    if (String.IsNullOrEmpty(currentAlgo.Author))
+                    if (String.IsNullOrEmpty(currentAlgo.ClientId))
                         authorName = "Administrator";
                     else
                     {
-                        var authorPersonalData = await _personalDataService.GetAsync(currentAlgo.Author);
+                        var authorPersonalData = await _personalDataService.GetAsync(currentAlgo.ClientId);
                         authorName = !String.IsNullOrEmpty(authorPersonalData.FullName)
                                                         ? authorPersonalData.FullName
                                                         : authorPersonalData.Email;

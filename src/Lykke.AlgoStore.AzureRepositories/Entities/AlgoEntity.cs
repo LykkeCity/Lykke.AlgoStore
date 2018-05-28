@@ -19,12 +19,6 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
             set { }
         }
 
-        public string Author
-        {
-            get => PartitionKey;
-            set { }
-        }
-
         public string Name { get; set; }
         public string Status { get; set; }
         public string Date => Timestamp.Date.ToShortDateString();
