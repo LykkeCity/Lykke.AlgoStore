@@ -60,7 +60,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.IsStraight, opt => opt.Ignore())
                 .ForMember(dest => dest.BackTestTradingAssetBalance, opt => opt.Ignore())
                 .ForMember(dest => dest.BackTestAssetTwoBalance, opt => opt.Ignore())
-                .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore());
+                .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
+                .ForMember(dest => dest.AuthToken, opt => opt.Ignore());
 
             CreateMap<AlgoBackTestInstanceModel, AlgoClientInstanceData>()
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
@@ -71,7 +72,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.TradedAsset, opt => opt.Ignore())
                 .ForMember(dest => dest.IsStraight, opt => opt.Ignore())
                 .ForMember(dest => dest.WalletId, opt => opt.Ignore())
-                .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore());
+                .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
+                .ForMember(dest => dest.AuthToken, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoDataModel, AlgoData>()
@@ -99,6 +101,20 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<UserRoleUpdateModel, UserRoleData>()
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+
+            CreateMap<AlgoData, CreateAlgoModel>()
+
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
+                .ForMember(dest => dest.Author, opt => opt.Ignore())
+                .ForMember(dest => dest.Content, opt => opt.Ignore())
+                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore());
+
+            CreateMap<CreateAlgoModel, AlgoData>()
+                .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore())
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore())
+                .ForSourceMember(src => src.Author, opt => opt.Ignore());
         }
     }
 }

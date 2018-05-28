@@ -8,7 +8,6 @@ using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.Service.Balances.AutorestClient.Models;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.RateCalculator.Client;
-using Lykke.Service.RateCalculator.Client.AutorestClient.Models;
 using AssetPair = Lykke.Service.Assets.Client.Models.AssetPair;
 using Moq;
 using NUnit.Framework;

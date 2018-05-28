@@ -6,7 +6,6 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.Service.PersonalData.Contract;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Services

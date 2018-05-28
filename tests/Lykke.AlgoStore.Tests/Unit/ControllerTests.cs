@@ -5,7 +5,6 @@ using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
@@ -41,6 +40,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -62,6 +62,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Given_BlobRepository_WithResult(true).Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
                 null,
                 null,
                 null,
@@ -91,6 +92,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -116,6 +118,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithoutResult(true);
@@ -137,6 +140,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Given_BlobRepository_WithResult(true).Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false), 
+                null,
                 null,
                 null,
                 null,
@@ -168,6 +172,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -193,6 +198,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 blobRepoMock.Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
                 null,
                 null,
                 null,
@@ -329,10 +335,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candleshistoryservice,
             AssetsValidator assetsValidator,
-            IWalletBalanceService walletBalanceService)
+            IWalletBalanceService walletBalanceService,
+            ICodeBuildService codeValidationService)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null, kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService, new LogMock());
+                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null,
+                kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService,
+                new LogMock(), codeValidationService);
 
             return result;
         }

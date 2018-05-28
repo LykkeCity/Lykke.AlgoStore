@@ -79,6 +79,51 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Classes inheriting BaseAlgo must be sealed.
+        /// </summary>
+        internal static string ERROR_ALGO_NOT_SEALED {
+            get {
+                return ResourceManager.GetString("ERROR_ALGO_NOT_SEALED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More than one class inheriting BaseAlgo is not allowed.
+        /// </summary>
+        internal static string ERROR_BASEALGO_MULTIPLE_INHERITANCE {
+            get {
+                return ResourceManager.GetString("ERROR_BASEALGO_MULTIPLE_INHERITANCE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A class inheriting BaseAlgo was not found.
+        /// </summary>
+        internal static string ERROR_BASEALGO_NOT_INHERITED {
+            get {
+                return ResourceManager.GetString("ERROR_BASEALGO_NOT_INHERITED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo must override {0} and/or {1}.
+        /// </summary>
+        internal static string ERROR_EVENT_NOT_IMPLEMENTED {
+            get {
+                return ResourceManager.GetString("ERROR_EVENT_NOT_IMPLEMENTED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A type named BaseAlgo is not allowed.
+        /// </summary>
+        internal static string ERROR_TYPE_NAMED_BASEALGO {
+            get {
+                return ResourceManager.GetString("ERROR_TYPE_NAMED_BASEALGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance Not Found.
         /// </summary>
         internal static string InstanceNotFound {

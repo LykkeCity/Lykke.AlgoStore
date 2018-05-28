@@ -1,6 +1,4 @@
-﻿using Lykke.AlgoStore.Core.Domain.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Security.Principal;
 
 namespace Lykke.AlgoStore.Services.Identity

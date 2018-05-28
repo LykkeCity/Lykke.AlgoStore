@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
@@ -46,13 +47,14 @@ namespace Lykke.AlgoStore.Services
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly AssetsValidator _assetsValidator;
         private readonly IWalletBalanceService _walletBalanceService;
+        private readonly ICodeBuildService _codeBuildService;
 
         private static Random rnd = new Random();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlgoStoreClientDataService"/> class.
         /// </summary>
-        /// <param name="metaDataRepository">The meta data repository.</param>
+        /// <param name="algoRepository">The algo repository.</param>
         /// <param name="runtimeDataRepository">The runtime data repository.</param>
         /// <param name="blobRepository">The BLOB repository.</param>
         /// <param name="instanceRepository">The instance repository.</param>
@@ -67,7 +69,8 @@ namespace Lykke.AlgoStore.Services
         /// <param name="log">The log.</param>
         /// <param name="candlesHistoryService">The Cangles History Service</param>
         /// <param name="assetsValidator">The Asset Validator</param>
-        public AlgoStoreClientDataService(IAlgoRepository metaDataRepository,
+        /// <param name="codeBuildService">Algo code validator</param>
+        public AlgoStoreClientDataService(IAlgoRepository algoRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
             IAlgoClientInstanceRepository instanceRepository,
@@ -81,9 +84,10 @@ namespace Lykke.AlgoStore.Services
             ICandleshistoryservice candlesHistoryService,
             [NotNull] AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
-            ILog log) : base(log, nameof(AlgoStoreClientDataService))
+            ILog log,
+            ICodeBuildService codeBuildService) : base(log, nameof(AlgoStoreClientDataService))
         {
-            _algoRepository = metaDataRepository;
+            _algoRepository = algoRepository;
             _runtimeDataRepository = runtimeDataRepository;
             _blobRepository = blobRepository;
             _instanceRepository = instanceRepository;
@@ -97,6 +101,7 @@ namespace Lykke.AlgoStore.Services
             _candlesHistoryService = candlesHistoryService;
             _assetsValidator = assetsValidator;
             _walletBalanceService = walletBalanceService;
+            _codeBuildService = codeBuildService;
         }
 
         /// <summary>
@@ -255,6 +260,65 @@ namespace Lykke.AlgoStore.Services
             });
         }     
 
+        /// <summary>
+        /// Create an algo from provided code
+        /// </summary>
+        /// <param name="clientId">Algo client Id</param>
+        /// <param name="clientName">Algo client name</param>
+        /// <param name="data">Algo data</param>
+        /// <param name="algoContent">Algo code content</param>
+        /// <returns></returns>
+        public async Task<AlgoData> CreateAlgoAsync(string clientId, string clientName, AlgoData data,
+            string algoContent)
+        {
+            return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+
+                if(string.IsNullOrEmpty(algoContent))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    data.AlgoId = Guid.NewGuid().ToString();
+
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                //Validate algo code
+                var validationSession = _codeBuildService.StartSession(algoContent);
+                var validationResult = await validationSession.Validate();
+
+                if (!validationResult.IsSuccessful)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
+
+                //Extract algo metadata (parameters)
+                var extractedMetadata = await validationSession.ExtractMetadata();
+
+                data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
+
+                IAlgo algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
+
+                await _algoRepository.SaveAlgoAsync(algoToSave);
+
+                var res = await _algoRepository.GetAlgoAsync(clientId, data.AlgoId);
+
+                if (res == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                        $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+
+                await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                return AutoMapper.Mapper.Map<AlgoData>(res);
+            });
+        }
+
+        /// <summary>
+        /// Gets the client metadata asynchronous.
+        /// </summary>
+        /// <param name="clientId">The client identifier.</param>
+        /// <returns></returns>
         public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
@@ -776,6 +840,9 @@ namespace Lykke.AlgoStore.Services
 
             if (!isBackTestInstance)
                 _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
+
+            if (string.IsNullOrEmpty(data.AuthToken))
+                data.AuthToken = Guid.NewGuid().ToString();
 
             data.IsStraight = straight;
             data.OppositeAssetId = straight ? quotingAsset.Body.Id : baseAsset.Body.Id;
