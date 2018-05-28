@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.Service.Assets.Client.Models;
 using Newtonsoft.Json;
@@ -318,6 +319,65 @@ namespace Lykke.AlgoStore.Services
                         $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
 
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                return res;
+            });
+        }
+
+        public async Task<AlgoClientMetaData> EditAlgoAsync(string clientId, string clientName, AlgoMetaData data,
+            string algoContent)
+        {
+            return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(clientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+
+                if (string.IsNullOrEmpty(algoContent))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty");
+
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var res = await _metaDataRepository.GetAlgoMetaDataAsync(clientId, data.AlgoId);
+
+                //Algo must be public in order to edit it
+                if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection() ||
+                    res.AlgoMetaData[0].AlgoVisibility != AlgoVisibility.Public)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                        $"Cannot find algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+
+                //TODO: Check if there are running algo instances
+
+                //Validate algo code
+                var validationSession = _codeBuildService.StartSession(algoContent);
+                var validationResult = await validationSession.Validate();
+
+                if (!validationResult.IsSuccessful)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
+
+                //Extract algo metadata (parameters)
+                var extractedMetadata = await validationSession.ExtractMetadata();
+
+                data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
+
+                var clientData = new AlgoClientMetaData
+                {
+                    ClientId = clientId,
+                    Author = clientName,
+                    AlgoMetaData = new List<AlgoMetaData>
+                    {
+                        data
+                    }
+                };
+
+                await _metaDataRepository.SaveAlgoMetaDataAsync(clientData);
+                await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                res = await _metaDataRepository.GetAlgoMetaDataAsync(clientId, data.AlgoId);
 
                 return res;
             });
