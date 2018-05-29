@@ -3,7 +3,7 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {
-    public class AlgoClientMetaDataInformation
+    public class AlgoDataInformation
     {
         public string AlgoId { get; set; }
         public string Name { get; set; }

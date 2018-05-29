@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using AutoFixture;
+using AutoMapper;
 using AzureStorage.Tables;
+using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -10,26 +12,26 @@ using NUnit.Framework;
 namespace Lykke.AlgoStore.Tests.Unit
 {
     [TestFixture]
-    public class AlgoMetaDataRepositoryTests
+    public class AlgoRepositoryTests
     {
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
 
         private readonly Fixture _fixture = new Fixture();
-        private AlgoClientMetaData _entity;
+        private IAlgo _entity;
         private static bool _entitySaved;
 
         [SetUp]
         public void SetUp()
         {
-            _entity = new AlgoClientMetaData
-            {
-                ClientId = ClientId,
-                AlgoMetaData = new List<AlgoMetaData>
-                {
-                    _fixture.Build<AlgoMetaData>().Create()
-                }
-            };
+            Mapper.Reset();
+            Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperProfile>());
+            Mapper.AssertConfigurationIsValid();
 
+            var algoEntity = _fixture.Build<AlgoEntity>()
+                .With(e => e.PartitionKey, ClientId)
+                .Create();
+
+            _entity = AutoMapper.Mapper.Map<IAlgo>(algoEntity);
         }
 
         [TearDown]
@@ -39,7 +41,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             if (_entitySaved)
             {
-                repo.DeleteAlgoMetaDataAsync(_entity.ClientId, _entity.AlgoMetaData[0].AlgoId).Wait();
+                repo.DeleteAlgoAsync(_entity.ClientId, _entity.AlgoId).Wait();
                 _entitySaved = false;
             }
 
@@ -47,7 +49,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
-        public void AlgoMetaData_Save_Test()
+        public void Algo_Save_Test()
         {
             var repo = Given_AlgoMetaData_Repository();
             When_Invoke_Save(repo, _entity);
@@ -55,7 +57,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test, Explicit("Should run manually only. Manipulate data in Table Storage")]
-        public void AlgoMetaData_GetAll_Test()
+        public void Algo_GetAll_Test()
         {
             var repo = Given_AlgoMetaData_Repository();
             When_Invoke_Save(repo, _entity);
@@ -65,33 +67,34 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         #region Private Methods
 
-        private static AlgoMetaDataRepository Given_AlgoMetaData_Repository()
+        private static AlgoRepository Given_AlgoMetaData_Repository()
         {
-            return new AlgoMetaDataRepository(AzureTableStorage<AlgoMetaDataEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoMetaDataRepository.TableName, new LogMock()));
+            return new AlgoRepository(AzureTableStorage<AlgoEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoRepository.TableName, new LogMock()));
         }
 
-        private static void When_Invoke_Save(AlgoMetaDataRepository repository, AlgoClientMetaData data)
+        private static void When_Invoke_Save(AlgoRepository repository, IAlgo data)
         {
-            repository.SaveAlgoMetaDataAsync(data).Wait();
+            repository.SaveAlgoAsync(data).Wait();
             _entitySaved = true;
         }
 
-        private static void Then_Data_ShouldBe_Saved(AlgoMetaDataRepository repository, AlgoClientMetaData data)
+        private static void Then_Data_ShouldBe_Saved(AlgoRepository repository, IAlgo data)
         {
-            var saved = repository.GetAlgoMetaDataAsync(ClientId, data.AlgoMetaData[0].AlgoId).Result;
+            var saved = repository.GetAlgoAsync(ClientId, data.AlgoId).Result;
             Assert.NotNull(saved);
         }
 
-        private static AlgoClientMetaData When_Ivoke_GetAll(AlgoMetaDataRepository repository, string clientId)
+        private static IEnumerable<IAlgo> When_Ivoke_GetAll(AlgoRepository repository, string clientId)
         {
-            return repository.GetAllClientAlgoMetaDataAsync(clientId).Result;
+            return repository.GetAllClientAlgosAsync(clientId).Result;
         }
 
-        private static void Then_Result_ShouldNotBe_Null(AlgoClientMetaData data)
+        private static void Then_Result_ShouldNotBe_Null(IEnumerable<IAlgo> data)
         {
             Assert.NotNull(data);
         }
 
         #endregion
     }
+
 }

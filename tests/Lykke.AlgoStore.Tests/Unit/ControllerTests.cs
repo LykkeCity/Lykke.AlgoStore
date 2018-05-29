@@ -5,7 +5,6 @@ using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
@@ -41,6 +40,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -62,6 +62,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Given_BlobRepository_WithResult(true).Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
                 null,
                 null,
                 null,
@@ -91,6 +92,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -116,6 +118,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithoutResult(true);
@@ -137,6 +140,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 Given_BlobRepository_WithResult(true).Object,
                 null,
                 Given_PublicAlgoRepository_Exists(false), 
+                null,
                 null,
                 null,
                 null,
@@ -168,6 +172,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -176,7 +181,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
             Then_Exception_ShouldBeNull(ex);
-            metadataRepoMock.Verify(repo => repo.DeleteAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
         }
         [Test]
@@ -197,6 +202,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null,
                 null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -205,7 +211,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
 
             Then_Exception_ShouldBeNull(ex);
-            metadataRepoMock.Verify(repo => repo.DeleteAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
         }
 
@@ -240,13 +246,13 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        private static Mock<IAlgoMetaDataRepository> Given_MetaDataRepository_Exists(bool exists)
+        private static Mock<IAlgoRepository> Given_MetaDataRepository_Exists(bool exists)
         {
-            var result = new Mock<IAlgoMetaDataRepository>();
+            var result = new Mock<IAlgoRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(exists);
-            result.Setup(repo => repo.DeleteAlgoMetaDataAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+            result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
 
             return result;
         }
@@ -320,7 +326,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         private static IAlgoStoreClientDataService Given_ClientDataService(
-            IAlgoMetaDataRepository metaDataRepository,
+            IAlgoRepository metaDataRepository,
             IAlgoClientInstanceRepository clientInstanceRepository,
             IAlgoBlobRepository blobRepository,
             IKubernetesApiReadOnlyClient kubernetesClient,
@@ -329,17 +335,20 @@ namespace Lykke.AlgoStore.Tests.Unit
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candleshistoryservice,
             AssetsValidator assetsValidator,
-            IWalletBalanceService walletBalanceService)
+            IWalletBalanceService walletBalanceService,
+            ICodeBuildService codeValidationService)
         {
             var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null, kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService, new LogMock());
+                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null,
+                kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService,
+                new LogMock(), codeValidationService);
 
             return result;
         }
 
         private static IAlgoStoreService Given_AlgoStoreService(IKubernetesApiClient kubernetesApiClient,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
-            IAlgoMetaDataReadOnlyRepository algoMetaDataRepository,
+            IAlgoReadOnlyRepository algoMetaDataRepository,
             IAlgoClientInstanceRepository instanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,

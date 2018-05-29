@@ -1,6 +1,6 @@
 ﻿namespace Lykke.AlgoStore.Api.Models
 {
-    public class AlgoRatingMetaDataModel : AlgoMetaDataModel
+    public class AlgoRatingMetaDataModel : AlgoDataModel
     {
         public string ClientId { get; set; }
         public double Rating { get; set; }

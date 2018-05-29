@@ -4,7 +4,6 @@
 
 namespace Lykke.AlgoStore.Client.AutorestClient
 {
-    using Models;
     using System.Threading;
     using System.Threading.Tasks;
 

@@ -7,7 +7,6 @@ using Lykke.AlgoStore.Tests.Infrastructure;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {

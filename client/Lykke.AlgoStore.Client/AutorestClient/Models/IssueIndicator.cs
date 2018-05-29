@@ -4,10 +4,7 @@
 
 namespace Lykke.AlgoStore.Client.AutorestClient.Models
 {
-    using Lykke.AlgoStore.Client;
-    using Lykke.AlgoStore.Client.AutorestClient;
     using Newtonsoft.Json;
-    using System.Linq;
 
     public partial class IssueIndicator
     {

@@ -7,7 +7,6 @@
 namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Newtonsoft.Json;
-    using System.Linq;
 
     public partial class Iok8skubernetespkgapisextensionsv1beta1RollbackConfig
     {

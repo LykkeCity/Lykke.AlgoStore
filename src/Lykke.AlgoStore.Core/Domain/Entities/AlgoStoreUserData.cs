@@ -1,7 +1,4 @@
-﻿using Lykke.Service.PersonalData.Contract.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {

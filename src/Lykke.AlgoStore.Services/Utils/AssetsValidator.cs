@@ -1,8 +1,6 @@
 ﻿using Lykke.Service.Assets.Client.Models;
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Utils;
 using Microsoft.Rest;

@@ -8,7 +8,6 @@ namespace Lykke.AlgoStore.KubernetesClient.Models
 {
     using Microsoft.Rest;
     using Newtonsoft.Json;
-    using System.Linq;
 
     public partial class Iok8skubernetespkgapiscertificatesv1beta1CertificateSigningRequestCondition
     {

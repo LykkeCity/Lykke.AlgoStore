@@ -1,6 +1,6 @@
 ﻿namespace Lykke.AlgoStore.Core.Domain.Entities
 {
-    public class AlgoRatingMetaData : AlgoMetaData
+    public class AlgoRatingMetaData : AlgoData
     {
         public string ClientId { get; set; }
         public string Author { get; set; }

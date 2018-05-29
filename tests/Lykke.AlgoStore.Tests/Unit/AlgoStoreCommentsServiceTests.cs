@@ -1,19 +1,14 @@
 ﻿using AutoFixture;
-using Common.Log;
-using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
-using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.PersonalData.Settings;
 using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Tests.Unit
