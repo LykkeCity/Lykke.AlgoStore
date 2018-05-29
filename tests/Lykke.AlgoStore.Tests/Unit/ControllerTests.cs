@@ -471,7 +471,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
                 await algoStoreService.DeleteImageAsync(runtimeData);
 
-                await clientDataService.DeleteMetadataAsync(data);
+                await clientDataService.DeleteAsync(data);
             }
             catch (Exception exception)
             {

@@ -158,12 +158,12 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         }
 
-        [HttpGet("algoMetadata")]
-        [SwaggerOperation("GetAlgoMetadata")]
+        [HttpGet("getAlgoInformation")]
+        [SwaggerOperation("GetAlgoInformation")]
         [ProducesResponseType(typeof(AlgoDataInformationModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetAlgoMetadata(string clientId, string algoId)
+        public async Task<IActionResult> GetAlgoInformation(string clientId, string algoId)
         {
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
@@ -178,13 +178,13 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
-        [HttpPost("metadata/cascadeDelete")]
-        [SwaggerOperation("CascadeDeleteAlgoMetadata")]
+        [HttpPost("cascadeDelete")]
+        [SwaggerOperation("CascadeDeleteAlgo")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeleteAlgoMetadata([FromBody]ManageImageModel model)
+        public async Task<IActionResult> DeleteAlgo([FromBody]ManageImageModel model)
         {
             var clientId = User.GetClientId();
 
@@ -195,7 +195,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             await _service.DeleteImageAsync(clientInstanceData);
 
-            await _clientDataService.DeleteMetadataAsync(data);
+            await _clientDataService.DeleteAsync(data);
 
             return NoContent();
         }

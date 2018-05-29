@@ -497,9 +497,9 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task DeleteMetadataAsync(ManageImageData data)
+        public async Task DeleteAsync(ManageImageData data)
         {
-            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteAsync), data?.ClientId, async () =>
             {
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId) ||
                    await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
