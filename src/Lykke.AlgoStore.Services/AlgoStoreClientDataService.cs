@@ -268,7 +268,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="data">Algo data</param>
         /// <param name="algoContent">Algo code content</param>
         /// <returns></returns>
-        public async Task<AlgoData> CreateAlgoAsync(string clientId, string clientName, AlgoData data,
+        public async Task<AlgoData> CreateAlgoAsync(string clientId, AlgoData data,
             string algoContent)
         {
             return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
