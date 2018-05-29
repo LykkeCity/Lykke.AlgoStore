@@ -28,18 +28,18 @@ namespace Lykke.AlgoStore.Api.Controllers
         //In future, when we do a refactoring we should remove unused endpoints from code
         [HttpPost("create")]
         [SwaggerOperation("CreateAlgo")]
-        [ProducesResponseType(typeof(AlgoMetaDataModel), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoDataModel), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateAlgo([FromBody] CreateAlgoModel model)
         {
             var clientId = User.GetClientId();
-            var data = Mapper.Map<AlgoMetaData>(model);
+            var data = Mapper.Map<AlgoData>(model);
 
             var result = await _clientDataService.CreateAlgoAsync(clientId, model.Author, data, model.DecodedContent);
 
-            var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
-            response.Author = result.Author; //REMARK: Should refactor things like this in future and use AutoMapper for everything
+            var response = Mapper.Map<AlgoDataModel>(result);
+            //response.Author = result.Author; //REMARK: Should refactor things like this in future and use AutoMapper for everything
 
             return Ok(response);
         }

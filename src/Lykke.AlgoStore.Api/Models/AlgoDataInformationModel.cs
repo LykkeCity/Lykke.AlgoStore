@@ -2,7 +2,7 @@
 
 namespace Lykke.AlgoStore.Api.Models
 {
-    public class AlgoClientMetaDataInformationModel
+    public class AlgoDataInformationModel
     {
         public string AlgoId { get; set; }
         public string Name { get; set; }

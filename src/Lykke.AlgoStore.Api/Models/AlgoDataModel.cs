@@ -1,12 +1,15 @@
-﻿namespace Lykke.AlgoStore.Api.Models
+﻿using Lykke.AlgoStore.Core.Enumerators;
+
+namespace Lykke.AlgoStore.Api.Models
 {
-    public class AlgoMetaDataModel
+    public class AlgoDataModel
     {
         public string Id { get; set; }
+        public string ClientId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Date { get; set; }
-        public string Status { get; set; }
         public string Author { get; set; }
+        public AlgoVisibility AlgoVisibility { get; set; }
     }
 }

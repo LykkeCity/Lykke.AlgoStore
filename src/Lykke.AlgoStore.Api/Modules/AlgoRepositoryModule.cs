@@ -31,7 +31,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             var reloadingDbManager = _settings.ConnectionString(x => x.AlgoApi.Db.TableStorageConnectionString);
             builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
-            builder.RegisterInstance(AzureTableStorage<AlgoMetaDataEntity>.Create(reloadingDbManager, AlgoMetaDataRepository.TableName, _log));
+            builder.RegisterInstance(AzureTableStorage<AlgoEntity>.Create(reloadingDbManager, AlgoRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoRuntimeDataEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.AlgoClientInstanceRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<PublicAlgoEntity>.Create(reloadingDbManager, PublicAlgosRepository.TableName, _log));
@@ -50,7 +50,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance<IStorageConnectionManager>(new StorageConnectionManager(reloadingDbManager));
 
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
-            builder.RegisterType<AlgoMetaDataRepository>().As<IAlgoMetaDataReadOnlyRepository>().As<IAlgoMetaDataRepository>();
+            builder.RegisterType<AlgoRepository>().As<IAlgoReadOnlyRepository>().As<IAlgoRepository>();
             builder.RegisterType<AlgoRuntimeDataRepository>().As<IAlgoRuntimeDataReadOnlyRepository>().As<IAlgoRuntimeDataRepository>();
             builder.RegisterType<AlgoClientInstanceRepository.AlgoClientInstanceRepository>().As<IAlgoClientInstanceRepository>();
             builder.RegisterType<StatisticsRepository>().As<IStatisticsRepository>();

@@ -33,8 +33,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static BaseValidatableData Given_Error_BaseValidatableData()
         {
-            var result = new AlgoMetaData();
+            var result = new AlgoData();
             result.AlgoId = Guid.NewGuid().ToString();
+            result.ClientId = Guid.NewGuid().ToString();
             result.Name = null;
 
             return result;
@@ -42,8 +43,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static BaseValidatableData Given_Correct_BaseValidatableData()
         {
-            var result = new AlgoMetaData();
+            var result = new AlgoData();
             result.AlgoId = Guid.NewGuid().ToString();
+            result.ClientId = Guid.NewGuid().ToString();
             result.Name = "Test";
 
             return result;

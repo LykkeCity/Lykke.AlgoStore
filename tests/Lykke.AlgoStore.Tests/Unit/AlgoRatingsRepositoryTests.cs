@@ -33,7 +33,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoRatingsRepository Given_AlgoRatings_Repository()
         {
-            return new AlgoRatingsRepository(AzureTableStorage<AlgoRatingEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoMetaDataRepository.TableName, new LogMock()));
+            return new AlgoRatingsRepository(AzureTableStorage<AlgoRatingEntity>.Create(SettingsMock.GetTableStorageConnectionString(), AlgoRepository.TableName, new LogMock()));
         }
 
         private static void When_Invoke_GetAlgoRating(AlgoRatingsRepository repository, AlgoRatingMetaData data)
