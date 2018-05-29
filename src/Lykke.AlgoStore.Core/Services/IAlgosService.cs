@@ -7,6 +7,7 @@ namespace Lykke.AlgoStore.Core.Services
     public interface IAlgosService
     {
         Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync();
+        Task<List<AlgoData>> GetAllUserAlgosAsync(string clientId);
 
         Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId);
         Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId);

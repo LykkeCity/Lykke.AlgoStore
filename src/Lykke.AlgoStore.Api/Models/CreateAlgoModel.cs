@@ -9,7 +9,6 @@ namespace Lykke.AlgoStore.Api.Models
         public string Description { get; set; }
         public string Date { get; set; }
         public string Content { get; set; } //Base64 encoded
-        public string Visibility { get; set; }
 
         [IgnoreDataMember]
         public string DecodedContent => string.IsNullOrWhiteSpace(Content)
