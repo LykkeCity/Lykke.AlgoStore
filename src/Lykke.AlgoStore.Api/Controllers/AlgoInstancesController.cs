@@ -23,14 +23,13 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/algoInstances")]
     public class AlgoInstancesController : Controller
     {
-        private readonly IAlgoStoreClientDataService _clientDataService;
+        private readonly IAlgoInstancesService _algoInstancesService;
         private readonly IAlgoStoreService _service;
 
-        public AlgoInstancesController(
-            IAlgoStoreClientDataService clientDataService,
+        public AlgoInstancesController(IAlgoInstancesService algoInstancesService,
             IAlgoStoreService service)
         {
-            _clientDataService = clientDataService;
+            _algoInstancesService = algoInstancesService;
             _service = service;
         }
 
@@ -46,7 +45,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                 AlgoId = algoId
             };
 
-            var result = await _clientDataService.GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(data);
+            var result = await _algoInstancesService.GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(data);
             var response = Mapper.Map<List<AlgoClientInstanceModel>>(result);
 
             return Ok(response);
@@ -66,7 +65,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                 InstanceId = instanceId
             };
 
-            var result = await _clientDataService.GetAlgoInstanceDataAsync(data);
+            var result = await _algoInstancesService.GetAlgoInstanceDataAsync(data);
 
             if (result == null || result.AlgoId == null)
                 return NotFound();
@@ -92,7 +91,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
 
-            var result = await _clientDataService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
+            var result = await _algoInstancesService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
 
             return Ok(response);
@@ -115,7 +114,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
 
-            var result = await _clientDataService.SaveAlgoBackTestInstanceDataAsync(data, model.AlgoClientId);
+            var result = await _algoInstancesService.SaveAlgoBackTestInstanceDataAsync(data, model.AlgoClientId);
             var response = Mapper.Map<AlgoBackTestInstanceModel>(result);
 
             return Ok(response);
@@ -134,7 +133,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<ManageImageData>(model);
             data.ClientId = clientId;
 
-            var clientInstanceData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
+            var clientInstanceData = await _algoInstancesService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
 
             await _service.DeleteInstanceAsync(clientInstanceData);
 

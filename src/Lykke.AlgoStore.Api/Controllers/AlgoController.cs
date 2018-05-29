@@ -20,13 +20,15 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/algo")]
     public class AlgoController : Controller
     {
-        private readonly IAlgoStoreClientDataService _clientDataService;
+        private readonly IAlgosService _clientDataService;
         private readonly IAlgoStoreService _service;
+        private readonly IAlgoInstancesService _algoInstancesService;
 
-        public AlgoController(IAlgoStoreClientDataService clientDataService, IAlgoStoreService service)
+        public AlgoController(IAlgosService clientDataService, IAlgoStoreService service, IAlgoInstancesService algoInstancesService)
         {
             _clientDataService = clientDataService;
             _service = service;
+            _algoInstancesService = algoInstancesService;
         }
 
         //REMARK: This endpoint is a merge result between 'metadata - POST' and 'imageData/upload/string - POST' endpoints
@@ -172,7 +174,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<ManageImageData>(model);
             data.ClientId = clientId;
 
-            var clientInstanceData = await _clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
+            var clientInstanceData = await _algoInstancesService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
 
             await _service.DeleteImageAsync(clientInstanceData);
 
