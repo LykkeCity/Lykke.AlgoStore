@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoMapper;
 using JetBrains.Annotations;
+using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
@@ -17,7 +18,6 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
@@ -65,7 +65,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void SetUp()
         {
             Mapper.Reset();
-            Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperModelProfile>());
+            Mapper.Initialize(cfg => cfg.AddProfile<AutoMapperProfile>());
             Mapper.AssertConfigurationIsValid();
         }
 
@@ -96,6 +96,32 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Data_ShouldNotBe_Empty(data);
             Then_Algos_ShouldHave_Ratings(data);
             Then_Algos_ShouldHave_UsersCount(data);
+        }
+
+        [Test]
+        public void GetAllUserAlgos_Returns_Ok()
+        {
+            var repo = Given_Correct_AlgoRepositoryMock();
+            var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
+
+            var service = Given_AlgoStoreClientDataService(repo, null, null, null, null, null, null, null, personalDataervice, null, null, null, null, null, null);
+            var data = When_Invoke_GetAllUserAlgos(service, out Exception exception);
+
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(data);
+        }
+
+        [Test]
+        public void GetAllUserAlgos_Returns_Empty()
+        {
+            var repo = Given_NoUserAlgos_AlgoRepositoryMock();
+            var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
+
+            var service = Given_AlgoStoreClientDataService(repo, null, null, null, null, null, null, null, personalDataervice, null, null, null, null, null, null);
+            var data = When_Invoke_GetAllUserAlgos(service, out Exception exception);
+
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldBe_Empty(data);
         }
 
         [Test, Explicit("Can fail due to missing ratings for all algos in the DB")]
@@ -555,6 +581,20 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
         }
 
+        private static List<AlgoData> When_Invoke_GetAllUserAlgos(AlgoStoreClientDataService service, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAllUserAlgosAsync(ClientId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
         private static AlgoRatingData When_Invoke_GetAlgoRating(AlgoStoreClientDataService service, out Exception exception)
         {
             exception = null;
@@ -703,9 +743,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAllClientAlgosAsync(It.IsAny<string>()))
                 .Returns((string clientId) =>
                 {
-                    return Task.FromResult(fixture.Build<IEnumerable<AlgoEntity>>()
-.With(a => a.First().ClientId, clientId)
-.Create() as IEnumerable<IAlgo>);
+                    return Task.FromResult(fixture.Build<AlgoEntity>()
+.With(a => a.ClientId, clientId)
+.CreateMany() as IEnumerable<IAlgo>);
                 });
             result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientid, string id) =>
@@ -734,6 +774,15 @@ namespace Lykke.AlgoStore.Tests.Unit
                     };
                     return Task.FromResult(res);
                 });
+            return result.Object;
+        }
+
+        private static IAlgoRepository Given_NoUserAlgos_AlgoRepositoryMock()
+        {
+            var result = new Mock<IAlgoRepository>();
+            result.Setup(repo => repo.GetAllClientAlgosAsync(It.IsAny<string>()))
+                .Returns((string clientId) => Task.FromResult<IEnumerable<IAlgo>>(new List<IAlgo>()));
+
             return result.Object;
         }
 
@@ -1186,11 +1235,23 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             Assert.IsTrue(!data.IsNullOrEmptyCollection());
         }
+
+        private static void Then_Data_ShouldNotBe_Empty(List<AlgoData> data)
+        {
+            Assert.IsTrue(!data.IsNullOrEmptyCollection());
+        }
+
         private static void Then_Data_ShouldNotBe_Empty(List<AlgoRatingMetaData> data)
         {
             Assert.IsTrue(!data.IsNullOrEmptyCollection());
         }
+
         private static void Then_Data_ShouldBe_Empty(List<AlgoClientInstanceData> data)
+        {
+            Assert.IsTrue(data.IsNullOrEmptyCollection());
+        }
+
+        private static void Then_Data_ShouldBe_Empty(List<AlgoData> data)
         {
             Assert.IsTrue(data.IsNullOrEmptyCollection());
         }

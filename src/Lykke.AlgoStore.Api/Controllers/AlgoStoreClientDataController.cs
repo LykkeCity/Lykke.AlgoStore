@@ -51,20 +51,20 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet("getCurrentUserAlgos")]
-        [SwaggerOperation("GetCurrentUserAlgos")]
-        [ProducesResponseType(typeof(List<AlgoMetaDataModel>), (int)HttpStatusCode.OK)]
+        [HttpGet("getAllUserAlgos")]
+        [SwaggerOperation("GetAllUserAlgos")]
+        [ProducesResponseType(typeof(List<AlgoDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetCurrentUserAlgos()
+        public async Task<IActionResult> GetAllUserAlgos()
         {
             var clientId = User.GetClientId();
-            var result = await _clientDataService.GetClientAlgosAsync(clientId);
+            var result = await _clientDataService.GetAllUserAlgosAsync(clientId);
 
-            if (result == null)
+            if (result.IsNullOrEmptyCollection())
                 return NotFound();
 
-            var response = Mapper.Map<List<AlgoMetaDataModel>>(result);
+            var response = Mapper.Map<List<AlgoDataModel>>(result);
 
             return Ok(response);
         }

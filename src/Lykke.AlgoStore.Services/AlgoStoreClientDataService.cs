@@ -319,68 +319,35 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="clientId">The client identifier.</param>
         /// <returns></returns>
-        public async Task<List<AlgoMetaData>> GetClientAlgosAsync(string clientId)
+        public async Task<List<AlgoData>> GetAllUserAlgosAsync(string clientId)
         {
-            return await LogTimedInfoAsync(nameof(GetClientMetadataAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(GetAllUserAlgosAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
 
-                var algoClientMetadata = await _metaDataRepository.GetAllClientAlgoMetaDataAsync(clientId);
+                var userAlgos = await _algoRepository.GetAllClientAlgosAsync(clientId);
 
-                if (algoClientMetadata == null || algoClientMetadata.AlgoMetaData.IsNullOrEmptyCollection())
-                    return null;
+                var resultUserAlgos = AutoMapper.Mapper.Map<List<AlgoData>>(userAlgos);
 
-                foreach (var metadata in algoClientMetadata.AlgoMetaData)
+                foreach (var algo in resultUserAlgos)
                 {
-                    if (String.IsNullOrEmpty(metadata.Author))
-                        metadata.Author = "Administrator";
+                    if (String.IsNullOrEmpty(algo.ClientId))
+                        algo.Author = "Administrator";
                     else
                     {
-                        var authorPersonalData = await _personalDataService.GetAsync(metadata.Author);
-                        metadata.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
+                        var authorPersonalData = await _personalDataService.GetAsync(algo.ClientId);
+                        algo.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
                             ? authorPersonalData.FullName
                             : authorPersonalData.Email;
-                    }
-
-                    var runtimeData = await _runtimeDataRepository.GetAlgoRuntimeDataAsync(clientId, metadata.AlgoId);
-
-                    if (runtimeData == null)
-                    {
-                        metadata.Status = AlgoRuntimeStatuses.Unknown.ToUpperText();
-                        // TODO Skip?!?
-                        continue;
-                    }
-
-                    var status = ClientAlgoRuntimeStatuses.NotFound.ToUpperText();
-                    try
-                    {
-                        var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(metadata.AlgoId);
-                        if (!pods.IsNullOrEmptyCollection())
-                        {
-                            if (pods.Count != 1)
-                                throw new AlgoStoreException(AlgoStoreErrorCodes.MoreThanOnePodFound,
-                                    $"More than one pod for algoId {metadata.AlgoId}");
-
-                            var pod = pods[0];
-                            if (pod != null)
-                            {
-                                status = pod.Status.Phase.ToUpper();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.WriteErrorAsync(AlgoStoreConstants.ProcessName, ComponentName, ex).Wait();
-                    }
-                    metadata.Status = status;
+                    }                  
                 }
 
-                return algoClientMetadata.AlgoMetaData;
+                return resultUserAlgos;
             });
         }
 
-        public async Task<AlgoClientMetaDataInformation> GetAlgoMetaDataInformationAsync(string clientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
