@@ -81,14 +81,18 @@ namespace Lykke.AlgoStore.Services
                         ? assetPairResponse.Body.BaseAssetId
                         : assetPairResponse.Body.QuotingAssetId);
 
-                    var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse.Body);
-                    var clientBalanceResponseModels = walletBalances.ToList();
-                    var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
-                        algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse.Body);
+                    if (algoInstance.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Test)
+                    {
+                        var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse.Body);
+                        var clientBalanceResponseModels = walletBalances.ToList();
+                        var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
+                            algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse.Body);
 
-                    statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Body.Id).Balance;
-                    statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Body.Id).Balance;
-                    statisticsSummary.LastWalletBalance = latestWalletBalance;
+                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Body.Id).Balance;
+                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Body.Id).Balance;
+                        statisticsSummary.LastWalletBalance = latestWalletBalance;
+                    }
+
                     statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
                                        statisticsSummary.InitialWalletBalance) * 100;
 
