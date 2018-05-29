@@ -31,7 +31,7 @@ using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models
 
 namespace Lykke.AlgoStore.Services
 {
-    public class AlgoStoreClientDataService : BaseAlgoStoreService, IAlgoStoreClientDataService
+    public class AlgosService : BaseAlgoStoreService, IAlgosService
     {
         private readonly IAlgoRepository _algoRepository;
         private readonly IAlgoBlobRepository _blobRepository;
@@ -72,7 +72,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="candlesHistoryService">The Cangles History Service</param>
         /// <param name="assetsValidator">The Asset Validator</param>
         /// <param name="codeBuildService">Algo code validator</param>
-        public AlgoStoreClientDataService(IAlgoRepository algoRepository,
+        public AlgosService(IAlgoRepository algoRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
             IAlgoClientInstanceRepository instanceRepository,
@@ -87,7 +87,7 @@ namespace Lykke.AlgoStore.Services
             [NotNull] AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
             ILog log,
-            ICodeBuildService codeBuildService) : base(log, nameof(AlgoStoreClientDataService))
+            ICodeBuildService codeBuildService) : base(log, nameof(AlgosService))
         {
             _algoRepository = algoRepository;
             _runtimeDataRepository = runtimeDataRepository;
@@ -493,41 +493,13 @@ namespace Lykke.AlgoStore.Services
         }
 
         /// <summary>
-        /// Validates the cascade delete client metadata request asynchronous.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data)
-        {
-            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), data?.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                if (!await _algoRepository.ExistsAlgoAsync(data.AlgoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Algo metadata not found for {data.AlgoId}");
-
-                var result = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
-                if (result == null || result.AlgoId == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                        $"Algo instance data not found for client with id ${data.ClientId} and instanceId {data.InstanceId}");
-
-                if (!result.ValidateData(out var instanceException))
-                    throw instanceException;
-
-                return result;
-            });
-        }
-
-        /// <summary>
         /// Deletes the metadata asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task DeleteMetadataAsync(ManageImageData data)
+        public async Task DeleteAsync(ManageImageData data)
         {
-            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteAsync), data?.ClientId, async () =>
             {
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId) ||
                    await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
@@ -606,55 +578,6 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        /// <summary>
-        /// Gets all algo instance data asynchronous.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data)
-        {
-            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync), data.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                if (string.IsNullOrWhiteSpace(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
-
-                var result = await _instanceRepository.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(data.AlgoId, data.ClientId);
-
-                return result.ToList();
-            });
-        }
-        /// <summary>
-        /// Gets the algo instance data asynchronous.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data)
-        {
-            return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), data.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                return await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
-            });
-        }
-
-        /// <summary>
-        /// Gets the algo instance data by ClientId asynchronous.
-        /// </summary>
-        /// <param name="clientId">The Id of the user.</param>
-        /// <param name="instanceId">The Id of the algo instance.</param>
-        /// <returns></returns>
-        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(string clientId, string instanceId)
-        {
-            return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), clientId, async () =>
-                await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId));
-        }
 
         public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByClientIdAsync(string clientId)
         {
