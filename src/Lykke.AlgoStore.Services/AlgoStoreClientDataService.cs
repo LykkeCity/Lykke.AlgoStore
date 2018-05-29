@@ -270,7 +270,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="clientName">Algo client name</param>
         /// <param name="data">Algo data</param>
         /// <param name="algoContent">Algo code content</param>
-        /// <returns></returns>
+        /// <returns>Algo client meta data that is created</returns>
         public async Task<AlgoClientMetaData> CreateAlgoAsync(string clientId, string clientName, AlgoMetaData data,
             string algoContent)
         {
@@ -325,6 +325,14 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        /// <summary>
+        /// Edit (update) an algo from provided code
+        /// </summary>
+        /// <param name="clientId">Algo client Id</param>
+        /// <param name="clientName">Algo client name</param>
+        /// <param name="data">Algo data</param>
+        /// <param name="algoContent">Algo code content</param>
+        /// <returns>Algo client meta data that is updated</returns>
         public async Task<AlgoClientMetaData> EditAlgoAsync(string clientId, string clientName, AlgoMetaData data,
             string algoContent)
         {
