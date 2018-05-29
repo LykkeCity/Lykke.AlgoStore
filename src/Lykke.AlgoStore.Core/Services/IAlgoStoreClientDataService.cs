@@ -12,8 +12,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId);
         Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId);
 
-        Task<AlgoData> SaveAlgoAsync(string clientId, string clientName, AlgoData data);
-
         Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data);
         Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel);
         Task DeleteMetadataAsync(ManageImageData data);

@@ -230,32 +230,6 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void SaveAlgo_Returns_Ok()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoData();
-            var repo = Given_Correct_AlgoRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null,
-                null, null, null, null, null, null);
-            When_Invoke_SaveAlgo(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_Null(exception);
-        }
-
-        [Test]
-        public void SaveAlgo_Throws_Exception()
-        {
-            var clientId = Guid.NewGuid().ToString();
-            var data = Given_AlgoData();
-            var repo = Given_Error_AlgoRepositoryMock();
-            var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
-            var service = Given_AlgoStoreClientDataService(repo, blobRepo, null, null, null, null, null, null, null,
-                null, null, null, null, null, null);
-            When_Invoke_SaveAlgo(service, clientId, data, out var exception);
-            Then_Exception_ShouldBe_ServiceException(exception);
-        }
-
-        [Test]
         public void GetAllAlgoInstanceDataAsync_Returns_Ok()
         {
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock_ByClientId();
@@ -620,19 +594,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 exception = ex;
                 return null;
-            }
-        }
-
-        private static void When_Invoke_SaveAlgo(AlgoStoreClientDataService service, string clientId, AlgoData data, out Exception exception)
-        {
-            exception = null;
-            try
-            {
-                service.SaveAlgoAsync(clientId, string.Empty, data).Wait();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
             }
         }
 

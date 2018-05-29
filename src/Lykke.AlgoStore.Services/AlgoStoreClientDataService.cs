@@ -459,43 +459,6 @@ namespace Lykke.AlgoStore.Services
         }
 
         /// <summary>
-        /// Saves the client metadata asynchronous.
-        /// </summary>
-        /// <param name="clientId">The client identifier.</param>
-        /// <param name="clientName">Name of the client.</param>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<AlgoData> SaveAlgoAsync(string clientId, string clientName, AlgoData data)
-        {
-            return await LogTimedInfoAsync(nameof(SaveAlgoAsync), clientId, async () =>
-            {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    data.AlgoId = Guid.NewGuid().ToString();
-
-                data.AlgoVisibility = Core.Enumerators.AlgoVisibility.Private;
-
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                IAlgo algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
-
-                algoToSave.ClientId = data.ClientId;                
-
-                await _algoRepository.SaveAlgoAsync(algoToSave);
-
-                var res = await _algoRepository.GetAlgoAsync(clientId, data.AlgoId);
-                if (res == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot save data for {clientId} id: {data.AlgoId}");
-
-                return AutoMapper.Mapper.Map<AlgoData>(res);
-            });
-        }
-
-        /// <summary>
         /// Deletes the metadata asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>

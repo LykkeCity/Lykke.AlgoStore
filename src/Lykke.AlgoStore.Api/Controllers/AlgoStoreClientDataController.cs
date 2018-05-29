@@ -164,25 +164,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
-        [HttpPost("metadata")]
-        [SwaggerOperation("SaveAlgoMetadata")]
-        [ProducesResponseType(typeof(AlgoDataModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> SaveAlgoMetadata([FromBody]AlgoDataModel model)
-        {
-            var clientId = User.GetClientId();
-            var clientName = User.Identity.Name;
-
-            var data = Mapper.Map<AlgoData>(model);
-
-            var result = await _clientDataService.SaveAlgoAsync(clientId, clientName, data);
-
-            var response = Mapper.Map<AlgoDataModel>(result);
-
-            return Ok(response);
-        }
-
         [HttpPost("metadata/cascadeDelete")]
         [SwaggerOperation("CascadeDeleteAlgoMetadata")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
