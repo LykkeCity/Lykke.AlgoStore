@@ -277,10 +277,10 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
 
                 if(string.IsNullOrEmpty(algoContent))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
@@ -294,7 +294,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, clientId, data.AlgoId, validationResult));
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();
@@ -317,7 +317,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+                        string.Format(Phrases.AlgoDataSaveFailed, clientId, data.AlgoId));
 
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
 
@@ -339,13 +339,13 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
 
                 if (string.IsNullOrEmpty(algoContent))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoIdEmpty);
 
                 if (!data.ValidateData(out var exception))
                     throw exception;
@@ -356,13 +356,13 @@ namespace Lykke.AlgoStore.Services
                 if (res == null || res.AlgoMetaData.IsNullOrEmptyCollection() ||
                     res.AlgoMetaData[0].AlgoVisibility == AlgoVisibility.Public)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Cannot find algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+                        string.Format(Phrases.NoAlgoData, clientId, data.AlgoId));
 
                 //Check if there are running algo instances
                 var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
                 if(instances.Any(x => x.AlgoInstanceStatus == AlgoInstanceStatus.Started))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "There are running algo instances");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists);
 
                 //Validate algo code
                 var validationSession = _codeBuildService.StartSession(algoContent);
@@ -370,7 +370,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, clientId, data.AlgoId, validationResult));
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();
