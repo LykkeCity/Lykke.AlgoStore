@@ -61,6 +61,42 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Algo content is empty.
+        /// </summary>
+        internal static string AlgoContentEmpty {
+            get {
+                return ResourceManager.GetString("AlgoContentEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot save algo data. ClientId: {0}, AlgoId: {1}.
+        /// </summary>
+        internal static string AlgoDataSaveFailed {
+            get {
+                return ResourceManager.GetString("AlgoDataSaveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot save algo data. Algo code validation failed.{0}ClientId: {1}, AlgoId: {2}{0}Details:{0}{3}.
+        /// </summary>
+        internal static string AlgoDataSaveFailedOnCodeValidation {
+            get {
+                return ResourceManager.GetString("AlgoDataSaveFailedOnCodeValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AlgoId is empty.
+        /// </summary>
+        internal static string AlgoIdEmpty {
+            get {
+                return ResourceManager.GetString("AlgoIdEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot unpublish algo because it has algo instances..
         /// </summary>
         internal static string AlgoInstancesExist {
@@ -75,6 +111,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string AssetsMissingFromWallet {
             get {
                 return ResourceManager.GetString("AssetsMissingFromWallet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ClientId is empty.
+        /// </summary>
+        internal static string ClientIdEmpty {
+            get {
+                return ResourceManager.GetString("ClientIdEmpty", resourceCulture);
             }
         }
         
@@ -133,11 +178,29 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot find algo data. ClientId: {0}, AlgoId: {1}.
+        /// </summary>
+        internal static string NoAlgoData {
+            get {
+                return ResourceManager.GetString("NoAlgoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Public algo Not Found.
         /// </summary>
         internal static string PublicAlgoNotFound {
             get {
                 return ResourceManager.GetString("PublicAlgoNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are running algo instance(s).
+        /// </summary>
+        internal static string RunningAlgoInstanceExists {
+            get {
+                return ResourceManager.GetString("RunningAlgoInstanceExists", resourceCulture);
             }
         }
         

@@ -153,4 +153,25 @@
   <data name="ERROR_EVENT_NOT_IMPLEMENTED" xml:space="preserve">
     <value>Algo must override {0} and/or {1}</value>
   </data>
+  <data name="ClientIdEmpty" xml:space="preserve">
+    <value>ClientId is empty</value>
+  </data>
+  <data name="AlgoContentEmpty" xml:space="preserve">
+    <value>Algo content is empty</value>
+  </data>
+  <data name="AlgoIdEmpty" xml:space="preserve">
+    <value>AlgoId is empty</value>
+  </data>
+  <data name="NoAlgoData" xml:space="preserve">
+    <value>Cannot find algo data. ClientId: {0}, AlgoId: {1}</value>
+  </data>
+  <data name="RunningAlgoInstanceExists" xml:space="preserve">
+    <value>There are running algo instance(s)</value>
+  </data>
+  <data name="AlgoDataSaveFailedOnCodeValidation" xml:space="preserve">
+    <value>Cannot save algo data. Algo code validation failed.{0}ClientId: {1}, AlgoId: {2}{0}Details:{0}{3}</value>
+  </data>
+  <data name="AlgoDataSaveFailed" xml:space="preserve">
+    <value>Cannot save algo data. ClientId: {0}, AlgoId: {1}</value>
+  </data>
 </root>

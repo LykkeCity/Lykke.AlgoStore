@@ -33,13 +33,29 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateAlgo([FromBody] CreateAlgoModel model)
         {
-            var clientId = User.GetClientId();
             var data = Mapper.Map<AlgoData>(model);
+            data.ClientId = User.GetClientId();
 
-            var result = await _clientDataService.CreateAlgoAsync(clientId, model.Author, data, model.DecodedContent);
+            var result = await _clientDataService.CreateAlgoAsync(data, model.DecodedContent);
 
             var response = Mapper.Map<AlgoDataModel>(result);
-            //response.Author = result.Author; //REMARK: Should refactor things like this in future and use AutoMapper for everything
+
+            return Ok(response);
+        }
+
+        [HttpPost("edit")]
+        [SwaggerOperation("EditAlgo")]
+        [ProducesResponseType(typeof(AlgoDataModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> EditAlgo([FromBody] CreateAlgoModel model)
+        {
+            var data = Mapper.Map<AlgoData>(model);
+            data.ClientId = User.GetClientId();
+
+            var result = await _clientDataService.EditAlgoAsync(data, model.DecodedContent);
+
+            var response = Mapper.Map<AlgoDataModel>(result);
 
             return Ok(response);
         }
