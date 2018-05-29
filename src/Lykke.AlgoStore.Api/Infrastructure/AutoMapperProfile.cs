@@ -13,8 +13,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
         public AutoMapperProfile()
         {
             CreateMap<AlgoData, AlgoDataModel>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
-                .ForMember(dest => dest.Author, opt => opt.Ignore());
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));
 
             CreateMap<AlgoEntity, IAlgo>()
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
@@ -35,7 +34,6 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoDataModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
-                .ForSourceMember(src => src.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
@@ -79,13 +77,11 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoDataModel, AlgoData>()
-                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaData, AlgoRatingMetaDataModel>()
                 .IncludeBase<AlgoData, AlgoDataModel>()
-                .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.RatedUsersCount, opt => opt.MapFrom(src => src.RatedUsersCount))
                 .ForSourceMember(src => src.AlgoMetaDataInformationJSON, opt => opt.Ignore());
 

@@ -39,7 +39,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _clientDataService.CreateAlgoAsync(clientId, model.Author, data, model.DecodedContent);
 
             var response = Mapper.Map<AlgoDataModel>(result);
-            //response.Author = result.Author; //REMARK: Should refactor things like this in future and use AutoMapper for everything
 
             return Ok(response);
         }
@@ -57,7 +56,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _clientDataService.EditAlgoAsync(clientId, model.Author, data, model.DecodedContent);
 
             var response = Mapper.Map<AlgoDataModel>(result);
-            //response.Author = result.Author; //REMARK: Should refactor things like this in future and use AutoMapper for everything
 
             return Ok(response);
         }
