@@ -276,10 +276,10 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
 
-                if (string.IsNullOrEmpty(algoContent))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+                if(string.IsNullOrEmpty(algoContent))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
@@ -293,7 +293,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, clientId, data.AlgoId, validationResult));
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();
@@ -308,7 +308,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+                        string.Format(Phrases.AlgoDataSaveFailed, clientId, data.AlgoId));
 
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
 
