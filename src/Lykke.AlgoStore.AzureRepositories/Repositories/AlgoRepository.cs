@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AzureStorage;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
-using Lykke.AlgoStore.Core.Utils;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,12 +34,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<IAlgo> GetAlgoAsync(string clientId, string algoId)
         {
-            var entitiy = await _table.GetDataAsync(clientId, algoId);
+            var entity = await _table.GetDataAsync(clientId, algoId);
 
-            if (entitiy == null)
-                return null;
-
-            return entitiy;
+            return entity;
         }
 
         public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
