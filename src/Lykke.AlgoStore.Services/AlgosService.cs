@@ -22,6 +22,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Core.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Newtonsoft.Json;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using BaseAlgoInstance = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.BaseAlgoInstance;
@@ -29,7 +31,7 @@ using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models
 
 namespace Lykke.AlgoStore.Services
 {
-    public class AlgoStoreClientDataService : BaseAlgoStoreService, IAlgoStoreClientDataService
+    public class AlgosService : BaseAlgoStoreService, IAlgosService
     {
         private readonly IAlgoRepository _algoRepository;
         private readonly IAlgoBlobRepository _blobRepository;
@@ -70,7 +72,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="candlesHistoryService">The Cangles History Service</param>
         /// <param name="assetsValidator">The Asset Validator</param>
         /// <param name="codeBuildService">Algo code validator</param>
-        public AlgoStoreClientDataService(IAlgoRepository algoRepository,
+        public AlgosService(IAlgoRepository algoRepository,
             IAlgoRuntimeDataReadOnlyRepository runtimeDataRepository,
             IAlgoBlobRepository blobRepository,
             IAlgoClientInstanceRepository instanceRepository,
@@ -85,7 +87,7 @@ namespace Lykke.AlgoStore.Services
             [NotNull] AssetsValidator assetsValidator,
             IWalletBalanceService walletBalanceService,
             ILog log,
-            ICodeBuildService codeBuildService) : base(log, nameof(AlgoStoreClientDataService))
+            ICodeBuildService codeBuildService) : base(log, nameof(AlgosService))
         {
             _algoRepository = algoRepository;
             _runtimeDataRepository = runtimeDataRepository;
@@ -258,7 +260,7 @@ namespace Lykke.AlgoStore.Services
 
                 return result;
             });
-        }     
+        }
 
         /// <summary>
         /// Create an algo from provided code
@@ -268,16 +270,15 @@ namespace Lykke.AlgoStore.Services
         /// <param name="data">Algo data</param>
         /// <param name="algoContent">Algo code content</param>
         /// <returns></returns>
-        public async Task<AlgoData> CreateAlgoAsync(string clientId, string clientName, AlgoData data,
-            string algoContent)
+        public async Task<AlgoData> CreateAlgoAsync(AlgoData data, string algoContent)
         {
-            return await LogTimedInfoAsync(nameof(CreateAlgoAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(CreateAlgoAsync), data.ClientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                if (string.IsNullOrWhiteSpace(data.ClientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
 
                 if(string.IsNullOrEmpty(algoContent))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Algo content is empty");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
@@ -291,24 +292,85 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Cannot save algo data. Algo code validation failed.{Environment.NewLine}ClientId: {clientId}, AlgoId: {data.AlgoId}{Environment.NewLine}Details:{Environment.NewLine}{validationResult}");
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId, data.AlgoId, validationResult));
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();
 
                 data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
 
-                IAlgo algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
+                var algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
 
                 await _algoRepository.SaveAlgoAsync(algoToSave);
 
-                var res = await _algoRepository.GetAlgoAsync(clientId, data.AlgoId);
+                var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
                 if (res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        $"Cannot save algo data. ClientId: {clientId}, AlgoId: {data.AlgoId}");
+                        string.Format(Phrases.AlgoDataSaveFailed, data.ClientId, data.AlgoId));
 
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                return AutoMapper.Mapper.Map<AlgoData>(res);
+            });
+        }
+
+        /// <summary>
+        /// Edit (update) an algo from provided code
+        /// </summary>
+        /// <param name="clientId">Algo client Id</param>
+        /// <param name="clientName">Algo client name</param>
+        /// <param name="data">Algo data</param>
+        /// <param name="algoContent">Algo code content</param>
+        /// <returns>Algo data that is updated</returns>
+        public async Task<AlgoData> EditAlgoAsync(AlgoData data, string algoContent)
+        {
+            return await LogTimedInfoAsync(nameof(CreateAlgoAsync), data.ClientId, async () =>
+            {
+                if (string.IsNullOrWhiteSpace(data.ClientId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
+
+                if (string.IsNullOrEmpty(algoContent))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
+
+                if (string.IsNullOrWhiteSpace(data.AlgoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoIdEmpty);
+
+                if (!data.ValidateData(out var exception))
+                    throw exception;
+
+                var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
+
+                //Algo should not be public in order to edit it
+                if (res == null || res.AlgoVisibility == AlgoVisibility.Public)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                        string.Format(Phrases.NoAlgoData, data.ClientId, data.AlgoId));
+
+                //Check if there are running algo instances
+                var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
+
+                if (instances.Any(x => x.AlgoInstanceStatus == AlgoInstanceStatus.Started))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists);
+
+                //Validate algo code
+                var validationSession = _codeBuildService.StartSession(algoContent);
+                var validationResult = await validationSession.Validate();
+
+                if (!validationResult.IsSuccessful)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId, data.AlgoId, validationResult));
+
+                //Extract algo metadata (parameters)
+                var extractedMetadata = await validationSession.ExtractMetadata();
+
+                data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
+
+                var algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
+
+                await _algoRepository.SaveAlgoAsync(algoToSave);
+                await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
                 return AutoMapper.Mapper.Map<AlgoData>(res);
             });
@@ -459,41 +521,13 @@ namespace Lykke.AlgoStore.Services
         }
 
         /// <summary>
-        /// Validates the cascade delete client metadata request asynchronous.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data)
-        {
-            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), data?.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                if (!await _algoRepository.ExistsAlgoAsync(data.AlgoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Algo metadata not found for {data.AlgoId}");
-
-                var result = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
-                if (result == null || result.AlgoId == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                        $"Algo instance data not found for client with id ${data.ClientId} and instanceId {data.InstanceId}");
-
-                if (!result.ValidateData(out var instanceException))
-                    throw instanceException;
-
-                return result;
-            });
-        }
-
-        /// <summary>
         /// Deletes the metadata asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        public async Task DeleteMetadataAsync(ManageImageData data)
+        public async Task DeleteAsync(ManageImageData data)
         {
-            await LogTimedInfoAsync(nameof(DeleteMetadataAsync), data?.ClientId, async () =>
+            await LogTimedInfoAsync(nameof(DeleteAsync), data?.ClientId, async () =>
             {
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId) ||
                    await _instanceRepository.HasInstanceData(data.ClientId, data.AlgoId))
@@ -572,55 +606,6 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        /// <summary>
-        /// Gets all algo instance data asynchronous.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data)
-        {
-            return await LogTimedInfoAsync(nameof(GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync), data.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                if (string.IsNullOrWhiteSpace(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
-
-                var result = await _instanceRepository.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(data.AlgoId, data.ClientId);
-
-                return result.ToList();
-            });
-        }
-        /// <summary>
-        /// Gets the algo instance data asynchronous.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <returns></returns>
-        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data)
-        {
-            return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), data.ClientId, async () =>
-            {
-                if (!data.ValidateData(out var exception))
-                    throw exception;
-
-                return await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
-            });
-        }
-
-        /// <summary>
-        /// Gets the algo instance data by ClientId asynchronous.
-        /// </summary>
-        /// <param name="clientId">The Id of the user.</param>
-        /// <param name="instanceId">The Id of the algo instance.</param>
-        /// <returns></returns>
-        public async Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(string clientId, string instanceId)
-        {
-            return await LogTimedInfoAsync(nameof(GetAlgoInstanceDataAsync), clientId, async () =>
-                await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId));
-        }
 
         public async Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByClientIdAsync(string clientId)
         {

@@ -11,6 +11,7 @@ using Lykke.AlgoStore.KubernetesClient.Models;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.ClientAccount.Client;
 using Moq;
@@ -43,10 +44,22 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null);
 
+
+            var algosInstanceService = Given_AlgoInstanceService(
+                Given_MetaDataRepository_Exists(true).Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldBeNull(ex);
         }
@@ -69,10 +82,21 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null);
 
+            var algosInstanceService = Given_AlgoInstanceService(
+                Given_MetaDataRepository_Exists(false).Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldNotBeNull(ex);
         }
@@ -98,7 +122,18 @@ namespace Lykke.AlgoStore.Tests.Unit
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var algosInstanceService = Given_AlgoInstanceService(
+                Given_MetaDataRepository_Exists(true).Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldNotBeNull(ex);
         }
@@ -113,7 +148,18 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false), 
+                Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+            var algosInstanceService = Given_AlgoInstanceService(
+                Given_MetaDataRepository_Exists(true).Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(false),
                 null,
                 null,
                 null,
@@ -124,7 +170,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithoutResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldNotBeNull(ex);
         }
@@ -139,7 +185,18 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 Given_BlobRepository_WithResult(true).Object,
                 null,
-                Given_PublicAlgoRepository_Exists(false), 
+                Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+            var algosInstanceService = Given_AlgoInstanceService(
+                Given_MetaDataRepository_Exists(true).Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(false),
                 null,
                 null,
                 null,
@@ -150,10 +207,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(false);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldNotBeNull(ex);
         }
+
         [Test]
         public void DeleteAlgoMetadataTest_IsPublic_ReturnSuccess()
         {
@@ -175,15 +233,27 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null);
 
+            var algosInstanceService = Given_AlgoInstanceService(
+                metadataRepoMock.Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(true),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldBeNull(ex);
             metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
         }
+
         [Test]
         public void DeleteAlgoMetadataTest_HasInstance_ReturnSuccess()
         {
@@ -205,10 +275,21 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 null);
 
+            var algosInstanceService = Given_AlgoInstanceService(
+                metadataRepoMock.Object,
+                instanceRepo,
+                Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
-            var ex = When_Execute_Delete(data, clientDataService, algoService).Result;
+            var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
             Then_Exception_ShouldBeNull(ex);
             metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -325,7 +406,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result;
         }
 
-        private static IAlgoStoreClientDataService Given_ClientDataService(
+        private static IAlgosService Given_ClientDataService(
             IAlgoRepository metaDataRepository,
             IAlgoClientInstanceRepository clientInstanceRepository,
             IAlgoBlobRepository blobRepository,
@@ -338,12 +419,29 @@ namespace Lykke.AlgoStore.Tests.Unit
             IWalletBalanceService walletBalanceService,
             ICodeBuildService codeValidationService)
         {
-            var result = new AlgoStoreClientDataService(metaDataRepository, null, blobRepository,
+            var result = new AlgosService(metaDataRepository, null, blobRepository,
                 clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null,
                 kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService,
                 new LogMock(), codeValidationService);
 
             return result;
+        }
+
+        private static IAlgoInstancesService Given_AlgoInstanceService(
+               IAlgoRepository repo,
+               IAlgoClientInstanceRepository algoInstanceRepository,
+               IPublicAlgosRepository publicAlgosRepository,
+               IStatisticsRepository statisticsRepository,
+               IAssetsService assetsService,
+               IClientAccountClient clientAccountClient,
+               ICandleshistoryservice candleshistoryservice,
+               AssetsValidator assetsValidator,
+               IWalletBalanceService walletBalanceService)
+        {
+            return new AlgoInstancesService(repo, algoInstanceRepository, publicAlgosRepository,
+                statisticsRepository, assetsService, clientAccountClient,
+                candleshistoryservice, assetsValidator, walletBalanceService,
+                new LogMock());
         }
 
         private static IAlgoStoreService Given_AlgoStoreService(IKubernetesApiClient kubernetesApiClient,
@@ -361,18 +459,19 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static async Task<Exception> When_Execute_Delete(
             ManageImageData data,
-            IAlgoStoreClientDataService clientDataService,
+            IAlgosService clientDataService,
+            IAlgoInstancesService instancesService,
             IAlgoStoreService algoStoreService)
         {
             Exception res = null;
 
             try
             {
-                var runtimeData = await clientDataService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
+                var runtimeData = await instancesService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
 
                 await algoStoreService.DeleteImageAsync(runtimeData);
 
-                await clientDataService.DeleteMetadataAsync(data);
+                await clientDataService.DeleteAsync(data);
             }
             catch (Exception exception)
             {

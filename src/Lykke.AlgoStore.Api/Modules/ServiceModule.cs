@@ -92,8 +92,12 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            builder.RegisterType<AlgoStoreClientDataService>()
-                .As<IAlgoStoreClientDataService>()
+            builder.RegisterType<AlgosService>()
+                .As<IAlgosService>()
+                .SingleInstance();
+
+            builder.RegisterType<AlgoInstancesService>()
+                .As<IAlgoInstancesService>()
                 .SingleInstance();
 
             builder.RegisterType<AlgoStoreService>()

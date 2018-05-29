@@ -18,7 +18,7 @@ namespace Lykke.AlgoStore.Services
 
         public AlgoStoreCommentsService(IAlgoCommentsRepository algoCommentsRepository,
             IPersonalDataService personalDataService,
-            ILog log) : base(log, nameof(AlgoStoreClientDataService))
+            ILog log) : base(log, nameof(AlgosService))
         {
             _algoCommentsRepository = algoCommentsRepository;
             _personalDataService = personalDataService;
