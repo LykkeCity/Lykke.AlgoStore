@@ -54,7 +54,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var clientId = User.GetClientId();
             var data = Mapper.Map<AlgoMetaData>(model);
 
-            var result = await _clientDataService.CreateAlgoAsync(clientId, model.Author, data, model.DecodedContent);
+            var result = await _clientDataService.EditAlgoAsync(clientId, model.Author, data, model.DecodedContent);
 
             var response = Mapper.Map<AlgoMetaDataModel>(result.AlgoMetaData[0]);
             response.Author = result.Author; //REMARK: Should refactor things like this in future and use AutoMapper for everything

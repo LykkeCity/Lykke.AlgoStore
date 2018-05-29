@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
@@ -87,17 +89,20 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
 
             CreateMap<AlgoMetaData, CreateAlgoModel>()
-
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
                 .ForMember(dest => dest.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.Content, opt => opt.Ignore())
-                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore());
+                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore())
+                .ForMember(dest => dest.Visibility, opt => opt.MapFrom(src => src.AlgoVisibility));
 
             CreateMap<CreateAlgoModel, AlgoMetaData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.MapFrom(src => src.Visibility))
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
+
+            CreateMap<AlgoVisibility, string>().ConvertUsing(src => src.ToString());
+            CreateMap<string, AlgoVisibility>().ConvertUsing(src => Enum.TryParse(src, out AlgoVisibility visibility) ? visibility : AlgoVisibility.Private);
         }
     }
 }

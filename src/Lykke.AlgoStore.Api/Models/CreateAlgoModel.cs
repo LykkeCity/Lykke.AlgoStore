@@ -11,8 +11,11 @@ namespace Lykke.AlgoStore.Api.Models
         public string Status { get; set; }
         public string Author { get; set; }
         public string Content { get; set; } //Base64 encoded
+        public string Visibility { get; set; }
 
         [IgnoreDataMember]
-        public string DecodedContent => System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Content));
+        public string DecodedContent => string.IsNullOrWhiteSpace(Content)
+            ? string.Empty
+            : System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(Content));
     }
 }
