@@ -61,6 +61,42 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Algo content is empty.
+        /// </summary>
+        internal static string AlgoContentEmpty {
+            get {
+                return ResourceManager.GetString("AlgoContentEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot save algo data. ClientId: {0}, AlgoId: {1}.
+        /// </summary>
+        internal static string AlgoDataSaveFailed {
+            get {
+                return ResourceManager.GetString("AlgoDataSaveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot save algo data. Algo code validation failed.{0}ClientId: {1}, AlgoId: {2}{0}Details:{0}{3}.
+        /// </summary>
+        internal static string AlgoDataSaveFailedOnCodeValidation {
+            get {
+                return ResourceManager.GetString("AlgoDataSaveFailedOnCodeValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AlgoId is empty.
+        /// </summary>
+        internal static string AlgoIdEmpty {
+            get {
+                return ResourceManager.GetString("AlgoIdEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot unpublish algo because it has algo instances..
         /// </summary>
         internal static string AlgoInstancesExist {
@@ -79,6 +115,114 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ClientId is empty.
+        /// </summary>
+        internal static string ClientIdEmpty {
+            get {
+                return ResourceManager.GetString("ClientIdEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo creation process failed due to code validation errors. Details: {0}.
+        /// </summary>
+        internal static string CreateAlgoFailedOnCodeValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("CreateAlgoFailedOnCodeValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo creation process failed while saving algo data.
+        /// </summary>
+        internal static string CreateAlgoFailedOnDataSaveDisplayMessage {
+            get {
+                return ResourceManager.GetString("CreateAlgoFailedOnDataSaveDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo creation process failed due to data validation errors.
+        /// </summary>
+        internal static string CreateAlgoFailedOnValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("CreateAlgoFailedOnValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo edit process failed due to code validation errors. Details: {0}.
+        /// </summary>
+        internal static string EditAlgoFailedOnCodeValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("EditAlgoFailedOnCodeValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo edit process failed while saving algo data.
+        /// </summary>
+        internal static string EditAlgoFailedOnDataSaveDisplayMessage {
+            get {
+                return ResourceManager.GetString("EditAlgoFailedOnDataSaveDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo edit process failed due to data validation errors.
+        /// </summary>
+        internal static string EditAlgoFailedOnValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("EditAlgoFailedOnValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Classes inheriting BaseAlgo must be sealed.
+        /// </summary>
+        internal static string ERROR_ALGO_NOT_SEALED {
+            get {
+                return ResourceManager.GetString("ERROR_ALGO_NOT_SEALED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to More than one class inheriting BaseAlgo is not allowed.
+        /// </summary>
+        internal static string ERROR_BASEALGO_MULTIPLE_INHERITANCE {
+            get {
+                return ResourceManager.GetString("ERROR_BASEALGO_MULTIPLE_INHERITANCE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A class inheriting BaseAlgo was not found.
+        /// </summary>
+        internal static string ERROR_BASEALGO_NOT_INHERITED {
+            get {
+                return ResourceManager.GetString("ERROR_BASEALGO_NOT_INHERITED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo must override {0} and/or {1}.
+        /// </summary>
+        internal static string ERROR_EVENT_NOT_IMPLEMENTED {
+            get {
+                return ResourceManager.GetString("ERROR_EVENT_NOT_IMPLEMENTED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A type named BaseAlgo is not allowed.
+        /// </summary>
+        internal static string ERROR_TYPE_NAMED_BASEALGO {
+            get {
+                return ResourceManager.GetString("ERROR_TYPE_NAMED_BASEALGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance Not Found.
         /// </summary>
         internal static string InstanceNotFound {
@@ -88,11 +232,47 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot find algo data. ClientId: {0}, AlgoId: {1}.
+        /// </summary>
+        internal static string NoAlgoData {
+            get {
+                return ResourceManager.GetString("NoAlgoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot find algo data.
+        /// </summary>
+        internal static string NoAlgoDataDisplayMessage {
+            get {
+                return ResourceManager.GetString("NoAlgoDataDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Public algo Not Found.
         /// </summary>
         internal static string PublicAlgoNotFound {
             get {
                 return ResourceManager.GetString("PublicAlgoNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are running algo instance(s).
+        /// </summary>
+        internal static string RunningAlgoInstanceExists {
+            get {
+                return ResourceManager.GetString("RunningAlgoInstanceExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are running algo instance(s).
+        /// </summary>
+        internal static string RunningAlgoInstanceExistsDisplayMessage {
+            get {
+                return ResourceManager.GetString("RunningAlgoInstanceExistsDisplayMessage", resourceCulture);
             }
         }
         

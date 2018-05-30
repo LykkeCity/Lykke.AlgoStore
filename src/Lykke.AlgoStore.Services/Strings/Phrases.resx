@@ -138,4 +138,64 @@
   <data name="WalletIsAlreadyUsed" xml:space="preserve">
     <value>Wallet is already used by a running instance - Wallet Id {0}. You should use another wallet. Algo id {1}, Client Id {2}</value>
   </data>
+  <data name="ERROR_BASEALGO_MULTIPLE_INHERITANCE" xml:space="preserve">
+    <value>More than one class inheriting BaseAlgo is not allowed</value>
+  </data>
+  <data name="ERROR_ALGO_NOT_SEALED" xml:space="preserve">
+    <value>Classes inheriting BaseAlgo must be sealed</value>
+  </data>
+  <data name="ERROR_BASEALGO_NOT_INHERITED" xml:space="preserve">
+    <value>A class inheriting BaseAlgo was not found</value>
+  </data>
+  <data name="ERROR_TYPE_NAMED_BASEALGO" xml:space="preserve">
+    <value>A type named BaseAlgo is not allowed</value>
+  </data>
+  <data name="ERROR_EVENT_NOT_IMPLEMENTED" xml:space="preserve">
+    <value>Algo must override {0} and/or {1}</value>
+  </data>
+  <data name="ClientIdEmpty" xml:space="preserve">
+    <value>ClientId is empty</value>
+  </data>
+  <data name="AlgoContentEmpty" xml:space="preserve">
+    <value>Algo content is empty</value>
+  </data>
+  <data name="AlgoIdEmpty" xml:space="preserve">
+    <value>AlgoId is empty</value>
+  </data>
+  <data name="NoAlgoData" xml:space="preserve">
+    <value>Cannot find algo data. ClientId: {0}, AlgoId: {1}</value>
+  </data>
+  <data name="RunningAlgoInstanceExists" xml:space="preserve">
+    <value>There are running algo instance(s)</value>
+  </data>
+  <data name="AlgoDataSaveFailedOnCodeValidation" xml:space="preserve">
+    <value>Cannot save algo data. Algo code validation failed.{0}ClientId: {1}, AlgoId: {2}{0}Details:{0}{3}</value>
+  </data>
+  <data name="AlgoDataSaveFailed" xml:space="preserve">
+    <value>Cannot save algo data. ClientId: {0}, AlgoId: {1}</value>
+  </data>
+  <data name="CreateAlgoFailedOnValidationDisplayMessage" xml:space="preserve">
+    <value>Algo creation process failed due to data validation errors</value>
+  </data>
+  <data name="CreateAlgoFailedOnCodeValidationDisplayMessage" xml:space="preserve">
+    <value>Algo creation process failed due to code validation errors. Details: {0}</value>
+  </data>
+  <data name="CreateAlgoFailedOnDataSaveDisplayMessage" xml:space="preserve">
+    <value>Algo creation process failed while saving algo data</value>
+  </data>
+  <data name="EditAlgoFailedOnValidationDisplayMessage" xml:space="preserve">
+    <value>Algo edit process failed due to data validation errors</value>
+  </data>
+  <data name="EditAlgoFailedOnCodeValidationDisplayMessage" xml:space="preserve">
+    <value>Algo edit process failed due to code validation errors. Details: {0}</value>
+  </data>
+  <data name="EditAlgoFailedOnDataSaveDisplayMessage" xml:space="preserve">
+    <value>Algo edit process failed while saving algo data</value>
+  </data>
+  <data name="NoAlgoDataDisplayMessage" xml:space="preserve">
+    <value>Cannot find algo data</value>
+  </data>
+  <data name="RunningAlgoInstanceExistsDisplayMessage" xml:space="preserve">
+    <value>There are running algo instance(s)</value>
+  </data>
 </root>

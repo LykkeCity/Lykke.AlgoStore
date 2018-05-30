@@ -1,8 +1,6 @@
 ﻿using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Lykke.AlgoStore.AzureRepositories.Mapper
 {

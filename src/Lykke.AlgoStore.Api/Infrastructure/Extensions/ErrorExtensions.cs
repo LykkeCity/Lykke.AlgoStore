@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Lykke.AlgoStore.Api.Models;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +22,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             errorResponse.ErrorCode = (int)error.ErrorCode;
             errorResponse.ErrorDescription = error.ErrorCode.ToString("g");
             errorResponse.ErrorMessage = error.Message;
-            errorResponse.DisplayMessage = error.DisplayMessage;
+            errorResponse.DisplayMessage = string.IsNullOrEmpty(error.DisplayMessage)
+                ? AlgoStoreConstants.DefaultDisplayMessage
+                : error.DisplayMessage;
 
             HttpStatusCode statusCode;
 

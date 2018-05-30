@@ -68,6 +68,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IAssetsService>()
                 .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
 
+            builder.RegisterType<CodeBuildService>()
+                .As<ICodeBuildService>()
+                .SingleInstance();
+
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
             builder.RegisterRateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log);
 
@@ -88,8 +92,12 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IHealthService>()
                 .SingleInstance();
 
-            builder.RegisterType<AlgoStoreClientDataService>()
-                .As<IAlgoStoreClientDataService>()
+            builder.RegisterType<AlgosService>()
+                .As<IAlgosService>()
+                .SingleInstance();
+
+            builder.RegisterType<AlgoInstancesService>()
+                .As<IAlgoInstancesService>()
                 .SingleInstance();
 
             builder.RegisterType<AlgoStoreService>()
