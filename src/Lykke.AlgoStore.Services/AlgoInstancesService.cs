@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
@@ -13,7 +12,6 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
-using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
@@ -21,7 +19,6 @@ using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.ClientAccount.Client.Models;
-using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -252,7 +249,7 @@ namespace Lykke.AlgoStore.Services
             double clientTradedAssetBalance;
             double clientAssetTwoBalance;
             double initialWalletBalance;
-            string userCurrencyAssetId = null;
+            string userCurrencyAssetId;
 
             if (data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Test)
             {
@@ -351,7 +348,7 @@ namespace Lykke.AlgoStore.Services
         private async Task<bool> IsWalletUsedByExistingStartedInstance(string walletId)
         {
             var algoInstances = (await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId));
-            return algoInstances != null && algoInstances.Count() > 0;
+            return algoInstances != null && algoInstances.Any();
         }
     }
 }

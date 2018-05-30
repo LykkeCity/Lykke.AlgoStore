@@ -20,13 +20,13 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/algo")]
     public class AlgoController : Controller
     {
-        private readonly IAlgosService _clientDataService;
+        private readonly IAlgosService _algosService;
         private readonly IAlgoStoreService _service;
         private readonly IAlgoInstancesService _algoInstancesService;
 
         public AlgoController(IAlgosService clientDataService, IAlgoStoreService service, IAlgoInstancesService algoInstancesService)
         {
-            _clientDataService = clientDataService;
+            _algosService = clientDataService;
             _service = service;
             _algoInstancesService = algoInstancesService;
         }
@@ -43,7 +43,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<AlgoData>(model);
             data.ClientId = User.GetClientId();
 
-            var result = await _clientDataService.CreateAlgoAsync(data, model.DecodedContent);
+            var result = await _algosService.CreateAlgoAsync(data, model.DecodedContent);
 
             var response = Mapper.Map<AlgoDataModel>(result);
 
@@ -60,7 +60,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<AlgoData>(model);
             data.ClientId = User.GetClientId();
 
-            var result = await _clientDataService.EditAlgoAsync(data, model.DecodedContent);
+            var result = await _algosService.EditAlgoAsync(data, model.DecodedContent);
 
             var response = Mapper.Map<AlgoDataModel>(result);
 
@@ -74,12 +74,27 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAllAlgos()
         {
-            var result = await _clientDataService.GetAllAlgosWithRatingAsync();
+            var result = await _algosService.GetAllAlgosWithRatingAsync();
 
             if (result == null || result.IsNullOrEmptyCollection())
                 return NotFound();
 
             var response = Mapper.Map<List<AlgoRatingMetaDataModel>>(result);
+
+            return Ok(response);
+        }
+
+        [HttpGet("getAllUserAlgos")]
+        [SwaggerOperation("GetAllUserAlgos")]
+        [ProducesResponseType(typeof(List<AlgoDataModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAllUserAlgos()
+        {
+            var clientId = User.GetClientId();
+            var result = await _algosService.GetAllUserAlgosAsync(clientId);
+
+            var response = Mapper.Map<List<AlgoDataModel>>(result);
 
             return Ok(response);
         }
@@ -95,7 +110,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             data.ClientId = User.GetClientId();
 
-            var result = await _clientDataService.SaveAlgoRatingAsync(data);
+            var result = await _algosService.SaveAlgoRatingAsync(data);
 
             var response = Mapper.Map<AlgoRatingModel>(result);
 
@@ -112,7 +127,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _clientDataService.GetAlgoRatingForClientAsync(algoId, clientId);
+            var result = await _algosService.GetAlgoRatingForClientAsync(algoId, clientId);
 
             if (result == null)
                 return NotFound();
@@ -132,7 +147,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var clientId = User.GetClientId();
             var data = Mapper.Map<PublicAlgoData>(model);
 
-            var result = await _clientDataService.AddToPublicAsync(data, clientId);
+            var result = await _algosService.AddToPublicAsync(data, clientId);
 
             var response = Mapper.Map<PublicAlgoDataModel>(result);
 
@@ -150,7 +165,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var clientId = User.GetClientId();
             var data = Mapper.Map<PublicAlgoData>(model);
 
-            var result = await _clientDataService.RemoveFromPublicAsync(data, clientId);
+            var result = await _algosService.RemoveFromPublicAsync(data, clientId);
 
             var response = Mapper.Map<PublicAlgoDataModel>(result);
 
@@ -168,7 +183,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _clientDataService.GetAlgoDataInformationAsync(clientId, algoId);
+            var result = await _algosService.GetAlgoDataInformationAsync(clientId, algoId);
 
             if (result == null)
                 return NotFound();
@@ -195,7 +210,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             await _service.DeleteImageAsync(clientInstanceData);
 
-            await _clientDataService.DeleteAsync(data);
+            await _algosService.DeleteAsync(data);
 
             return NoContent();
         }
@@ -212,7 +227,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var data = Mapper.Map<UploadAlgoBinaryData>(model);
 
-            await _clientDataService.SaveAlgoAsBinaryAsync(clientId, data);
+            await _algosService.SaveAlgoAsBinaryAsync(clientId, data);
 
             return NoContent();
         }
@@ -228,7 +243,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var data = Mapper.Map<UploadAlgoStringData>(model);
 
-            await _clientDataService.SaveAlgoAsStringAsync(clientId, data);
+            await _algosService.SaveAlgoAsStringAsync(clientId, data);
 
             return NoContent();
         }
@@ -244,7 +259,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var data = await _clientDataService.GetAlgoAsStringAsync(clientId, algoId);
+            var data = await _algosService.GetAlgoAsStringAsync(clientId, algoId);
 
             return Ok(new DataStringModel
             {

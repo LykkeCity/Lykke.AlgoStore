@@ -13,8 +13,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
         public AutoMapperProfile()
         {
             CreateMap<AlgoData, AlgoDataModel>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
-                .ForMember(dest => dest.Author, opt => opt.Ignore());
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));              
 
             CreateMap<AlgoEntity, IAlgo>()
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
@@ -26,18 +25,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.ETag, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibilityValue, opt => opt.Ignore());
 
-
             CreateMap<AlgoData, IAlgo>();
 
-            CreateMap<IAlgo, AlgoData>();
+            CreateMap<IAlgo, AlgoData>();        
 
             CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 
             CreateMap<AlgoDataModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
-                .ForSourceMember(src => src.Author, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
+                .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore());
 
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
 
@@ -107,17 +103,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoData, CreateAlgoModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
                 .ForMember(dest => dest.Content, opt => opt.Ignore())
-                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore())
-                .ForMember(dest => dest.Visibility, opt => opt.MapFrom(src => src.AlgoVisibility));
+                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore());
 
             CreateMap<CreateAlgoModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoVisibility, opt => opt.MapFrom(src => src.Visibility))
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.UseValue(AlgoVisibility.Private))
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore());
-
-            CreateMap<AlgoVisibility, string>().ConvertUsing(src => src.ToString());
-            CreateMap<string, AlgoVisibility>().ConvertUsing(src => Enum.TryParse(src, out AlgoVisibility visibility) ? visibility : AlgoVisibility.Private);
         }
     }
 }

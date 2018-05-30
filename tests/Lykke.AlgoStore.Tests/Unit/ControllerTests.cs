@@ -14,6 +14,7 @@ using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.PersonalData.Contract;
 using Moq;
 using NUnit.Framework;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
@@ -32,21 +33,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
 
             var clientDataService = Given_ClientDataService(
-                Given_MetaDataRepository_Exists(true).Object,
-                instanceRepo,
+                Given_AlgosRepository_Exists(true).Object,
                 Given_BlobRepository_WithResult(true).Object,
+                instanceRepo,                
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,
-                null,
-                null,
-                null,
                 null,
                 null);
 
 
             var algosInstanceService = Given_AlgoInstanceService(
-                Given_MetaDataRepository_Exists(true).Object,
+                Given_AlgosRepository_Exists(true).Object,
                 instanceRepo,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -70,20 +67,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
 
             var clientDataService = Given_ClientDataService(
-                Given_MetaDataRepository_Exists(false).Object,
-                instanceRepo,
+                Given_AlgosRepository_Exists(false).Object,
                 Given_BlobRepository_WithResult(true).Object,
+                instanceRepo,               
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,
-                null,
-                null,
-                null,
                 null,
                 null);
 
             var algosInstanceService = Given_AlgoInstanceService(
-                Given_MetaDataRepository_Exists(false).Object,
+                Given_AlgosRepository_Exists(false).Object,
                 instanceRepo,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -107,23 +100,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceRepo = Given_InstanceDataRepository_ReturnNull();
 
             var clientDataService = Given_ClientDataService(
-                Given_MetaDataRepository_Exists(true).Object,
-                instanceRepo,
+                Given_AlgosRepository_Exists(true).Object,
                 Given_BlobRepository_WithResult(true).Object,
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,
-                null,
-                null,
-                null,
-                null,
+                null,               
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
             var algoService = Given_AlgoStoreService(kubernetesClient, null, null, instanceRepo, null, null, null);
 
             var algosInstanceService = Given_AlgoInstanceService(
-                Given_MetaDataRepository_Exists(true).Object,
+                Given_AlgosRepository_Exists(true).Object,
                 instanceRepo,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -144,20 +133,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
 
             var clientDataService = Given_ClientDataService(
-                Given_MetaDataRepository_Exists(true).Object,
-                instanceRepo,
+                Given_AlgosRepository_Exists(true).Object,
                 Given_BlobRepository_WithResult(true).Object,
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,
-                null,
-                null,
-                null,
-                null,
+                null,               
                 null);
 
             var algosInstanceService = Given_AlgoInstanceService(
-                Given_MetaDataRepository_Exists(true).Object,
+                Given_AlgosRepository_Exists(true).Object,
                 instanceRepo,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -181,20 +166,16 @@ namespace Lykke.AlgoStore.Tests.Unit
             var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
 
             var clientDataService = Given_ClientDataService(
-                Given_MetaDataRepository_Exists(true).Object,
-                instanceRepo,
+                Given_AlgosRepository_Exists(true).Object,
                 Given_BlobRepository_WithResult(true).Object,
+                instanceRepo,                
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,
-                null,
-                null,
-                null,
                 null,
                 null);
 
             var algosInstanceService = Given_AlgoInstanceService(
-                Given_MetaDataRepository_Exists(true).Object,
+                Given_AlgosRepository_Exists(true).Object,
                 instanceRepo,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -217,19 +198,15 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var data = Given_ManageImageData();
             var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
-            var metadataRepoMock = Given_MetaDataRepository_Exists(true);
+            var metadataRepoMock = Given_AlgosRepository_Exists(true);
             var blobRepoMock = Given_BlobRepository_WithResult(true);
 
             var clientDataService = Given_ClientDataService(
                 metadataRepoMock.Object,
-                instanceRepo,
                 blobRepoMock.Object,
+                instanceRepo,               
                 null,
                 Given_PublicAlgoRepository_Exists(true),
-                null,
-                null,
-                null,
-                null,
                 null,
                 null);
 
@@ -259,19 +236,15 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var data = Given_ManageImageData();
             var instanceRepo = Given_InstanceDataRepository_Exists(true, true);
-            var metadataRepoMock = Given_MetaDataRepository_Exists(true);
+            var metadataRepoMock = Given_AlgosRepository_Exists(true);
             var blobRepoMock = Given_BlobRepository_WithResult(true);
 
             var clientDataService = Given_ClientDataService(
                 metadataRepoMock.Object,
-                instanceRepo,
                 blobRepoMock.Object,
+                instanceRepo,               
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,
-                null,
-                null,
-                null,
                 null,
                 null);
 
@@ -327,7 +300,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             return result.Object;
         }
-        private static Mock<IAlgoRepository> Given_MetaDataRepository_Exists(bool exists)
+        private static Mock<IAlgoRepository> Given_AlgosRepository_Exists(bool exists)
         {
             var result = new Mock<IAlgoRepository>();
 
@@ -406,23 +379,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result;
         }
 
-        private static IAlgosService Given_ClientDataService(
-            IAlgoRepository metaDataRepository,
-            IAlgoClientInstanceRepository clientInstanceRepository,
-            IAlgoBlobRepository blobRepository,
-            IKubernetesApiReadOnlyClient kubernetesClient,
+        private static IAlgosService Given_ClientDataService(IAlgoRepository repo,
+            IAlgoBlobRepository blobRepo,
+            IAlgoClientInstanceRepository algoInstanceRepository,
+            IAlgoRatingsRepository algoRatingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
-            IStatisticsRepository statisticsRepository,
-            IClientAccountClient clientAccountClient,
-            ICandleshistoryservice candleshistoryservice,
-            AssetsValidator assetsValidator,
-            IWalletBalanceService walletBalanceService,
-            ICodeBuildService codeValidationService)
+            IPersonalDataService personalDataService,
+            ICodeBuildService codeBuildService)
         {
-            var result = new AlgosService(metaDataRepository, null, blobRepository,
-                clientInstanceRepository, null, publicAlgosRepository, statisticsRepository, null, null,
-                kubernetesClient, clientAccountClient, candleshistoryservice, assetsValidator, walletBalanceService,
-                new LogMock(), codeValidationService);
+            var result = new AlgosService(repo, blobRepo, algoInstanceRepository,
+                algoRatingsRepository, publicAlgosRepository, personalDataService,
+                new LogMock(), codeBuildService);
 
             return result;
         }
