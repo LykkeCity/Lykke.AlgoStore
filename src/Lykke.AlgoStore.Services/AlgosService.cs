@@ -226,16 +226,18 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(CreateAlgoAsync), data.ClientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty,
+                        Phrases.CreateAlgoFailedOnValidationDisplayMessage);
 
-                if(string.IsNullOrEmpty(algoContent))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
+                if (string.IsNullOrEmpty(algoContent))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty,
+                        Phrases.CreateAlgoFailedOnValidationDisplayMessage);
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
                     data.AlgoId = Guid.NewGuid().ToString();
 
                 if (!data.ValidateData(out var exception))
-                    throw exception;
+                    throw exception.ToBaseException(Phrases.CreateAlgoFailedOnValidationDisplayMessage);
 
                 //Validate algo code
                 var validationSession = _codeBuildService.StartSession(algoContent);
@@ -243,7 +245,9 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId, data.AlgoId, validationResult));
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId,
+                            data.AlgoId, validationResult),
+                        string.Format(Phrases.CreateAlgoFailedOnCodeValidationDisplayMessage, validationResult));
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();
@@ -258,7 +262,8 @@ namespace Lykke.AlgoStore.Services
 
                 if (res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                        string.Format(Phrases.AlgoDataSaveFailed, data.ClientId, data.AlgoId));
+                        string.Format(Phrases.AlgoDataSaveFailed, data.ClientId, data.AlgoId),
+                        Phrases.CreateAlgoFailedOnDataSaveDisplayMessage);
 
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
 
@@ -277,29 +282,34 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(CreateAlgoAsync), data.ClientId, async () =>
             {
                 if (string.IsNullOrWhiteSpace(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty);
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.ClientIdEmpty,
+                        Phrases.EditAlgoFailedOnValidationDisplayMessage);
 
                 if (string.IsNullOrEmpty(algoContent))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty);
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty,
+                        Phrases.EditAlgoFailedOnValidationDisplayMessage);
 
                 if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoIdEmpty);
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoIdEmpty,
+                        Phrases.EditAlgoFailedOnValidationDisplayMessage);
 
                 if (!data.ValidateData(out var exception))
-                    throw exception;
+                    throw exception.ToBaseException(Phrases.EditAlgoFailedOnValidationDisplayMessage);
 
                 var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
                 //Algo should not be public in order to edit it
                 if (res == null || res.AlgoVisibility == AlgoVisibility.Public)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        string.Format(Phrases.NoAlgoData, data.ClientId, data.AlgoId));
+                        string.Format(Phrases.NoAlgoData, data.ClientId, data.AlgoId),
+                        Phrases.NoAlgoDataDisplayMessage);
 
                 //Check if there are running algo instances
                 var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
                 if (instances.Any(x => x.AlgoInstanceStatus == AlgoInstanceStatus.Started))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists);
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists,
+                        Phrases.RunningAlgoInstanceExistsDisplayMessage);
 
                 //Validate algo code
                 var validationSession = _codeBuildService.StartSession(algoContent);
@@ -307,7 +317,9 @@ namespace Lykke.AlgoStore.Services
 
                 if (!validationResult.IsSuccessful)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId, data.AlgoId, validationResult));
+                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId,
+                            data.AlgoId, validationResult),
+                        string.Format(Phrases.EditAlgoFailedOnCodeValidationDisplayMessage, validationResult));
 
                 //Extract algo metadata (parameters)
                 var extractedMetadata = await validationSession.ExtractMetadata();

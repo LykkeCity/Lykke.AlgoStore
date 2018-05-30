@@ -174,4 +174,28 @@
   <data name="AlgoDataSaveFailed" xml:space="preserve">
     <value>Cannot save algo data. ClientId: {0}, AlgoId: {1}</value>
   </data>
+  <data name="CreateAlgoFailedOnValidationDisplayMessage" xml:space="preserve">
+    <value>Algo creation process failed due to data validation errors</value>
+  </data>
+  <data name="CreateAlgoFailedOnCodeValidationDisplayMessage" xml:space="preserve">
+    <value>Algo creation process failed due to code validation errors. Details: {0}</value>
+  </data>
+  <data name="CreateAlgoFailedOnDataSaveDisplayMessage" xml:space="preserve">
+    <value>Algo creation process failed while saving algo data</value>
+  </data>
+  <data name="EditAlgoFailedOnValidationDisplayMessage" xml:space="preserve">
+    <value>Algo edit process failed due to data validation errors</value>
+  </data>
+  <data name="EditAlgoFailedOnCodeValidationDisplayMessage" xml:space="preserve">
+    <value>Algo edit process failed due to code validation errors. Details: {0}</value>
+  </data>
+  <data name="EditAlgoFailedOnDataSaveDisplayMessage" xml:space="preserve">
+    <value>Algo edit process failed while saving algo data</value>
+  </data>
+  <data name="NoAlgoDataDisplayMessage" xml:space="preserve">
+    <value>Cannot find algo data</value>
+  </data>
+  <data name="RunningAlgoInstanceExistsDisplayMessage" xml:space="preserve">
+    <value>There are running algo instance(s)</value>
+  </data>
 </root>
