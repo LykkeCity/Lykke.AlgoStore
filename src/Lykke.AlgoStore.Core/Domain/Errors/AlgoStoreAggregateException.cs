@@ -35,7 +35,7 @@ namespace Lykke.AlgoStore.Core.Domain.Errors
             return this;
         }
 
-        public AlgoStoreException ToBaseException()
+        public AlgoStoreException ToBaseException(string displayMessage = "")
         {
             var sb = new StringBuilder();
 
@@ -47,7 +47,7 @@ namespace Lykke.AlgoStore.Core.Domain.Errors
                 }
             }
 
-            return new AlgoStoreException(ErrorCode, sb.ToString());
+            return new AlgoStoreException(ErrorCode, sb.ToString(), displayMessage);
         }
     }
 }

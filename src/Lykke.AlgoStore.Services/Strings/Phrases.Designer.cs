@@ -124,6 +124,60 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Algo creation process failed due to code validation errors. Details: {0}.
+        /// </summary>
+        internal static string CreateAlgoFailedOnCodeValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("CreateAlgoFailedOnCodeValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo creation process failed while saving algo data.
+        /// </summary>
+        internal static string CreateAlgoFailedOnDataSaveDisplayMessage {
+            get {
+                return ResourceManager.GetString("CreateAlgoFailedOnDataSaveDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo creation process failed due to data validation errors.
+        /// </summary>
+        internal static string CreateAlgoFailedOnValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("CreateAlgoFailedOnValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo edit process failed due to code validation errors. Details: {0}.
+        /// </summary>
+        internal static string EditAlgoFailedOnCodeValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("EditAlgoFailedOnCodeValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo edit process failed while saving algo data.
+        /// </summary>
+        internal static string EditAlgoFailedOnDataSaveDisplayMessage {
+            get {
+                return ResourceManager.GetString("EditAlgoFailedOnDataSaveDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo edit process failed due to data validation errors.
+        /// </summary>
+        internal static string EditAlgoFailedOnValidationDisplayMessage {
+            get {
+                return ResourceManager.GetString("EditAlgoFailedOnValidationDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Classes inheriting BaseAlgo must be sealed.
         /// </summary>
         internal static string ERROR_ALGO_NOT_SEALED {
@@ -187,6 +241,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot find algo data.
+        /// </summary>
+        internal static string NoAlgoDataDisplayMessage {
+            get {
+                return ResourceManager.GetString("NoAlgoDataDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Public algo Not Found.
         /// </summary>
         internal static string PublicAlgoNotFound {
@@ -201,6 +264,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string RunningAlgoInstanceExists {
             get {
                 return ResourceManager.GetString("RunningAlgoInstanceExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are running algo instance(s).
+        /// </summary>
+        internal static string RunningAlgoInstanceExistsDisplayMessage {
+            get {
+                return ResourceManager.GetString("RunningAlgoInstanceExistsDisplayMessage", resourceCulture);
             }
         }
         
