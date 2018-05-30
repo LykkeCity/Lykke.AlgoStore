@@ -94,9 +94,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             var clientId = User.GetClientId();
             var result = await _algosService.GetAllUserAlgosAsync(clientId);
 
-            if (result.IsNullOrEmptyCollection())
-                return NotFound();
-
             var response = Mapper.Map<List<AlgoDataModel>>(result);
 
             return Ok(response);

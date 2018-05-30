@@ -7,8 +7,6 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
 {
     public class AlgoData : BaseValidatableData
     {
-        public string Author { get; set; }
-
         [Required]
         public string ClientId { get; set; }
 

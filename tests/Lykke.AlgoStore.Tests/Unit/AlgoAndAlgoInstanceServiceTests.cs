@@ -57,7 +57,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private const string AssetPair = "BTCUSD";
 
         private static readonly string BlobKey = "TestKey";
-        private static readonly string AlogId = "AlgoId123";
+        private static readonly string AlgoId = "AlgoId123";
         private static readonly Random rnd = new Random();
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
 
@@ -143,7 +143,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgosService(null, null, null, repo, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
-            var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlogId, ClientId, out Exception exception);
+            var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlgoId, ClientId, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
             Then_Result_ShouldNotBe_Empty(data);
@@ -157,7 +157,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgosService(null, null, null, repo, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
-            var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlogId, Guid.NewGuid().ToString(), out Exception exception);
+            var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlgoId, Guid.NewGuid().ToString(), out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
             Then_Result_ShouldNotBe_Empty(data);
@@ -499,7 +499,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var binaryFile = new Mock<IFormFile>();
             binaryFile.Setup(s => s.OpenReadStream()).Returns(new MemoryStream(BlobBytes));
-            var model = new UploadAlgoBinaryData { AlgoId = AlogId, Data = binaryFile.Object };
+            var model = new UploadAlgoBinaryData { AlgoId = AlgoId, Data = binaryFile.Object };
             return model;
         }
 
@@ -586,7 +586,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.GetAlgoRatingAsync(AlogId, ClientId).Result;
+                return service.GetAlgoRatingAsync(AlgoId, ClientId).Result;
             }
             catch (Exception ex)
             {

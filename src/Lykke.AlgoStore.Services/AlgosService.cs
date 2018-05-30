@@ -341,19 +341,6 @@ namespace Lykke.AlgoStore.Services
 
                 var userAlgosresult = AutoMapper.Mapper.Map<List<AlgoData>>(userAlgos);
 
-                foreach (var algo in userAlgosresult)
-                {
-                    if (String.IsNullOrEmpty(algo.ClientId))
-                        algo.Author = "Administrator";
-                    else
-                    {
-                        var authorPersonalData = await _personalDataService.GetAsync(algo.ClientId);
-                        algo.Author = !String.IsNullOrEmpty(authorPersonalData.FullName)
-                            ? authorPersonalData.FullName
-                            : authorPersonalData.Email;
-                    }                  
-                }
-
                 return userAlgosresult;
             });
         }

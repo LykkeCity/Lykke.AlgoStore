@@ -25,17 +25,14 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.ETag, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibilityValue, opt => opt.Ignore());
 
-            CreateMap<AlgoData, IAlgo>()
-                .ForSourceMember(src => src.Author, opt => opt.Ignore());
+            CreateMap<AlgoData, IAlgo>();
 
-            CreateMap<IAlgo, AlgoData>()
-                .ForMember(dest => dest.Author, opt => opt.Ignore());
+            CreateMap<IAlgo, AlgoData>();        
 
             CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 
             CreateMap<AlgoDataModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
-                .ForSourceMember(src => src.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore());
 
             CreateMap<UploadAlgoBinaryModel, UploadAlgoBinaryData>();
@@ -106,14 +103,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoData, CreateAlgoModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
                 .ForMember(dest => dest.Content, opt => opt.Ignore())
-                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore());           
+                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore());
 
             CreateMap<CreateAlgoModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.UseValue(AlgoVisibility.Private))
-                .ForMember(dest => dest.ClientId, opt => opt.Ignore())
-                .ForMember(dest => dest.Author, opt => opt.Ignore());           
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore());
         }
     }
 }
