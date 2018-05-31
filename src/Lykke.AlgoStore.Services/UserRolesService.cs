@@ -207,7 +207,8 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     // because the RK is the role name, in order to update it, first delete the old role and then replace it with the new one
-                    await _rolesRepository.DeleteRoleAsync(dbRole);
+                    if (dbRole != null)
+                        await _rolesRepository.DeleteRoleAsync(dbRole);
                 }
 
                 await _rolesRepository.SaveRoleAsync(role);
