@@ -77,9 +77,11 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         private ErrorResponse ValidateDateTimeParameters(AlgoMetaDataInformationModel algoMetaData)
         {
+            var dtType = typeof(DateTime).FullName;
+            
             var parameters = algoMetaData.Parameters.ToList();
             parameters.AddRange(algoMetaData.Functions.SelectMany(f => f.Parameters));
-            parameters = parameters.Where(p => p.Type == nameof(DateTime)).Select(p => p).ToList();
+            parameters = parameters.Where(p => p.Type == dtType).Select(p => p).ToList();
 
             foreach (var param in parameters)
             {
