@@ -9,5 +9,7 @@
         public const string AppName = "Lykke Algo API v0.1";
 
         public const string DefaultDisplayMessage = "There was a problem, please contact administrator";
+
+        public const string DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
     }
 }

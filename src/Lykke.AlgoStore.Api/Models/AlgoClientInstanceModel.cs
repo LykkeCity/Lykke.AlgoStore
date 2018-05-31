@@ -1,5 +1,7 @@
 ﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using System;
+using Lykke.AlgoStore.Core.Utils;
+using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Api.Models
 {
@@ -14,6 +16,7 @@ namespace Lykke.AlgoStore.Api.Models
         public AlgoInstanceStatus AlgoInstanceStatus { get; set; }
         public AlgoInstanceType AlgoInstanceType { get; set; }
 
+        [JsonConverter(typeof(DefaultDateTimeConverter))]
         public DateTime? AlgoInstanceRunDate { get; set; }
     }
 }
