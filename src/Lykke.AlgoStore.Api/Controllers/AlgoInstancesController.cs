@@ -1,20 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
-using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
+﻿using AutoMapper;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
-using System.Linq;
 using System;
-using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -74,6 +75,39 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        private ErrorResponse ValidateDateTimeParameters(AlgoMetaDataInformationModel algoMetaData)
+        {
+            var parameters = algoMetaData.Parameters.ToList();
+            parameters.AddRange(algoMetaData.Functions.SelectMany(f => f.Parameters));
+            parameters = parameters.Where(p => p.Type == nameof(DateTime)).Select(p => p).ToList();
+
+            foreach (var param in parameters)
+            {
+                if (!DateTimeFormatValidator.IsDateTimeStringValid(param.Value))
+                {
+                    return new ErrorResponse()
+                    {
+                        ErrorCode = (int) AlgoStoreErrorCodes.ValidationError,
+                        DisplayMessage = "Parameter DateTime format error",
+                        ErrorMessage = $"Invalid DateTime format parameter. Name: {param.Key}, Value: {param.Value}",
+                        ErrorDescription = $"Expected DateTime format is {AlgoStoreConstants.DateTimeFormat}"
+                    };
+                }
+            }
+            return null;
+        }
+
+        private void SetInstanceMetaDataProperties(AlgoClientInstanceData data, AlgoMetaDataInformationModel metaData)
+        {
+            data.AssetPair = metaData.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
+            data.Volume = Convert.ToDouble(metaData.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
+            data.TradedAsset = metaData.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
+
+            //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
+            data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
+        }
+
+
         [HttpPost("saveAlgoInstance")]
         [SwaggerOperation("SaveAlgoInstanceDataAsync")]
         [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
@@ -84,12 +118,13 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<AlgoClientInstanceData>(model);
             data.ClientId = User.GetClientId();
 
-            data.AssetPair = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
-            data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
-            data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
+            var validationError = ValidateDateTimeParameters(model.AlgoMetaDataInformation);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
 
-            //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
-            data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
+            SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
             var result = await _algoInstancesService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
@@ -107,12 +142,13 @@ namespace Lykke.AlgoStore.Api.Controllers
             var data = Mapper.Map<AlgoClientInstanceData>(model);
             data.ClientId = User.GetClientId();
 
-            data.AssetPair = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
-            data.Volume = Convert.ToDouble(model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
-            data.TradedAsset = model.AlgoMetaDataInformation.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
+            var validationError = ValidateDateTimeParameters(model.AlgoMetaDataInformation);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
 
-            //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
-            data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
+            SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
             var result = await _algoInstancesService.SaveAlgoBackTestInstanceDataAsync(data, model.AlgoClientId);
             var response = Mapper.Map<AlgoBackTestInstanceModel>(result);

@@ -1,7 +1,5 @@
-﻿using System.Dynamic;
-using System.Linq;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
@@ -14,6 +12,9 @@ using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
 using Newtonsoft.Json;
+using System.Dynamic;
+using System.Linq;
+using System.Threading.Tasks;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 
@@ -223,7 +224,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for clientId {data.ClientId}, algo {data.AlgoId} and instanceId {data.InstanceId}");
 
                 var userLogs = await _userLogRepository.GetEntries(data.Tail, data.InstanceId);
-                return userLogs.Select(l => $"[{l.Date:yyyy-MM-dd HH:mm:ss}] {l.Message}").ToArray();
+                return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.DateTimeFormat)}] {l.Message}").ToArray();
             });
         }
         /// <summary>
