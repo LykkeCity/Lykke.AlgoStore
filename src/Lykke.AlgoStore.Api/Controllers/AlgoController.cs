@@ -250,7 +250,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("sourceCode/getString")]
         [SwaggerOperation("GetUploadString")]
-        [ProducesResponseType(typeof(DataStringModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ContentStringModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -259,11 +259,11 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var data = await _algosService.GetAlgoAsStringAsync(clientId, algoId);
+            var content = await _algosService.GetAlgoAsStringAsync(clientId, algoId);
 
-            return Ok(new DataStringModel
+            return Ok(new ContentStringModel
             {
-                Data = data
+                Content = content
             });
         }
     }
