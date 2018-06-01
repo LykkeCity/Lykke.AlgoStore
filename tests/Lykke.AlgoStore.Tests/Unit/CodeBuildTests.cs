@@ -160,23 +160,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
                     Parameters = new List<AlgoMetaDataParameter>
                     {
-                        new AlgoMetaDataParameter
-                        {
-                            Key = "ShortTermPeriod",
-                            Type = "System.Int32"
-                        },
-                        new AlgoMetaDataParameter
-                        {
-                            Key = "LongTermPeriod",
-                            Type = "System.Int32"
-                        },
-                        new AlgoMetaDataParameter
-                        {
-                            Key = "Decimals",
-                            Type =
-                                "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-                        },
-                        new AlgoMetaDataParameter
+                       new AlgoMetaDataParameter
                         {
                             Key = "Capacity",
                             Type = "System.Int32"
