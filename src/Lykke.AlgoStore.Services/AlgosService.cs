@@ -27,6 +27,8 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoRatingsRepository _ratingsRepository;
         private readonly IPublicAlgosRepository _publicAlgosRepository;
         private readonly IPersonalDataService _personalDataService;
+        private readonly IAlgoStoreService _algoStoreService;
+        private readonly IAlgoCommentsRepository _commentsRepository;
         private readonly ICodeBuildService _codeBuildService;
 
         private static Random rnd = new Random();
@@ -40,6 +42,8 @@ namespace Lykke.AlgoStore.Services
         /// <param name="ratingsRepository">The ratings repository.</param>
         /// <param name="publicAlgosRepository">The public algos repository.</param>
         /// <param name="personalDataService">The personal Data Service</param>
+        /// <param name="algoStoreService">The algo store service</param>
+        /// <param name="commentsRepository">The algo comments repository.</param>
         /// <param name="log">The log.</param>
         /// <param name="codeBuildService">Algo code validator</param>
         public AlgosService(IAlgoRepository algoRepository,
@@ -48,6 +52,8 @@ namespace Lykke.AlgoStore.Services
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IPersonalDataService personalDataService,
+            IAlgoStoreService algoStoreService,
+            IAlgoCommentsRepository commentsRepository,
             ILog log,
             ICodeBuildService codeBuildService) : base(log, nameof(AlgosService))
         {
@@ -57,6 +63,8 @@ namespace Lykke.AlgoStore.Services
             _ratingsRepository = ratingsRepository;
             _publicAlgosRepository = publicAlgosRepository;
             _personalDataService = personalDataService;
+            _algoStoreService = algoStoreService;
+            _commentsRepository = commentsRepository;
             _codeBuildService = codeBuildService;
         }
 
@@ -335,6 +343,55 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
+        public async Task DeleteAlgoAsync(string algoClientId, string algoId, bool forceDelete, string clientId)
+        {
+            await LogTimedInfoAsync(nameof(DeleteAlgoAsync), clientId, async () =>
+            {
+                Check.IsEmpty(algoClientId, nameof(algoClientId));
+                Check.IsEmpty(algoId, nameof(algoId));
+                Check.IsEmpty(clientId, nameof(clientId));
+
+                var errorMessageBase = $"Cannot delete algo {algoId} -";
+
+                if (algoClientId != clientId)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                        $"{errorMessageBase} Client {clientId} does not own the algo",
+                        Phrases.UserCantSeeAlgo);
+
+                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
+
+                if (await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, algoId))
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                        $"{errorMessageBase} Algo is public",
+                        Phrases.AlgoMustNotBePublic);
+
+                var algoInstances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(algoId);
+
+                if (!forceDelete && algoInstances.Any())
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"{errorMessageBase} Algo has instances and it is not force deleted",
+                        string.Format(Phrases.AlgoInstancesExist, "delete", ""));
+                }
+
+                if (algoInstances.Any(i => i.AlgoInstanceStatus != AlgoInstanceStatus.Stopped))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        $"{errorMessageBase} Algo has running instances",
+                        string.Format(Phrases.AlgoInstancesExist, "delete", "running "));
+                }
+
+                foreach(var instance in algoInstances)
+                {
+                    await _algoStoreService.DeleteInstanceAsync(instance);
+                }
+
+                await _ratingsRepository.DeleteRatingsAsync(algoId);
+                await _commentsRepository.DeleteCommentsAsync(algoId);
+                await _algoRepository.DeleteAlgoAsync(algoClientId, algoId);
+            });
+        }
+
         /// <summary>
         /// Gets all the user Algos asynchronous.
         /// </summary>
@@ -451,7 +508,7 @@ namespace Lykke.AlgoStore.Services
                 if (algoInstances.Any())
                     throw new AlgoStoreException(AlgoStoreErrorCodes.UnableToDeleteData,
                         $"Cannot unpublish algo because it has algo instances. Algo id {data.AlgoId}, Client id {data.ClientId}",
-                        Phrases.AlgoInstancesExist);
+                        string.Format(Phrases.AlgoInstancesExist, "unpublish", ""));
 
                 await _publicAlgosRepository.DeletePublicAlgoAsync(data);
 

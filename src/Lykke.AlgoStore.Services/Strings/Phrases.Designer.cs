@@ -97,11 +97,20 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot unpublish algo because it has algo instances..
+        ///   Looks up a localized string similar to Cannot {0} algo because it has {1}algo instances..
         /// </summary>
         internal static string AlgoInstancesExist {
             get {
                 return ResourceManager.GetString("AlgoInstancesExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The algo must not be public..
+        /// </summary>
+        internal static string AlgoMustNotBePublic {
+            get {
+                return ResourceManager.GetString("AlgoMustNotBePublic", resourceCulture);
             }
         }
         

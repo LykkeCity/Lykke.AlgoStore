@@ -67,6 +67,20 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpDelete("delete")]
+        [SwaggerOperation("DeleteAlgo")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteAlgo([FromBody] DeleteAlgoModel model)
+        {
+            var clientId = User.GetClientId();
+
+            await _algosService.DeleteAlgoAsync(model.AlgoClientId, model.AlgoId, model.ForceDelete, clientId);
+
+            return Ok();
+        }
+
         [HttpGet("getAllAlgos")]
         [SwaggerOperation("GetAllAlgos")]
         [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
