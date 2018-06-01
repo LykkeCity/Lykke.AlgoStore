@@ -4,6 +4,7 @@ using System.Net;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Utils;
 using Microsoft.Rest;
+using Lykke.AlgoStore.Services.Strings;
 
 namespace Lykke.AlgoStore.Services.Utils
 {
@@ -27,11 +28,13 @@ namespace Lykke.AlgoStore.Services.Utils
         {
             if (assetPair == null)
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {assetPairId} was not found");
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {assetPairId} was not found",
+                    string.Format(Phrases.ParamNotFoundDisplayMessage, "asset pair"));
             }
             if (assetPair.IsDisabled)
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"AssetPair {assetPairId} is temporarily disabled");              
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"AssetPair {assetPairId} is temporarily disabled",
+                    string.Format(Phrases.AssetPairDisabledDisplayMessage, assetPair.Name));
             }
         }
 
@@ -39,7 +42,8 @@ namespace Lykke.AlgoStore.Services.Utils
         {
             if (Math.Abs(volume) < double.Epsilon || Math.Abs(volume) < minVolume)
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"The amount should be higher than minimal order size {minVolume} {asset}");
+                var errorMessage = string.Format(Phrases.TradeVolumeBelowMinimum, minVolume, asset);
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, errorMessage, errorMessage);
             }
         }
 
@@ -61,14 +65,17 @@ namespace Lykke.AlgoStore.Services.Utils
         {
             if (assetId != baseAsset.Id && assetId != baseAsset.Name && assetId != quotingAsset.Id && assetId != quotingAsset.Name)
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Asset <{assetId}> is not valid for asset pair <{assetPair.Id}>.");
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                    $"Asset <{assetId}> is not valid for asset pair <{assetPair.Id}>.",
+                    string.Format(Phrases.AssetInvalidForAssetPair, assetId, assetPair.Id));
             }
         }
 
         public void ValidateAccuracy(double volume, int accuracy)
         {
             if (volume.GetAccuracy() > accuracy)
-                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset");
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Volume accuracy is not valid for this Asset",
+                    string.Format(Phrases.ParamInvalid, "volume accuracy"));
         }
     }
 }

@@ -5,6 +5,8 @@ using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 
 namespace Lykke.AlgoStore.Services
@@ -34,14 +36,14 @@ namespace Lykke.AlgoStore.Services
                 clientId,
                 async () =>
                 {
-                    if (string.IsNullOrEmpty(instanceId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "InstanceId is empty.");
+                    Check.IsEmpty(instanceId, nameof(instanceId));
 
                     var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
                     if (statisticsSummary == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
-                            $"Could not find statistic summary row for AlgoInstance: {instanceId}");
+                            $"Could not find statistic summary row for AlgoInstance: {instanceId}",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
                     statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
@@ -59,21 +61,22 @@ namespace Lykke.AlgoStore.Services
                 clientId,
                 async () =>
                 {
-                    if (string.IsNullOrEmpty(instanceId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "InstanceId is empty.");
+                    Check.IsEmpty(instanceId, nameof(instanceId));
 
                     var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
                     if (statisticsSummary == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
-                            $"Could not find statistic summary row for AlgoInstance: {instanceId}");
+                            $"Could not find statistic summary row for AlgoInstance: {instanceId}",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
                     var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
                     if (algoInstance == null || algoInstance.AlgoId == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}");
+                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
                     }
 
                     var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPair);

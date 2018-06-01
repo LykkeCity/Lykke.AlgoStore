@@ -106,6 +106,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset {0} is not valid for asset pair {1}..
+        /// </summary>
+        internal static string AssetInvalidForAssetPair {
+            get {
+                return ResourceManager.GetString("AssetInvalidForAssetPair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset pair {0} is temporarily disabled..
+        /// </summary>
+        internal static string AssetPairDisabledDisplayMessage {
+            get {
+                return ResourceManager.GetString("AssetPairDisabledDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset {0} or {1} are missing from wallet {2}.
         /// </summary>
         internal static string AssetsMissingFromWallet {
@@ -250,11 +268,65 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} cannot be deleted..
+        /// </summary>
+        internal static string ParamCantBeDeleted {
+            get {
+                return ResourceManager.GetString("ParamCantBeDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid {0}..
+        /// </summary>
+        internal static string ParamInvalid {
+            get {
+                return ResourceManager.GetString("ParamInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} was not found..
+        /// </summary>
+        internal static string ParamNotFoundDisplayMessage {
+            get {
+                return ResourceManager.GetString("ParamNotFoundDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The permissions of this role cannot be modified..
+        /// </summary>
+        internal static string PermissionsCantBeModified {
+            get {
+                return ResourceManager.GetString("PermissionsCantBeModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Public algo Not Found.
         /// </summary>
         internal static string PublicAlgoNotFound {
             get {
                 return ResourceManager.GetString("PublicAlgoNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role {0} already exists..
+        /// </summary>
+        internal static string RoleAlreadyExists {
+            get {
+                return ResourceManager.GetString("RoleAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This role can&apos;t be modified..
+        /// </summary>
+        internal static string RoleCantBeModified {
+            get {
+                return ResourceManager.GetString("RoleCantBeModified", resourceCulture);
             }
         }
         
@@ -277,6 +349,42 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is empty..
+        /// </summary>
+        internal static string StringParameterMissing {
+            get {
+                return ResourceManager.GetString("StringParameterMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please fill in all required fields..
+        /// </summary>
+        internal static string StringParameterMissingDisplayMessage {
+            get {
+                return ResourceManager.GetString("StringParameterMissingDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The amount should be higher than minimal order size {0} {1}.
+        /// </summary>
+        internal static string TradeVolumeBelowMinimum {
+            get {
+                return ResourceManager.GetString("TradeVolumeBelowMinimum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to access this algo..
+        /// </summary>
+        internal static string UserCantSeeAlgo {
+            get {
+                return ResourceManager.GetString("UserCantSeeAlgo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot publish/unpublish algo because you are not the author of the algo..
         /// </summary>
         internal static string UserNotAuthorOfAlgo {
@@ -286,11 +394,29 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current user does not belong to &apos;User&apos; role..
+        /// </summary>
+        internal static string UserNotInUserRole {
+            get {
+                return ResourceManager.GetString("UserNotInUserRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The wallet is already used by another your instance.
         /// </summary>
         internal static string WalletAlreadyUsed {
             get {
                 return ResourceManager.GetString("WalletAlreadyUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This wallet has no assets..
+        /// </summary>
+        internal static string WalletHasNoAssetsDisplayMessage {
+            get {
+                return ResourceManager.GetString("WalletHasNoAssetsDisplayMessage", resourceCulture);
             }
         }
         

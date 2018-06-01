@@ -15,6 +15,7 @@ using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Newtonsoft.Json;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
+using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -132,14 +133,15 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoRatingAsync), data.ClientId, async () =>
             {
-                if (string.IsNullOrEmpty(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
-
-                if (string.IsNullOrEmpty(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                Check.IsEmpty(data.ClientId, nameof(data.ClientId));
+                Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
 
                 if (double.IsNaN(data.Rating))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Invalid rating.");
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        string.Format(Phrases.ParamInvalid, "rating"),
+                        string.Format(Phrases.ParamInvalid, "rating"));
+                }
 
                 await _ratingsRepository.SaveAlgoRatingAsync(data);
 
@@ -166,11 +168,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAlgoRatingForClientAsync), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
-
-                if (string.IsNullOrEmpty(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 var result = await _ratingsRepository.GetAlgoRatingForClientAsync(algoId, clientId);
 
@@ -188,8 +187,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAlgoRatingAsync), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 var ratings = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
@@ -346,8 +344,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAllUserAlgosAsync), clientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
+                Check.IsEmpty(clientId, nameof(clientId));
 
                 var userAlgos = await _algoRepository.GetAllClientAlgosAsync(clientId);
 
@@ -367,10 +364,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-                if (string.IsNullOrWhiteSpace(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+                Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(clientId, algoId);
 
@@ -408,10 +403,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(AddToPublicAsync), clientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+                Check.IsEmpty(data.ClientId, nameof(data.ClientId));
+                Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
                 if (data.ClientId != clientId)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
                         $"User with id {clientId} cannot publish algo because he/she is not the author.",
@@ -439,10 +432,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(RemoveFromPublicAsync), clientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+                Check.IsEmpty(data.ClientId, nameof(data.ClientId));
+                Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
                 if (data.ClientId != clientId)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
                         $"User with id {clientId} cannot unpublish algo because he/she is not the author.",
@@ -510,7 +501,8 @@ namespace Lykke.AlgoStore.Services
                 var algo = await _algoRepository.GetAlgoAsync(clientId, dataModel.AlgoId);
                 if (algo == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.");
+                        $"Specified algo id {dataModel.AlgoId} is not found! Cant save file for a non existing algo.",
+                        string.Format(Phrases.PublicAlgoNotFound, "algo"));
 
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data.OpenReadStream());
             });
@@ -531,7 +523,8 @@ namespace Lykke.AlgoStore.Services
                 var algo = await _algoRepository.GetAlgoAsync(clientId, dataModel.AlgoId);
                 if (algo == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Specified algo id {dataModel.AlgoId} is not found! Can't save string for a non existing algo.");
+                        $"Specified algo id {dataModel.AlgoId} is not found! Can't save string for a non existing algo.",
+                        string.Format(Phrases.PublicAlgoNotFound, "algo"));
 
                 await _blobRepository.SaveBlobAsync(dataModel.AlgoId, dataModel.Data);
             });
@@ -546,15 +539,14 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAlgoAsStringAsync), clientId, async () =>
             {
-                if (string.IsNullOrWhiteSpace(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId Is empty");
-                if (string.IsNullOrWhiteSpace(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId Is empty");
+                Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 var algo = await _algoRepository.GetAlgoAsync(clientId, algoId);
                 if (algo == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                        $"Specified algo id {algoId} is not found!");
+                        $"Specified algo id {algoId} is not found!",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "algo"));
 
                 return await _blobRepository.GetBlobStringAsync(algoId);
             });
