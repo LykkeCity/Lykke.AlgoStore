@@ -265,8 +265,8 @@ namespace Lykke.AlgoStore.Services.Validation
             {
                 result.Add(new EnumValue
                 {
-                    Key = ((int) enumValue).ToString(),
-                    Value = enumValue.ToString()
+                    Key = enumValue.ToString(),
+                    Value = ((int)enumValue).ToString() 
                 });
             }
 
