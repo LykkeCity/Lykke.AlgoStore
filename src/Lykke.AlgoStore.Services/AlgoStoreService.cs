@@ -9,6 +9,8 @@ using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
 using Newtonsoft.Json;
@@ -86,15 +88,13 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoBlobRepository.BlobExistsAsync(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoBinaryDataNotFound, "No blob for provided id");
 
-                if (!await _algoMetaDataRepository.ExistsAlgoAsync(data.AlgoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, "No algo for provided id");
-
-                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+                await Check.Algo.Exists(_algoMetaDataRepository, data.AlgoClientId, data.AlgoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, data.AlgoClientId);
 
                 var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
                 if (!instanceData.ValidateData(out var instanceException))
                     throw instanceException;
@@ -143,8 +143,7 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
-                if (!await _algoMetaDataRepository.ExistsAlgoAsync(data.AlgoClientId, algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
+                await Check.Algo.Exists(_algoMetaDataRepository, data.AlgoClientId, algoId);
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
@@ -175,15 +174,13 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
-                if (!await _algoMetaDataRepository.ExistsAlgoAsync(data.AlgoClientId, algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound, $"No algo for id {algoId}");
-
-                if (data.AlgoClientId != data.ClientId && !await _publicAlgosRepository.ExistsPublicAlgoAsync(data.AlgoClientId, data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic, $"Algo {data.AlgoId} not public for client {data.ClientId}");
+                await Check.Algo.Exists(_algoMetaDataRepository, data.AlgoClientId, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, data.AlgoClientId);
 
                 var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(data.InstanceId);
                 if (pods.IsNullOrEmptyCollection())
@@ -221,7 +218,9 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 if (!await _algoInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(data.ClientId, data.InstanceId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Instance data not found data for clientId {data.ClientId}, algo {data.AlgoId} and instanceId {data.InstanceId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, 
+                        $"Instance data not found data for clientId {data.ClientId}, algo {data.AlgoId} and instanceId {data.InstanceId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
                 var userLogs = await _userLogRepository.GetEntries(data.Tail, data.InstanceId);
                 return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.DateTimeFormat)}] {l.Message}").ToArray();
@@ -237,14 +236,13 @@ namespace Lykke.AlgoStore.Services
             await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
             {
                 if (instanceData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data",
+                        string.Format(Phrases.ParamInvalid, "algo instance"));
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
-                if (pods.IsNullOrEmptyCollection())
+                if (pods.IsNullOrEmptyCollection() || pods[0] == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
                 var pod = pods[0];
-                if (pod == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.PodNotFound, $"Pod is not found for {instanceData.InstanceId}");
 
                 var result = await _kubernetesApiClient.DeleteAsync(instanceData.InstanceId, pod.Metadata.NamespaceProperty);
 
@@ -261,7 +259,8 @@ namespace Lykke.AlgoStore.Services
             await LogTimedInfoAsync(nameof(DeleteImageAsync), instanceData?.ClientId, async () =>
             {
                 if (instanceData == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
                 var pods = await _kubernetesApiClient.ListPodsByAlgoIdAsync(instanceData.InstanceId);
 

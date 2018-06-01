@@ -3,6 +3,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.PersonalData.Contract;
 using System;
 using System.Collections.Generic;
@@ -28,11 +30,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAlgoCommentsAsync), clientId, async () =>
              {
-                 if (string.IsNullOrEmpty(clientId))
-                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
-
-                 if (string.IsNullOrEmpty(algoId))
-                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                 Check.IsEmpty(algoId, nameof(algoId));
+                 Check.IsEmpty(clientId, nameof(clientId));
 
                  var result = await _algoCommentsRepository.GetCommentsForAlgoAsync(algoId);
 
@@ -59,11 +58,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetCommentByIdAsync), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
-
-                if (string.IsNullOrEmpty(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 var result = await _algoCommentsRepository.GetCommentByIdAsync(algoId, commentId);                
 
@@ -88,12 +84,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetCommentByIdAsync), data.Author, async () =>
             {
-                if (string.IsNullOrEmpty(data.Author))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientID is empty.");
-
-                if (string.IsNullOrEmpty(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
-
+                Check.IsEmpty(data.Author, "ClientID");
+                Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
                 
                 data.CommentId = Guid.NewGuid().ToString();
                 data.CreatedOn = DateTime.UtcNow;                   
@@ -118,16 +110,15 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(EditCommentAsync), data.Author, async () =>
             {
-                if (string.IsNullOrEmpty(data.CommentId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "CommentId is empty.");
-
-                if (string.IsNullOrEmpty(data.AlgoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                Check.IsEmpty(data.CommentId, nameof(data.CommentId));
+                Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
 
                 var comment = await _algoCommentsRepository.GetCommentByIdAsync(data.AlgoId, data.CommentId);
 
                 if(comment == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Comment with this CommentId and AlgoId does not exist.");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                        "Comment with this CommentId and AlgoId does not exist.",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "comment"));
 
                 comment.EditedOn = DateTime.UtcNow;
                 comment.Content = data.Content;
@@ -152,11 +143,8 @@ namespace Lykke.AlgoStore.Services
         {
             await LogTimedInfoAsync(nameof(GetCommentByIdAsync), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(commentId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "CommentId is empty.");
-
-                if (string.IsNullOrEmpty(algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "AlgoId is empty.");
+                Check.IsEmpty(commentId, nameof(commentId));
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 await _algoCommentsRepository.DeleteCommentAsync(algoId, commentId);
             });

@@ -3,6 +3,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -32,24 +34,25 @@ namespace Lykke.AlgoStore.Services
             {
                 foreach (var permission in data)
                 {
-                    if (string.IsNullOrEmpty(permission.PermissionId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
-
-                    if (string.IsNullOrEmpty(permission.RoleId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+                    Check.IsEmpty(permission.PermissionId, nameof(permission.PermissionId));
+                    Check.IsEmpty(permission.RoleId, nameof(permission.RoleId));
 
                     var dbPermission = await _permissionsRepository.GetPermissionByIdAsync(permission.PermissionId);
 
                     if (dbPermission == null)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Permission with id {permission.PermissionId} does not exist.");
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                            $"Permission with id {permission.PermissionId} does not exist.",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "permission"));
 
                     var role = await _rolesRepository.GetRoleByIdAsync(permission.RoleId);
 
                     if(role == null)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {permission.RoleId} does not exist.");
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Role with id {permission.RoleId} does not exist.",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "role"));
 
                     if (!role.CanBeModified)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.PermissionsCantBeModified,
+                            Phrases.PermissionsCantBeModified);
 
                     await _rolePermissionMatchRepository.AssignPermissionToRoleAsync(permission);
                 }               
@@ -69,8 +72,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetPermissionByIdAsync), null, async () =>
             {
-                if (string.IsNullOrEmpty(permissionId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
+                Check.IsEmpty(permissionId, nameof(permissionId));
 
                 var result = await _permissionsRepository.GetPermissionByIdAsync(permissionId);
                 return result;
@@ -81,8 +83,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetPermissionsByRoleIdAsync), null, async () =>
             {
-                if (string.IsNullOrEmpty(roleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+                Check.IsEmpty(roleId, nameof(roleId));
 
                 var matches = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
                 var permissions = new List<UserPermissionData>();
@@ -116,14 +117,13 @@ namespace Lykke.AlgoStore.Services
         {
             await LogTimedInfoAsync(nameof(DeletePermissionAsync), null, async () =>
             {
-                if (string.IsNullOrEmpty(permissionId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
-
+                Check.IsEmpty(permissionId, nameof(permissionId));
 
                 var permission = await GetPermissionByIdAsync(permissionId);
 
                 if (permission == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Permission with this ID does not exist");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Permission with this ID does not exist",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "permission"));
 
                 await _permissionsRepository.DeletePermissionAsync(permission);
             });
@@ -135,16 +135,14 @@ namespace Lykke.AlgoStore.Services
             {
                 foreach (var permission in data)
                 {
-                    if (string.IsNullOrEmpty(permission.RoleId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
-
-                    if (string.IsNullOrEmpty(permission.PermissionId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "PermissionId is empty.");
+                    Check.IsEmpty(permission.RoleId, nameof(permission.RoleId));
+                    Check.IsEmpty(permission.PermissionId, nameof(permission.PermissionId));
 
                     var role = await _rolesRepository.GetRoleByIdAsync(permission.RoleId);
 
                     if (!role.CanBeModified)
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "The permissions of this role cannot be modified.");
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.PermissionsCantBeModified,
+                            Phrases.PermissionsCantBeModified);
 
                     await _rolePermissionMatchRepository.RevokePermission(permission);
                 }                
