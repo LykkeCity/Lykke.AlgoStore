@@ -75,7 +75,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var algoRepo = Given_Correct_AlgoRepositoryMock();
             var blobRepository = Given_Correct_AlgoBlobRepositoryMock();
             var service = Given_AlgosService(algoRepo, blobRepository, null, null, null,
-                null, null);
+                null, null, null, null);
             var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
@@ -89,7 +89,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicAlgosRepository = Given_Correct_PublicAlgosRepositoryMock();
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
 
-            var service = Given_AlgosService(repo, null, null, ratingsRepo, publicAlgosRepository, personalDataervice, null);
+            var service = Given_AlgosService(repo, null, null, ratingsRepo, publicAlgosRepository, personalDataervice, null, null, null);
             var data = When_Invoke_GetAllAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -104,7 +104,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoRepositoryMock();
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
 
-            var service = Given_AlgosService(repo, null, null, null, null, personalDataervice, null);
+            var service = Given_AlgosService(repo, null, null, null, null, personalDataervice, null, null, null);
             var data = When_Invoke_GetAllUserAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -117,7 +117,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_NoUserAlgos_AlgoRepositoryMock();
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
 
-            var service = Given_AlgosService(repo, null, null, null, null, personalDataervice, null);
+            var service = Given_AlgosService(repo, null, null, null, null, personalDataervice, null, null, null);
             var data = When_Invoke_GetAllUserAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -128,7 +128,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoRating_Returns_Ok()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
-            var service = Given_AlgosService(null, null, null, repo, null, null, null);
+            var service = Given_AlgosService(null, null, null, repo, null, null, null, null, null);
             var data = When_Invoke_GetAlgoRating(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -141,7 +141,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoRatingByClient_Returns_Ok()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
-            var service = Given_AlgosService(null, null, null, repo, null, null, null);
+            var service = Given_AlgosService(null, null, null, repo, null, null, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlgoId, ClientId, out Exception exception);
 
@@ -155,7 +155,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoRatingsByWrongClientId_Returns_EmptyArray()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
-            var service = Given_AlgosService(null, null, null, repo, null, null, null);
+            var service = Given_AlgosService(null, null, null, repo, null, null, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlgoId, Guid.NewGuid().ToString(), out Exception exception);
 
@@ -171,7 +171,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var publicRepo = Given_Correct_PublicAlgosRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock();
-            var service = Given_AlgosService(algoRepo, null, null, repo, publicRepo, null, null);
+            var service = Given_AlgosService(algoRepo, null, null, repo, publicRepo, null, null, null, null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
 
             var randIndex = rnd.Next(0, allAlgos.Count);
@@ -206,7 +206,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
-                clientAccountService, null);
+                clientAccountService, null, null, null);
             var data = When_Invoke_GetAlgoInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
@@ -223,7 +223,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
-                clientAccountService, null);
+                clientAccountService, null, null, null);
             var data = When_Invoke_GetAlgoInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -232,7 +232,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetAlgoInformation_Throws_Exception()
         {
-            var service = Given_AlgosService(null, null, null, null, null, null, null);
+            var service = Given_AlgosService(null, null, null, null, null, null, null, null, null);
             var data = When_Invoke_GetAlgoInformation(service, null, null, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -243,7 +243,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var clientId = Guid.NewGuid().ToString();
 
-            var service = Given_AlgosService(null, null, null, null, null, null, null);
+            var service = Given_AlgosService(null, null, null, null, null, null, null, null, null);
             var data = When_Invoke_GetAlgoInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -515,10 +515,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoRatingsRepository algoRatingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IPersonalDataService personalDataService,
+            IAlgoStoreService algoStoreService,
+            IAlgoCommentsRepository commentsRepository,
             ICodeBuildService codeBuildService)
         {
             return new AlgosService(repo, blobRepo, algoInstanceRepository,
-                algoRatingsRepository, publicAlgosRepository, personalDataService,               
+                algoRatingsRepository, publicAlgosRepository, personalDataService,
+                algoStoreService, commentsRepository,
                 new LogMock(), codeBuildService);
         }
 

@@ -39,6 +39,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
+                null,
+                null,
                 null);
 
 
@@ -73,6 +75,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
+                null,
+                null,
                 null);
 
             var algosInstanceService = Given_AlgoInstanceService(
@@ -106,6 +110,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,               
+                null,
+                null,
                 null);
 
             var kubernetesClient = Given_Correct_KubernetesApiClientMock_WithResult(true);
@@ -139,6 +145,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,               
+                null,
+                null,
                 null);
 
             var algosInstanceService = Given_AlgoInstanceService(
@@ -171,6 +179,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,                
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
                 null,
                 null);
 
@@ -207,6 +217,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,               
                 null,
                 Given_PublicAlgoRepository_Exists(true),
+                null,
+                null,
                 null,
                 null);
 
@@ -245,6 +257,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,               
                 null,
                 Given_PublicAlgoRepository_Exists(false),
+                null,
+                null,
                 null,
                 null);
 
@@ -385,10 +399,13 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoRatingsRepository algoRatingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IPersonalDataService personalDataService,
+            IAlgoStoreService algoStoreService,
+            IAlgoCommentsRepository commentsRepository,
             ICodeBuildService codeBuildService)
         {
             var result = new AlgosService(repo, blobRepo, algoInstanceRepository,
                 algoRatingsRepository, publicAlgosRepository, personalDataService,
+                algoStoreService, commentsRepository,
                 new LogMock(), codeBuildService);
 
             return result;
