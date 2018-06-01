@@ -131,22 +131,6 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 new AlgoMetaDataParameter
                 {
-                    Key = "ShortTermPeriod",
-                    Type = "System.Int32"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "LongTermPeriod",
-                    Type = "System.Int32"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "Decimals",
-                    Type =
-                        "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-                },
-                new AlgoMetaDataParameter
-                {
                     Key = "Capacity",
                     Type = "System.Int32"
                 },
@@ -277,7 +261,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoMetaDataInformation BaseAlgoMetadataWithSmaFunction => new AlgoMetaDataInformation
         {
-            Functions = new List<AlgoMetaDataFunction> {SmaFunctionMetadata},
+            Functions = new List<AlgoMetaDataFunction> { SmaFunctionMetadata },
             Parameters = BaseAlgoParameters
         };
 
@@ -420,7 +404,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoMetaDataInformation BaseAlgoMetadataWithCustomFunction => new AlgoMetaDataInformation
         {
-            Functions = new List<AlgoMetaDataFunction> {CustomFunctionMetadata},
+            Functions = new List<AlgoMetaDataFunction> { CustomFunctionMetadata },
             Parameters = BaseAlgoParameters
         };
 
