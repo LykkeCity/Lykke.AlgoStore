@@ -154,32 +154,28 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 return new AlgoMetaDataFunction
                 {
-                    FunctionParameterType = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaParameters",
-            Id = "Sma",
-            Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
-            Parameters = new List<AlgoMetaDataParameter>
-            {
-                new AlgoMetaDataParameter
-                {
-                    Key = "Capacity",
-                    Type = "System.Int32"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "AssetPair",
-                    Type = "System.String"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "CandleOperationMode",
-                    Type =
-                        "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
-                    PredefinedValues = new List<EnumValue>
+                    FunctionParameterType =
+                        "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaParameters",
+                    Id = "Sma",
+                    Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
+                    Parameters = new List<AlgoMetaDataParameter>
                     {
-                        new EnumValue
+                       new AlgoMetaDataParameter
                         {
-                            Key = "0",
-                            Value = "OPEN"
+                            Key = "Capacity",
+                            Type = "System.Int32"
+                        },
+                        new AlgoMetaDataParameter
+                        {
+                            Key = "AssetPair",
+                            Type = "System.String"
+                        },
+                        new AlgoMetaDataParameter
+                        {
+                            Key = "CandleOperationMode",
+                            Type =
+                                "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
+                            PredefinedValues = CandlePredefinedValues
                         },
                         new AlgoMetaDataParameter
                         {
