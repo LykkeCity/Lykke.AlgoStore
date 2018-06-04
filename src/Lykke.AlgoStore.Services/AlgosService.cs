@@ -2,18 +2,18 @@
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.Service.PersonalData.Contract;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Lykke.AlgoStore.Core.Enumerators;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
-using Newtonsoft.Json;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 using Lykke.AlgoStore.Services.Utils;
 
@@ -108,7 +108,8 @@ namespace Lykke.AlgoStore.Services
                         AlgoId = currentAlgo.AlgoId,
                         Name = currentAlgo.Name,
                         Description = currentAlgo.Description,
-                        Date = currentAlgo.Date,
+                        DateModified = currentAlgo.DateModified,
+                        DateCreated = currentAlgo.DateCreated,
                         Author = authorName
                     };
 
@@ -261,7 +262,8 @@ namespace Lykke.AlgoStore.Services
                 data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
 
                 var algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
-
+                
+                algoToSave.DateCreated = DateTime.UtcNow;
                 await _algoRepository.SaveAlgoAsync(algoToSave);
 
                 var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
@@ -338,6 +340,7 @@ namespace Lykke.AlgoStore.Services
                 data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
 
                 var algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
+                algoToSave.DateCreated = res.DateCreated;
 
                 await _algoRepository.SaveAlgoAsync(algoToSave);
                 await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);

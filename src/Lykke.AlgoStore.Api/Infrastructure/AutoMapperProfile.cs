@@ -1,5 +1,4 @@
-﻿using System;
-using AutoMapper;
+﻿using AutoMapper;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
@@ -100,16 +99,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<UserRoleUpdateModel, UserRoleData>()
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
 
-            CreateMap<AlgoData, CreateAlgoModel>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId))
-                .ForMember(dest => dest.Content, opt => opt.Ignore())
-                .ForMember(dest => dest.DecodedContent, opt => opt.Ignore());
-
             CreateMap<CreateAlgoModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.UseValue(AlgoVisibility.Private))
-                .ForMember(dest => dest.ClientId, opt => opt.Ignore());
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore())
+                .ForMember(dest => dest.DateCreated, opt => opt.Ignore())
+                .ForMember(dest => dest.DateModified, opt => opt.Ignore());
         }
     }
 }
