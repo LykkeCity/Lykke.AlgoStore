@@ -106,6 +106,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Algo {0} (client {1}) is public and not editable.
+        /// </summary>
+        internal static string AlgoIsPublic {
+            get {
+                return ResourceManager.GetString("AlgoIsPublic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The algo must not be public..
         /// </summary>
         internal static string AlgoMustNotBePublic {

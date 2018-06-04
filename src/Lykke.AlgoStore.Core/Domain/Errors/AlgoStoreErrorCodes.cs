@@ -25,6 +25,7 @@
         InitialWalletBalanceNotCalculated = 511,
         StatisticsSumaryNotFound = 512,
         AlgoTradesClientError = 513,
+        AlgoPublic = 514,
         //Operation
         UnableToDeleteData = 601,
 
