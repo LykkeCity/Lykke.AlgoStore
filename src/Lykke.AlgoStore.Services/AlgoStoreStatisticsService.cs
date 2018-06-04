@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Errors;
@@ -46,8 +47,9 @@ namespace Lykke.AlgoStore.Services
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
-                    statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                                                   statisticsSummary.InitialWalletBalance) * 100;
+                    statisticsSummary.NetProfit = Math.Round(
+                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
+                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
 
                     return statisticsSummary;
                 }
@@ -96,8 +98,9 @@ namespace Lykke.AlgoStore.Services
                         statisticsSummary.LastWalletBalance = latestWalletBalance;
                     }
 
-                    statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                                       statisticsSummary.InitialWalletBalance) * 100;
+                    statisticsSummary.NetProfit = Math.Round(
+                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
+                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
 
                     await _statisticsRepository.CreateOrUpdateSummaryAsync(statisticsSummary);
 
