@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlgoInstancesExist" xml:space="preserve">
-    <value>Cannot unpublish algo because it has algo instances.</value>
+    <value>Cannot {0} algo because it has {1}algo instances.</value>
   </data>
   <data name="AssetsMissingFromWallet" xml:space="preserve">
     <value>Asset {0} or {1} are missing from wallet {2}</value>
@@ -239,5 +239,8 @@
   </data>
   <data name="UserNotInUserRole" xml:space="preserve">
     <value>Current user does not belong to 'User' role.</value>
+  </data>
+  <data name="AlgoMustNotBePublic" xml:space="preserve">
+    <value>The algo must not be public.</value>
   </data>
 </root>
