@@ -304,11 +304,16 @@ namespace Lykke.AlgoStore.Services
 
                 var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
-                //Algo should not be public in order to edit it
-                if (res == null || res.AlgoVisibility == AlgoVisibility.Public)
+                if(res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         string.Format(Phrases.NoAlgoData, data.ClientId, data.AlgoId),
                         Phrases.NoAlgoDataDisplayMessage);
+
+                //Algo should not be public in order to edit it
+                if (res.AlgoVisibility == AlgoVisibility.Public)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoPublic,
+                        string.Format(Phrases.AlgoIsPublic, data.ClientId, data.AlgoId),
+                        Phrases.AlgoMustNotBePublic);
 
                 //Check if there are running algo instances
                 var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);

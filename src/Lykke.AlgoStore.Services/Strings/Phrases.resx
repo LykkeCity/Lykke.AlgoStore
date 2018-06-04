@@ -243,4 +243,7 @@
   <data name="AlgoMustNotBePublic" xml:space="preserve">
     <value>The algo must not be public.</value>
   </data>
+  <data name="AlgoIsPublic" xml:space="preserve">
+    <value>Algo {0} (client {1}) is public and not editable</value>
+  </data>
 </root>
