@@ -198,4 +198,10 @@
   <data name="RunningAlgoInstanceExistsDisplayMessage" xml:space="preserve">
     <value>There are running algo instance(s)</value>
   </data>
+  <data name="AssetPairFieldMissing" xml:space="preserve">
+    <value>'AssetPair' filed is missing from AlgoMetaData</value>
+  </data>
+  <data name="TradedAssetFieldMissing" xml:space="preserve">
+    <value>'TradedAsset' filed is missing from AlgoMetaData</value>
+  </data>
 </root>

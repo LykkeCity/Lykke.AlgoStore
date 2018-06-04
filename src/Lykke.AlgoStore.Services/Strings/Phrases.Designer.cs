@@ -106,6 +106,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;AssetPair&apos; filed is missing from AlgoMetaData.
+        /// </summary>
+        internal static string AssetPairFieldMissing {
+            get {
+                return ResourceManager.GetString("AssetPairFieldMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset {0} or {1} are missing from wallet {2}.
         /// </summary>
         internal static string AssetsMissingFromWallet {
@@ -273,6 +282,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string RunningAlgoInstanceExistsDisplayMessage {
             get {
                 return ResourceManager.GetString("RunningAlgoInstanceExistsDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;TradedAsset&apos; filed is missing from AlgoMetaData.
+        /// </summary>
+        internal static string TradedAssetFieldMissing {
+            get {
+                return ResourceManager.GetString("TradedAssetFieldMissing", resourceCulture);
             }
         }
         

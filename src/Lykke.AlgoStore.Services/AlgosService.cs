@@ -11,8 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common;
 using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.Models;
 using Newtonsoft.Json;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 
@@ -28,7 +32,11 @@ namespace Lykke.AlgoStore.Services
         private readonly IPersonalDataService _personalDataService;
         private readonly ICodeBuildService _codeBuildService;
 
+        private readonly CachedDataDictionary<string, Asset> _assetsCache;
+        private readonly CachedDataDictionary<string, AssetPair> _assetPairsCache;
+
         private static Random rnd = new Random();
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlgosService"/> class.
@@ -41,6 +49,8 @@ namespace Lykke.AlgoStore.Services
         /// <param name="personalDataService">The personal Data Service</param>
         /// <param name="log">The log.</param>
         /// <param name="codeBuildService">Algo code validator</param>
+        /// <param name="assetPairsCache">Asset pairs cache dictionary</param>
+        /// <param name="assetsCache">Assets cache dictionary</param>
         public AlgosService(IAlgoRepository algoRepository,
             IAlgoBlobRepository blobRepository,
             IAlgoClientInstanceRepository instanceRepository,
@@ -48,7 +58,9 @@ namespace Lykke.AlgoStore.Services
             IPublicAlgosRepository publicAlgosRepository,
             IPersonalDataService personalDataService,
             ILog log,
-            ICodeBuildService codeBuildService) : base(log, nameof(AlgosService))
+            ICodeBuildService codeBuildService,
+            CachedDataDictionary<string, AssetPair> assetPairsCache,
+            CachedDataDictionary<string, Asset> assetsCache) : base(log, nameof(AlgosService))
         {
             _algoRepository = algoRepository;
             _blobRepository = blobRepository;
@@ -57,6 +69,8 @@ namespace Lykke.AlgoStore.Services
             _publicAlgosRepository = publicAlgosRepository;
             _personalDataService = personalDataService;
             _codeBuildService = codeBuildService;
+            _assetPairsCache = assetPairsCache;
+            _assetsCache = assetsCache;
         }
 
         /// <summary>
@@ -393,6 +407,8 @@ namespace Lykke.AlgoStore.Services
                     algoInformation.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
 
                     algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
+
+                    PopulateAssetPairsAndTradedAssetsAsync(algoInformation.AlgoMetaDataInformation);
                 }
                 return algoInformation;
             });
@@ -558,6 +574,39 @@ namespace Lykke.AlgoStore.Services
 
                 return await _blobRepository.GetBlobStringAsync(algoId);
             });
-        }   
+        }
+
+
+        private void PopulateAssetPairsAndTradedAssetsAsync(AlgoMetaDataInformation algoMetaDataInformation)
+        {
+            if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == "AssetPair") == null)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                    "'AssetPair' filed is missing from AlgoMetaData",
+                    Phrases.AssetPairFieldMissing);
+            }
+
+            if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == "TradedAsset") == null)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                    "'TradedAsset' filed is missing from AlgoMetaData",
+                    Phrases.TradedAssetFieldMissing);
+            }
+
+            var assetPairsList = _assetPairsCache.GetDictionaryAsync().Result.Select(ap => new EnumValue
+            {
+                Key = ap.Value.Name,
+                Value = ap.Key
+            }).ToList();
+
+            var assetsList = _assetsCache.GetDictionaryAsync().Result.Select(a => new EnumValue
+            {
+                Key = a.Value.Name,
+                Value = a.Key
+            }).ToList();
+
+            algoMetaDataInformation.Parameters.Single(p => p.Key == "AssetPair").PredefinedValues = assetPairsList;
+            algoMetaDataInformation.Parameters.Single(p => p.Key == "TradedAsset").PredefinedValues = assetsList;
+        }
     }
 }
