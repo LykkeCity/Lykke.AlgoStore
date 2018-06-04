@@ -23,7 +23,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             },
             new EnumValue
             {
-                Key = "Sec",
+                Key = "Second",
                 Value = "1"
             },
             new EnumValue
@@ -33,17 +33,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             },
             new EnumValue
             {
-                Key = "Min5",
+                Key = "5 Minutes",
                 Value = "300"
             },
             new EnumValue
             {
-                Key = "Min15",
+                Key = "15 Minutes",
                 Value = "900"
             },
             new EnumValue
             {
-                Key = "Min30",
+                Key = "30 Minutes",
                 Value = "1800"
             },
             new EnumValue
@@ -53,17 +53,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             },
             new EnumValue
             {
-                Key = "Hour4",
+                Key = "4 Hours",
                 Value = "14400"
             },
             new EnumValue
             {
-                Key = "Hour6",
+                Key = "6 Hours",
                 Value = "21600"
             },
             new EnumValue
             {
-                Key = "Hour12",
+                Key = "12 Hours",
                 Value = "43200"
             },
             new EnumValue
