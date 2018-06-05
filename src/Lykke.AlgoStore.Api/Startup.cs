@@ -150,7 +150,7 @@ namespace Lykke.AlgoStore.Api
             try
             {
                 await SeedPermissions(permissionsService, rolesService, rolePermissionMatchRepository);
-                await SeedRoles(rolesService, permissionsService, rolePermissionMatchRepository);
+                await SeedRoles(rolesService, rolePermissionMatchRepository);
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
@@ -205,38 +205,39 @@ namespace Lykke.AlgoStore.Api
 
             // check if we should delete any old permissions
             var allPermissions = await permissionsService.GetAllPermissionsAsync();
-            var allPermissionsIds = allPermissions.Select(x => x.Id);
-            var permissionsIds = Permissions.Select(x => x.Id);
 
-            var permissionsIdsForDeletion = allPermissionsIds
-                .Where(x => !permissionsIds.Contains(x))
+            var permissionsToDelete = allPermissions
+                .Where(x => !Permissions.Any(y => y.Name == x.Name && y.Id == x.Id)) //Must compare by Id and Name
                 .ToList();
 
-            if (permissionsIdsForDeletion.Count > 0)
+            if (permissionsToDelete.Any())
             {
                 var allRoles = await rolesService.GetAllRolesAsync();
 
                 // delete old unneeded permissions
-                foreach (var permissionId in permissionsIdsForDeletion)
+                foreach (var permissionToDelete in permissionsToDelete)
                 {
                     // first check if the permission has been referenced in any role
-                    var matches = allRoles.Where(role => role.Permissions.Any(p => p.Id == permissionId)).ToList();
+                    var matches = allRoles.Where(role =>
+                            role.Permissions.Any(
+                                p => p.Id == permissionToDelete.Id && p.Name == permissionToDelete.Name))
+                        .ToList();
 
                     // if the permission is referenced, remove the reference
-                    if (matches.Count > 0)
+                    if (matches.Any())
                     {
                         foreach (var reference in matches)
                         {
                             await rolePermissionMatchRepository.RevokePermission(new RolePermissionMatchData()
                             {
                                 RoleId = reference.Id,
-                                PermissionId = permissionId
+                                PermissionId = permissionToDelete.Id
                             });
                         }
                     }
 
                     // finally delete the permission
-                    await permissionsService.DeletePermissionAsync(permissionId);
+                    await permissionsService.DeletePermissionAsync(permissionToDelete.Id);
                 }
             }
 
@@ -249,42 +250,44 @@ namespace Lykke.AlgoStore.Api
             await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
         }
 
-        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService,
+        private async Task SeedRoles(IUserRolesService rolesService,
             IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed started");
 
             var allRoles = await rolesService.GetAllRolesAsync();
 
-            // Check if admin role exists, if not - seed it
-            // Note: Only the original admin role cannot be deleted
-            var adminRole = allRoles.Where(role => role.Name == "Admin" && !role.CanBeDeleted).FirstOrDefault();
+            // Check if administrator role exists, if not - seed it
+            // Note: Only the original administrator role cannot be deleted
+            var adminRole =
+                allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.AdminRoleName && !role.CanBeDeleted);
 
-            // If there is no admin role, we need to seed it
+            // If there is no administrator role, we need to seed it
             if (adminRole == null)
             {
                 adminRole = new UserRoleData()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Admin",
+                    Name = AlgoStoreConstants.AdminRoleName,
                     CanBeDeleted = false,
                     CanBeModified = false
                 };
 
-                // Create the Admin role
+                // Create the administrator role
                 await rolesService.SaveRoleAsync(adminRole);
             }
 
             // Check if user role exists, if not - seed it. Don't touch it if it exists
             // Note: Only the original user role cannot be deleted
-            var userRole = allRoles.FirstOrDefault(role => role.Name == "User" && !role.CanBeDeleted);
+            var userRole =
+                allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.UserRoleName && !role.CanBeDeleted);
 
             if (userRole == null)
             {
                 userRole = new UserRoleData()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User",
+                    Name = AlgoStoreConstants.UserRoleName,
                     CanBeDeleted = false,
                     CanBeModified = true
                 };
@@ -293,7 +296,7 @@ namespace Lykke.AlgoStore.Api
                 await rolesService.SaveRoleAsync(userRole);
             }
 
-            // Seed the permissions for the admin role
+            // Seed the permissions for the administrator role
             foreach (var permission in Permissions)
             {
                 var match = new RolePermissionMatchData()
