@@ -367,7 +367,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Algorithms with instances can not be modified.
+        ///   Looks up a localized string similar to Algorithms with running instances can not be modified.
         /// </summary>
         internal static string RunningAlgoInstanceExistsDisplayMessage {
             get {

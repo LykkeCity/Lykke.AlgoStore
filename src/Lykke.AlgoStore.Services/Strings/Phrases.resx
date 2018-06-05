@@ -196,7 +196,7 @@
     <value>Cannot find algo data</value>
   </data>
   <data name="RunningAlgoInstanceExistsDisplayMessage" xml:space="preserve">
-    <value>Algorithms with instances can not be modified</value>
+    <value>Algorithms with running instances can not be modified</value>
   </data>
   <data name="AssetPairDisabledDisplayMessage" xml:space="preserve">
     <value>The asset pair {0} is temporarily disabled.</value>
