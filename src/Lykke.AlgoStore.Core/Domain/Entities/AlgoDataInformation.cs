@@ -1,5 +1,6 @@
 ﻿using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
+using System;
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {
@@ -8,7 +9,8 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         public string AlgoId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public string Date { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime DateModified { get; set; }
         public AlgoVisibility AlgoVisibility { get; set; }
         public string Author { get; set; }
 

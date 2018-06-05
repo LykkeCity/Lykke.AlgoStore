@@ -1,4 +1,5 @@
 ﻿using Lykke.AlgoStore.Core.Enumerators;
+using System;
 
 namespace Lykke.AlgoStore.Core.Domain.Entities
 {
@@ -9,7 +10,8 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         string Name { get; set; }
 
         string Description { get; set; }
-        string Date { get; }
+        DateTime DateModified { get; }
+        DateTime DateCreated { get; set; }
         AlgoVisibility AlgoVisibility { get; set; }
         string AlgoMetaDataInformationJSON { get; set; }
     }

@@ -1,7 +1,7 @@
-﻿using System;
-using Lykke.AlgoStore.Core.Domain.Entities;
+﻿using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Enumerators;
 using Microsoft.WindowsAzure.Storage.Table;
+using System;
 
 namespace Lykke.AlgoStore.AzureRepositories.Entities
 {
@@ -20,7 +20,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
         }
 
         public string Name { get; set; }
-        public string Date => Timestamp.Date.ToShortDateString();
+        public DateTime DateModified => Timestamp.UtcDateTime;
+        public DateTime DateCreated { get; set; }
+
 
         public string Description { get; set; }
         public string AlgoVisibilityValue { get; set; }

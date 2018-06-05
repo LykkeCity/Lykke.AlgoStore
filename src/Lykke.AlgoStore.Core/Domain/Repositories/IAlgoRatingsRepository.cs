@@ -9,5 +9,6 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
         Task<List<AlgoRatingData>> GetAlgoRatingsAsync(string algoId);
         Task<AlgoRatingData> GetAlgoRatingForClientAsync(string algoId, string clientId);
         Task SaveAlgoRatingAsync(AlgoRatingData data);
+        Task DeleteRatingsAsync(string algoId);
     }
 }

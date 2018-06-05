@@ -34,7 +34,8 @@ namespace Lykke.AlgoStore.Services
             if (!clientBalanceResponseModels.Any())
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                    $"The wallet {walletId} has no assets in it.");
+                    $"The wallet {walletId} has no assets in it.",
+                    Phrases.WalletHasNoAssetsDisplayMessage);
             }
 
             if (!walletAssetIds.Contains(assetPair.BaseAssetId) || !walletAssetIds.Contains(assetPair.QuotingAssetId))

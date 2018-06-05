@@ -77,9 +77,11 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         private ErrorResponse ValidateDateTimeParameters(AlgoMetaDataInformationModel algoMetaData)
         {
+            var dtType = typeof(DateTime).FullName;
+            
             var parameters = algoMetaData.Parameters.ToList();
             parameters.AddRange(algoMetaData.Functions.SelectMany(f => f.Parameters));
-            parameters = parameters.Where(p => p.Type == nameof(DateTime)).Select(p => p).ToList();
+            parameters = parameters.Where(p => p.Type == dtType).Select(p => p).ToList();
 
             foreach (var param in parameters)
             {
@@ -99,9 +101,9 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         private void SetInstanceMetaDataProperties(AlgoClientInstanceData data, AlgoMetaDataInformationModel metaData)
         {
-            data.AssetPair = metaData.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
+            data.AssetPairId = metaData.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
             data.Volume = Convert.ToDouble(metaData.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
-            data.TradedAsset = metaData.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
+            data.TradedAssetId = metaData.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
             //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;

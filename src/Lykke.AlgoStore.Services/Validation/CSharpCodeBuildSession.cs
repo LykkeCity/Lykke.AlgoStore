@@ -1,5 +1,8 @@
 ﻿using Lykke.AlgoStore.Core.Domain.Validation;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,8 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
+using ValidationResult = Lykke.AlgoStore.Core.Domain.Validation.ValidationResult;
 
 namespace Lykke.AlgoStore.Services.Validation
 {
@@ -55,7 +57,7 @@ namespace Lykke.AlgoStore.Services.Validation
             if (ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
 
-            var root = (CompilationUnitSyntax) await _syntaxTree.GetRootAsync();
+            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
 
             _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText);
             _syntaxWalker.Visit(root);
@@ -179,8 +181,8 @@ namespace Lykke.AlgoStore.Services.Validation
 
             var position = diagnostic.Location.GetLineSpan().StartLinePosition;
 
-            validationMessage.Line = (uint) position.Line;
-            validationMessage.Column = (uint) position.Character;
+            validationMessage.Line = (uint)position.Line;
+            validationMessage.Column = (uint)position.Character;
 
             validationMessage.Id = diagnostic.Id;
             validationMessage.Message = diagnostic.ToString();
@@ -265,8 +267,8 @@ namespace Lykke.AlgoStore.Services.Validation
             {
                 result.Add(new EnumValue
                 {
-                    Key = ((int) enumValue).ToString(),
-                    Value = enumValue.ToString()
+                    Key = ((Enum)enumValue).GetDisplayName(),
+                    Value = ((int)enumValue).ToString()
                 });
             }
 

@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 
 namespace Lykke.AlgoStore.Services
@@ -34,18 +37,19 @@ namespace Lykke.AlgoStore.Services
                 clientId,
                 async () =>
                 {
-                    if (string.IsNullOrEmpty(instanceId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "InstanceId is empty.");
+                    Check.IsEmpty(instanceId, nameof(instanceId));
 
                     var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
                     if (statisticsSummary == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
-                            $"Could not find statistic summary row for AlgoInstance: {instanceId}");
+                            $"Could not find statistic summary row for AlgoInstance: {instanceId}",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
-                    statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                                                   statisticsSummary.InitialWalletBalance) * 100;
+                    statisticsSummary.NetProfit = Math.Round(
+                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
+                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
 
                     return statisticsSummary;
                 }
@@ -59,24 +63,25 @@ namespace Lykke.AlgoStore.Services
                 clientId,
                 async () =>
                 {
-                    if (string.IsNullOrEmpty(instanceId))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "InstanceId is empty.");
+                    Check.IsEmpty(instanceId, nameof(instanceId));
 
                     var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
                     if (statisticsSummary == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
-                            $"Could not find statistic summary row for AlgoInstance: {instanceId}");
+                            $"Could not find statistic summary row for AlgoInstance: {instanceId}",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
                     var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
                     if (algoInstance == null || algoInstance.AlgoId == null)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}");
+                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}",
+                            string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
                     }
 
-                    var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPair);
+                    var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPairId);
                     var tradedAsset = await _assetService.AssetGetWithHttpMessagesAsync(algoInstance.IsStraight 
                         ? assetPairResponse.Body.BaseAssetId
                         : assetPairResponse.Body.QuotingAssetId);
@@ -93,8 +98,9 @@ namespace Lykke.AlgoStore.Services
                         statisticsSummary.LastWalletBalance = latestWalletBalance;
                     }
 
-                    statisticsSummary.NetProfit = ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                                       statisticsSummary.InitialWalletBalance) * 100;
+                    statisticsSummary.NetProfit = Math.Round(
+                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
+                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
 
                     await _statisticsRepository.CreateOrUpdateSummaryAsync(statisticsSummary);
 

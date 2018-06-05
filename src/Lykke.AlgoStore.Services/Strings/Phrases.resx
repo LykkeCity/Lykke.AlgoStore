@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AlgoInstancesExist" xml:space="preserve">
-    <value>Cannot unpublish algo because it has algo instances.</value>
+    <value>Cannot {0} algo because it has {1}algo instances.</value>
   </data>
   <data name="AssetsMissingFromWallet" xml:space="preserve">
     <value>Asset {0} or {1} are missing from wallet {2}</value>
@@ -197,6 +197,54 @@
   </data>
   <data name="RunningAlgoInstanceExistsDisplayMessage" xml:space="preserve">
     <value>There are running algo instance(s)</value>
+  </data>
+  <data name="AssetPairDisabledDisplayMessage" xml:space="preserve">
+    <value>The asset pair {0} is temporarily disabled.</value>
+  </data>
+  <data name="ParamCantBeDeleted" xml:space="preserve">
+    <value>The {0} cannot be deleted.</value>
+  </data>
+  <data name="ParamInvalid" xml:space="preserve">
+    <value>Invalid {0}.</value>
+  </data>
+  <data name="ParamNotFoundDisplayMessage" xml:space="preserve">
+    <value>The {0} was not found.</value>
+  </data>
+  <data name="StringParameterMissing" xml:space="preserve">
+    <value>{0} is empty.</value>
+  </data>
+  <data name="StringParameterMissingDisplayMessage" xml:space="preserve">
+    <value>Please fill in all required fields.</value>
+  </data>
+  <data name="TradeVolumeBelowMinimum" xml:space="preserve">
+    <value>The amount should be higher than minimal order size {0} {1}</value>
+  </data>
+  <data name="UserCantSeeAlgo" xml:space="preserve">
+    <value>You do not have permission to access this algo.</value>
+  </data>
+  <data name="WalletHasNoAssetsDisplayMessage" xml:space="preserve">
+    <value>This wallet has no assets.</value>
+  </data>
+  <data name="AssetInvalidForAssetPair" xml:space="preserve">
+    <value>Asset {0} is not valid for asset pair {1}.</value>
+  </data>
+  <data name="PermissionsCantBeModified" xml:space="preserve">
+    <value>The permissions of this role cannot be modified.</value>
+  </data>
+  <data name="RoleAlreadyExists" xml:space="preserve">
+    <value>Role {0} already exists.</value>
+  </data>
+  <data name="RoleCantBeModified" xml:space="preserve">
+    <value>This role can't be modified.</value>
+  </data>
+  <data name="UserNotInUserRole" xml:space="preserve">
+    <value>Current user does not belong to 'User' role.</value>
+  </data>
+  <data name="AlgoMustNotBePublic" xml:space="preserve">
+    <value>The algo must not be public.</value>
+  </data>
+  <data name="AlgoIsPublic" xml:space="preserve">
+    <value>Algo {0} (client {1}) is public and not editable</value>
   </data>
   <data name="AssetPairFieldMissing" xml:space="preserve">
     <value>'AssetPair' filed is missing from AlgoMetaData</value>
