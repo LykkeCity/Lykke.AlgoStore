@@ -635,19 +635,8 @@ namespace Lykke.AlgoStore.Services
 
         private void PopulateAssetPairsAndTradedAssetsAsync(AlgoMetaDataInformation algoMetaDataInformation)
         {
-            if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == "AssetPair") == null)
-            {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                    "'AssetPair' filed is missing from AlgoMetaData",
-                    Phrases.AssetPairFieldMissing);
-            }
-
-            if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == "TradedAsset") == null)
-            {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                    "'TradedAsset' filed is missing from AlgoMetaData",
-                    Phrases.TradedAssetFieldMissing);
-            }
+            IsFieldMissing(algoMetaDataInformation, "TradedAsset");
+            IsFieldMissing(algoMetaDataInformation, "AssetPair");
 
             var assetPairsList = _assetPairsCache.GetDictionaryAsync().Result.Select(ap => new EnumValue
             {
@@ -663,6 +652,14 @@ namespace Lykke.AlgoStore.Services
 
             algoMetaDataInformation.Parameters.Single(p => p.Key == "AssetPair").PredefinedValues = assetPairsList;
             algoMetaDataInformation.Parameters.Single(p => p.Key == "TradedAsset").PredefinedValues = assetsList;
+        }
+
+        private void IsFieldMissing(AlgoMetaDataInformation algoMetaDataInformation, string field)
+        {
+           if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == field) == null)
+               throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                   $"'{field}' field is missing from AlgoMetaData",
+                   string.Format(Phrases.MetadataFieldMissing, field));
         }
     }
 }

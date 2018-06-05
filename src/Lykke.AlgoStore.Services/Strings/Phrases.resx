@@ -246,10 +246,7 @@
   <data name="AlgoIsPublic" xml:space="preserve">
     <value>Algo {0} (client {1}) is public and not editable</value>
   </data>
-  <data name="AssetPairFieldMissing" xml:space="preserve">
-    <value>'AssetPair' filed is missing from AlgoMetaData</value>
-  </data>
-  <data name="TradedAssetFieldMissing" xml:space="preserve">
-    <value>'TradedAsset' filed is missing from AlgoMetaData</value>
+  <data name="MetadataFieldMissing" xml:space="preserve">
+    <value>'{0}' field is missing from AlgoMetaData</value>
   </data>
 </root>
