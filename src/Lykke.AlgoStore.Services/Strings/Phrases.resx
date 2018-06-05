@@ -196,7 +196,7 @@
     <value>Cannot find algo data</value>
   </data>
   <data name="RunningAlgoInstanceExistsDisplayMessage" xml:space="preserve">
-    <value>There are running algo instance(s)</value>
+    <value>Algorithms with instances can not be modified</value>
   </data>
   <data name="AssetPairDisabledDisplayMessage" xml:space="preserve">
     <value>The asset pair {0} is temporarily disabled.</value>
@@ -245,5 +245,8 @@
   </data>
   <data name="AlgoIsPublic" xml:space="preserve">
     <value>Algo {0} (client {1}) is public and not editable</value>
+  </data>
+  <data name="AlgoIsPublicDisplayMessage" xml:space="preserve">
+    <value>Public algorithms can not be modified</value>
   </data>
 </root>

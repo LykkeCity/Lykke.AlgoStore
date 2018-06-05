@@ -315,7 +315,7 @@ namespace Lykke.AlgoStore.Services
                 if (res.AlgoVisibility == AlgoVisibility.Public)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoPublic,
                         string.Format(Phrases.AlgoIsPublic, data.ClientId, data.AlgoId),
-                        Phrases.AlgoMustNotBePublic);
+                        Phrases.AlgoIsPublicDisplayMessage);
 
                 //Check if there are running algo instances
                 var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
