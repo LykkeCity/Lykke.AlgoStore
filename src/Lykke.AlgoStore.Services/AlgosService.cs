@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Common;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
@@ -529,7 +530,7 @@ namespace Lykke.AlgoStore.Services
                 var algoInstances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
                 if (algoInstances.Any())
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.UnableToDeleteData,
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.Conflict,
                         $"Cannot unpublish algo because it has algo instances. Algo id {data.AlgoId}, Client id {data.ClientId}",
                         string.Format(Phrases.AlgoInstancesExist, "unpublish", ""));
 

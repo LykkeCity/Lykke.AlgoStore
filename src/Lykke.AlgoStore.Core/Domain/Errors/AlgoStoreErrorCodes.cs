@@ -9,6 +9,7 @@
 
         //Authorization
         Unauthorized = 401,
+        Conflict = 409,        
 
         //Data
         RuntimeSettingsExists = 500,
