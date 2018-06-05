@@ -115,6 +115,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Public algorithms can not be modified.
+        /// </summary>
+        internal static string AlgoIsPublicDisplayMessage {
+            get {
+                return ResourceManager.GetString("AlgoIsPublicDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The algo must not be public..
         /// </summary>
         internal static string AlgoMustNotBePublic {
@@ -367,7 +376,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are running algo instance(s).
+        ///   Looks up a localized string similar to Algorithms with running instances can not be modified.
         /// </summary>
         internal static string RunningAlgoInstanceExistsDisplayMessage {
             get {
