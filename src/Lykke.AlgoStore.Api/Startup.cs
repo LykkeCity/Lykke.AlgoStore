@@ -24,7 +24,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -151,7 +150,7 @@ namespace Lykke.AlgoStore.Api
             try
             {
                 await SeedPermissions(permissionsService, rolesService, rolePermissionMatchRepository);
-                await SeedRoles(rolesService, permissionsService, rolePermissionMatchRepository);
+                await SeedRoles(rolesService, rolePermissionMatchRepository);
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)
@@ -251,42 +250,44 @@ namespace Lykke.AlgoStore.Api
             await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
         }
 
-        private async Task SeedRoles(IUserRolesService rolesService, IUserPermissionsService permissionsService,
+        private async Task SeedRoles(IUserRolesService rolesService,
             IRolePermissionMatchRepository rolePermissionMatchRepository)
         {
             await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed started");
 
             var allRoles = await rolesService.GetAllRolesAsync();
 
-            // Check if admin role exists, if not - seed it
-            // Note: Only the original admin role cannot be deleted
-            var adminRole = allRoles.Where(role => role.Name == "Admin" && !role.CanBeDeleted).FirstOrDefault();
+            // Check if administrator role exists, if not - seed it
+            // Note: Only the original administrator role cannot be deleted
+            var adminRole =
+                allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.AdminRoleName && !role.CanBeDeleted);
 
-            // If there is no admin role, we need to seed it
+            // If there is no administrator role, we need to seed it
             if (adminRole == null)
             {
                 adminRole = new UserRoleData()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Admin",
+                    Name = AlgoStoreConstants.AdminRoleName,
                     CanBeDeleted = false,
                     CanBeModified = false
                 };
 
-                // Create the Admin role
+                // Create the administrator role
                 await rolesService.SaveRoleAsync(adminRole);
             }
 
             // Check if user role exists, if not - seed it. Don't touch it if it exists
             // Note: Only the original user role cannot be deleted
-            var userRole = allRoles.FirstOrDefault(role => role.Name == "User" && !role.CanBeDeleted);
+            var userRole =
+                allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.UserRoleName && !role.CanBeDeleted);
 
             if (userRole == null)
             {
                 userRole = new UserRoleData()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User",
+                    Name = AlgoStoreConstants.UserRoleName,
                     CanBeDeleted = false,
                     CanBeModified = true
                 };
@@ -295,7 +296,7 @@ namespace Lykke.AlgoStore.Api
                 await rolesService.SaveRoleAsync(userRole);
             }
 
-            // Seed the permissions for the admin role
+            // Seed the permissions for the administrator role
             foreach (var permission in Permissions)
             {
                 var match = new RolePermissionMatchData()
