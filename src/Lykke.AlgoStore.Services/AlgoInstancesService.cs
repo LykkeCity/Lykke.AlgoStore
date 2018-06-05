@@ -125,9 +125,9 @@ namespace Lykke.AlgoStore.Services
         /// <param name="data">The data.</param>
         /// <param name="algoClientId">Algo client id.</param>
         /// <returns></returns>
-        public async Task<AlgoClientInstanceData> SaveAlgoBackTestInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
+        public async Task<AlgoClientInstanceData> SaveAlgoFakeTradingInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
         {
-            return await LogTimedInfoAsync(nameof(SaveAlgoBackTestInstanceDataAsync), data.ClientId,
+            return await LogTimedInfoAsync(nameof(SaveAlgoFakeTradingInstanceDataAsync), data.ClientId,
                 async () => await SaveInstanceDataAsync(data, algoClientId, true));
         }
 
@@ -161,7 +161,7 @@ namespace Lykke.AlgoStore.Services
         private async Task<AlgoClientInstanceData> SaveInstanceDataAsync(
            AlgoClientInstanceData data,
            string algoClientId,
-           bool isBackTestInstance = false)
+           bool isFakeTradeInstance = false)
         {
             if (string.IsNullOrWhiteSpace(data.InstanceId))
                 data.InstanceId = Guid.NewGuid().ToString();
@@ -169,7 +169,14 @@ namespace Lykke.AlgoStore.Services
             if (!data.ValidateData(out var exception))
                 throw exception;
 
-            if (!isBackTestInstance)
+            if(isFakeTradeInstance && data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                    Phrases.LiveAlgoCantFakeTrade,
+                    Phrases.LiveAlgoCantFakeTrade);
+            }
+
+            if (!isFakeTradeInstance)
             {
                 var wallet = await GetClientWallet(data.ClientId, data.WalletId);
                 if (wallet == null)
@@ -210,7 +217,7 @@ namespace Lykke.AlgoStore.Services
             var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
             _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
 
-            if (!isBackTestInstance)
+            if (!isFakeTradeInstance)
                 _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
 
             if (string.IsNullOrEmpty(data.AuthToken))
@@ -223,7 +230,7 @@ namespace Lykke.AlgoStore.Services
             var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
             if (res == null)
                 throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                    $"Cannot save {(isBackTestInstance ? "back test" : "")} algo instance data for {data.ClientId} id: {data.AlgoId}",
+                    $"Cannot save {(isFakeTradeInstance ? "back test" : "")} algo instance data for {data.ClientId} id: {data.AlgoId}",
                     string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
             await SaveSummaryStatistic(data, assetPairResponse.Body, asset.Body, straight ? quotingAsset.Body : baseAsset.Body);
@@ -249,8 +256,8 @@ namespace Lykke.AlgoStore.Services
             {
                 userCurrencyAssetId = assetPair.QuotingAssetId;
 
-                clientTradedAssetBalance = data.BackTestTradingAssetBalance;
-                clientAssetTwoBalance = data.BackTestAssetTwoBalance;
+                clientTradedAssetBalance = data.FakeTradingTradingAssetBalance;
+                clientAssetTwoBalance = data.FakeTradingAssetTwoBalance;
 
                 var tradedAssetBalanceAbsoluteValue = await _candlesHistoryService.GetCandlesHistoryAsync(assetPair.Id,
                     Lykke.Service.CandlesHistory.Client.Models.CandlePriceType.Mid,

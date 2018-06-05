@@ -44,8 +44,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 var numberOfElements = 10;
                 var fixture = new Fixture();
                 var mock = Enumerable.Repeat(new object[] { fixture.Build<AlgoClientInstanceData>()
-                    .With(d => d.BackTestAssetTwoBalance, 0)
-                    .With(d => d.BackTestTradingAssetBalance, 0)
+                    .With(d => d.FakeTradingAssetTwoBalance, 0)
+                    .With(d => d.FakeTradingTradingAssetBalance, 0)
                     .Create()
                 }, numberOfElements).ToList();
                 return mock;
@@ -135,8 +135,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             var resultWithAlgoIdPartKey = When_Invoke_ToModel(entityWithAlgoIdPartKey);
             var resultWithClientIdPartKey = When_Invoke_ToModel(entityWithClientIdPartKey);
 
-            resultWithClientIdPartKey.BackTestAssetTwoBalance = data.BackTestAssetTwoBalance;
-            resultWithClientIdPartKey.BackTestTradingAssetBalance = data.BackTestTradingAssetBalance;
+            resultWithClientIdPartKey.FakeTradingAssetTwoBalance = data.FakeTradingAssetTwoBalance;
+            resultWithClientIdPartKey.FakeTradingTradingAssetBalance = data.FakeTradingTradingAssetBalance;
 
             //there are no valid model and entity props so test can't be called.
 
