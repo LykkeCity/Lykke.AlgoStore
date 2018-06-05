@@ -228,7 +228,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 InstanceId = _mockInstanceId,
                 ClientId = _mockClientId,
                 InstanceName = "Test",
-                TradedAsset = _mockTradedAsset
+                TradedAssetId = _mockTradedAsset
             };
             return mockedResult;
         }

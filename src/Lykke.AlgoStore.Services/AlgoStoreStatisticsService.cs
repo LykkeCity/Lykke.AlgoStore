@@ -81,7 +81,7 @@ namespace Lykke.AlgoStore.Services
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
                     }
 
-                    var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPair);
+                    var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPairId);
                     var tradedAsset = await _assetService.AssetGetWithHttpMessagesAsync(algoInstance.IsStraight 
                         ? assetPairResponse.Body.BaseAssetId
                         : assetPairResponse.Body.QuotingAssetId);

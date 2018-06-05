@@ -406,7 +406,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new AlgosService(repo, blobRepo, algoInstanceRepository,
                 algoRatingsRepository, publicAlgosRepository, personalDataService,
                 algoStoreService, commentsRepository,
-                new LogMock(), codeBuildService);
+                new LogMock(), codeBuildService, null, null);
 
             return result;
         }

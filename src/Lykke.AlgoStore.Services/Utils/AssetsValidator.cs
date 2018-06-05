@@ -60,14 +60,15 @@ namespace Lykke.AlgoStore.Services.Utils
         //    return true;
         //}
 
-        public void ValidateAsset(AssetPair assetPair, string assetId,
+        public void ValidateAsset(AssetPair assetPair, string tradedAssetId,
             Asset baseAsset, Asset quotingAsset)
         {
-            if (assetId != baseAsset.Id && assetId != baseAsset.Name && assetId != quotingAsset.Id && assetId != quotingAsset.Name)
+            if (tradedAssetId != baseAsset.Id && tradedAssetId != baseAsset.Name && tradedAssetId != quotingAsset.Id 
+                && tradedAssetId != quotingAsset.Name)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
-                    $"Asset <{assetId}> is not valid for asset pair <{assetPair.Id}>.",
-                    string.Format(Phrases.AssetInvalidForAssetPair, assetId, assetPair.Id));
+                    $"Asset <{tradedAssetId}> is not valid for asset pair <{assetPair.Id}>.",
+                    string.Format(Phrases.AssetInvalidForAssetPair, tradedAssetId, assetPair.Id));
             }
         }
 

@@ -249,4 +249,7 @@
   <data name="AlgoIsPublicDisplayMessage" xml:space="preserve">
     <value>Public algorithms can not be modified</value>
   </data>
+  <data name="MetadataFieldMissing" xml:space="preserve">
+    <value>'{0}' field is missing from AlgoMetaData</value>
+  </data>
 </root>

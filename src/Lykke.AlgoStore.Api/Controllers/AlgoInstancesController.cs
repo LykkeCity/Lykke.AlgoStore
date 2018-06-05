@@ -101,9 +101,9 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         private void SetInstanceMetaDataProperties(AlgoClientInstanceData data, AlgoMetaDataInformationModel metaData)
         {
-            data.AssetPair = metaData.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
+            data.AssetPairId = metaData.Parameters.SingleOrDefault(t => t.Key == "AssetPair")?.Value;
             data.Volume = Convert.ToDouble(metaData.Parameters.SingleOrDefault(t => t.Key == "Volume")?.Value);
-            data.TradedAsset = metaData.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
+            data.TradedAssetId = metaData.Parameters.SingleOrDefault(t => t.Key == "TradedAsset")?.Value;
 
             //When we create/edit algo instance and save it we call deploy process after that, that's why we set it's status to deploying.
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;

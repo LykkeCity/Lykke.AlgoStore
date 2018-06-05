@@ -277,6 +277,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; field is missing from AlgoMetaData.
+        /// </summary>
+        internal static string MetadataFieldMissing {
+            get {
+                return ResourceManager.GetString("MetadataFieldMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find algo data. ClientId: {0}, AlgoId: {1}.
         /// </summary>
         internal static string NoAlgoData {

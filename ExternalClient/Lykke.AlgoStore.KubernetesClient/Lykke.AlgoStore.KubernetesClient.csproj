@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.52" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.54" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
   </ItemGroup>
 

@@ -188,18 +188,18 @@ namespace Lykke.AlgoStore.Services
             await Check.Algo.Exists(_algoRepository, algoClientId, data.AlgoId);
             await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, algoClientId);
 
-            var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPair);
+            var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPairId);
             _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
-            _assetsValidator.ValidateAssetPair(data.AssetPair, assetPairResponse.Body);
+            _assetsValidator.ValidateAssetPair(data.AssetPairId, assetPairResponse.Body);
 
             var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
             _assetsValidator.ValidateAssetResponse(baseAsset);
 
             var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
             _assetsValidator.ValidateAssetResponse(quotingAsset);
-            _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAsset, baseAsset.Body, quotingAsset.Body);
+            _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAssetId, baseAsset.Body, quotingAsset.Body);
 
-            var straight = data.TradedAsset == baseAsset.Body.Id || data.TradedAsset == baseAsset.Body.Name;
+            var straight = data.TradedAssetId == baseAsset.Body.Id || data.TradedAssetId == baseAsset.Body.Name;
 
             //get traded asset
             var asset = straight ? baseAsset : quotingAsset;
@@ -342,7 +342,7 @@ namespace Lykke.AlgoStore.Services
         /// </param>
         private async Task<bool> IsWalletUsedByExistingStartedInstance(string walletId)
         {
-            var algoInstances = (await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId));
+            var algoInstances = await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId);
             return algoInstances != null && algoInstances.Any();
         }
     }

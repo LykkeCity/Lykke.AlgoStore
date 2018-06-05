@@ -96,8 +96,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                     return Task.FromResult(fixture.Build<AlgoClientInstanceData>()
                         .With(a => a.ClientId, clientId)
                         .With(b => b.InstanceId, id)
-                        .With(a => a.TradedAsset, TradedAsset)
-                        .With(a => a.AssetPair, AssetPair)
+                        .With(a => a.TradedAssetId, TradedAsset)
+                        .With(a => a.AssetPairId, AssetPair)
                         .Create());
                 });
 
