@@ -44,7 +44,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoClientInstanceData, AlgoClientInstanceModel>()
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
 
-            CreateMap<AlgoClientInstanceData, AlgoBackTestInstanceModel>()
+            CreateMap<AlgoClientInstanceData, AlgoFakeTradingInstanceModel>()
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
 
             CreateMap<AlgoClientInstanceModel, AlgoClientInstanceData>()
@@ -55,12 +55,12 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Volume, opt => opt.Ignore())
                 .ForMember(dest => dest.TradedAssetId, opt => opt.Ignore())
                 .ForMember(dest => dest.IsStraight, opt => opt.Ignore())
-                .ForMember(dest => dest.BackTestTradingAssetBalance, opt => opt.Ignore())
-                .ForMember(dest => dest.BackTestAssetTwoBalance, opt => opt.Ignore())
+                .ForMember(dest => dest.FakeTradingTradingAssetBalance, opt => opt.Ignore())
+                .ForMember(dest => dest.FakeTradingAssetTwoBalance, opt => opt.Ignore())
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthToken, opt => opt.Ignore());
 
-            CreateMap<AlgoBackTestInstanceModel, AlgoClientInstanceData>()
+            CreateMap<AlgoFakeTradingInstanceModel, AlgoClientInstanceData>()
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
                 .ForMember(dest => dest.AssetPairId, opt => opt.Ignore())
                 .ForMember(dest => dest.HftApiKey, opt => opt.Ignore())

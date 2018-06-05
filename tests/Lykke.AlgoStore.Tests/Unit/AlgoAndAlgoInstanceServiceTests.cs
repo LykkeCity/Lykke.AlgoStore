@@ -1243,7 +1243,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.SaveAlgoBackTestInstanceDataAsync(data, algoClientId).Result;
+                return service.SaveAlgoFakeTradingInstanceDataAsync(data, algoClientId).Result;
             }
             catch (Exception ex)
             {

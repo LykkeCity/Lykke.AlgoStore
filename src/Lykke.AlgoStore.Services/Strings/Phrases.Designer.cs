@@ -286,6 +286,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Live algo instances are not allowed to use fake trading..
+        /// </summary>
+        internal static string LiveAlgoCantFakeTrade {
+            get {
+                return ResourceManager.GetString("LiveAlgoCantFakeTrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find algo data. ClientId: {0}, AlgoId: {1}.
         /// </summary>
         internal static string NoAlgoData {

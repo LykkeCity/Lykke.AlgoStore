@@ -252,4 +252,7 @@
   <data name="MetadataFieldMissing" xml:space="preserve">
     <value>'{0}' field is missing from AlgoMetaData</value>
   </data>
+  <data name="LiveAlgoCantFakeTrade" xml:space="preserve">
+    <value>Live algo instances are not allowed to use fake trading.</value>
+  </data>
 </root>

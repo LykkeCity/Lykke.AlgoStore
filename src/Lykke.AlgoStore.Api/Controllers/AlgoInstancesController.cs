@@ -134,12 +134,12 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
-        [HttpPost("backTestInstanceData")]
-        [SwaggerOperation("SaveAlgoBackTestInstanceDataAsync")]
-        [ProducesResponseType(typeof(AlgoBackTestInstanceModel), (int)HttpStatusCode.OK)]
+        [HttpPost("fakeTradingInstanceData")]
+        [SwaggerOperation("SaveAlgoFakeTradingInstanceDataAsync")]
+        [ProducesResponseType(typeof(AlgoFakeTradingInstanceModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> SaveAlgoBackTestInstanceDataAsync([FromBody]AlgoBackTestInstanceModel model)
+        public async Task<IActionResult> SaveAlgoFakeTradingInstanceDataAsync([FromBody]AlgoFakeTradingInstanceModel model)
         {
             var data = Mapper.Map<AlgoClientInstanceData>(model);
             data.ClientId = User.GetClientId();
@@ -152,8 +152,8 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
-            var result = await _algoInstancesService.SaveAlgoBackTestInstanceDataAsync(data, model.AlgoClientId);
-            var response = Mapper.Map<AlgoBackTestInstanceModel>(result);
+            var result = await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, model.AlgoClientId);
+            var response = Mapper.Map<AlgoFakeTradingInstanceModel>(result);
 
             return Ok(response);
         }
