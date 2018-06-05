@@ -35,7 +35,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             StatisticsSummary result;
             var algoInstance = await _algoInstancesService.GetAlgoInstanceDataAsync(User.GetClientId(), instanceId);
 
-            if (algoInstance.AlgoInstanceType == AlgoInstanceType.Test || algoInstance.AlgoInstanceStatus == AlgoInstanceStatus.Stopped)
+            if (algoInstance.AlgoInstanceType != AlgoInstanceType.Live || algoInstance.AlgoInstanceStatus == AlgoInstanceStatus.Stopped)
                 result = await _statisticsService.GetStatisticsSummaryAsync(User.GetClientId(), instanceId);
             else
                 result = await _statisticsService.UpdateStatisticsSummaryAsync(User.GetClientId(), instanceId);
