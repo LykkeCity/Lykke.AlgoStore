@@ -252,7 +252,7 @@ namespace Lykke.AlgoStore.Services
             double initialWalletBalance;
             string userCurrencyAssetId;
 
-            if (data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Test)
+            if (data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
             {
                 userCurrencyAssetId = assetPair.QuotingAssetId;
 
