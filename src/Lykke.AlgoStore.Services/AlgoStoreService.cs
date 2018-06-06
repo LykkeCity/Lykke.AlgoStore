@@ -106,6 +106,7 @@ namespace Lykke.AlgoStore.Services
                 algoInstanceParameters.AlgoId = data.AlgoId;
                 algoInstanceParameters.InstanceId = data.InstanceId;
                 algoInstanceParameters.InstanceType = instanceData.AlgoInstanceType.ToString();
+                algoInstanceParameters.AuthToken = instanceData.AuthToken.ToString();
 
                 var buildData = new TeamCityClientBuildData
                 {
