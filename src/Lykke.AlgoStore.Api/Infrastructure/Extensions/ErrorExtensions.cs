@@ -42,6 +42,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
                 case AlgoStoreErrorCodes.AlgoInstanceDataNotFound:
                     statusCode = HttpStatusCode.NotFound;
                     break;
+                case AlgoStoreErrorCodes.Conflict:
+                    statusCode = HttpStatusCode.Conflict;
+                    break;
                 default:
                     statusCode = HttpStatusCode.InternalServerError;
                     break;

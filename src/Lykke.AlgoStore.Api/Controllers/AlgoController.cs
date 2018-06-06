@@ -172,7 +172,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("removeFromPublic")]
         [SwaggerOperation("removeFromPublic")]
         [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> RemoveFromPublic([FromBody] PublicAlgoDataModel model)
         {
