@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.2" />
-    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.2" />
     <PackageReference Include="Lykke.Common" Version="6.8.4" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.7.1" />
     <PackageReference Include="Lykke.Logs" Version="4.3.4" />
@@ -53,6 +52,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Security\client\Lykke.AlgoStore.Service.Security.Client\Lykke.AlgoStore.Service.Security.Client.csproj" />
     <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
