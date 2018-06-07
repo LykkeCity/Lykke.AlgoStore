@@ -41,4 +41,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Security\client\Lykke.AlgoStore.Service.Security.Client\Lykke.AlgoStore.Service.Security.Client.csproj" />
+  </ItemGroup>
+
 </Project>
