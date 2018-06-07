@@ -9,12 +9,22 @@
 
   <ItemGroup>
     <Compile Remove="Domain\Entities\AlgoClientInstanceData.cs" />
+    <Compile Remove="Domain\Entities\AlgoStoreUserData.cs" />
     <Compile Remove="Domain\Entities\BaseAlgoInstance.cs" />
     <Compile Remove="Domain\Entities\BaseValidatableData.cs" />
+    <Compile Remove="Domain\Entities\UserPermissionData.cs" />
+    <Compile Remove="Domain\Entities\UserRoleData.cs" />
+    <Compile Remove="Domain\Entities\UserRoleMatchData.cs" />
     <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoClientInstanceReadOnlyRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoDataRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoTemplateDataRepository.cs" />
+    <Compile Remove="Domain\Repositories\IRolePermissionMatchRepository.cs" />
+    <Compile Remove="Domain\Repositories\IUserPermissionsRepository.cs" />
+    <Compile Remove="Domain\Repositories\IUserRoleMatchRepository.cs" />
+    <Compile Remove="Domain\Repositories\IUserRolesRepository.cs" />
+    <Compile Remove="Services\IUserPermissionsService.cs" />
+    <Compile Remove="Services\IUserRolesService.cs" />
   </ItemGroup>
 
   <ItemGroup>

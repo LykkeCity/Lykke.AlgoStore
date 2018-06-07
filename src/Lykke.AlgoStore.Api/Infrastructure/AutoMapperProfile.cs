@@ -4,6 +4,8 @@ using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.Service.Security.Client.AutorestClient.Models;
+using UserRoleUpdateModel = Lykke.AlgoStore.Api.Models.UserRoleUpdateModel;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
 {
