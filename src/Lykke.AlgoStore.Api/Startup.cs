@@ -37,7 +37,7 @@ namespace Lykke.AlgoStore.Api
         public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
         public ILog Log { get; private set; }
-        public List<UserPermissionData> Permissions { get; private set; }
+        //public List<UserPermissionData> Permissions { get; private set; }
 
         public Startup(IHostingEnvironment env)
         {
@@ -95,9 +95,7 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime,
-            IUserPermissionsService permissionsService, IUserRolesService rolesService,
-            IRolePermissionMatchRepository rolePermissionMatchRepository)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
             try
             {
@@ -133,8 +131,7 @@ namespace Lykke.AlgoStore.Api
                 });
                 app.UseStaticFiles();
 
-                appLifetime.ApplicationStarted.Register(() =>
-                    StartApplication(permissionsService, rolesService, rolePermissionMatchRepository).Wait());
+                appLifetime.ApplicationStarted.Register(() => StartApplication().Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
             catch (Exception ex)
@@ -144,8 +141,7 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        private async Task StartApplication(IUserPermissionsService permissionsService, IUserRolesService rolesService,
-            IRolePermissionMatchRepository rolePermissionMatchRepository)
+        private async Task StartApplication()
         {
             try
             {
@@ -183,132 +179,132 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
-        private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService,
-            IRolePermissionMatchRepository rolePermissionMatchRepository)
-        {
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed started");
+        //private async Task SeedPermissions(IUserPermissionsService permissionsService, IUserRolesService rolesService,
+        //    IRolePermissionMatchRepository rolePermissionMatchRepository)
+        //{
+        //    await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed started");
 
-            // Extract controller methods
-            Permissions = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => t.IsClass && t.ReflectedType == null && t.Namespace == "Lykke.AlgoStore.Api.Controllers")
-                .SelectMany(c => c.GetMethods().Where(m =>
-                    m.ReturnType == typeof(Task<IActionResult>) &&
-                    (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null ||
-                     m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
-                .Select(i => new UserPermissionData()
-                {
-                    Id = i.Name,
-                    Name = i.ReflectedType.Name,
-                    DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart()
-                })
-                .ToList();
+        //    // Extract controller methods
+        //    Permissions = Assembly.GetExecutingAssembly().GetTypes()
+        //        .Where(t => t.IsClass && t.ReflectedType == null && t.Namespace == "Lykke.AlgoStore.Api.Controllers")
+        //        .SelectMany(c => c.GetMethods().Where(m =>
+        //            m.ReturnType == typeof(Task<IActionResult>) &&
+        //            (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null ||
+        //             m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
+        //        .Select(i => new UserPermissionData()
+        //        {
+        //            Id = i.Name,
+        //            Name = i.ReflectedType.Name,
+        //            DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart()
+        //        })
+        //        .ToList();
 
-            // check if we should delete any old permissions
-            var allPermissions = await permissionsService.GetAllPermissionsAsync();
+        //    // check if we should delete any old permissions
+        //    var allPermissions = await permissionsService.GetAllPermissionsAsync();
 
-            var permissionsToDelete = allPermissions
-                .Where(x => !Permissions.Any(y => y.Name == x.Name && y.Id == x.Id)) //Must compare by Id and Name
-                .ToList();
+        //    var permissionsToDelete = allPermissions
+        //        .Where(x => !Permissions.Any(y => y.Name == x.Name && y.Id == x.Id)) //Must compare by Id and Name
+        //        .ToList();
 
-            if (permissionsToDelete.Any())
-            {
-                var allRoles = await rolesService.GetAllRolesAsync();
+        //    if (permissionsToDelete.Any())
+        //    {
+        //        var allRoles = await rolesService.GetAllRolesAsync();
 
-                // delete old unneeded permissions
-                foreach (var permissionToDelete in permissionsToDelete)
-                {
-                    // first check if the permission has been referenced in any role
-                    var matches = allRoles.Where(role =>
-                            role.Permissions.Any(
-                                p => p.Id == permissionToDelete.Id && p.Name == permissionToDelete.Name))
-                        .ToList();
+        //        // delete old unneeded permissions
+        //        foreach (var permissionToDelete in permissionsToDelete)
+        //        {
+        //            // first check if the permission has been referenced in any role
+        //            var matches = allRoles.Where(role =>
+        //                    role.Permissions.Any(
+        //                        p => p.Id == permissionToDelete.Id && p.Name == permissionToDelete.Name))
+        //                .ToList();
 
-                    // if the permission is referenced, remove the reference
-                    if (matches.Any())
-                    {
-                        foreach (var reference in matches)
-                        {
-                            await rolePermissionMatchRepository.RevokePermission(new RolePermissionMatchData()
-                            {
-                                RoleId = reference.Id,
-                                PermissionId = permissionToDelete.Id
-                            });
-                        }
-                    }
+        //            // if the permission is referenced, remove the reference
+        //            if (matches.Any())
+        //            {
+        //                foreach (var reference in matches)
+        //                {
+        //                    await rolePermissionMatchRepository.RevokePermission(new RolePermissionMatchData()
+        //                    {
+        //                        RoleId = reference.Id,
+        //                        PermissionId = permissionToDelete.Id
+        //                    });
+        //                }
+        //            }
 
-                    // finally delete the permission
-                    await permissionsService.DeletePermissionAsync(permissionToDelete.Id);
-                }
-            }
+        //            // finally delete the permission
+        //            await permissionsService.DeletePermissionAsync(permissionToDelete.Id);
+        //        }
+        //    }
 
-            // refresh current permissions
-            foreach (var permission in Permissions)
-            {
-                await permissionsService.SavePermissionAsync(permission);
-            }
+        //    // refresh current permissions
+        //    foreach (var permission in Permissions)
+        //    {
+        //        await permissionsService.SavePermissionAsync(permission);
+        //    }
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
-        }
+        //    await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
+        //}
 
-        private async Task SeedRoles(IUserRolesService rolesService,
-            IRolePermissionMatchRepository rolePermissionMatchRepository)
-        {
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed started");
+        //private async Task SeedRoles(IUserRolesService rolesService,
+        //    IRolePermissionMatchRepository rolePermissionMatchRepository)
+        //{
+        //    await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed started");
 
-            var allRoles = await rolesService.GetAllRolesAsync();
+        //    var allRoles = await rolesService.GetAllRolesAsync();
 
-            // Check if administrator role exists, if not - seed it
-            // Note: Only the original administrator role cannot be deleted
-            var adminRole =
-                allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.AdminRoleName && !role.CanBeDeleted);
+        //    // Check if administrator role exists, if not - seed it
+        //    // Note: Only the original administrator role cannot be deleted
+        //    var adminRole =
+        //        allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.AdminRoleName && !role.CanBeDeleted);
 
-            // If there is no administrator role, we need to seed it
-            if (adminRole == null)
-            {
-                adminRole = new UserRoleData()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = AlgoStoreConstants.AdminRoleName,
-                    CanBeDeleted = false,
-                    CanBeModified = false
-                };
+        //    // If there is no administrator role, we need to seed it
+        //    if (adminRole == null)
+        //    {
+        //        adminRole = new UserRoleData()
+        //        {
+        //            Id = Guid.NewGuid().ToString(),
+        //            Name = AlgoStoreConstants.AdminRoleName,
+        //            CanBeDeleted = false,
+        //            CanBeModified = false
+        //        };
 
-                // Create the administrator role
-                await rolesService.SaveRoleAsync(adminRole);
-            }
+        //        // Create the administrator role
+        //        await rolesService.SaveRoleAsync(adminRole);
+        //    }
 
-            // Check if user role exists, if not - seed it. Don't touch it if it exists
-            // Note: Only the original user role cannot be deleted
-            var userRole =
-                allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.UserRoleName && !role.CanBeDeleted);
+        //    // Check if user role exists, if not - seed it. Don't touch it if it exists
+        //    // Note: Only the original user role cannot be deleted
+        //    var userRole =
+        //        allRoles.FirstOrDefault(role => role.Name == AlgoStoreConstants.UserRoleName && !role.CanBeDeleted);
 
-            if (userRole == null)
-            {
-                userRole = new UserRoleData()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = AlgoStoreConstants.UserRoleName,
-                    CanBeDeleted = false,
-                    CanBeModified = true
-                };
+        //    if (userRole == null)
+        //    {
+        //        userRole = new UserRoleData()
+        //        {
+        //            Id = Guid.NewGuid().ToString(),
+        //            Name = AlgoStoreConstants.UserRoleName,
+        //            CanBeDeleted = false,
+        //            CanBeModified = true
+        //        };
 
-                // Create the User role
-                await rolesService.SaveRoleAsync(userRole);
-            }
+        //        // Create the User role
+        //        await rolesService.SaveRoleAsync(userRole);
+        //    }
 
-            // Seed the permissions for the administrator role
-            foreach (var permission in Permissions)
-            {
-                var match = new RolePermissionMatchData()
-                {
-                    RoleId = adminRole.Id,
-                    PermissionId = permission.Id
-                };
+        //    // Seed the permissions for the administrator role
+        //    foreach (var permission in Permissions)
+        //    {
+        //        var match = new RolePermissionMatchData()
+        //        {
+        //            RoleId = adminRole.Id,
+        //            PermissionId = permission.Id
+        //        };
 
-                await rolePermissionMatchRepository.AssignPermissionToRoleAsync(match);
-            }
+        //        await rolePermissionMatchRepository.AssignPermissionToRoleAsync(match);
+        //    }
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed finished");
-        }
+        //    await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed finished");
+        //}
     }
 }
