@@ -9,6 +9,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Service.Security.Client;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -18,11 +19,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreUsersController: Controller
     {
         private readonly IUserRolesService _userRolesService;
+        private readonly ISecurityClient _securityClient;
 
-        public AlgoStoreUsersController(
-            IUserRolesService userRolesService)
+        public AlgoStoreUsersController(IUserRolesService userRolesService, ISecurityClient securityClient)
         {
             _userRolesService = userRolesService;
+            _securityClient = securityClient;
         }
 
         [HttpGet("getAllWithRoles")]
