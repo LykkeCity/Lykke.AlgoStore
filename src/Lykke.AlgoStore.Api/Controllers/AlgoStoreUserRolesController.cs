@@ -1,14 +1,13 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Service.Security.Client;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -16,12 +15,11 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/roles")]
     public class AlgoStoreUserRolesController: Controller
     {
-        private readonly IUserRolesService _userRolesService;
+        private readonly ISecurityClient _securityClient;
 
-        public AlgoStoreUserRolesController(
-            IUserRolesService userRolesService)
+        public AlgoStoreUserRolesController(ISecurityClient securityClient)
         {
-            _userRolesService = userRolesService;
+            _securityClient = securityClient;
         }
 
         [HttpGet("getAll")]
@@ -31,7 +29,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUserRoles()
         {
-            var result = await _userRolesService.GetAllRolesAsync();
+            var result = await _securityClient.GetAllUserRolesAsync();
             return Ok(result);
         }
 
@@ -43,7 +41,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetRoleById(string roleId)
         {
-            var result = await _userRolesService.GetRoleByIdAsync(roleId);
+            var result = await _securityClient.GetRoleByIdAsync(roleId);
 
             if (result == null)
                 return NotFound();
@@ -60,7 +58,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrEmpty(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _userRolesService.GetRolesByClientIdAsync(clientId);
+            var result = await _securityClient.GetRolesByClientIdAsync(clientId);
 
             return Ok(result);
         }
@@ -72,9 +70,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> SaveUserRole([FromBody] UserRoleCreateModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleData>(role);
+            var data = AutoMapper.Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>(role);
 
-            var result = await _userRolesService.SaveRoleAsync(data);
+            var result = await _securityClient.SaveUserRoleAsync(data);
 
             return Ok(result);
         }
@@ -86,9 +84,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateUserRole([FromBody] UserRoleUpdateModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleData>(role);
+            var data = AutoMapper.Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>(role);
 
-            var result = await _userRolesService.SaveRoleAsync(data);
+            var result = await _securityClient.SaveUserRoleAsync(data);
 
             return Ok(result);
         }
@@ -100,9 +98,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignUserRole([FromBody] UserRoleMatchModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleMatchData>(role);
+            var data = AutoMapper.Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleMatchModel>(role);
 
-            await _userRolesService.AssignRoleToUser(data);
+            await _securityClient.AssignUserRoleAsync(data);
 
             return NoContent();
         }
@@ -114,9 +112,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeRoleFromUser([FromBody] UserRoleMatchModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleMatchData>(role);
+            var data = AutoMapper.Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleMatchModel>(role);
 
-            await _userRolesService.RevokeRoleFromUser(data);
+            await _securityClient.RevokeRoleFromUserAsync(data);
 
             return NoContent();
         }
@@ -130,7 +128,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrEmpty(clientId))
                 clientId = User.GetClientId();
 
-            await _userRolesService.VerifyUserRole(clientId);
+            await _securityClient.VerifyUserRoleAsync(clientId);
 
             return Ok();
         }
@@ -142,7 +140,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteUserRole(string roleId)
         {
-            await _userRolesService.DeleteRoleAsync(roleId);
+            await _securityClient.DeleteUserRoleAsync(roleId);
 
             return NoContent();
         }
