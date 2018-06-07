@@ -7,6 +7,8 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.PersonalData.Contract;
 
 namespace Lykke.AlgoStore.Services
@@ -61,8 +63,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetRoleByIdAsync), null, async () =>
             {
-                if (string.IsNullOrEmpty(roleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+                Check.IsEmpty(roleId, nameof(roleId));
 
                 var role = await _rolesRepository.GetRoleByIdAsync(roleId);
 
@@ -87,8 +88,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetRolesByClientIdAsync), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
+                Check.IsEmpty(clientId, nameof(clientId));
 
                 var roleMatches = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
                 var roles = new List<UserRoleData>();
@@ -133,8 +133,7 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GeyUserByIdWithRoles), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
+                Check.IsEmpty(clientId, nameof(clientId));
 
                 var matches = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
 
@@ -156,23 +155,22 @@ namespace Lykke.AlgoStore.Services
         {
             await LogTimedInfoAsync(nameof(AssignRoleToUser), data.ClientId, async () =>
             {
-                if (string.IsNullOrEmpty(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
-
-                if (string.IsNullOrEmpty(data.RoleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+                Check.IsEmpty(data.ClientId, nameof(data.ClientId));
+                Check.IsEmpty(data.RoleId, nameof(data.RoleId));
 
                 var role = await _rolesRepository.GetRoleByIdAsync(data.RoleId);
 
                 if (role == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Role with id {data.RoleId} does not exist.");
+                        $"Role with id {data.RoleId} does not exist.",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "role"));
 
                 var clientData = await _personalDataService.GetAsync(data.ClientId);
 
                 if (clientData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Client with id {data.ClientId} does not exist.");
+                        $"Client with id {data.ClientId} does not exist.",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "client"));
 
                 await _userRoleMatchRepository.SaveUserRoleAsync(data);
             });
@@ -184,13 +182,13 @@ namespace Lykke.AlgoStore.Services
             {
                 if (role.Id == null)
                 {
-                    if (String.IsNullOrEmpty(role.Name))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "Role name is required.");
+                    Check.IsEmpty(role.Name, nameof(role.Name));
 
                     if (await _rolesRepository.RoleExistsAsync(role.Name))
                     {
+                        var errorMessage = string.Format(Phrases.RoleAlreadyExists, role.Name);
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                            $"Role {role.Name} already exists.");
+                            errorMessage, errorMessage);
                     }
 
                     role.Id = Guid.NewGuid().ToString();
@@ -203,7 +201,7 @@ namespace Lykke.AlgoStore.Services
                     if (dbRole != null && !dbRole.CanBeModified)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                            "This role can't be modified.");
+                            Phrases.RoleCantBeModified, Phrases.RoleCantBeModified);
                     }
 
                     // because the RK is the role name, in order to update it, first delete the old role and then replace it with the new one
@@ -220,11 +218,8 @@ namespace Lykke.AlgoStore.Services
         {
             await LogTimedInfoAsync(nameof(RevokeRoleFromUser), data.ClientId, async () =>
             {
-                if (string.IsNullOrEmpty(data.RoleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
-
-                if (string.IsNullOrEmpty(data.ClientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
+                Check.IsEmpty(data.RoleId, nameof(data.RoleId));
+                Check.IsEmpty(data.ClientId, nameof(data.ClientId));
 
                 await _userRoleMatchRepository.RevokeUserRole(data.ClientId, data.RoleId);
             });
@@ -235,14 +230,14 @@ namespace Lykke.AlgoStore.Services
         {
             await LogTimedInfoAsync(nameof(VerifyUserRole), clientId, async () =>
             {
-                if (string.IsNullOrEmpty(clientId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "ClientId is empty.");
+                Check.IsEmpty(clientId, nameof(clientId));
 
                 var clientData = await _personalDataService.GetAsync(clientId);
 
                 if (clientData == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Client with id {clientId} does not exist.");
+                        $"Client with id {clientId} does not exist.",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "client"));
 
                 var roles = await _userRoleMatchRepository.GetUserRolesAsync(clientId);
 
@@ -255,7 +250,8 @@ namespace Lykke.AlgoStore.Services
 
                     if (userRole == null)
                         throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                            "Current user does not belong to 'User' role.");
+                            Phrases.UserNotInUserRole,
+                            Phrases.UserNotInUserRole);
 
                     await _userRoleMatchRepository.SaveUserRoleAsync(new UserRoleMatchData
                     {
@@ -270,14 +266,14 @@ namespace Lykke.AlgoStore.Services
         {
             await LogTimedInfoAsync(nameof(DeleteRoleAsync), null, async () =>
             {
-                if (string.IsNullOrEmpty(roleId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "RoleId is empty.");
+                Check.IsEmpty(roleId, nameof(roleId));
 
                 var role = await _rolesRepository.GetRoleByIdAsync(roleId);
 
                 if (role == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"Role with id {roleId} does not exist.");
+                        $"Role with id {roleId} does not exist.",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "role"));
 
                 //first check if the role has permissions assigned
                 var permissionsForRole = await _rolePermissionMatchRepository.GetPermissionIdsByRoleIdAsync(roleId);
@@ -301,7 +297,9 @@ namespace Lykke.AlgoStore.Services
                 }
 
                 if (!role.CanBeDeleted)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, "This role cannot be deleted.");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                        string.Format(Phrases.ParamCantBeDeleted, "role"),
+                        string.Format(Phrases.ParamCantBeDeleted, "role"));
 
                 await _rolesRepository.DeleteRoleAsync(role);
             });

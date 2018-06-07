@@ -6,6 +6,7 @@ using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
@@ -36,6 +37,25 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         {
             var entities = data.ToEntity();
             await _table.InsertOrReplaceAsync(entities);
+        }
+
+        public async Task DeleteRatingsAsync(string algoId)
+        {
+            var query = new TableQuery<AlgoRatingEntity>()
+                .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, algoId))
+                .Take(100);
+
+            await _table.ExecuteAsync(query, async (ratings) =>
+            {
+                var tableBatchOperation = new TableBatchOperation();
+
+                foreach(var rating in ratings)
+                {
+                    tableBatchOperation.Delete(rating);
+                }
+
+                await _table.DoBatchAsync(tableBatchOperation);
+            }, () => true);
         }
     }
 }

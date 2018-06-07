@@ -14,6 +14,99 @@ namespace Lykke.AlgoStore.Tests.Unit
     {
         #region Data Generation
 
+        private static readonly List<EnumValue> CandleTimeIntervalPredefinedValues = new List<EnumValue>
+        {
+            new EnumValue
+            {
+                Key = "Unspecified",
+                Value = "0"
+            },
+            new EnumValue
+            {
+                Key = "Second",
+                Value = "1"
+            },
+            new EnumValue
+            {
+                Key = "Minute",
+                Value = "60"
+            },
+            new EnumValue
+            {
+                Key = "5 Minutes",
+                Value = "300"
+            },
+            new EnumValue
+            {
+                Key = "15 Minutes",
+                Value = "900"
+            },
+            new EnumValue
+            {
+                Key = "30 Minutes",
+                Value = "1800"
+            },
+            new EnumValue
+            {
+                Key = "Hour",
+                Value = "3600"
+            },
+            new EnumValue
+            {
+                Key = "4 Hours",
+                Value = "14400"
+            },
+            new EnumValue
+            {
+                Key = "6 Hours",
+                Value = "21600"
+            },
+            new EnumValue
+            {
+                Key = "12 Hours",
+                Value = "43200"
+            },
+            new EnumValue
+            {
+                Key = "Day",
+                Value = "86400"
+            },
+            new EnumValue
+            {
+                Key = "Week",
+                Value = "604800"
+            },
+            new EnumValue
+            {
+                Key = "Month",
+                Value = "3000000"
+            }
+        };
+
+        private static readonly List<EnumValue> CandlePredefinedValues = new List<EnumValue>
+        {
+            new EnumValue
+            {
+                Key = "OPEN",
+                Value = "0"
+            },
+            new EnumValue
+            {
+                Key = "CLOSE",
+                Value = "1"
+            },
+            new EnumValue
+            {
+                Key = "LOW",
+                Value = "2"
+            },
+            new EnumValue
+            {
+                Key = "HIGH",
+                Value = "3"
+            }
+        };
+
         private static IList<AlgoMetaDataParameter> BaseAlgoParameters => new List<AlgoMetaDataParameter>
         {
             new AlgoMetaDataParameter
@@ -25,74 +118,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 Key = "CandleInterval",
                 Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                PredefinedValues = new List<EnumValue>
-                {
-                    new EnumValue
-                    {
-                        Key = "0",
-                        Value = "Unspecified"
-                    },
-                    new EnumValue
-                    {
-                        Key = "1",
-                        Value = "Sec"
-                    },
-                    new EnumValue
-                    {
-                        Key = "60",
-                        Value = "Minute"
-                    },
-                    new EnumValue
-                    {
-                        Key = "300",
-                        Value = "Min5"
-                    },
-                    new EnumValue
-                    {
-                        Key = "900",
-                        Value = "Min15"
-                    },
-                    new EnumValue
-                    {
-                        Key = "1800",
-                        Value = "Min30"
-                    },
-                    new EnumValue
-                    {
-                        Key = "3600",
-                        Value = "Hour"
-                    },
-                    new EnumValue
-                    {
-                        Key = "14400",
-                        Value = "Hour4"
-                    },
-                    new EnumValue
-                    {
-                        Key = "21600",
-                        Value = "Hour6"
-                    },
-                    new EnumValue
-                    {
-                        Key = "43200",
-                        Value = "Hour12"
-                    },
-                    new EnumValue
-                    {
-                        Key = "86400",
-                        Value = "Day"
-                    },
-                    new EnumValue
-                    {
-                        Key = "604800",
-                        Value = "Week"
-                    },
-                    new EnumValue
-                    {
-                        Key = "3000000",
-                        Value = "Month"
-                    }
-                }
+                PredefinedValues = CandleTimeIntervalPredefinedValues
             },
             new AlgoMetaDataParameter
             {
@@ -122,162 +148,64 @@ namespace Lykke.AlgoStore.Tests.Unit
             Parameters = BaseAlgoParameters
         };
 
-        private static AlgoMetaDataFunction SmaFunctionMetadata => new AlgoMetaDataFunction
+        private static AlgoMetaDataFunction SmaFunctionMetadata
         {
-            FunctionParameterType = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaParameters",
-            Id = "Sma",
-            Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
-            Parameters = new List<AlgoMetaDataParameter>
+            get
             {
-                new AlgoMetaDataParameter
+                return new AlgoMetaDataFunction
                 {
-                    Key = "ShortTermPeriod",
-                    Type = "System.Int32"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "LongTermPeriod",
-                    Type = "System.Int32"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "Decimals",
-                    Type =
-                        "System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "Capacity",
-                    Type = "System.Int32"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "AssetPair",
-                    Type = "System.String"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "CandleOperationMode",
-                    Type =
-                        "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
-                    PredefinedValues = new List<EnumValue>
+                    FunctionParameterType =
+                        "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaParameters",
+                    Id = "Sma",
+                    Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
+                    Parameters = new List<AlgoMetaDataParameter>
                     {
-                        new EnumValue
+                       new AlgoMetaDataParameter
                         {
-                            Key = "0",
-                            Value = "OPEN"
+                            Key = "Capacity",
+                            Type = "System.Int32"
                         },
-                        new EnumValue
+                        new AlgoMetaDataParameter
                         {
-                            Key = "1",
-                            Value = "CLOSE"
+                            Key = "AssetPair",
+                            Type = "System.String"
                         },
-                        new EnumValue
+                        new AlgoMetaDataParameter
                         {
-                            Key = "2",
-                            Value = "LOW"
+                            Key = "CandleOperationMode",
+                            Type =
+                                "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
+                            PredefinedValues = CandlePredefinedValues
                         },
-                        new EnumValue
+                        new AlgoMetaDataParameter
                         {
-                            Key = "3",
-                            Value = "HIGH"
+                            Key = "FunctionInstanceIdentifier",
+                            Type = "System.String"
+                        },
+                        new AlgoMetaDataParameter
+                        {
+                            Key = "StartingDate",
+                            Type = "System.DateTime"
+                        },
+                        new AlgoMetaDataParameter
+                        {
+                            Key = "EndingDate",
+                            Type = "System.DateTime"
+                        },
+                        new AlgoMetaDataParameter
+                        {
+                            Key = "CandleTimeInterval",
+                            Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
+                            PredefinedValues = CandleTimeIntervalPredefinedValues
                         }
                     }
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "FunctionInstanceIdentifier",
-                    Type = "System.String"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "StartingDate",
-                    Type = "System.DateTime"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "EndingDate",
-                    Type = "System.DateTime"
-                },
-                new AlgoMetaDataParameter
-                {
-                    Key = "CandleTimeInterval",
-                    Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                    PredefinedValues = new List<EnumValue>
-                    {
-                        new EnumValue
-                        {
-                            Key = "0",
-                            Value = "Unspecified"
-                        },
-                        new EnumValue
-                        {
-                            Key = "1",
-                            Value = "Sec"
-                        },
-                        new EnumValue
-                        {
-                            Key = "60",
-                            Value = "Minute"
-                        },
-                        new EnumValue
-                        {
-                            Key = "300",
-                            Value = "Min5"
-                        },
-                        new EnumValue
-                        {
-                            Key = "900",
-                            Value = "Min15"
-                        },
-                        new EnumValue
-                        {
-                            Key = "1800",
-                            Value = "Min30"
-                        },
-                        new EnumValue
-                        {
-                            Key = "3600",
-                            Value = "Hour"
-                        },
-                        new EnumValue
-                        {
-                            Key = "14400",
-                            Value = "Hour4"
-                        },
-                        new EnumValue
-                        {
-                            Key = "21600",
-                            Value = "Hour6"
-                        },
-                        new EnumValue
-                        {
-                            Key = "43200",
-                            Value = "Hour12"
-                        },
-                        new EnumValue
-                        {
-                            Key = "86400",
-                            Value = "Day"
-                        },
-                        new EnumValue
-                        {
-                            Key = "604800",
-                            Value = "Week"
-                        },
-                        new EnumValue
-                        {
-                            Key = "3000000",
-                            Value = "Month"
-                        }
-                    }
-                }
+                };
             }
-        };
+        }
 
         private static AlgoMetaDataInformation BaseAlgoMetadataWithSmaFunction => new AlgoMetaDataInformation
         {
-            Functions = new List<AlgoMetaDataFunction> {SmaFunctionMetadata},
+            Functions = new List<AlgoMetaDataFunction> { SmaFunctionMetadata },
             Parameters = BaseAlgoParameters
         };
 
@@ -303,29 +231,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     Key = "CandleOperationMode",
                     Type =
                         "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
-                    PredefinedValues = new List<EnumValue>
-                    {
-                        new EnumValue
-                        {
-                            Key = "0",
-                            Value = "OPEN"
-                        },
-                        new EnumValue
-                        {
-                            Key = "1",
-                            Value = "CLOSE"
-                        },
-                        new EnumValue
-                        {
-                            Key = "2",
-                            Value = "LOW"
-                        },
-                        new EnumValue
-                        {
-                            Key = "3",
-                            Value = "HIGH"
-                        }
-                    }
+                    PredefinedValues = CandlePredefinedValues
                 },
                 new AlgoMetaDataParameter
                 {
@@ -346,81 +252,14 @@ namespace Lykke.AlgoStore.Tests.Unit
                 {
                     Key = "CandleTimeInterval",
                     Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                    PredefinedValues = new List<EnumValue>
-                    {
-                        new EnumValue
-                        {
-                            Key = "0",
-                            Value = "Unspecified"
-                        },
-                        new EnumValue
-                        {
-                            Key = "1",
-                            Value = "Sec"
-                        },
-                        new EnumValue
-                        {
-                            Key = "60",
-                            Value = "Minute"
-                        },
-                        new EnumValue
-                        {
-                            Key = "300",
-                            Value = "Min5"
-                        },
-                        new EnumValue
-                        {
-                            Key = "900",
-                            Value = "Min15"
-                        },
-                        new EnumValue
-                        {
-                            Key = "1800",
-                            Value = "Min30"
-                        },
-                        new EnumValue
-                        {
-                            Key = "3600",
-                            Value = "Hour"
-                        },
-                        new EnumValue
-                        {
-                            Key = "14400",
-                            Value = "Hour4"
-                        },
-                        new EnumValue
-                        {
-                            Key = "21600",
-                            Value = "Hour6"
-                        },
-                        new EnumValue
-                        {
-                            Key = "43200",
-                            Value = "Hour12"
-                        },
-                        new EnumValue
-                        {
-                            Key = "86400",
-                            Value = "Day"
-                        },
-                        new EnumValue
-                        {
-                            Key = "604800",
-                            Value = "Week"
-                        },
-                        new EnumValue
-                        {
-                            Key = "3000000",
-                            Value = "Month"
-                        }
-                    }
+                    PredefinedValues = CandleTimeIntervalPredefinedValues
                 }
             }
         };
 
         private static AlgoMetaDataInformation BaseAlgoMetadataWithCustomFunction => new AlgoMetaDataInformation
         {
-            Functions = new List<AlgoMetaDataFunction> {CustomFunctionMetadata},
+            Functions = new List<AlgoMetaDataFunction> { CustomFunctionMetadata },
             Parameters = BaseAlgoParameters
         };
 

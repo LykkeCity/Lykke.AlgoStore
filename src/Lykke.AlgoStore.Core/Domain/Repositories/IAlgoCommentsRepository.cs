@@ -9,6 +9,7 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
         Task<List<AlgoCommentData>> GetCommentsForAlgoAsync(string algoId);
         Task<AlgoCommentData> GetCommentByIdAsync(string algoId, string commentId);
         Task<AlgoCommentData> SaveCommentAsync(AlgoCommentData data);
+        Task DeleteCommentsAsync(string algoId);
         Task DeleteCommentAsync(string algoId, string commentId);
     }
 }

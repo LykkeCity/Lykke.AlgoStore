@@ -9,6 +9,7 @@
 
         //Authorization
         Unauthorized = 401,
+        Conflict = 409,        
 
         //Data
         RuntimeSettingsExists = 500,
@@ -25,6 +26,7 @@
         InitialWalletBalanceNotCalculated = 511,
         StatisticsSumaryNotFound = 512,
         AlgoTradesClientError = 513,
+        AlgoPublic = 514,
         //Operation
         UnableToDeleteData = 601,
 

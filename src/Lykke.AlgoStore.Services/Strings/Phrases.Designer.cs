@@ -97,11 +97,56 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot unpublish algo because it has algo instances..
+        ///   Looks up a localized string similar to Cannot {0} algo because it has {1}algo instances..
         /// </summary>
         internal static string AlgoInstancesExist {
             get {
                 return ResourceManager.GetString("AlgoInstancesExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo {0} (client {1}) is public and not editable.
+        /// </summary>
+        internal static string AlgoIsPublic {
+            get {
+                return ResourceManager.GetString("AlgoIsPublic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Public algorithms can not be modified.
+        /// </summary>
+        internal static string AlgoIsPublicDisplayMessage {
+            get {
+                return ResourceManager.GetString("AlgoIsPublicDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The algo must not be public..
+        /// </summary>
+        internal static string AlgoMustNotBePublic {
+            get {
+                return ResourceManager.GetString("AlgoMustNotBePublic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset {0} is not valid for asset pair {1}..
+        /// </summary>
+        internal static string AssetInvalidForAssetPair {
+            get {
+                return ResourceManager.GetString("AssetInvalidForAssetPair", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset pair {0} is temporarily disabled..
+        /// </summary>
+        internal static string AssetPairDisabledDisplayMessage {
+            get {
+                return ResourceManager.GetString("AssetPairDisabledDisplayMessage", resourceCulture);
             }
         }
         
@@ -232,6 +277,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; field is missing from AlgoMetaData.
+        /// </summary>
+        internal static string MetadataFieldMissing {
+            get {
+                return ResourceManager.GetString("MetadataFieldMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Live algo instances are not allowed to use fake trading..
+        /// </summary>
+        internal static string LiveAlgoCantFakeTrade {
+            get {
+                return ResourceManager.GetString("LiveAlgoCantFakeTrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot find algo data. ClientId: {0}, AlgoId: {1}.
         /// </summary>
         internal static string NoAlgoData {
@@ -250,11 +313,65 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} cannot be deleted..
+        /// </summary>
+        internal static string ParamCantBeDeleted {
+            get {
+                return ResourceManager.GetString("ParamCantBeDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid {0}..
+        /// </summary>
+        internal static string ParamInvalid {
+            get {
+                return ResourceManager.GetString("ParamInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0} was not found..
+        /// </summary>
+        internal static string ParamNotFoundDisplayMessage {
+            get {
+                return ResourceManager.GetString("ParamNotFoundDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The permissions of this role cannot be modified..
+        /// </summary>
+        internal static string PermissionsCantBeModified {
+            get {
+                return ResourceManager.GetString("PermissionsCantBeModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Public algo Not Found.
         /// </summary>
         internal static string PublicAlgoNotFound {
             get {
                 return ResourceManager.GetString("PublicAlgoNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Role {0} already exists..
+        /// </summary>
+        internal static string RoleAlreadyExists {
+            get {
+                return ResourceManager.GetString("RoleAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This role can&apos;t be modified..
+        /// </summary>
+        internal static string RoleCantBeModified {
+            get {
+                return ResourceManager.GetString("RoleCantBeModified", resourceCulture);
             }
         }
         
@@ -268,11 +385,47 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are running algo instance(s).
+        ///   Looks up a localized string similar to Algorithms with running instances can not be modified.
         /// </summary>
         internal static string RunningAlgoInstanceExistsDisplayMessage {
             get {
                 return ResourceManager.GetString("RunningAlgoInstanceExistsDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is empty..
+        /// </summary>
+        internal static string StringParameterMissing {
+            get {
+                return ResourceManager.GetString("StringParameterMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please fill in all required fields..
+        /// </summary>
+        internal static string StringParameterMissingDisplayMessage {
+            get {
+                return ResourceManager.GetString("StringParameterMissingDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The amount should be higher than minimal order size {0} {1}.
+        /// </summary>
+        internal static string TradeVolumeBelowMinimum {
+            get {
+                return ResourceManager.GetString("TradeVolumeBelowMinimum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to access this algo..
+        /// </summary>
+        internal static string UserCantSeeAlgo {
+            get {
+                return ResourceManager.GetString("UserCantSeeAlgo", resourceCulture);
             }
         }
         
@@ -286,11 +439,29 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current user does not belong to &apos;User&apos; role..
+        /// </summary>
+        internal static string UserNotInUserRole {
+            get {
+                return ResourceManager.GetString("UserNotInUserRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The wallet is already used by another your instance.
         /// </summary>
         internal static string WalletAlreadyUsed {
             get {
                 return ResourceManager.GetString("WalletAlreadyUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This wallet has no assets..
+        /// </summary>
+        internal static string WalletHasNoAssetsDisplayMessage {
+            get {
+                return ResourceManager.GetString("WalletHasNoAssetsDisplayMessage", resourceCulture);
             }
         }
         

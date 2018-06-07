@@ -1,11 +1,11 @@
 ﻿using Lykke.AlgoStore.Core.Domain.Validation;
+using Lykke.AlgoStore.Services.Strings;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lykke.AlgoStore.Services.Strings;
 
 namespace Lykke.AlgoStore.Services.Validation
 {
@@ -66,7 +66,7 @@ namespace Lykke.AlgoStore.Services.Validation
             // Class inheriting base algo must be sealed
             if (!node.Modifiers.Any(m => m.Text == "sealed"))
             {
-                AddValidationMessage(ERROR_ALGO_NOT_SEALED, Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
+                AddValidationMessage(ERROR_ALGO_NOT_SEALED, Phrases.ERROR_ALGO_NOT_SEALED,
                     position: node.SpanStart);
             }
 

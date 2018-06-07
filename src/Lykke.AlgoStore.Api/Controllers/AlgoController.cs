@@ -67,6 +67,20 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpDelete("delete")]
+        [SwaggerOperation("DeleteAlgo")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteAlgo([FromBody] DeleteAlgoModel model)
+        {
+            var clientId = User.GetClientId();
+
+            await _algosService.DeleteAlgoAsync(model.AlgoClientId, model.AlgoId, model.ForceDelete, clientId);
+
+            return Ok();
+        }
+
         [HttpGet("getAllAlgos")]
         [SwaggerOperation("GetAllAlgos")]
         [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
@@ -158,7 +172,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("removeFromPublic")]
         [SwaggerOperation("removeFromPublic")]
         [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> RemoveFromPublic([FromBody] PublicAlgoDataModel model)
         {
@@ -250,7 +264,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("sourceCode/getString")]
         [SwaggerOperation("GetUploadString")]
-        [ProducesResponseType(typeof(DataStringModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ContentStringModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -259,11 +273,11 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var data = await _algosService.GetAlgoAsStringAsync(clientId, algoId);
+            var content = await _algosService.GetAlgoAsStringAsync(clientId, algoId);
 
-            return Ok(new DataStringModel
+            return Ok(new ContentStringModel
             {
-                Data = data
+                Content = content
             });
         }
     }
