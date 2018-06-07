@@ -106,6 +106,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
                 .ForMember(dest => dest.DateCreated, opt => opt.Ignore())
                 .ForMember(dest => dest.DateModified, opt => opt.Ignore());
+
+            CreateMap<ClientWalletData, ClientWalletDataModel>();
         }
     }
 }

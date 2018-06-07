@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Entities\AlgoClientInstanceEntity.cs" />
     <Compile Remove="Mapper\AlgoClientInstanceMapper.cs" />
-    <Compile Remove="Repositories\AlgoClientInstanceRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

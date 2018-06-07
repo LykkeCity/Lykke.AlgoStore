@@ -6,8 +6,8 @@ using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.PersonalData.Contract;
 using Newtonsoft.Json;
 using System;
@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
-using Lykke.AlgoStore.Services.Utils;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -320,7 +319,7 @@ namespace Lykke.AlgoStore.Services
                 //Check if there are running algo instances
                 var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
-                if (instances.Any(x => x.AlgoInstanceStatus == AlgoInstanceStatus.Started))
+                if (instances.Any(x => x.AlgoInstanceStatus == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Started))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists,
                         Phrases.RunningAlgoInstanceExistsDisplayMessage);
 
@@ -382,7 +381,7 @@ namespace Lykke.AlgoStore.Services
                         string.Format(Phrases.AlgoInstancesExist, "delete", ""));
                 }
 
-                if (algoInstances.Any(i => i.AlgoInstanceStatus != AlgoInstanceStatus.Stopped))
+                if (algoInstances.Any(i => i.AlgoInstanceStatus != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Stopped))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         $"{errorMessageBase} Algo has running instances",

@@ -13,7 +13,6 @@
     <Compile Remove="Domain\Entities\BaseValidatableData.cs" />
     <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoClientInstanceReadOnlyRepository.cs" />
-    <Compile Remove="Domain\Repositories\IAlgoClientInstanceRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoDataRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoTemplateDataRepository.cs" />
   </ItemGroup>

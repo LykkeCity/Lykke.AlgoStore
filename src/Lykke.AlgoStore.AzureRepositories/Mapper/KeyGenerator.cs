@@ -6,6 +6,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
     {
         private const string PartitionKeySeparator = "_";
         private const string PartitionKeyPattern = "{0}{1}{2}";
+        private const string ClientPartitionKeyStatic = "client";
 
         public static string GenerateKey(string clientId, string algoId)
         {
@@ -22,6 +23,11 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
                 ClientId = values[0],
                 AlgoId = values[1]
             };
+        }
+
+        public static string GenerateClientIdPartitionKey(string clientId)
+        {
+            return string.Format(PartitionKeyPattern, ClientPartitionKeyStatic, PartitionKeySeparator, clientId);
         }
     }
 }
