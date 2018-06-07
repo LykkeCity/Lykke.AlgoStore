@@ -8,6 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Unit\RolePermissionMatchRepositoryTests.cs" />
+    <Compile Remove="Unit\UserPermissionsRepositoryTests.cs" />
+    <Compile Remove="Unit\UserPermissionsServiceTests.cs" />
+    <Compile Remove="Unit\UserRolesMatchRepositoryTests.cs" />
+    <Compile Remove="Unit\UserRolesRepositoryTests.cs" />
+    <Compile Remove="Unit\UserRolesServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.0.0-rc1" />
     <PackageReference Include="FluentAssertions" Version="5.3.0" />
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions" Version="1.0.8" />

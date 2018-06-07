@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="UserPermissionsService.cs" />
+    <Compile Remove="UserRolesService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions" Version="1.0.8" />
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.55" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />

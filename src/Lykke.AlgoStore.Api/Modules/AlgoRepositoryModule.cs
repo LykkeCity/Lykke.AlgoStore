@@ -38,11 +38,6 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureTableStorage<AlgoRatingEntity>.Create(reloadingDbManager, AlgoRatingsRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoCommentEntity>.Create(reloadingDbManager, AlgoCommentsRepository.TableName, _log));
 
-            builder.RegisterInstance(AzureTableStorage<UserRoleEntity>.Create(reloadingDbManager, UserRolesRepository.TableName, _log));
-            builder.RegisterInstance(AzureTableStorage<UserPermissionEntity>.Create(reloadingDbManager, UserPermissionsRepository.TableName, _log));
-            builder.RegisterInstance(AzureTableStorage<UserRoleMatchEntity>.Create(reloadingDbManager, UserRolesMatchRepository.TableName, _log));
-            builder.RegisterInstance(AzureTableStorage<RolePermissionMatchEntity>.Create(reloadingDbManager, RolePermissionMatchRepository.TableName, _log));
-
             builder.RegisterInstance(AzureTableStorage<StatisticsSummaryEntity>.Create(reloadingDbManager, StatisticsRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<UserLogEntity>.Create(reloadingDbManager, UserLogRepository.TableName, _log));
 
@@ -59,11 +54,6 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoRatingsRepository>().As<IAlgoRatingsRepository>();
             builder.RegisterType<PublicAlgosRepository>().As<IPublicAlgosRepository>();
             builder.RegisterType<AlgoCommentsRepository>().As<IAlgoCommentsRepository>();
-
-            builder.RegisterType<UserRolesRepository>().As<IUserRolesRepository>();
-            builder.RegisterType<UserPermissionsRepository>().As<IUserPermissionsRepository>();
-            builder.RegisterType<UserRolesMatchRepository>().As<IUserRoleMatchRepository>();
-            builder.RegisterType<RolePermissionMatchRepository>().As<IRolePermissionMatchRepository>();
         }
     }
 }
