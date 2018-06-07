@@ -4,6 +4,5 @@
     {
         public string SessionServiceUrl { get; set; }
         public string DeploymentApiServiceUrl { get; set; }
-        public string AssetServiceUrl { get; set; }
     }
 }

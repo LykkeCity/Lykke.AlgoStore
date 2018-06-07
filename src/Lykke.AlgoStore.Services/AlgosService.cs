@@ -467,7 +467,7 @@ namespace Lykke.AlgoStore.Services
 
                     algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
 
-                    PopulateAssetPairsAndTradedAssetsAsync(algoInformation.AlgoMetaDataInformation);
+                    await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }
                 return algoInformation;
             });
@@ -633,25 +633,27 @@ namespace Lykke.AlgoStore.Services
         }
 
 
-        private void PopulateAssetPairsAndTradedAssetsAsync(AlgoMetaDataInformation algoMetaDataInformation)
+        private async Task PopulateAssetPairsAsync(AlgoMetaDataInformation algoMetaDataInformation)
         {
-            IsFieldMissing(algoMetaDataInformation, "TradedAsset");
             IsFieldMissing(algoMetaDataInformation, "AssetPair");
 
-            var assetPairsList = _assetPairsCache.GetDictionaryAsync().Result.Select(ap => new EnumValue
+            var assetPairsDictionary = await _assetPairsCache.GetDictionaryAsync();
+
+            var assetPairsList = assetPairsDictionary.Select(ap => new EnumValue
             {
                 Key = ap.Value.Name,
                 Value = ap.Key
             }).ToList();
 
-            var assetsList = _assetsCache.GetDictionaryAsync().Result.Select(a => new EnumValue
-            {
-                Key = a.Value.Name,
-                Value = a.Key
-            }).ToList();
-
+            
             algoMetaDataInformation.Parameters.Single(p => p.Key == "AssetPair").PredefinedValues = assetPairsList;
-            algoMetaDataInformation.Parameters.Single(p => p.Key == "TradedAsset").PredefinedValues = assetsList;
+
+            foreach (var function in algoMetaDataInformation.Functions)
+            {
+                var assetPairParameter = function.Parameters.SingleOrDefault(p => p.Key == "AssetPair");
+                if (assetPairParameter != null)
+                    assetPairParameter.PredefinedValues = assetPairsList;
+            }
         }
 
         private void IsFieldMissing(AlgoMetaDataInformation algoMetaDataInformation, string field)
@@ -660,6 +662,27 @@ namespace Lykke.AlgoStore.Services
                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                    $"'{field}' field is missing from AlgoMetaData",
                    string.Format(Phrases.MetadataFieldMissing, field));
+        }
+
+        public async Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId)
+        {
+            var assetPairsDictionary = await _assetPairsCache.GetDictionaryAsync();
+            var assetsDictionary = await _assetsCache.GetDictionaryAsync();
+
+            var assetPairFromCache = assetPairsDictionary.FirstOrDefault(ap => ap.Value.Id == assetPairId).Value;
+
+            var twoAssetsFromAssetPair = assetsDictionary
+                .Where(a => a.Value.Id == assetPairFromCache.BaseAssetId
+                            || a.Value.Id == assetPairFromCache.QuotingAssetId)
+                .Select(a => a.Value);
+
+            var result = twoAssetsFromAssetPair.Select(a => new EnumValue
+            {
+                Key = a.Name,
+                Value = a.Id
+            });
+
+            return result.ToList();
         }
     }
 }

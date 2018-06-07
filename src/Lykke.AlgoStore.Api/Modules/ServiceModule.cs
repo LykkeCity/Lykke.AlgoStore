@@ -44,6 +44,12 @@ namespace Lykke.AlgoStore.Api.Modules
             RegisterLocalServices(builder);
             RegisterDictionaryEntities(builder);
 
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                    new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
+                    _settings.CurrentValue.AlgoApi.Dictionaries.CacheExpirationPeriod),
+                _log,
+                autoRefresh: true);
+
             builder.Populate(_services);
         }
 
@@ -66,11 +72,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<TeamCityClient.TeamCityClient>()
                 .As<ITeamCityClient>()
                 .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
-                .SingleInstance();
-
-            builder.RegisterType<AssetsService>()
-                .As<IAssetsService>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
+                .SingleInstance();         
 
             builder.RegisterType<CodeBuildService>()
                 .As<ICodeBuildService>()
@@ -141,7 +143,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 var ctx = c.Resolve<IComponentContext>();
                 return new CachedDataDictionary<string, Asset>(
                     async () =>
-                        (await ctx.Resolve<IAssetsService>().AssetGetAllAsync()).ToDictionary(itm => itm.Id));
+                        (await ctx.Resolve<IAssetsServiceWithCache>().GetAllAssetsAsync(false))
+                        .ToDictionary(itm => itm.Id));
             }).SingleInstance();
 
             builder.Register(c =>
@@ -149,7 +152,7 @@ namespace Lykke.AlgoStore.Api.Modules
                 var ctx = c.Resolve<IComponentContext>();
                 return new CachedDataDictionary<string, AssetPair>(
                     async () =>
-                        (await ctx.Resolve<IAssetsService>().AssetPairGetAllAsync())
+                        (await ctx.Resolve<IAssetsServiceWithCache>().GetAllAssetPairsAsync())
                         .ToDictionary(itm => itm.Id));
             }).SingleInstance();
         }

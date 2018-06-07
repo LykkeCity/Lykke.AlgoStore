@@ -1,6 +1,7 @@
 ﻿using Lykke.AlgoStore.Core.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
 namespace Lykke.AlgoStore.Core.Services
 {
@@ -24,5 +25,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId);
         Task<AlgoData> CreateAlgoAsync(AlgoData data, string algoContent);
         Task<AlgoData> EditAlgoAsync(AlgoData data, string algoContent);
+        Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId);
     }
 }
