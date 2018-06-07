@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.55" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.2" />
     <PackageReference Include="Lykke.AzureQueueIntegration" Version="2.1.0" />
     <PackageReference Include="Lykke.Common" Version="6.8.4" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="3.3.2" />

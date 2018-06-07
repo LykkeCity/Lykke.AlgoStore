@@ -20,6 +20,7 @@ using Microsoft.Rest;
 using System;
 using System.Linq;
 using Common;
+using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.CandlesHistory.Client;
 
@@ -88,6 +89,11 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<Candleshistoryservice>()
                 .As<ICandleshistoryservice>()
                 .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
+
+            builder.RegisterType<SecurityClient>()
+                .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreSecurityServiceClient.ServiceUrl)
+                .As<ISecurityClient>()
+                .SingleInstance();
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
