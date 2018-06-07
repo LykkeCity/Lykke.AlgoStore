@@ -36,7 +36,7 @@ namespace Lykke.AlgoStore.Api
         public IContainer ApplicationContainer { get; private set; }
         public IConfigurationRoot Configuration { get; }
         public ILog Log { get; private set; }
-        public List<UserPermissionData> Permissions { get; private set; }
+        //public List<UserPermissionData> Permissions { get; private set; }
 
         public Startup(IHostingEnvironment env)
         {
@@ -216,7 +216,7 @@ namespace Lykke.AlgoStore.Api
 
             await securityClient.SeedRoles(Permissions);
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed finished");
-        }
+        //    await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedRoles), "Role seed finished");
+        //}
     }
 }

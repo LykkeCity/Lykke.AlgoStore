@@ -1,7 +1,6 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.Core.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -26,7 +25,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAllWithRoles")]
         [SwaggerOperation("GetAllUserRoles")]
-        [ProducesResponseType(typeof(List<AlgoStoreUserData>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<AlgoStoreUserDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUsersWithRoles()
         {
@@ -37,7 +36,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getByIdWithRoles")]
         [SwaggerOperation("GetUserByIdWithRoles")]
-        [ProducesResponseType(typeof(AlgoStoreUserData), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoStoreUserDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetUserByIdWithRoles(string clientId)
         {
