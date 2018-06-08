@@ -86,7 +86,7 @@ namespace Lykke.AlgoStore.Services
                         ? assetPairResponse.Body.BaseAssetId
                         : assetPairResponse.Body.QuotingAssetId);
 
-                    if (algoInstance.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Test)
+                    if (algoInstance.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
                     {
                         var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse.Body);
                         var clientBalanceResponseModels = walletBalances.ToList();
