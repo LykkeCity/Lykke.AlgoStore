@@ -1,6 +1,7 @@
 ﻿using Lykke.AlgoStore.Core.Domain.Validation;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Attributes;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Microsoft.CodeAnalysis;
@@ -282,6 +283,25 @@ namespace Lykke.AlgoStore.Services.Validation
                 Key = algoProperty.Name,
                 Type = algoProperty.PropertyType.FullName
             };
+
+            var defaultProp = algoProperty.GetCustomAttribute<DefaultValueAttribute>();
+
+            if (defaultProp != null && defaultProp.Value != null)
+            {
+                try
+                {
+                    var value = Convert.ChangeType(defaultProp.Value, algoProperty.PropertyType);
+
+                    if (algoProperty.PropertyType.IsEnum)
+                        parameter.Value = Convert.ChangeType(value, Enum.GetUnderlyingType(algoProperty.PropertyType)).ToString();
+                    else
+                        parameter.Value = value.ToString();
+                }
+                catch(InvalidCastException)
+                { }
+                catch(FormatException)
+                { }
+            }
 
             return parameter;
         }
