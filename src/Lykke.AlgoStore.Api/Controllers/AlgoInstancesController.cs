@@ -134,6 +134,29 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPut("{instanceId}/name")]
+        [SwaggerOperation("SetInstanceNameAsync")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<IActionResult> SetInstanceNameAsync(string instanceId, [FromBody] string name)
+        {
+            var clientId = User.GetClientId();
+
+            var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
+
+            if (data.InstanceId == null)
+                return NotFound();
+
+            data.InstanceName = name;
+
+            if(data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+                await _algoInstancesService.SaveAlgoInstanceDataAsync(data, data.AlgoClientId);
+            else
+                await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, data.AlgoClientId);
+
+            return Ok();
+        }
+
         [HttpPost("fakeTradingInstanceData")]
         [SwaggerOperation("SaveAlgoFakeTradingInstanceDataAsync")]
         [ProducesResponseType(typeof(AlgoFakeTradingInstanceModel), (int)HttpStatusCode.OK)]
