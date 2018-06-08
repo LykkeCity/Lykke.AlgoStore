@@ -75,6 +75,22 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("{instanceId}/status")]
+        [SwaggerOperation("GetInstanceStatusAsync")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetInstanceStatusAsync(string instanceId)
+        {
+            var clientId = User.GetClientId();
+
+            var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
+
+            if (data.InstanceId == null)
+                return NotFound();
+
+            return Ok(data.AlgoInstanceStatus);
+        }
+
         private ErrorResponse ValidateDateTimeParameters(AlgoMetaDataInformationModel algoMetaData)
         {
             var dtType = typeof(DateTime).FullName;
