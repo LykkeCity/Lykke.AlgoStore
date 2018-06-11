@@ -284,6 +284,11 @@ namespace Lykke.AlgoStore.Services.Validation
                 Type = algoProperty.PropertyType.FullName
             };
 
+            var descriptionAttr = algoProperty.GetCustomAttribute<DescriptionAttribute>();
+
+            if (descriptionAttr != null)
+                parameter.Description = descriptionAttr.Description;
+
             var defaultProp = algoProperty.GetCustomAttribute<DefaultValueAttribute>();
 
             if (defaultProp != null && defaultProp.Value != null)

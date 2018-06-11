@@ -15,6 +15,11 @@ namespace Lykke.AlgoStore.Api.Models
         public string Value { get; set; }
 
         /// <summary>
+        /// Optional parameter description
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
         /// Type of the parameter - DateTime, String, int, double, etc.
         /// </summary>
         public string Type { get; set; }
