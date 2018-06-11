@@ -1,7 +1,6 @@
 ﻿using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Domain.Repositories;
-using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.Service.ClientAccount.Client;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +11,10 @@ namespace Lykke.AlgoStore.Services
     public class AlgoStoreClientsService : IAlgoStoreClientsService
     {
         private readonly IClientAccountClient _clientAccountService;
-        private readonly IAlgoInstanceRepository _clientInstanceRepository;
+        private readonly IAlgoClientInstanceRepository _clientInstanceRepository;
 
         public AlgoStoreClientsService(IClientAccountClient clientAccountService,
-                                       IAlgoInstanceRepository clientInstanceRepository)
+                                       IAlgoClientInstanceRepository clientInstanceRepository)
         {
             _clientAccountService = clientAccountService;
             _clientInstanceRepository = clientInstanceRepository;
@@ -23,11 +22,20 @@ namespace Lykke.AlgoStore.Services
 
         public async Task<List<ClientWalletData>> GetAvailableClientWalletsAsync(string clientId)
         {
-            var allWallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
+            var allClientWallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
 
-            var startedOrDeploying = await _clientInstanceRepository.GetInstanceWalletIdsByStatusAsync(clientId, new AlgoInstanceStatus[] {AlgoInstanceStatus.Started, AlgoInstanceStatus.Deploying});
+            var result = new List<ClientWalletData>();
 
-            return allWallets.Where(w => !startedOrDeploying.Contains(w.Id)).Select(w => ClientWalletData.CreateFromDto(w)).ToList();
+            foreach (var wallet in allClientWallets)
+            {
+                var startedOrDeployingInstances = await _clientInstanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(wallet.Id);
+                if (!startedOrDeployingInstances.Any())
+                {
+                    result.Add(ClientWalletData.CreateFromDto(wallet));
+                }
+            }
+
+            return result;
         }
     }
 }
