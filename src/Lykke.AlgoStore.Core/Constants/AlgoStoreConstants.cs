@@ -11,8 +11,5 @@
         public const string DefaultDisplayMessage = "There was a problem, please contact administrator";
 
         public const string DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
-
-        public const string AdminRoleName = "Admin";
-        public const string UserRoleName = "User";
     }
 }
