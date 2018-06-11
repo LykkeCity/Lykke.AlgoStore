@@ -197,7 +197,9 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _algosService.GetAlgoDataInformationAsync(clientId, algoId);
+            var userClientId = User.GetClientId();
+
+            var result = await _algosService.GetAlgoDataInformationAsync(userClientId, clientId, algoId);
 
             if (result == null)
                 return NotFound();

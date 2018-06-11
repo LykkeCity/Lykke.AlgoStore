@@ -438,14 +438,18 @@ namespace Lykke.AlgoStore.Services
         /// <param name="clientId">The client id</param>
         /// <param name="algoId">The algo id</param>
         /// <returns></returns>
-        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
                 Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoClientId, nameof(algoClientId));
                 Check.IsEmpty(algoId, nameof(algoId));
 
-                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(clientId, algoId);
+                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, algoId, clientId, algoClientId);
+
+                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(algoClientId, algoId);
 
                 var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
