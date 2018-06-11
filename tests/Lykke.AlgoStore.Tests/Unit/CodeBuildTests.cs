@@ -220,6 +220,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 {
                     Key = "Period",
                     Value = "5",
+                    Description = "test",
                     Type = "System.Int32"
                 },
                 new AlgoMetaDataParameter
@@ -531,7 +532,7 @@ public class CustomFunction : IFunction
 
 public class AlgoParameters : FunctionParamsBase
 {
-    [DefaultValue(5)]
+    [DefaultValue(5), Description(""test"")]
     public int Period { get; set; }
 }
 ";
