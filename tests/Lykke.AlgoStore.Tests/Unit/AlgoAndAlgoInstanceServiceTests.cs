@@ -221,7 +221,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
                 clientAccountService, null, null, null, assetPairsCache, assetsCache);
-            var data = When_Invoke_GetAlgoInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
+            var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
         }
@@ -238,7 +238,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
                 clientAccountService, null, null, null, null, null);
-            var data = When_Invoke_GetAlgoInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
+            var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldBe_Empty(data);
         }
@@ -248,7 +248,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var service = Given_AlgosService(null, null, null, null, null, null, null, null,
                 null, null, null);
-            var data = When_Invoke_GetAlgoInformation(service, null, null, out var exception);
+            var data = When_Invoke_GetAlgoInformation(service, null, null, null, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
         }
@@ -260,7 +260,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var service = Given_AlgosService(null, null, null, null, null, null, null, null,
                 null, null, null);
-            var data = When_Invoke_GetAlgoInformation(service, clientId, Guid.NewGuid().ToString(), out var exception);
+            var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
         }
@@ -560,12 +560,12 @@ namespace Lykke.AlgoStore.Tests.Unit
                 new LogMock());
         }
 
-        private static AlgoDataInformation When_Invoke_GetAlgoInformation(AlgosService service, string clientId, string algoId, out Exception exception)
+        private static AlgoDataInformation When_Invoke_GetAlgoInformation(AlgosService service, string clientId, string algoClientId, string algoId, out Exception exception)
         {
             exception = null;
             try
             {
-                return service.GetAlgoDataInformationAsync(clientId, algoId).Result;
+                return service.GetAlgoDataInformationAsync(clientId, algoClientId, algoId).Result;
             }
             catch (Exception ex)
             {
@@ -815,6 +815,9 @@ namespace Lykke.AlgoStore.Tests.Unit
                  {
                      return Task.FromResult<AlgoDataInformation>(null);
                  });
+
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
 
             return result.Object;
 
