@@ -219,6 +219,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 new AlgoMetaDataParameter
                 {
                     Key = "Period",
+                    Value = "5",
                     Type = "System.Int32"
                 },
                 new AlgoMetaDataParameter
@@ -483,6 +484,7 @@ public class AlgoParameters : FunctionParamsBase
         {
             var code = @"
 using System.Collections.Generic;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Attributes;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Candles;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
@@ -529,6 +531,7 @@ public class CustomFunction : IFunction
 
 public class AlgoParameters : FunctionParamsBase
 {
+    [DefaultValue(5)]
     public int Period { get; set; }
 }
 ";
