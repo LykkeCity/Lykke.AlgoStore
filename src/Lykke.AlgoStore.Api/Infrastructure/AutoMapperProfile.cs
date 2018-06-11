@@ -5,7 +5,6 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.Service.Security.Client.AutorestClient.Models;
-using UserRoleUpdateModel = Lykke.AlgoStore.Api.Models.UserRoleUpdateModel;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
 {
@@ -91,15 +90,6 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoCommentModel, AlgoCommentData>()
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
-
-            CreateMap<UserRoleCreateModel, UserRoleData>()
-                .ForMember(dest => dest.CanBeDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.CanBeModified, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
-
-            CreateMap<UserRoleUpdateModel, UserRoleData>()
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
 
             CreateMap<CreateAlgoModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
