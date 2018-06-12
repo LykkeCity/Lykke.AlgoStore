@@ -7,12 +7,13 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 using Lykke.AlgoStore.Service.Security.Client;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
-    [RequirePermissionAttribute]
+    [RequirePermission]
     [Route("api/v1/users")]
     public class AlgoStoreUsersController: Controller
     {
@@ -31,7 +32,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var result = await _securityClient.GetAllUsersWithRolesAsync();
 
-            return Ok(result);
+            return Ok(Mapper.Map<List<AlgoStoreUserDataModel>>(result));
         }
 
         [HttpGet("getByIdWithRoles")]
@@ -45,7 +46,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = await _securityClient.GetUserByIdWithRolesAsync(clientId);
 
-            return Ok(result);
+            return Ok(Mapper.Map<AlgoStoreUserDataModel>(result));
         }
     }
 }

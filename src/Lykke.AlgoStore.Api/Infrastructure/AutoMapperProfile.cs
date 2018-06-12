@@ -100,6 +100,10 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.DateModified, opt => opt.Ignore());
 
             CreateMap<ClientWalletData, ClientWalletDataModel>();
+
+            CreateMap<AlgoStoreUserData, AlgoStoreUserDataModel>();
+            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserPermissionModel, Models.UserPermissionModel>();
+            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel, Models.UserRoleModel>();
         }
     }
 }
