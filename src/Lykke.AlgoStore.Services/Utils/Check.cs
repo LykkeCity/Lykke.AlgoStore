@@ -56,16 +56,16 @@ namespace Lykke.AlgoStore.Services.Utils
             /// <param name="algoOwnerId">The algo owner ID</param>
             /// <returns></returns>
             public static async Task IsVisibleForClient(
-                IPublicAlgosRepository repository, 
-                string algoId, 
+                IPublicAlgosRepository repository,
+                string algoId,
                 string clientId,
                 string algoOwnerId)
             {
                 if (algoOwnerId != clientId && !await repository.ExistsPublicAlgoAsync(algoOwnerId, algoId))
                 {
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotPublic,
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
                         $"Algo {algoOwnerId} not public for client {clientId}",
-                        Phrases.UserCantSeeAlgo);
+                        Phrases.NotFound);
                 }
             }
         }
