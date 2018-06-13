@@ -65,7 +65,7 @@ namespace Lykke.AlgoStore.Services.Utils
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
                         $"Algo {algoOwnerId} not public for client {clientId}",
-                        Phrases.NotFound);
+                        Phrases.NotFoundAlgo);
                 }
             }
         }
