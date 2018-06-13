@@ -46,7 +46,6 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureTableStorage<StatisticsSummaryEntity>.Create(reloadingDbManager, StatisticsRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<UserLogEntity>.Create(reloadingDbManager, UserLogRepository.TableName, _log));
 
-
             builder.RegisterInstance<IStorageConnectionManager>(new StorageConnectionManager(reloadingDbManager));
 
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
@@ -64,6 +63,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<UserPermissionsRepository>().As<IUserPermissionsRepository>();
             builder.RegisterType<UserRolesMatchRepository>().As<IUserRoleMatchRepository>();
             builder.RegisterType<RolePermissionMatchRepository>().As<IRolePermissionMatchRepository>();
+
         }
     }
 }

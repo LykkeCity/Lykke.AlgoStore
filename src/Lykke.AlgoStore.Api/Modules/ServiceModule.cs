@@ -9,6 +9,7 @@ using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
+using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -112,6 +113,10 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoStoreCommentsService>()
                 .As<IAlgoStoreCommentsService>()
+                .SingleInstance();
+
+            builder.RegisterType<AlgoStoreClientsService>()
+                .As<IAlgoStoreClientsService>()
                 .SingleInstance();
 
             builder.RegisterType<WalletBalanceService>()

@@ -19,7 +19,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IWalletBalanceService _walletBalanceService;
         private readonly IAssetsService _assetService;
 
-        public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository, 
+        public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
             IWalletBalanceService walletBalanceService, IAssetsService assetsService, ILog log) : base(log,
             nameof(AlgoStoreStatisticsService))
@@ -47,9 +47,9 @@ namespace Lykke.AlgoStore.Services
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
-                    statisticsSummary.NetProfit = Math.Round(
-                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
+                    statisticsSummary.NetProfit = statisticsSummary.InitialWalletBalance.Equals(0.0) ? 0 : Math.Round(
+                         ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
+                          statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
 
                     return statisticsSummary;
                 }
@@ -82,11 +82,11 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPairId);
-                    var tradedAsset = await _assetService.AssetGetWithHttpMessagesAsync(algoInstance.IsStraight 
+                    var tradedAsset = await _assetService.AssetGetWithHttpMessagesAsync(algoInstance.IsStraight
                         ? assetPairResponse.Body.BaseAssetId
                         : assetPairResponse.Body.QuotingAssetId);
 
-                    if (algoInstance.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Test)
+                    if (algoInstance.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
                     {
                         var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse.Body);
                         var clientBalanceResponseModels = walletBalances.ToList();
@@ -98,7 +98,7 @@ namespace Lykke.AlgoStore.Services
                         statisticsSummary.LastWalletBalance = latestWalletBalance;
                     }
 
-                    statisticsSummary.NetProfit = Math.Round(
+                    statisticsSummary.NetProfit = statisticsSummary.InitialWalletBalance.Equals(0.0) ? 0 : Math.Round(
                         ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
                          statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
 

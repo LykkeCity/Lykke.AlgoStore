@@ -6,8 +6,8 @@ using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.Services.Strings;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.PersonalData.Contract;
 using Newtonsoft.Json;
 using System;
@@ -333,7 +333,7 @@ namespace Lykke.AlgoStore.Services
                 //Check if there are running algo instances
                 var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(data.AlgoId);
 
-                if (instances.Any(x => x.AlgoInstanceStatus == AlgoInstanceStatus.Started))
+                if (instances.Any(x => x.AlgoInstanceStatus == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Started))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists,
                         Phrases.RunningAlgoInstanceExistsDisplayMessage);
 
@@ -395,7 +395,7 @@ namespace Lykke.AlgoStore.Services
                         string.Format(Phrases.AlgoInstancesExist, "delete", ""));
                 }
 
-                if (algoInstances.Any(i => i.AlgoInstanceStatus != AlgoInstanceStatus.Stopped))
+                if (algoInstances.Any(i => i.AlgoInstanceStatus != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Stopped))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         $"{errorMessageBase} Algo has running instances",
@@ -438,14 +438,18 @@ namespace Lykke.AlgoStore.Services
         /// <param name="clientId">The client id</param>
         /// <param name="algoId">The algo id</param>
         /// <returns></returns>
-        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
                 Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoClientId, nameof(algoClientId));
                 Check.IsEmpty(algoId, nameof(algoId));
 
-                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(clientId, algoId);
+                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, algoId, clientId, algoClientId);
+
+                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(algoClientId, algoId);
 
                 var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 

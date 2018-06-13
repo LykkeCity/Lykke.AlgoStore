@@ -277,20 +277,20 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; field is missing from AlgoMetaData.
-        /// </summary>
-        internal static string MetadataFieldMissing {
-            get {
-                return ResourceManager.GetString("MetadataFieldMissing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Live algo instances are not allowed to use fake trading..
         /// </summary>
         internal static string LiveAlgoCantFakeTrade {
             get {
                 return ResourceManager.GetString("LiveAlgoCantFakeTrade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; field is missing from AlgoMetaData.
+        /// </summary>
+        internal static string MetadataFieldMissing {
+            get {
+                return ResourceManager.GetString("MetadataFieldMissing", resourceCulture);
             }
         }
         
@@ -309,6 +309,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string NoAlgoDataDisplayMessage {
             get {
                 return ResourceManager.GetString("NoAlgoDataDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Algo Not Found.
+        /// </summary>
+        internal static string NotFoundAlgo {
+            get {
+                return ResourceManager.GetString("NotFoundAlgo", resourceCulture);
             }
         }
         

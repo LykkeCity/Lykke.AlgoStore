@@ -13,13 +13,12 @@
     <Compile Remove="Domain\Entities\BaseValidatableData.cs" />
     <Compile Remove="Domain\Repositories\IAlgoBaseRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoClientInstanceReadOnlyRepository.cs" />
-    <Compile Remove="Domain\Repositories\IAlgoClientInstanceRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoDataRepository.cs" />
     <Compile Remove="Domain\Repositories\IAlgoTemplateDataRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.55" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.57" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />
     <PackageReference Include="Lykke.AzureQueueIntegration" Version="2.0.1" />
     <PackageReference Include="Lykke.Common" Version="6.8.4" />

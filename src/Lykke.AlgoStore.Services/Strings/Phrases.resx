@@ -255,4 +255,7 @@
   <data name="LiveAlgoCantFakeTrade" xml:space="preserve">
     <value>Live algo instances are not allowed to use fake trading.</value>
   </data>
+  <data name="NotFoundAlgo" xml:space="preserve">
+    <value>Algo Not Found</value>
+  </data>
 </root>

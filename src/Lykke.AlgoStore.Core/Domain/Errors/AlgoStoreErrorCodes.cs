@@ -9,9 +9,10 @@
 
         //Authorization
         Unauthorized = 401,
-        Conflict = 409,        
+        Conflict = 409,
 
         //Data
+        NotFound = 404,
         RuntimeSettingsExists = 500,
         AlgoNotFound = 501,
         AlgoBinaryDataNotFound = 502,
