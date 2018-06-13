@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;

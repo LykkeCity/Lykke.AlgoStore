@@ -1,8 +1,7 @@
 ﻿namespace Lykke.AlgoStore.Api.Models
 {
-    public class TailLogModel
+    public class TailLogModel : ManageImageModel
     {
-        public string AlgoId { get; set; }
         public int Tail { get; set; }
     }
 }

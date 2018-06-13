@@ -1,24 +1,41 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Common.Log;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.Core.Settings.ServiceSettings;
-using Lykke.AlgoStore.DeploymentApiClient;
+using Lykke.AlgoStore.Core.Settings;
+using Lykke.AlgoStore.KubernetesClient;
+using Lykke.AlgoStore.Service.AlgoTrades.Client;
 using Lykke.AlgoStore.Services;
+using Lykke.AlgoStore.TeamCityClient;
+using Lykke.Service.Assets.Client;
+using Lykke.Service.Balances.Client;
+using Lykke.Service.CandlesHistory.Client;
+using Lykke.Service.ClientAccount.Client;
+using Lykke.Service.PersonalData.Client;
+using Lykke.Service.PersonalData.Contract;
+using Lykke.Service.RateCalculator.Client;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Rest;
+using System;
+using System.Linq;
+using Common;
+using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.CandlesHistory.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
     public class ServiceModule : Module
     {
-        private readonly IReloadingManager<AlgoApiSettings> _settings;
+        private readonly ILog _log;
+        private readonly IReloadingManager<AppSettings> _settings;
         private readonly IServiceCollection _services;
 
-        public ServiceModule(IReloadingManager<AlgoApiSettings> settings)
+        public ServiceModule(IReloadingManager<AppSettings> settings, ILog log)
         {
             _settings = settings;
-
+            _log = log;
             _services = new ServiceCollection();
         }
 
@@ -26,36 +43,120 @@ namespace Lykke.AlgoStore.Api.Modules
         {
             RegisterExternalServices(builder);
             RegisterLocalServices(builder);
+            RegisterDictionaryEntities(builder);
 
             builder.Populate(_services);
         }
 
         private void RegisterExternalServices(ContainerBuilder builder)
         {
+            builder.RegisterLykkeServiceClient(_settings.CurrentValue.ClientAccountServiceClient.ServiceUrl);
 
             builder.RegisterType<ClientSessionsClient>()
                 .As<IClientSessionsClient>()
-                .WithParameter("serviceUrl", _settings.CurrentValue.Services.SessionServiceUrl);
+                .WithParameter("serviceUrl", _settings.CurrentValue.AlgoApi.Services.SessionServiceUrl);
 
-            builder.RegisterType<DeploymentApiClient.DeploymentApiClient>()
-                .As<IDeploymentApiClient>()
-                .As<IDeploymentApiReadOnlyClient>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.Services.DeploymentApiServiceUrl))
+            builder.RegisterType<KubernetesApiClient>()
+                .As<IKubernetesApiClient>()
+                .As<IKubernetesApiReadOnlyClient>()
+                .WithParameter("baseUri", new Uri(_settings.CurrentValue.AlgoApi.Kubernetes.Url))
+                .WithParameter("credentials", new TokenCredentials(_settings.CurrentValue.AlgoApi.Kubernetes.BasicAuthenticationValue))
+                .WithParameter("certificateHash", _settings.CurrentValue.AlgoApi.Kubernetes.CertificateHash)
                 .SingleInstance();
+
+            builder.RegisterType<TeamCityClient.TeamCityClient>()
+                .As<ITeamCityClient>()
+                .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
+                .SingleInstance();
+
+            builder.RegisterType<AssetsService>()
+                .As<IAssetsService>()
+                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
+
+            builder.RegisterType<CodeBuildService>()
+                .As<ICodeBuildService>()
+                .SingleInstance();
+
+            builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);
+            builder.RegisterRateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log);
+
+            builder.RegisterAlgoTradesClient(_settings.CurrentValue.AlgoTradesServiceClient, _log);
+
+            builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
+             .As<IPersonalDataService>()
+             .SingleInstance();
+
+            builder.RegisterType<Candleshistoryservice>()
+                .As<ICandleshistoryservice>()
+                .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
         }
 
-        private static void RegisterLocalServices(ContainerBuilder builder)
+        private void RegisterLocalServices(ContainerBuilder builder)
         {
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
                 .SingleInstance();
 
-            builder.RegisterType<AlgoStoreClientDataService>()
-                .As<IAlgoStoreClientDataService>()
+            builder.RegisterType<AlgosService>()
+                .As<IAlgosService>()
                 .SingleInstance();
+
+            builder.RegisterType<AlgoInstancesService>()
+                .As<IAlgoInstancesService>()
+                .SingleInstance();
+
             builder.RegisterType<AlgoStoreService>()
                 .As<IAlgoStoreService>()
                 .SingleInstance();
+
+            builder.RegisterType<AlgoStoreCommentsService>()
+                .As<IAlgoStoreCommentsService>()
+                .SingleInstance();
+
+            builder.RegisterType<AlgoStoreClientsService>()
+                .As<IAlgoStoreClientsService>()
+                .SingleInstance();
+
+            builder.RegisterType<WalletBalanceService>()
+                .As<IWalletBalanceService>()
+                .SingleInstance();
+
+            builder.RegisterType<AlgoStoreTradesService>()
+                .As<IAlgoStoreTradesService>()
+                .WithParameter("maxNumberOfRowsToFetch", _settings.CurrentValue.AlgoApi.MaxNumberOfRowsToFetch)
+                .SingleInstance();
+
+            builder.RegisterType<AlgoStoreStatisticsService>()
+                .As<IAlgoStoreStatisticsService>()
+                .SingleInstance();
+
+            builder.RegisterType<UserRolesService>()
+               .As<IUserRolesService>()
+               .SingleInstance();
+
+            builder.RegisterType<UserPermissionsService>()
+                .As<IUserPermissionsService>()
+                .SingleInstance();
+        }
+
+        private void RegisterDictionaryEntities(ContainerBuilder builder)
+        {
+            builder.Register(c =>
+            {
+                var ctx = c.Resolve<IComponentContext>();
+                return new CachedDataDictionary<string, Asset>(
+                    async () =>
+                        (await ctx.Resolve<IAssetsService>().AssetGetAllAsync()).ToDictionary(itm => itm.Id));
+            }).SingleInstance();
+
+            builder.Register(c =>
+            {
+                var ctx = c.Resolve<IComponentContext>();
+                return new CachedDataDictionary<string, AssetPair>(
+                    async () =>
+                        (await ctx.Resolve<IAssetsService>().AssetPairGetAllAsync())
+                        .ToDictionary(itm => itm.Id));
+            }).SingleInstance();
         }
     }
 }

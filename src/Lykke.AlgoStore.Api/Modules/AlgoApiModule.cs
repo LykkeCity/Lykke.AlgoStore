@@ -3,6 +3,7 @@ using Common.Log;
 using Lykke.AlgoStore.Core.Identity;
 using Lykke.AlgoStore.Core.Settings;
 using Lykke.AlgoStore.Services.Identity;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.SettingsReader;
 
 namespace Lykke.AlgoStore.Api.Modules
@@ -24,7 +25,9 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<ILog>()
                 .SingleInstance();
 
-            builder.RegisterType<LykkePrincipal>().As<ILykkePrincipal>().InstancePerLifetimeScope();
+            builder.RegisterType<LykkePrincipal>().As<ILykkePrincipal>().SingleInstance();
+            builder.RegisterType<AssetsValidator>().SingleInstance();
+
         }
     }
 }

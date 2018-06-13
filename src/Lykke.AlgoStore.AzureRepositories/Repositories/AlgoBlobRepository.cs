@@ -2,13 +2,17 @@
 using System.Text;
 using System.Threading.Tasks;
 using AzureStorage;
+using Common;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 
 namespace Lykke.AlgoStore.AzureRepositories.Repositories
 {
     public class AlgoBlobRepository : IAlgoBlobRepository
     {
-        private const string BlobContainer = "algo-store-binary";
+        internal const string BlobContainer = "algo-store-binary";
+        private readonly Encoding _encoding = Encoding.UTF8;
+        private static readonly string Extension = ".txt";
+
         private readonly IBlobStorage _storage;
 
         public AlgoBlobRepository(IBlobStorage storage)
@@ -18,33 +22,57 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
 
         public async Task<bool> BlobExistsAsync(string blobKey)
         {
+            if (!blobKey.EndsWith(Extension))
+                blobKey = blobKey + Extension;
             return await _storage.HasBlobAsync(BlobContainer, blobKey);
         }
         public async Task<byte[]> GetBlobAsync(string blobKey)
         {
-            var stream = await _storage.GetAsync(BlobContainer, blobKey);
-            using (MemoryStream ms = new MemoryStream())
+            if (!await BlobExistsAsync(blobKey))
+                return null;
+
+            if (!blobKey.EndsWith(Extension))
+                blobKey = blobKey + Extension;
+            using (var stream = await _storage.GetAsync(BlobContainer, blobKey))
             {
-                stream.CopyTo(ms);
-                return ms.ToArray();
+                return stream.ToBytes();
             }
         }
         public async Task<string> GetBlobStringAsync(string blobKey)
         {
-            return await _storage.GetAsTextAsync(BlobContainer, blobKey);
+            if (!await BlobExistsAsync(blobKey))
+                return null;
+
+            if (!blobKey.EndsWith(Extension))
+                blobKey = blobKey + Extension;
+            using (var stream = await _storage.GetAsync(BlobContainer, blobKey))
+            {
+                return _encoding.GetString(stream.ToBytes());
+            }
         }
 
         public async Task DeleteBlobAsync(string blobKey)
         {
+            if (!blobKey.EndsWith(Extension))
+                blobKey = blobKey + Extension;
             await _storage.DelBlobAsync(BlobContainer, blobKey);
         }
-        public async Task SaveBlobAsync(string blobKey, byte[] blobData)
+        public async Task SaveBlobAsync(string blobKey, Stream stream)
         {
-            await _storage.SaveBlobAsync(BlobContainer, blobKey, blobData);
+            if (!blobKey.EndsWith(Extension))
+                blobKey = blobKey + Extension;
+            await _storage.SaveBlobAsync(BlobContainer, blobKey, stream);
         }
         public async Task SaveBlobAsync(string blobKey, string blobString)
         {
-            await _storage.SaveBlobAsync(BlobContainer, blobKey, Encoding.UTF8.GetBytes(blobString));
+            if (!blobKey.EndsWith(Extension))
+                blobKey = blobKey + Extension;
+            using (var stream = new MemoryStream(_encoding.GetBytes(blobString)))
+            {
+                await SaveBlobAsync(blobKey, stream);
+            }
         }
+
+        public string SourceExtension => Extension;
     }
 }

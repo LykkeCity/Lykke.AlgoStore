@@ -4,7 +4,7 @@
     {
         public string AlgoId { get; set; }
         public string ClientId { get; set; }
-        public long ImageId { get; set; }
-        public int BuildImageId { get; set; }
+        public int BuildId { get; set; }
+        public string PodId { get; set; }
     }
 }

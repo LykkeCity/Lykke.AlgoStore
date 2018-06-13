@@ -3,6 +3,7 @@ using System.Linq;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -32,8 +33,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static BaseValidatableData Given_Error_BaseValidatableData()
         {
-            var result = new AlgoMetaData();
+            var result = new AlgoData();
             result.AlgoId = Guid.NewGuid().ToString();
+            result.ClientId = Guid.NewGuid().ToString();
             result.Name = null;
 
             return result;
@@ -41,8 +43,9 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static BaseValidatableData Given_Correct_BaseValidatableData()
         {
-            var result = new AlgoMetaData();
+            var result = new AlgoData();
             result.AlgoId = Guid.NewGuid().ToString();
+            result.ClientId = Guid.NewGuid().ToString();
             result.Name = "Test";
 
             return result;

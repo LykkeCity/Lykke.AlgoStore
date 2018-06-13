@@ -4,7 +4,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
 {
     public class AlgoRuntimeDataEntity : TableEntity
     {
-        public int BuildImageId { get; set; }
-        public long ImageId { get; set; }
+        public int BuildId { get; set; }
+        public string PodId { get; set; }
     }
 }

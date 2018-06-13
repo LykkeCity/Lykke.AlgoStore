@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Common.Log;
+using Lykke.AlgoStore.Core.Constants;
+using System;
 using System.Threading.Tasks;
-using Common.Log;
 
 namespace Lykke.AlgoStore.Tests.Infrastructure
 {
@@ -9,7 +10,7 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         public Task WriteErrorAsync(string component, string process, string context, Exception exception, DateTime? dateTime = null)
         {
             string error = exception == null ? string.Empty : exception.Message;
-            Console.WriteLine(string.Format("component:{0}; process:{1}; context:{2}; exception:{3}", component, process, context, error));
+            Console.WriteLine(string.Format("component:{0}; process:{1}; context:{2}; exception:{3}; dateTime:{4};", component, process, context, error, dateTime?.ToString(AlgoStoreConstants.DateTimeFormat) ?? ""));
             return Task.CompletedTask;
         }
 
@@ -30,7 +31,7 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
 
         public Task WriteInfoAsync(string component, string process, string context, string info, DateTime? dateTime = null)
         {
-            Console.WriteLine(string.Format("component:{0}; process:{1}; context:{2}; info:{3}", component, process, context, info));
+            Console.WriteLine(string.Format("component:{0}; process:{1}; context:{2}; info:{3}; dateTime:{4};", component, process, context, info, dateTime?.ToString(AlgoStoreConstants.DateTimeFormat) ?? ""));
             return Task.CompletedTask;
         }
 
@@ -55,6 +56,16 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         }
 
         public Task WriteWarningAsync(string process, string context, string info, DateTime? dateTime = null)
+        {
+            return WriteInfoAsync(string.Empty, process, context, info, dateTime);
+        }
+
+        public Task WriteWarningAsync(string component, string process, string context, string info, Exception ex, DateTime? dateTime = null)
+        {
+            return WriteInfoAsync(string.Empty, process, context, info, dateTime);
+        }
+
+        public Task WriteWarningAsync(string process, string context, string info, Exception ex, DateTime? dateTime = null)
         {
             return WriteInfoAsync(string.Empty, process, context, info, dateTime);
         }

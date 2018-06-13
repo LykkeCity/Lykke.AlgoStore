@@ -17,7 +17,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Managers
             builder.RegisterModule(new AspNetCoreModule());
             builder.RegisterModule(new AlgoApiModule(settings, log));
             builder.RegisterModule(new AlgoRepositoryModule(settings, log));
-            builder.RegisterModule(new ServiceModule(settings.Nested(x => x.AlgoApi)));
+            builder.RegisterModule(new ServiceModule(settings, log));
 
             builder.Populate(services);
 

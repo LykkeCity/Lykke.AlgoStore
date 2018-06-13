@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using AzureStorage.Blob;
@@ -50,6 +51,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_BinaryFile_ShouldNotExist(repo, BlobKey);
         }
 
+        [Test]
+        public void BlobString_Save_Test()
+        {
+            string data = "Test string";
+            var repo = Given_AlgoBinary_InMemory_Storage_Repository();
+            When_Invoke_Save_String(repo, BlobKey, data);
+            Then_String_ShouldBe(repo, BlobKey, data);
+        }
+
         #region Private Methods
 
         private static void Then_DeleteBinary(IAlgoBlobRepository repo, string blobKey)
@@ -84,7 +94,10 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void When_Invoke_Save_BinaryFile(IAlgoBlobRepository repository, string key, byte[] bytes)
         {
-            repository.SaveBlobAsync(key, bytes).Wait();
+            using (var stream = new MemoryStream(bytes))
+            {
+                repository.SaveBlobAsync(key, stream).Wait();
+            }
         }
 
         private static void And_TryDelete_BinaryFile(IAlgoBlobRepository repository, string key)
@@ -102,6 +115,16 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var saved = repository.GetBlobAsync(key).Result;
             Assert.True(Encoding.Unicode.GetString(saved) == key);
+        }
+
+        private static void When_Invoke_Save_String(IAlgoBlobRepository repository, string key, string data)
+        {
+            repository.SaveBlobAsync(key, data).Wait();
+        }
+        private static void Then_String_ShouldBe(IAlgoBlobRepository repository, string key, string data)
+        {
+            var saved = repository.GetBlobStringAsync(key).Result;
+            Assert.AreEqual(data, saved);
         }
 
         #endregion
