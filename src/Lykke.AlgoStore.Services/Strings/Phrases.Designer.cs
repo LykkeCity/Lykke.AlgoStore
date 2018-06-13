@@ -313,11 +313,11 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not Found.
+        ///   Looks up a localized string similar to Algo Not Found.
         /// </summary>
-        internal static string NotFound {
+        internal static string NotFoundAlgo {
             get {
-                return ResourceManager.GetString("NotFound", resourceCulture);
+                return ResourceManager.GetString("NotFoundAlgo", resourceCulture);
             }
         }
         
