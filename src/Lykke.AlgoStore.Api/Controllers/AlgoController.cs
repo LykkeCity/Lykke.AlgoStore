@@ -290,7 +290,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetAssetsForAssetPair(string assetPairId)
         {
-            var result = await _algosService.GetAssetsForAssetPairAsync(assetPairId);
+            var clientId = User.GetClientId();
+            var result = await _algosService.GetAssetsForAssetPairAsync(assetPairId, clientId);
 
             if (result.IsNullOrEmptyCollection())
                 return NotFound();

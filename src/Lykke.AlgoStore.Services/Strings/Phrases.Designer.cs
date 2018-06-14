@@ -142,11 +142,29 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve asset(s) for the given Asset Pair.
+        /// </summary>
+        internal static string AssetNotFound {
+            get {
+                return ResourceManager.GetString("AssetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The asset pair {0} is temporarily disabled..
         /// </summary>
         internal static string AssetPairDisabledDisplayMessage {
             get {
                 return ResourceManager.GetString("AssetPairDisabledDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not retrieve asset pair with id {0}.
+        /// </summary>
+        internal static string AssetPairNotFound {
+            get {
+                return ResourceManager.GetString("AssetPairNotFound", resourceCulture);
             }
         }
         

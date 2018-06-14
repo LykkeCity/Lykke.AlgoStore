@@ -79,7 +79,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var algoRepo = Given_Correct_AlgoRepositoryMock();
             var blobRepository = Given_Correct_AlgoBlobRepositoryMock();
             var service = Given_AlgosService(algoRepo, blobRepository, null, null, null,
-                null, null, null, null, null, null);
+                null, null, null, null, null);
             var uploadBinaryModel = Given_UploadAlgoBinaryData_Model();
             When_Invoke_SaveAlgoAsBinary(service, uploadBinaryModel);
             ThenAlgo_Binary_ShouldExist(uploadBinaryModel.AlgoId, blobRepository);
@@ -94,7 +94,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, publicAlgosRepository, personalDataervice,
-                null, null, null, null, null);
+                null, null, null, null);
             var data = When_Invoke_GetAllAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -110,7 +110,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
 
             var service = Given_AlgosService(repo, null, null, null, null, personalDataervice, null,
-                null, null, null, null);
+                null, null, null);
             var data = When_Invoke_GetAllUserAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -124,7 +124,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
 
             var service = Given_AlgosService(repo, null, null, null, null, personalDataervice, null, null,
-                null, null, null);
+                null, null);
             var data = When_Invoke_GetAllUserAlgos(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -136,7 +136,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgosService(null, null, null, repo, null, null, null, null, null,
-                null, null);
+                null);
             var data = When_Invoke_GetAlgoRating(service, out Exception exception);
 
             Then_Exception_ShouldBe_Null(exception);
@@ -150,7 +150,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgosService(null, null, null, repo, null, null, null, null, null,
-                null, null);
+                null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlgoId, ClientId, out Exception exception);
 
@@ -165,7 +165,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
             var service = Given_AlgosService(null, null, null, repo, null, null, null, null, null,
-                null, null);
+                null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
             var data = When_Invoke_GetAlgoRatingByClient(service, AlgoAndAlgoInstanceServiceTests.AlgoId, Guid.NewGuid().ToString(), out Exception exception);
 
@@ -182,7 +182,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicRepo = Given_Correct_PublicAlgosRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock();
             var service = Given_AlgosService(algoRepo, null, null, repo, publicRepo, null, null, null, null,
-                null, null);
+                null);
             var allAlgos = When_Invoke_GetAllAlgos(service, out Exception ex);
 
             var randIndex = rnd.Next(0, allAlgos.Count);
@@ -215,13 +215,26 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
-            var assetPairsCache = Given_CachedDataDictinary_AssetPairs(); 
-
-            var assetsCache = Given_CachedDataDictinary_Assets();
+            var assetService = Given_AssetsServiceWithCache(); 
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
-                clientAccountService, null, null, null, assetPairsCache, assetsCache);
+                clientAccountService, null, null, null, assetService);
             var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(data);
+        }
+
+        [Test]
+        public void GetAssets_For_AssetPair_Returns_Data()
+        {
+            var assetService = Given_AssetsServiceWithCache();
+
+            var clientId = Guid.NewGuid().ToString();
+
+            var service = Given_AlgosService(null, null, null, null, null,
+                null, null, null, null, assetService);
+
+            var data = When_Invoke_GetAssetsForAssetPair(service, clientId, AssetPairKey, out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldNotBe_Empty(data);
         }
@@ -237,7 +250,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
-                clientAccountService, null, null, null, null, null);
+                clientAccountService, null, null, null, null);
             var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -247,7 +260,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoInformation_Throws_Exception()
         {
             var service = Given_AlgosService(null, null, null, null, null, null, null, null,
-                null, null, null);
+                null, null);
             var data = When_Invoke_GetAlgoInformation(service, null, null, null, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -259,7 +272,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
 
             var service = Given_AlgosService(null, null, null, null, null, null, null, null,
-                null, null, null);
+                null, null);
             var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
             Then_Data_ShouldBe_Empty(data);
@@ -337,7 +350,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
@@ -356,7 +369,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, null);
             var assetsValidator = new AssetsValidator();
             var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
@@ -373,7 +386,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_WalletExist_Mock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
@@ -389,7 +402,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(false);
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
@@ -406,7 +419,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(false);
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var publicAlgosRepository = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
@@ -423,7 +436,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
@@ -439,7 +452,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, true);
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
@@ -457,7 +470,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var repo = Given_Empty_AlgoClientInstanceRepositoryMock();
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
@@ -475,7 +488,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.OK);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
@@ -492,7 +505,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
             var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
             var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
-            var assetService = Given_Customized_AssetServiceMock(data, HttpStatusCode.NotFound);
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, true);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
@@ -534,13 +547,12 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoStoreService algoStoreService,
             IAlgoCommentsRepository commentsRepository,
             ICodeBuildService codeBuildService,
-            CachedDataDictionary<string, AssetPair> assetPairsCache,
-            CachedDataDictionary<string, Asset> assetsCache)
+            IAssetsServiceWithCache assetsService)
         {
             return new AlgosService(repo, blobRepo, algoInstanceRepository,
                 algoRatingsRepository, publicAlgosRepository, personalDataService,
                 algoStoreService, commentsRepository,
-                new LogMock(), codeBuildService, assetPairsCache, assetsCache);
+                new LogMock(), codeBuildService, assetsService);
         }
 
         private static AlgoInstancesService Given_AlgoInstanceService(
@@ -548,7 +560,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoClientInstanceRepository algoInstanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IAssetsService assetsService,
+            IAssetsServiceWithCache assetsService,
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candleshistoryservice,
             AssetsValidator assetsValidator,
@@ -566,6 +578,20 @@ namespace Lykke.AlgoStore.Tests.Unit
             try
             {
                 return service.GetAlgoDataInformationAsync(clientId, algoClientId, algoId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static List<EnumValue> When_Invoke_GetAssetsForAssetPair(AlgosService service, string clientId, string assetPairId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetAssetsForAssetPairAsync(assetPairId, clientId).Result;
             }
             catch (Exception ex)
             {
@@ -1105,37 +1131,32 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IAssetsService Given_Customized_AssetServiceMock(AlgoClientInstanceData data, HttpStatusCode statusCode)
+        private static IAssetsServiceWithCache Given_Customized_AssetServiceWithCacheMock(AlgoClientInstanceData data, bool isNotFound)
         {
             var fixture = new Fixture();
-            var result = new Mock<IAssetsService>();
+            var result = new Mock<IAssetsServiceWithCache>();
 
-            result.Setup(service => service.AssetPairGetWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new HttpOperationResponse<AssetPair>
-                {
-                    Body = fixture.Build<AssetPair>()
+            result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync( isNotFound ? null :
+                    fixture.Build<AssetPair>()
                     .With(pair => pair.QuotingAssetId, data.TradedAssetId)
                     .With(pair => pair.Id, data.AssetPairId)
                     .With(pair => pair.Accuracy, AssetAccuracy)
                     .With(pair => pair.IsDisabled, false)
                     .With(pair => pair.MinVolume, MinVolume)
                     .With(pair => pair.MinInvertedVolume, MinVolume)
-                    .Create(),
-                    Response = new HttpResponseMessage(statusCode)
-                });
+                    .Create()
+                );
 
-            result.Setup(service => service.AssetGetWithHttpMessagesAsync(It.IsAny<string>(),
-                    It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new HttpOperationResponse<Asset>
-                {
-                    Body = fixture.Build<Asset>()
+            result.Setup(service => service.TryGetAssetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(isNotFound ? null :
+                fixture.Build<Asset>()
                     .With(asset => asset.Name, data.TradedAssetId)
                     .With(asset => asset.Id, data.TradedAssetId)
                     .With(asset => asset.Accuracy, AssetAccuracy)
                     .With(asset => asset.IsDisabled, false)
-                    .Create(),
-                    Response = new HttpResponseMessage(statusCode)
-                });
+                    .Create()                   
+                );
 
             return result.Object;
         }
@@ -1290,10 +1311,15 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.NotNull(data);
         }
 
+        private static void Then_Data_ShouldNotBe_Empty(List<EnumValue> data)
+        {
+            Assert.NotNull(data);
+        }
+
         private static void Then_Data_ShouldBe_Empty(AlgoDataInformation data)
         {
             Assert.Null(data);
-        }
+        }   
 
         private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type)
         {
@@ -1306,17 +1332,29 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .Create();
         }
 
-        private static CachedDataDictionary<string, AssetPair> Given_CachedDataDictinary_AssetPairs()
+        private static IAssetsServiceWithCache Given_AssetsServiceWithCache()
         {
             var fixture = new Fixture();
-            return fixture.Create<CachedDataDictionary<string, AssetPair>>();
+            var result = new Mock<IAssetsServiceWithCache>();
+
+            result.Setup(service => service.GetAllAssetPairsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<AssetPair>());
+
+            result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string assetPairId, CancellationToken token) =>                    
+                    fixture.Build<AssetPair>()
+                    .With(a => a.Id, assetPairId)
+                    .Create());
+
+            result.Setup(service => service.TryGetAssetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string assetId, CancellationToken token) => 
+                    fixture.Build<Asset>()
+                    .With(a => a.Id, TradedAssetKey)
+                    .Create());
+
+            return result.Object;
         }
 
-        private static CachedDataDictionary<string, Asset> Given_CachedDataDictinary_Assets()
-        {
-            var fixture = new Fixture();
-            return fixture.Create<CachedDataDictionary<string, Asset>>();
-        }
         #endregion
     }
 }

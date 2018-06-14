@@ -25,6 +25,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId);
         Task<AlgoData> CreateAlgoAsync(AlgoData data, string algoContent);
         Task<AlgoData> EditAlgoAsync(AlgoData data, string algoContent);
-        Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId);
+        Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId, string clientId);
     }
 }

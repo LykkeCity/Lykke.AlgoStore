@@ -43,7 +43,7 @@ namespace Lykke.AlgoStore.Api.Modules
         {
             RegisterExternalServices(builder);
             RegisterLocalServices(builder);
-            RegisterDictionaryEntities(builder);
+            //RegisterDictionaryEntities(builder);
 
             _services.RegisterAssetsClient(AssetServiceSettings.Create(
                     new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
@@ -139,27 +139,6 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<UserPermissionsService>()
                 .As<IUserPermissionsService>()
                 .SingleInstance();
-        }
-
-        private void RegisterDictionaryEntities(ContainerBuilder builder)
-        {
-            builder.Register(c =>
-            {
-                var ctx = c.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, Asset>(
-                    async () =>
-                        (await ctx.Resolve<IAssetsServiceWithCache>().GetAllAssetsAsync(false))
-                        .ToDictionary(itm => itm.Id));
-            }).SingleInstance();
-
-            builder.Register(c =>
-            {
-                var ctx = c.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, AssetPair>(
-                    async () =>
-                        (await ctx.Resolve<IAssetsServiceWithCache>().GetAllAssetPairsAsync())
-                        .ToDictionary(itm => itm.Id));
-            }).SingleInstance();
         }
     }
 }
