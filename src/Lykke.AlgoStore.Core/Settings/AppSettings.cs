@@ -15,6 +15,7 @@ namespace Lykke.AlgoStore.Core.Settings
         public PersonalDataServiceClientSettings PersonalDataServiceClient { get; set; }
         public AlgoTradesServiceClientSettings AlgoTradesServiceClient { get; set; }
         public SlackNotificationsSettings SlackNotifications { get; set; }
+        public AssetsServiceClientSettings AssetsServiceClient { get; set; }
         public ClientAccountServiceClientSettings ClientAccountServiceClient { get; set; }
         public BalancesServiceClientSettings BalancesServiceClient { get; set; }
         public RateCalculatorClientSettings RateCalculatorServiceClient { get; set; }
