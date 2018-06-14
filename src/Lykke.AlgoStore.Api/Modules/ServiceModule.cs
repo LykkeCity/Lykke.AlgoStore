@@ -19,10 +19,6 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
-using System.Linq;
-using Common;
-using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.CandlesHistory.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -43,7 +39,6 @@ namespace Lykke.AlgoStore.Api.Modules
         {
             RegisterExternalServices(builder);
             RegisterLocalServices(builder);
-            //RegisterDictionaryEntities(builder);
 
             _services.RegisterAssetsClient(AssetServiceSettings.Create(
                     new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
