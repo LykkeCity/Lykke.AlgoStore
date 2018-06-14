@@ -19,10 +19,6 @@ using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using System;
-using System.Linq;
-using Common;
-using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.CandlesHistory.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -43,7 +39,12 @@ namespace Lykke.AlgoStore.Api.Modules
         {
             RegisterExternalServices(builder);
             RegisterLocalServices(builder);
-            RegisterDictionaryEntities(builder);
+
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                    new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
+                    _settings.CurrentValue.AlgoApi.Dictionaries.CacheExpirationPeriod),
+                _log,
+                autoRefresh: true);
 
             builder.Populate(_services);
         }
@@ -67,11 +68,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<TeamCityClient.TeamCityClient>()
                 .As<ITeamCityClient>()
                 .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
-                .SingleInstance();
-
-            builder.RegisterType<AssetsService>()
-                .As<IAssetsService>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
+                .SingleInstance();         
 
             builder.RegisterType<CodeBuildService>()
                 .As<ICodeBuildService>()
@@ -137,26 +134,6 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<UserPermissionsService>()
                 .As<IUserPermissionsService>()
                 .SingleInstance();
-        }
-
-        private void RegisterDictionaryEntities(ContainerBuilder builder)
-        {
-            builder.Register(c =>
-            {
-                var ctx = c.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, Asset>(
-                    async () =>
-                        (await ctx.Resolve<IAssetsService>().AssetGetAllAsync()).ToDictionary(itm => itm.Id));
-            }).SingleInstance();
-
-            builder.Register(c =>
-            {
-                var ctx = c.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, AssetPair>(
-                    async () =>
-                        (await ctx.Resolve<IAssetsService>().AssetPairGetAllAsync())
-                        .ToDictionary(itm => itm.Id));
-            }).SingleInstance();
         }
     }
 }

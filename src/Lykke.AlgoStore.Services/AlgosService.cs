@@ -18,6 +18,7 @@ using Common;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 using Lykke.AlgoStore.Services.Utils;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 
 namespace Lykke.AlgoStore.Services
@@ -33,9 +34,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoStoreService _algoStoreService;
         private readonly IAlgoCommentsRepository _commentsRepository;
         private readonly ICodeBuildService _codeBuildService;
-
-        private readonly CachedDataDictionary<string, Asset> _assetsCache;
-        private readonly CachedDataDictionary<string, AssetPair> _assetPairsCache;
+        private readonly IAssetsServiceWithCache _assetsService;
 
         private static Random rnd = new Random();
 
@@ -53,20 +52,19 @@ namespace Lykke.AlgoStore.Services
         /// <param name="commentsRepository">The algo comments repository.</param>
         /// <param name="log">The log.</param>
         /// <param name="codeBuildService">Algo code validator</param>
-        /// <param name="assetPairsCache">Asset pairs cache dictionary</param>
-        /// <param name="assetsCache">Assets cache dictionary</param>
+        /// <param name="assetsService">The Assets Service with Cache</param>
         public AlgosService(IAlgoRepository algoRepository,
             IAlgoBlobRepository blobRepository,
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
-            IPersonalDataService personalDataService,
+            IPersonalDataService personalDataService,           
             IAlgoStoreService algoStoreService,
             IAlgoCommentsRepository commentsRepository,
             ILog log,
             ICodeBuildService codeBuildService,
-            CachedDataDictionary<string, AssetPair> assetPairsCache,
-            CachedDataDictionary<string, Asset> assetsCache) : base(log, nameof(AlgosService))
+            IAssetsServiceWithCache assetsService
+) : base(log, nameof(AlgosService))
         {
             _algoRepository = algoRepository;
             _blobRepository = blobRepository;
@@ -77,8 +75,7 @@ namespace Lykke.AlgoStore.Services
             _algoStoreService = algoStoreService;
             _commentsRepository = commentsRepository;
             _codeBuildService = codeBuildService;
-            _assetPairsCache = assetPairsCache;
-            _assetsCache = assetsCache;
+            _assetsService = assetsService;
         }
 
         /// <summary>
@@ -471,7 +468,7 @@ namespace Lykke.AlgoStore.Services
 
                     algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
 
-                    PopulateAssetPairsAndTradedAssetsAsync(algoInformation.AlgoMetaDataInformation);
+                    await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }
                 return algoInformation;
             });
@@ -637,25 +634,27 @@ namespace Lykke.AlgoStore.Services
         }
 
 
-        private void PopulateAssetPairsAndTradedAssetsAsync(AlgoMetaDataInformation algoMetaDataInformation)
+        private async Task PopulateAssetPairsAsync(AlgoMetaDataInformation algoMetaDataInformation)
         {
-            IsFieldMissing(algoMetaDataInformation, "TradedAsset");
             IsFieldMissing(algoMetaDataInformation, "AssetPair");
 
-            var assetPairsList = _assetPairsCache.GetDictionaryAsync().Result.Select(ap => new EnumValue
+            var assetPairsCache = await _assetsService.GetAllAssetPairsAsync();
+
+            var assetPairsList = assetPairsCache.Where(ap => !ap.IsDisabled).Select(ap => new EnumValue
             {
-                Key = ap.Value.Name,
-                Value = ap.Key
+                Key = ap.Name,
+                Value = ap.Id
             }).ToList();
 
-            var assetsList = _assetsCache.GetDictionaryAsync().Result.Select(a => new EnumValue
-            {
-                Key = a.Value.Name,
-                Value = a.Key
-            }).ToList();
-
+            
             algoMetaDataInformation.Parameters.Single(p => p.Key == "AssetPair").PredefinedValues = assetPairsList;
-            algoMetaDataInformation.Parameters.Single(p => p.Key == "TradedAsset").PredefinedValues = assetsList;
+
+            foreach (var function in algoMetaDataInformation.Functions)
+            {
+                var assetPairParameter = function.Parameters.SingleOrDefault(p => p.Key == "AssetPair");
+                if (assetPairParameter != null)
+                    assetPairParameter.PredefinedValues = assetPairsList;
+            }
         }
 
         private void IsFieldMissing(AlgoMetaDataInformation algoMetaDataInformation, string field)
@@ -664,6 +663,40 @@ namespace Lykke.AlgoStore.Services
                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                    $"'{field}' field is missing from AlgoMetaData",
                    string.Format(Phrases.MetadataFieldMissing, field));
+        }
+
+        public async Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId, string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetAssetsForAssetPairAsync), clientId, async () =>
+            {
+                var assetPairCache = await _assetsService.TryGetAssetPairAsync(assetPairId);
+                if (assetPairCache == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
+                        $"Could not retrieve asset pair with id {assetPairId}",
+                        string.Format(Phrases.AssetPairNotFound, assetPairId));
+
+                var baseAsset = await _assetsService.TryGetAssetAsync(assetPairCache.BaseAssetId);
+                var quotingAsset = await _assetsService.TryGetAssetAsync(assetPairCache.QuotingAssetId);
+
+                if (baseAsset == null || quotingAsset == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
+                        "Could not retrieve asset(s) for the given Asset Pair",
+                        Phrases.AssetNotFound);
+
+                var twoAssetsFromAssetPair = new List<Asset>
+                {
+                    baseAsset,
+                    quotingAsset
+                };
+
+                var result = twoAssetsFromAssetPair.Select(a => new EnumValue
+                {
+                    Key = a.Name,
+                    Value = a.Id
+                });
+
+                return result.ToList();
+            });
         }
     }
 }
