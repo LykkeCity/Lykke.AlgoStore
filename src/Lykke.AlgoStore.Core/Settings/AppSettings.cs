@@ -5,6 +5,7 @@ using Lykke.Service.PersonalData.Settings;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.Balances.Client;
 using Lykke.AlgoStore.Service.AlgoTrades.Client;
+using Lykke.AlgoStore.Service.Security.Client;
 
 namespace Lykke.AlgoStore.Core.Settings
 {
@@ -19,5 +20,6 @@ namespace Lykke.AlgoStore.Core.Settings
         public BalancesServiceClientSettings BalancesServiceClient { get; set; }
         public RateCalculatorClientSettings RateCalculatorServiceClient { get; set; }
         public CandlesHistoryServiceClient CandlesHistoryServiceClient { get; set; }
+        public SecurityServiceClientSettings AlgoStoreSecurityServiceClient { get; set; }
     }
 }

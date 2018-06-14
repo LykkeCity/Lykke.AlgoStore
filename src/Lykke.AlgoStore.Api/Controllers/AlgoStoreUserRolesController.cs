@@ -1,14 +1,17 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
+using Lykke.AlgoStore.Service.Security.Client;
+using UserRoleMatchModel = Lykke.AlgoStore.Api.Models.UserRoleMatchModel;
+using UserRoleModel = Lykke.AlgoStore.Api.Models.UserRoleModel;
+using UserRoleUpdateModel = Lykke.AlgoStore.Api.Models.UserRoleUpdateModel;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -16,133 +19,133 @@ namespace Lykke.AlgoStore.Api.Controllers
     [Route("api/v1/roles")]
     public class AlgoStoreUserRolesController: Controller
     {
-        private readonly IUserRolesService _userRolesService;
+        private readonly ISecurityClient _securityClient;
 
-        public AlgoStoreUserRolesController(
-            IUserRolesService userRolesService)
+        public AlgoStoreUserRolesController(ISecurityClient securityClient)
         {
-            _userRolesService = userRolesService;
+            _securityClient = securityClient;
         }
 
         [HttpGet("getAll")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("GetAllUserRoles")]
         [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUserRoles()
         {
-            var result = await _userRolesService.GetAllRolesAsync();
-            return Ok(result);
+            var result = await _securityClient.GetAllUserRolesAsync();
+
+            return Ok(Mapper.Map<List<UserRoleModel>>(result));
         }
 
         [HttpGet("getById")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("GetRoleById")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetRoleById(string roleId)
         {
-            var result = await _userRolesService.GetRoleByIdAsync(roleId);
+            var result = await _securityClient.GetRoleByIdAsync(roleId);
 
             if (result == null)
                 return NotFound();
 
-            return Ok(result);
+            return Ok(Mapper.Map<UserRoleModel>(result));
         }
 
         [HttpGet("getByClientId")]
         [SwaggerOperation("GetRolesByClientId")]
-        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetRolesByClientId(string clientId)
         {
             if (string.IsNullOrEmpty(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _userRolesService.GetRolesByClientIdAsync(clientId);
+            var result = await _securityClient.GetRolesByClientIdAsync(clientId);
 
-            return Ok(result);
+            return Ok(Mapper.Map<List<UserRoleModel>>(result));
         }
 
         [HttpPost("saveRole")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("SaveUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> SaveUserRole([FromBody] UserRoleCreateModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleData>(role);
+            var data = Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>(role);
 
-            var result = await _userRolesService.SaveRoleAsync(data);
+            var result = await _securityClient.SaveUserRoleAsync(data);
 
-            return Ok(result);
+            return Ok(Mapper.Map<UserRoleModel>(result));
         }
 
         [HttpPost("updateRole")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("SaveUserRole")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateUserRole([FromBody] UserRoleUpdateModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleData>(role);
+            var data = Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>(role);
 
-            var result = await _userRolesService.SaveRoleAsync(data);
+            var result = await _securityClient.SaveUserRoleAsync(data);
 
-            return Ok(result);
+            return Ok(Mapper.Map<UserRoleModel>(result));
         }
 
         [HttpPost("assignRole")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("AssignUserRole")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignUserRole([FromBody] UserRoleMatchModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleMatchData>(role);
+            var data = Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleMatchModel>(role);
 
-            await _userRolesService.AssignRoleToUser(data);
+            await _securityClient.AssignUserRoleAsync(data);
 
             return NoContent();
         }
 
         [HttpPost("revokeRole")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("RevokeRoleFromUser")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeRoleFromUser([FromBody] UserRoleMatchModel role)
         {
-            var data = AutoMapper.Mapper.Map<UserRoleMatchData>(role);
+            var data = Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleMatchModel>(role);
 
-            await _userRolesService.RevokeRoleFromUser(data);
+            await _securityClient.RevokeRoleFromUserAsync(data);
 
             return NoContent();
         }
 
         [HttpGet("verifyRole")]
         [SwaggerOperation("VerifyUserRole")]
-        [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> VerifyUserRole(string clientId)
         {
             if (string.IsNullOrEmpty(clientId))
                 clientId = User.GetClientId();
 
-            await _userRolesService.VerifyUserRole(clientId);
+            await _securityClient.VerifyUserRoleAsync(clientId);
 
             return Ok();
         }
 
         [HttpDelete("deleteRole")]
-        [RequirePermissionAttribute]
+        [RequirePermission]
         [SwaggerOperation("DeleteUserRole")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteUserRole(string roleId)
         {
-            await _userRolesService.DeleteRoleAsync(roleId);
+            await _securityClient.DeleteUserRoleAsync(roleId);
 
             return NoContent();
         }
