@@ -104,10 +104,10 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoStoreUserData, AlgoStoreUserDataModel>();
 
             CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserPermissionModel, Models.UserPermissionModel>();
+            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel, Models.UserRoleModel>();
 
-            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel, Models.UserRoleModel>()
-                .ForMember(dest => dest.CanBeDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.CanBeModified, opt => opt.Ignore());
+            CreateMap<UserRoleCreateModel, Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
         }
     }
 }
