@@ -169,7 +169,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset {0} or {1} are missing from wallet {2}.
+        ///   Looks up a localized string similar to Asset {0} and {1} are missing from wallet {2}.
         /// </summary>
         internal static string AssetsMissingFromWallet {
             get {
