@@ -353,7 +353,26 @@ namespace Lykke.AlgoStore.Tests.Unit
             var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
+            var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
+                statisticsRepo, assetService, clientAccountService, null, assetsValidator, walletBalanceService);
+            var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
+            Then_Exception_ShouldBe_Null(exception);
+            Then_Data_ShouldNotBe_Empty(result);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_User_Has_One_Asset_Returns_Ok()
+        {
+            var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
+            var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
+            var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
+            var assetsValidator = new AssetsValidator();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(false);
             var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
                 statisticsRepo, assetService, clientAccountService, null, assetsValidator, walletBalanceService);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
@@ -508,7 +527,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var assetService = Given_Customized_AssetServiceWithCacheMock(data, true);
             var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
             var assetsValidator = new AssetsValidator();
-            var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
             var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
                 statisticsRepo, assetService, clientAccountService, null, assetsValidator, walletBalanceService);
             var result = When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
@@ -1199,7 +1218,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IWalletBalanceService Given_Customized_WalletBalanceServiceMock()
+        private static IWalletBalanceService Given_Customized_WalletBalanceServiceMock(bool userHasBothAssetsInWallet)
         {
             var fixture = new Fixture();
             var result = new Mock<IWalletBalanceService>();
@@ -1208,16 +1227,22 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(100);
 
             result.Setup(service => service.GetWalletBalancesAsync(It.IsAny<string>(), It.IsAny<AssetPair>()))
-                .ReturnsAsync(new List<ClientBalanceResponseModel>
+                .ReturnsAsync(userHasBothAssetsInWallet ? new List <ClientBalanceResponseModel>
                 {
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, TradedAsset)
                         .Create(),
 
-                    fixture.Build<ClientBalanceResponseModel>()
-                        .With(w => w.AssetId, QuotingAsset)
+                     fixture.Build<ClientBalanceResponseModel>()
+                       .With(w => w.AssetId, QuotingAsset)
                         .Create()
-                });
+                    
+                } : new List<ClientBalanceResponseModel>
+                    {
+                        fixture.Build<ClientBalanceResponseModel>()
+                            .With(w => w.AssetId, TradedAsset)
+                            .Create()
+                    });
 
 
             return result.Object;

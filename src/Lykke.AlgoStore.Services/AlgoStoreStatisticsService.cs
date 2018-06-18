@@ -101,8 +101,8 @@ namespace Lykke.AlgoStore.Services
                         var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
                             algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse);
 
-                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Id).Balance;
-                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Id).Balance;
+                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId == tradedAsset.Id)?.Balance ?? 0;
+                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId != tradedAsset.Id)?.Balance ?? 0;
                         statisticsSummary.LastWalletBalance = latestWalletBalance;
                     }
 

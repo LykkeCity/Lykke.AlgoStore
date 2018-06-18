@@ -35,7 +35,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var statisticsRepo = Given_Correct_StatisticsRepository();
             var algoInstanceRepo = Given_Correct_AlgoClientInstanceRepository();
-            var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
             var assetsService = Given_Customized_AssetServiceWithCacheMock();
             var assetsValidator = new AssetsValidator();
             var statisticsService = Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo,
@@ -51,7 +51,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var statisticsRepo = Given_Correct_StatisticsRepository();
             var algoInstanceRepo = Given_Correct_AlgoClientInstanceRepository();
-            var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
             var assetsService = Given_Customized_AssetServiceWithCacheMock();
             var assetsValidator = new AssetsValidator();
             var statisticsService = Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo,
@@ -108,7 +108,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IWalletBalanceService Given_Customized_WalletBalanceServiceMock()
+        private static IWalletBalanceService Given_Customized_WalletBalanceServiceMock(bool userHasBothAssetsInWallet)
         {
             var fixture = new Fixture();
             var result = new Mock<IWalletBalanceService>();
@@ -117,7 +117,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(100);
 
             result.Setup(service => service.GetWalletBalancesAsync(It.IsAny<string>(), It.IsAny<AssetPair>()))
-                .ReturnsAsync(new List<ClientBalanceResponseModel>
+                .ReturnsAsync(userHasBothAssetsInWallet ? new List<ClientBalanceResponseModel>
                 {
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, TradedAsset)
@@ -125,6 +125,12 @@ namespace Lykke.AlgoStore.Tests.Unit
 
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, QuotingAsset)
+                        .Create()
+
+                } : new List<ClientBalanceResponseModel>
+                {
+                    fixture.Build<ClientBalanceResponseModel>()
+                        .With(w => w.AssetId, TradedAsset)
                         .Create()
                 });
 

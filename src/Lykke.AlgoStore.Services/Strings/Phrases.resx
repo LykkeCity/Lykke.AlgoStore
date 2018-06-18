@@ -121,7 +121,7 @@
     <value>Cannot {0} algo because it has {1}algo instances.</value>
   </data>
   <data name="AssetsMissingFromWallet" xml:space="preserve">
-    <value>Asset {0} or {1} are missing from wallet {2}</value>
+    <value>Asset {0} and {1} are missing from wallet {2}</value>
   </data>
   <data name="InstanceNotFound" xml:space="preserve">
     <value>Instance Not Found</value>

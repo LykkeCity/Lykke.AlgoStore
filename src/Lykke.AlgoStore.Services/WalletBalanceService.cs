@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Services
                     Phrases.WalletHasNoAssetsDisplayMessage);
             }
 
-            if (!walletAssetIds.Contains(assetPair.BaseAssetId) || !walletAssetIds.Contains(assetPair.QuotingAssetId))
+            if (!walletAssetIds.Contains(assetPair.BaseAssetId) && !walletAssetIds.Contains(assetPair.QuotingAssetId))
             {
                 var errorMessage = string.Format(Phrases.AssetsMissingFromWallet, assetPair.BaseAssetId, assetPair.QuotingAssetId, walletId);
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, errorMessage, errorMessage);
