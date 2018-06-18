@@ -107,7 +107,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel, Models.UserRoleModel>();
 
             CreateMap<UserRoleCreateModel, Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore());
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
         }
     }
 }
