@@ -89,9 +89,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateUserRole([FromBody] UserRoleUpdateModel role)
         {
-            var data = Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>(role);
+            var data = Mapper.Map<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleUpdateModel>(role);
 
-            var result = await _securityClient.SaveUserRoleAsync(data);
+            var result = await _securityClient.UpdateUserRoleAsync(data);
 
             return Ok(Mapper.Map<UserRoleModel>(result));
         }

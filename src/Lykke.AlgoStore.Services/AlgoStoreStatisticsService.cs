@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
+using JetBrains.Annotations;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -17,17 +18,21 @@ namespace Lykke.AlgoStore.Services
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
         private readonly IWalletBalanceService _walletBalanceService;
-        private readonly IAssetsService _assetService;
+        private readonly IAssetsServiceWithCache _assetService;
+        private readonly AssetsValidator _assetsValidator;
 
         public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            IWalletBalanceService walletBalanceService, IAssetsService assetsService, ILog log) : base(log,
-            nameof(AlgoStoreStatisticsService))
+            IWalletBalanceService walletBalanceService, IAssetsServiceWithCache assetsService,
+            [NotNull] AssetsValidator assetsValidator,
+            ILog log)
+            : base(log, nameof(AlgoStoreStatisticsService))
         {
             _statisticsRepository = statisticsRepository;
             _algoInstanceRepository = algoClientInstanceRepository;
             _walletBalanceService = walletBalanceService;
             _assetService = assetsService;
+            _assetsValidator = assetsValidator;
         }
 
         public async Task<StatisticsSummary> GetStatisticsSummaryAsync(string clientId, string instanceId)
@@ -81,20 +86,23 @@ namespace Lykke.AlgoStore.Services
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
                     }
 
-                    var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(algoInstance.AssetPairId);
-                    var tradedAsset = await _assetService.AssetGetWithHttpMessagesAsync(algoInstance.IsStraight
-                        ? assetPairResponse.Body.BaseAssetId
-                        : assetPairResponse.Body.QuotingAssetId);
+                    var assetPairResponse = await _assetService.TryGetAssetPairAsync(algoInstance.AssetPairId);
+                    _assetsValidator.ValidateAssetPair(algoInstance.AssetPairId, assetPairResponse);
+
+                    var tradedAsset = await _assetService.TryGetAssetAsync(algoInstance.IsStraight
+                        ? assetPairResponse.BaseAssetId
+                        : assetPairResponse.QuotingAssetId);
+                    _assetsValidator.ValidateAssetResponse(tradedAsset);
 
                     if (algoInstance.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
                     {
-                        var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse.Body);
+                        var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse);
                         var clientBalanceResponseModels = walletBalances.ToList();
                         var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
-                            algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse.Body);
+                            algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse);
 
-                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId == tradedAsset.Body.Id)?.Balance ?? 0;
-                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId != tradedAsset.Body.Id)?.Balance ?? 0;
+                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId == tradedAsset.Id)?.Balance ?? 0;
+                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId != tradedAsset.Id)?.Balance ?? 0;
                         statisticsSummary.LastWalletBalance = latestWalletBalance;
                     }
 
