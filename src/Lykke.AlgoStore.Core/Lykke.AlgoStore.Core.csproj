@@ -31,7 +31,7 @@
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.57" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
-    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.5" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AzureQueueIntegration" Version="2.1.0" />
     <PackageReference Include="Lykke.Common" Version="6.8.4" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
