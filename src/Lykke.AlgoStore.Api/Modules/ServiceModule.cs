@@ -9,6 +9,7 @@ using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Balances.Client;
+using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -20,6 +21,7 @@ using Microsoft.Rest;
 using System;
 using System.Linq;
 using Common;
+using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.CandlesHistory.Client;
 
@@ -42,7 +44,12 @@ namespace Lykke.AlgoStore.Api.Modules
         {
             RegisterExternalServices(builder);
             RegisterLocalServices(builder);
-            RegisterDictionaryEntities(builder);
+
+            _services.RegisterAssetsClient(AssetServiceSettings.Create(
+                    new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
+                    _settings.CurrentValue.AlgoApi.Dictionaries.CacheExpirationPeriod),
+                _log,
+                autoRefresh: true);
 
             builder.Populate(_services);
         }
@@ -66,11 +73,7 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<TeamCityClient.TeamCityClient>()
                 .As<ITeamCityClient>()
                 .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
-                .SingleInstance();
-
-            builder.RegisterType<AssetsService>()
-                .As<IAssetsService>()
-                .WithProperty("BaseUri", new System.Uri(_settings.CurrentValue.AlgoApi.Services.AssetServiceUrl));
+                .SingleInstance();         
 
             builder.RegisterType<CodeBuildService>()
                 .As<ICodeBuildService>()
@@ -88,6 +91,11 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<Candleshistoryservice>()
                 .As<ICandleshistoryservice>()
                 .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
+
+            builder.RegisterType<SecurityClient>()
+                .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreSecurityServiceClient.ServiceUrl)
+                .As<ISecurityClient>()
+                .SingleInstance();
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
@@ -112,6 +120,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<IAlgoStoreCommentsService>()
                 .SingleInstance();
 
+            builder.RegisterType<AlgoStoreClientsService>()
+                .As<IAlgoStoreClientsService>()
+                .SingleInstance();
+
             builder.RegisterType<WalletBalanceService>()
                 .As<IWalletBalanceService>()
                 .SingleInstance();
@@ -124,34 +136,6 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
                 .SingleInstance();
-
-            builder.RegisterType<UserRolesService>()
-               .As<IUserRolesService>()
-               .SingleInstance();
-
-            builder.RegisterType<UserPermissionsService>()
-                .As<IUserPermissionsService>()
-                .SingleInstance();
-        }
-
-        private void RegisterDictionaryEntities(ContainerBuilder builder)
-        {
-            builder.Register(c =>
-            {
-                var ctx = c.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, Asset>(
-                    async () =>
-                        (await ctx.Resolve<IAssetsService>().AssetGetAllAsync()).ToDictionary(itm => itm.Id));
-            }).SingleInstance();
-
-            builder.Register(c =>
-            {
-                var ctx = c.Resolve<IComponentContext>();
-                return new CachedDataDictionary<string, AssetPair>(
-                    async () =>
-                        (await ctx.Resolve<IAssetsService>().AssetPairGetAllAsync())
-                        .ToDictionary(itm => itm.Id));
-            }).SingleInstance();
         }
     }
 }

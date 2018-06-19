@@ -1,52 +1,52 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
+using Lykke.AlgoStore.Service.Security.Client;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
-    [RequirePermissionAttribute]
+    [RequirePermission]
     [Route("api/v1/users")]
     public class AlgoStoreUsersController: Controller
     {
-        private readonly IUserRolesService _userRolesService;
+        private readonly ISecurityClient _securityClient;
 
-        public AlgoStoreUsersController(
-            IUserRolesService userRolesService)
+        public AlgoStoreUsersController(ISecurityClient securityClient)
         {
-            _userRolesService = userRolesService;
+            _securityClient = securityClient;
         }
 
         [HttpGet("getAllWithRoles")]
         [SwaggerOperation("GetAllUserRoles")]
-        [ProducesResponseType(typeof(List<AlgoStoreUserData>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(List<AlgoStoreUserDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUsersWithRoles()
         {
-            var result = await _userRolesService.GetAllUsersWithRolesAsync();
-            return Ok(result);
+            var result = await _securityClient.GetAllUsersWithRolesAsync();
+
+            return Ok(Mapper.Map<List<AlgoStoreUserDataModel>>(result));
         }
 
         [HttpGet("getByIdWithRoles")]
         [SwaggerOperation("GetUserByIdWithRoles")]
-        [ProducesResponseType(typeof(List<AlgoStoreUserData>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AlgoStoreUserDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetUserByIdWithRoles(string clientId)
         {
             if (string.IsNullOrEmpty(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _userRolesService.GeyUserByIdWithRoles(clientId);
+            var result = await _securityClient.GetUserByIdWithRolesAsync(clientId);
 
-            return Ok(result);
+            return Ok(Mapper.Map<AlgoStoreUserDataModel>(result));
         }
     }
 }

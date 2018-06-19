@@ -7,6 +7,7 @@ using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,6 +76,22 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(response);
         }
 
+        [HttpGet("{instanceId}/status")]
+        [SwaggerOperation("GetInstanceStatusAsync")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetInstanceStatusAsync(string instanceId)
+        {
+            var clientId = User.GetClientId();
+
+            var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
+
+            if (data.InstanceId == null)
+                return NotFound();
+
+            return Ok(data.AlgoInstanceStatus);
+        }
+
         private ErrorResponse ValidateDateTimeParameters(AlgoMetaDataInformationModel algoMetaData)
         {
             var dtType = typeof(DateTime).FullName;
@@ -132,6 +149,32 @@ namespace Lykke.AlgoStore.Api.Controllers
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
 
             return Ok(response);
+        }
+
+        [HttpPut("{instanceId}/name")]
+        [SwaggerOperation("SetInstanceNameAsync")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<IActionResult> SetInstanceNameAsync(string instanceId, [FromBody] NameModel model)
+        {
+            var clientId = User.GetClientId();
+
+            if (!model.ValidateData(out var exception))
+                throw exception;
+
+            var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
+
+            if (data.InstanceId == null)
+                return NotFound();
+
+            data.InstanceName = model.Name;
+
+            if(data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+                await _algoInstancesService.SaveAlgoInstanceDataAsync(data, data.AlgoClientId);
+            else
+                await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, data.AlgoClientId);
+
+            return Ok();
         }
 
         [HttpPost("fakeTradingInstanceData")]

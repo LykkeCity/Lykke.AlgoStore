@@ -1,26 +1,28 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
+using Lykke.AlgoStore.Service.Security.Client;
+using RolePermissionMatchModel = Lykke.AlgoStore.Api.Models.RolePermissionMatchModel;
+using UserPermissionModel = Lykke.AlgoStore.Api.Models.UserPermissionModel;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
-    [RequirePermissionAttribute]
+    [RequirePermission]
     [Route("api/v1/permissions")]
     public class AlgoStoreUserPermissionsController: Controller
     {
-        private readonly IUserPermissionsService _permissionsService;
+        private readonly ISecurityClient _securityClient;
 
-        public AlgoStoreUserPermissionsController(IUserPermissionsService permissionsService)
+        public AlgoStoreUserPermissionsController(ISecurityClient securityClient)
         {
-            _permissionsService = permissionsService;
+            _securityClient = securityClient;
         }
 
         [HttpGet("getAll")]
@@ -29,9 +31,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllPermissions()
         {
-            var result = await _permissionsService.GetAllPermissionsAsync();
+            var result = await _securityClient.GetAllPermissionsAsync();
 
-            return Ok(result);
+            return Ok(Mapper.Map<List<UserPermissionModel>>(result));
         }
 
         [HttpGet("getById")]
@@ -41,12 +43,12 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetPermissionById(string permissionId)
         {
-            var result = await _permissionsService.GetPermissionByIdAsync(permissionId);
+            var result = await _securityClient.GetPermissionByIdAsync(permissionId);
 
             if (result == null)
                 return NotFound();
 
-            return Ok(result);
+            return Ok(Mapper.Map<UserPermissionModel>(result));
         }
 
         [HttpGet("getByRoleId")]
@@ -55,9 +57,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetPermissionsByRoleId(string roleId)
         {          
-            var result = await _permissionsService.GetPermissionsByRoleIdAsync(roleId);
+            var result = await _securityClient.GetPermissionsByRoleIdAsync(roleId);
 
-            return Ok(result);
+            return Ok(Mapper.Map<List<UserPermissionModel>>(result));
         }        
 
         [HttpPost("assignPermissions")]
@@ -66,9 +68,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignMultiplePermissionToRole([FromBody] List<RolePermissionMatchModel> permissions)
         {
-            var data = AutoMapper.Mapper.Map<List<RolePermissionMatchData>>(permissions);
+            var data = Mapper.Map<List<Lykke.Service.Security.Client.AutorestClient.Models.RolePermissionMatchModel>> (permissions);
 
-            await _permissionsService.AssignPermissionsToRoleAsync(data);
+            await _securityClient.AssignMultiplePermissionToRoleAsync(data);
 
             return NoContent();
         }
@@ -79,9 +81,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeMultiplePermissions([FromBody] List<RolePermissionMatchModel> role)
         {
-            var data = AutoMapper.Mapper.Map<List<RolePermissionMatchData>>(role);
+            var data = Mapper.Map<List<Lykke.Service.Security.Client.AutorestClient.Models.RolePermissionMatchModel>>(role);
 
-            await _permissionsService.RevokePermissionsFromRole(data);
+            await _securityClient.RevokeMultiplePermissionsAsync(data);
 
             return NoContent();
         }        

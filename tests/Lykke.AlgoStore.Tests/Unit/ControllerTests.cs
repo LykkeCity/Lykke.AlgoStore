@@ -406,7 +406,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new AlgosService(repo, blobRepo, algoInstanceRepository,
                 algoRatingsRepository, publicAlgosRepository, personalDataService,
                 algoStoreService, commentsRepository,
-                new LogMock(), codeBuildService, null, null);
+                new LogMock(), codeBuildService, null);
 
             return result;
         }
@@ -416,7 +416,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                IAlgoClientInstanceRepository algoInstanceRepository,
                IPublicAlgosRepository publicAlgosRepository,
                IStatisticsRepository statisticsRepository,
-               IAssetsService assetsService,
+               IAssetsServiceWithCache assetsService,
                IClientAccountClient clientAccountClient,
                ICandleshistoryservice candleshistoryservice,
                AssetsValidator assetsValidator,

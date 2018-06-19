@@ -9,6 +9,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Services;
+using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
@@ -34,10 +35,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var statisticsRepo = Given_Correct_StatisticsRepository();
             var algoInstanceRepo = Given_Correct_AlgoClientInstanceRepository();
-            var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
-            var assetsService = Given_Customized_AssetServiceMock();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
+            var assetsService = Given_Customized_AssetServiceWithCacheMock();
+            var assetsValidator = new AssetsValidator();
             var statisticsService = Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo,
-                walletBalanceService, assetsService);
+                walletBalanceService, assetsService, assetsValidator);
 
             var result = When_Invoke_GetStatisticsSummaryAsync(statisticsService, ClientId, InstanceId, out Exception ex);
             Then_Exception_Should_BeNull(ex);
@@ -49,10 +51,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var statisticsRepo = Given_Correct_StatisticsRepository();
             var algoInstanceRepo = Given_Correct_AlgoClientInstanceRepository();
-            var walletBalanceService = Given_Customized_WalletBalanceServiceMock();
-            var assetsService = Given_Customized_AssetServiceMock();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
+            var assetsService = Given_Customized_AssetServiceWithCacheMock();
+            var assetsValidator = new AssetsValidator();
             var statisticsService = Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo,
-                walletBalanceService, assetsService);
+                walletBalanceService, assetsService, assetsValidator);
 
             var result = When_Invoke_UpdateStatisticsSummaryAsync(statisticsService, ClientId, InstanceId, out Exception ex);
             Then_Exception_Should_BeNull(ex);
@@ -63,9 +66,10 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoStoreStatisticsService Given_Correct_AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            IWalletBalanceService walletBalanceService, IAssetsService assetsService)
+            IWalletBalanceService walletBalanceService, IAssetsServiceWithCache assetsService, AssetsValidator assetsValidator)
         {
-            return new AlgoStoreStatisticsService(statisticsRepository, algoClientInstanceRepository, walletBalanceService, assetsService, new LogMock());
+            return new AlgoStoreStatisticsService(statisticsRepository, algoClientInstanceRepository, walletBalanceService, assetsService,
+                assetsValidator, new LogMock());
         }
 
         private static IStatisticsRepository Given_Correct_StatisticsRepository()
@@ -104,7 +108,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IWalletBalanceService Given_Customized_WalletBalanceServiceMock()
+        private static IWalletBalanceService Given_Customized_WalletBalanceServiceMock(bool userHasBothAssetsInWallet)
         {
             var fixture = new Fixture();
             var result = new Mock<IWalletBalanceService>();
@@ -113,7 +117,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(100);
 
             result.Setup(service => service.GetWalletBalancesAsync(It.IsAny<string>(), It.IsAny<AssetPair>()))
-                .ReturnsAsync(new List<ClientBalanceResponseModel>
+                .ReturnsAsync(userHasBothAssetsInWallet ? new List<ClientBalanceResponseModel>
                 {
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, TradedAsset)
@@ -122,36 +126,37 @@ namespace Lykke.AlgoStore.Tests.Unit
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, QuotingAsset)
                         .Create()
+
+                } : new List<ClientBalanceResponseModel>
+                {
+                    fixture.Build<ClientBalanceResponseModel>()
+                        .With(w => w.AssetId, TradedAsset)
+                        .Create()
                 });
 
 
             return result.Object;
         }
 
-        private static IAssetsService Given_Customized_AssetServiceMock()
+        private static IAssetsServiceWithCache Given_Customized_AssetServiceWithCacheMock()
         {
             var fixture = new Fixture();
-            var result = new Mock<IAssetsService>();
+            var result = new Mock<IAssetsServiceWithCache>();
 
-            result.Setup(service => service.AssetPairGetWithHttpMessagesAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new HttpOperationResponse<AssetPair>
-                {
-                    Body = fixture.Build<AssetPair>()
+            result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(                
+                    fixture.Build<AssetPair>()
                         .With(pair => pair.IsDisabled, false)
-                        .Create(),
-                    Response = new HttpResponseMessage(HttpStatusCode.OK)
-                });
+                        .Create()
+                );
 
-            result.Setup(service => service.AssetGetWithHttpMessagesAsync(It.IsAny<string>(),
-                    It.IsAny<Dictionary<string, List<string>>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new HttpOperationResponse<Asset>
-                {
-                    Body = fixture.Build<Asset>()
+            result.Setup(service => service.TryGetAssetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(
+                    fixture.Build<Asset>()
                         .With(asset => asset.IsDisabled, false)
                         .With(asset => asset.Id, TradedAsset)
-                        .Create(),
-                    Response = new HttpResponseMessage(HttpStatusCode.OK)
-                });
+                        .Create()
+                    );
 
             return result.Object;
         }

@@ -10,25 +10,18 @@ namespace Lykke.AlgoStore.Services.Utils
 {
     public class AssetsValidator
     {
-        public void ValidateAssetPairResponse(HttpOperationResponse<AssetPair> assetPairResponse)
+        public void ValidateAssetResponse(Asset assetResponse)
         {
-            if (assetPairResponse.Response.StatusCode != HttpStatusCode.OK)
-                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                    $"Invalid response code: {assetPairResponse.Response.StatusCode} from asset service calling AssetPairGetWithHttpMessagesAsync");
-        }
-
-        public void ValidateAssetResponse(HttpOperationResponse<Asset> assetResponse)
-        {
-            if (assetResponse.Response.StatusCode != HttpStatusCode.OK)
-                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                    $"Invalid response code: {assetResponse.Response.StatusCode} from asset service calling AssetGetWithHttpMessagesAsync");
+            if (assetResponse == null)
+                throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, "Asset was not found",
+                    string.Format(Phrases.ParamNotFoundDisplayMessage, "asset"));
         }
 
         public void ValidateAssetPair(string assetPairId, AssetPair assetPair)
         {
             if (assetPair == null)
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.AssetNotFound, $"AssetPair: {assetPairId} was not found",
+                throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"AssetPair: {assetPairId} was not found",
                     string.Format(Phrases.ParamNotFoundDisplayMessage, "asset pair"));
             }
             if (assetPair.IsDisabled)

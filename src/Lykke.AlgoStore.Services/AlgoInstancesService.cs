@@ -28,7 +28,7 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoClientInstanceRepository _instanceRepository;
         private readonly IPublicAlgosRepository _publicAlgosRepository;
         private readonly IStatisticsRepository _statisticsRepository;
-        private readonly IAssetsService _assetService;
+        private readonly IAssetsServiceWithCache _assetService;
         private readonly IClientAccountClient _clientAccountService;
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly AssetsValidator _assetsValidator;
@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Services
             IAlgoClientInstanceRepository instanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IAssetsService assetService,
+            IAssetsServiceWithCache assetService,
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candlesHistoryService,
             [NotNull] AssetsValidator assetsValidator,
@@ -195,36 +195,35 @@ namespace Lykke.AlgoStore.Services
             await Check.Algo.Exists(_algoRepository, algoClientId, data.AlgoId);
             await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, algoClientId);
 
-            var assetPairResponse = await _assetService.AssetPairGetWithHttpMessagesAsync(data.AssetPairId);
-            _assetsValidator.ValidateAssetPairResponse(assetPairResponse);
-            _assetsValidator.ValidateAssetPair(data.AssetPairId, assetPairResponse.Body);
+            var assetPairResponse = await _assetService.TryGetAssetPairAsync(data.AssetPairId);
+            _assetsValidator.ValidateAssetPair(data.AssetPairId, assetPairResponse);
 
-            var baseAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.BaseAssetId);
+            var baseAsset = await _assetService.TryGetAssetAsync(assetPairResponse.BaseAssetId);
             _assetsValidator.ValidateAssetResponse(baseAsset);
 
-            var quotingAsset = await _assetService.AssetGetWithHttpMessagesAsync(assetPairResponse.Body.QuotingAssetId);
+            var quotingAsset = await _assetService.TryGetAssetAsync(assetPairResponse.QuotingAssetId);
             _assetsValidator.ValidateAssetResponse(quotingAsset);
-            _assetsValidator.ValidateAsset(assetPairResponse.Body, data.TradedAssetId, baseAsset.Body, quotingAsset.Body);
+            _assetsValidator.ValidateAsset(assetPairResponse, data.TradedAssetId, baseAsset, quotingAsset);
 
-            var straight = data.TradedAssetId == baseAsset.Body.Id || data.TradedAssetId == baseAsset.Body.Name;
+            var straight = data.TradedAssetId == baseAsset.Id || data.TradedAssetId == baseAsset.Name;
 
             //get traded asset
-            var asset = straight ? baseAsset : quotingAsset;
+            var tradedAsset = straight ? baseAsset : quotingAsset;
 
-            _assetsValidator.ValidateAccuracy(data.Volume, asset.Body.Accuracy);
+            _assetsValidator.ValidateAccuracy(data.Volume, tradedAsset.Accuracy);
 
-            var volume = data.Volume.TruncateDecimalPlaces(asset.Body.Accuracy);
-            var minVolume = straight ? assetPairResponse.Body.MinVolume : assetPairResponse.Body.MinInvertedVolume;
-            _assetsValidator.ValidateVolume(volume, minVolume, asset.Body.DisplayId);
+            var volume = data.Volume.TruncateDecimalPlaces(tradedAsset.Accuracy);
+            var minVolume = straight ? assetPairResponse.MinVolume : assetPairResponse.MinInvertedVolume;
+            _assetsValidator.ValidateVolume(volume, minVolume, tradedAsset.DisplayId);
 
             if (!isFakeTradeInstance)
-                _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse.Body);
+                _walletBalanceService.ValidateWallet(data.WalletId, assetPairResponse);
 
             if (string.IsNullOrEmpty(data.AuthToken))
                 data.AuthToken = Guid.NewGuid().ToString();
 
             data.IsStraight = straight;
-            data.OppositeAssetId = straight ? quotingAsset.Body.Id : baseAsset.Body.Id;
+            data.OppositeAssetId = straight ? quotingAsset.Id : baseAsset.Id;
             await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
             var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
@@ -233,7 +232,7 @@ namespace Lykke.AlgoStore.Services
                     $"Cannot save {(isFakeTradeInstance ? "back test" : "")} algo instance data for {data.ClientId} id: {data.AlgoId}",
                     string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-            await SaveSummaryStatistic(data, assetPairResponse.Body, asset.Body, straight ? quotingAsset.Body : baseAsset.Body);
+            await SaveSummaryStatistic(data, assetPairResponse, tradedAsset, straight ? quotingAsset : baseAsset);
 
             return res;
         }
@@ -280,10 +279,11 @@ namespace Lykke.AlgoStore.Services
             else
             {
                 var baseUserAssetId = await GetBaseAssetAsync(data.ClientId);
-                var assetResponse = await _assetService.AssetGetWithHttpMessagesAsync(baseUserAssetId.BaseAssetId);
+                var assetResponse = await _assetService.TryGetAssetAsync(baseUserAssetId.BaseAssetId);
 
                 if (assetResponse == null)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, $"There is no asset with an id {baseUserAssetId.BaseAssetId}");
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"There is no asset with an id {baseUserAssetId.BaseAssetId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "base user asset"));
 
                 userCurrencyAssetId = baseUserAssetId.BaseAssetId;
 
@@ -291,8 +291,8 @@ namespace Lykke.AlgoStore.Services
                 initialWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(data.WalletId, baseUserAssetId.BaseAssetId, assetPair);
 
                 var clientBalanceResponseModels = walletBalances.ToList();
-                clientTradedAssetBalance = clientBalanceResponseModels.First(b => b.AssetId == tradedAsset.Id).Balance;
-                clientAssetTwoBalance = clientBalanceResponseModels.First(b => b.AssetId != tradedAsset.Id).Balance;
+                clientTradedAssetBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId == tradedAsset.Id)?.Balance ?? 0;
+                clientAssetTwoBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId != tradedAsset.Id)?.Balance ?? 0;
             }
 
             await _statisticsRepository.CreateOrUpdateSummaryAsync(new StatisticsSummary

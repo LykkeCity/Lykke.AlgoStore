@@ -197,7 +197,9 @@ namespace Lykke.AlgoStore.Api.Controllers
             if (string.IsNullOrWhiteSpace(clientId))
                 clientId = User.GetClientId();
 
-            var result = await _algosService.GetAlgoDataInformationAsync(clientId, algoId);
+            var userClientId = User.GetClientId();
+
+            var result = await _algosService.GetAlgoDataInformationAsync(userClientId, clientId, algoId);
 
             if (result == null)
                 return NotFound();
@@ -205,7 +207,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var response = Mapper.Map<AlgoDataInformationModel>(result);
 
             return Ok(response);
-        }
+        }       
 
         [HttpPost("cascadeDelete")]
         [SwaggerOperation("CascadeDeleteAlgo")]
@@ -279,6 +281,22 @@ namespace Lykke.AlgoStore.Api.Controllers
             {
                 Content = content
             });
+        }
+
+        [HttpGet("getAssetsForAssetPair")]
+        [SwaggerOperation("GetAssetsForAssetPair")]
+        [ProducesResponseType(typeof(List<EnumValue>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> GetAssetsForAssetPair(string assetPairId)
+        {
+            var clientId = User.GetClientId();
+            var result = await _algosService.GetAssetsForAssetPairAsync(assetPairId, clientId);
+
+            if (result.IsNullOrEmptyCollection())
+                return NotFound();
+
+            return Ok(result);
         }
     }
 }

@@ -4,6 +4,7 @@ using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.Service.Security.Client.AutorestClient.Models;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
 {
@@ -90,15 +91,6 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoCommentModel, AlgoCommentData>()
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
 
-            CreateMap<UserRoleCreateModel, UserRoleData>()
-                .ForMember(dest => dest.CanBeDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.CanBeModified, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
-
-            CreateMap<UserRoleUpdateModel, UserRoleData>()
-                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
-
             CreateMap<CreateAlgoModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
@@ -106,6 +98,17 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
                 .ForMember(dest => dest.DateCreated, opt => opt.Ignore())
                 .ForMember(dest => dest.DateModified, opt => opt.Ignore());
+
+            CreateMap<ClientWalletData, ClientWalletDataModel>();
+
+            CreateMap<AlgoStoreUserData, AlgoStoreUserDataModel>();
+
+            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserPermissionModel, Models.UserPermissionModel>();
+            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel, Models.UserRoleModel>();
+
+            CreateMap<UserRoleCreateModel, Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Permissions, opt => opt.Ignore());
         }
     }
 }

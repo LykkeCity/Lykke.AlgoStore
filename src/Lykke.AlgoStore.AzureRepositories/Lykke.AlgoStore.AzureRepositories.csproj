@@ -8,9 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Entities\AlgoClientInstanceEntity.cs" />
     <Compile Remove="Mapper\AlgoClientInstanceMapper.cs" />
+    <Compile Remove="Mapper\UserPermissionsMapper.cs" />
+    <Compile Remove="Mapper\UserRoleMatchMapper.cs" />
+    <Compile Remove="Mapper\UserRolesMapper.cs" />
     <Compile Remove="Repositories\AlgoClientInstanceRepository.cs" />
+    <Compile Remove="Repositories\RolePermissionMatchRepository.cs" />
+    <Compile Remove="Repositories\UserPermissionsRepository.cs" />
+    <Compile Remove="Repositories\UserRolesMatchRepository.cs" />
+    <Compile Remove="Repositories\UserRolesRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

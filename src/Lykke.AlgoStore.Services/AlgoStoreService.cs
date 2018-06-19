@@ -224,7 +224,7 @@ namespace Lykke.AlgoStore.Services
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
                 var userLogs = await _userLogRepository.GetEntries(data.Tail, data.InstanceId);
-                return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.DateTimeFormat)}] {l.Message}").ToArray();
+                return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.CustomDateTimeFormat)}] {l.Message}").ToArray();
             });
         }
         /// <summary>
