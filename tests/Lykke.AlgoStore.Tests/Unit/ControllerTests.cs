@@ -8,6 +8,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -434,10 +435,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoClientInstanceRepository instanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IUserLogRepository userLogRepository)
+            ILoggingClient loggingClient)
         {
             var result = new AlgoStoreService(new LogMock(), algoBlobRepository, algoMetaDataRepository,
-                null, null, kubernetesApiClient, instanceRepository, publicAlgosRepository, statisticsRepository, userLogRepository);
+                null, null, kubernetesApiClient, instanceRepository, publicAlgosRepository, statisticsRepository, loggingClient);
             return result;
         }
 

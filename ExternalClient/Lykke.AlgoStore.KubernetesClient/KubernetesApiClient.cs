@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Service.Logging.Client;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;
@@ -13,7 +14,7 @@ namespace Lykke.AlgoStore.KubernetesClient
 {
     public class KubernetesApiClient : Kubernetes, IKubernetesApiClient
     {
-        private readonly IUserLogRepository _userLogRepository;
+        private readonly ILoggingClient _loggingClient;
 
         /// <summary>
         /// Initializes new instance of <see cref="KubernetesApiClient"/>
@@ -21,12 +22,12 @@ namespace Lykke.AlgoStore.KubernetesClient
         /// <param name="baseUri">The URI of the Kubernetes instance</param>
         /// <param name="credentials">The credentials for Kubernetes instance</param>
         /// <param name="certificateHash">Certificate hash</param>
-        /// <param name="userLogRepository">User log instance</param>
+        /// <param name="loggingClient">User log instance</param>
         public KubernetesApiClient(
             System.Uri baseUri, 
             ServiceClientCredentials credentials, 
             string certificateHash,
-            IUserLogRepository userLogRepository)
+            ILoggingClient loggingClient)
             : base(baseUri, credentials, new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
@@ -35,7 +36,7 @@ namespace Lykke.AlgoStore.KubernetesClient
                 }
             })
         {
-            _userLogRepository = userLogRepository;
+            _loggingClient = loggingClient;
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace Lykke.AlgoStore.KubernetesClient
             {
                 if (!kubeResponse.Response.IsSuccessStatusCode || kubeResponse.Body == null)
                 {
-                    await _userLogRepository.WriteAsync(instanceId, $"Could not delete service {instanceId}. Details: {kubeResponse.Body}");
+                    await _loggingClient.WriteAsync(instanceId, $"Could not delete service {instanceId}. Details: {kubeResponse.Body}");
                     return false;
                 }
 

@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.KubernetesC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.TeamCityClient", "Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj", "{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.Service.Logging.Client", "..\Lykke.AlgoStore.Service.Logging\client\Lykke.AlgoStore.Service.Logging.Client\Lykke.AlgoStore.Service.Logging.Client.csproj", "{68ECB871-867A-4FF5-ACB9-BFB9FE0152D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68ECB871-867A-4FF5-ACB9-BFB9FE0152D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68ECB871-867A-4FF5-ACB9-BFB9FE0152D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68ECB871-867A-4FF5-ACB9-BFB9FE0152D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68ECB871-867A-4FF5-ACB9-BFB9FE0152D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{A0322E63-ED58-4E41-83B3-4FB82BDAE16F} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
 		{0164CC4B-7354-400C-99B9-F42AE8D3ECE0} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
+		{68ECB871-867A-4FF5-ACB9-BFB9FE0152D5} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE0A40C2-41F2-4866-AC12-70AD03074AE7}

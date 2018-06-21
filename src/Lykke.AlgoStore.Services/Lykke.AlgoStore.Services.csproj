@@ -14,9 +14,9 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions" Version="1.0.11" />
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.57" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.61" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />
-    <PackageReference Include="Lykke.Common" Version="6.8.4" />
+    <PackageReference Include="Lykke.Common" Version="6.8.6" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
     <PackageReference Include="Lykke.Service.CandlesHistory.Client" Version="2.1.0" />
@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Logging\client\Lykke.AlgoStore.Service.Logging.Client\Lykke.AlgoStore.Service.Logging.Client.csproj" />
     <ProjectReference Include="..\..\ExternalClient\Lykke.AlgoStore.DeploymentApiClient\Lykke.AlgoStore.DeploymentApiClient.csproj" />
     <ProjectReference Include="..\..\ExternalClient\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj" />
     <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
