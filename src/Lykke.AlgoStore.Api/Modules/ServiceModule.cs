@@ -99,7 +99,7 @@ namespace Lykke.AlgoStore.Api.Modules
                 .SingleInstance();
 
             builder.RegisterType<LoggingClient>()
-                .WithParameter("serviceUrl", _settings.CurrentValue.LoggingServiceClient.ServiceUrl)
+                .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreLoggingServiceClient.ServiceUrl)
                 .As<ILoggingClient>()
                 .SingleInstance();
         }

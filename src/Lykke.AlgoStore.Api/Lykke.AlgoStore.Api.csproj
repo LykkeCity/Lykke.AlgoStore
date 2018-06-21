@@ -53,7 +53,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Logging\client\Lykke.AlgoStore.Service.Logging.Client\Lykke.AlgoStore.Service.Logging.Client.csproj" />
     <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />

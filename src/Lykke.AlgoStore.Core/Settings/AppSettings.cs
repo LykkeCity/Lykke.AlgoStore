@@ -22,6 +22,6 @@ namespace Lykke.AlgoStore.Core.Settings
         public RateCalculatorClientSettings RateCalculatorServiceClient { get; set; }
         public CandlesHistoryServiceClient CandlesHistoryServiceClient { get; set; }
         public SecurityServiceClientSettings AlgoStoreSecurityServiceClient { get; set; }
-        public LoggingServiceClientSettings LoggingServiceClient { get; set; }
+        public LoggingServiceClientSettings AlgoStoreLoggingServiceClient { get; set; }
     }
 }
