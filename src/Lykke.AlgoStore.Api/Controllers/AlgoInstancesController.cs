@@ -37,6 +37,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAllByAlgoIdAndClientId")]
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
+        [DescriptionAttribute("Gives users the ability to see all instances for a specific algo")]
         [ProducesResponseType(typeof(List<AlgoClientInstanceModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllAlgoInstanceDataAsync(string algoId)
@@ -55,6 +56,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAlgoInstance")]
         [SwaggerOperation("GetAllAlgoInstanceDataAsync")]
+        [DescriptionAttribute("Gives users the ability to see all available information about an instance")]
         [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -78,6 +80,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("{instanceId}/status")]
         [SwaggerOperation("GetInstanceStatusAsync")]
+        [DescriptionAttribute("Gives users the ability to see the current deployment status of an instance")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetInstanceStatusAsync(string instanceId)
@@ -129,6 +132,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("saveAlgoInstance")]
         [SwaggerOperation("SaveAlgoInstanceDataAsync")]
+        [DescriptionAttribute("Gives users the ability to create Live instances")]
         [ProducesResponseType(typeof(AlgoClientInstanceModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -153,6 +157,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPut("{instanceId}/name")]
         [SwaggerOperation("SetInstanceNameAsync")]
+        [DescriptionAttribute("Allows the changing of the name of an existing algo instance")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<IActionResult> SetInstanceNameAsync(string instanceId, [FromBody] NameModel model)
@@ -179,6 +184,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("fakeTradingInstanceData")]
         [SwaggerOperation("SaveAlgoFakeTradingInstanceDataAsync")]
+        [DescriptionAttribute("Gives users the ability to create Demo / Backtest instances")]
         [ProducesResponseType(typeof(AlgoFakeTradingInstanceModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -203,6 +209,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpDelete]
         [SwaggerOperation("DeleteAlgoInstanceDataAsync")]
+        [DescriptionAttribute("Allows the deletion of an instance and all it's data")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
