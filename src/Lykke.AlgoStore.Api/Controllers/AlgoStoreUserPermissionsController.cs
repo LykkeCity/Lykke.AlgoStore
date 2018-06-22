@@ -27,6 +27,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAll")]
         [SwaggerOperation("GetAllPermissions")]
+        [DescriptionAttribute("Gives users the ability to see all currently existing permissions")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllPermissions()
@@ -38,6 +39,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getById")]
         [SwaggerOperation("GetPermissionById")]
+        [DescriptionAttribute("Gives users the ability to see a permission corresponding to a given ID")]
         [ProducesResponseType(typeof(UserPermissionModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -53,6 +55,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getByRoleId")]
         [SwaggerOperation("GetPermissionsByRoleId")]
+        [DescriptionAttribute("Gives users the ability to see all permissions assigned to a role")]
         [ProducesResponseType(typeof(List<UserPermissionModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetPermissionsByRoleId(string roleId)
@@ -64,6 +67,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("assignPermissions")]
         [SwaggerOperation("AssignMultiplePermissionToRole")]
+        [DescriptionAttribute("Allows users to assign a collection of permissions for a specific role")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignMultiplePermissionToRole([FromBody] List<RolePermissionMatchModel> permissions)
@@ -77,6 +81,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("revokePermissions")]
         [SwaggerOperation("RevokeMultiplePermissions")]
+        [DescriptionAttribute("Allows users to revoke a collection of permissions for a specific role")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeMultiplePermissions([FromBody] List<RolePermissionMatchModel> role)
