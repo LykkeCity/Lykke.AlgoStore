@@ -10,10 +10,12 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.AlgoStore.TeamCityClient.Models;
 using Lykke.AlgoStore.Tests.Infrastructure;
+using Lykke.Service.Logging.Client.AutorestClient.Models;
 using Moq;
 using NUnit.Framework;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
@@ -141,14 +143,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void GetLog_Returns_Exception()
         {
-            var apiReturnedLog = new List<UserLog>
+            var apiReturnedLog = new List<UserLogResponse>
             {
-                new UserLog
+                new UserLogResponse
                 {
                     Date = DateTime.Parse("2018-01-01T12:00:00.123456789Z").ToUniversalTime(),
                     Message = "testlog"
                 },
-                new UserLog
+                new UserLogResponse
                 {
                     Date = DateTime.Parse("2018-01-01T12:01:00.123456789Z").ToUniversalTime(),
                     Message = "testlog2"
@@ -228,10 +230,10 @@ namespace Lykke.AlgoStore.Tests.Unit
             ITeamCityClient teamCityClient,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IUserLogRepository userLogRepository)
+            ILoggingClient loggingClient)
         {
             return new AlgoStoreService(new LogMock(), blobRepo, repo, storageConnectionManager, teamCityClient,
-                deploymentApiClient, instanceDataRepository, publicAlgosRepository, statisticsRepository, userLogRepository);
+                deploymentApiClient, instanceDataRepository, publicAlgosRepository, statisticsRepository, loggingClient);
         }
 
         private static ManageImageData Given_ManageImageData()
@@ -258,11 +260,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
-        private static IUserLogRepository Given_Correct_UserLogRepositoryMock_WithLog(List<UserLog> logs)
+        private static ILoggingClient Given_Correct_UserLogRepositoryMock_WithLog(List<UserLogResponse> logs)
         {
-            var result = new Mock<IUserLogRepository>();
+            var result = new Mock<ILoggingClient>();
 
-            result.Setup(repo => repo.GetEntries(It.IsAny<int>(), It.IsAny<string>()))
+            result.Setup(repo => repo.GetTailLog(It.IsAny<int>(), It.IsAny<string>()))
                   .ReturnsAsync(logs);
 
             return result.Object;

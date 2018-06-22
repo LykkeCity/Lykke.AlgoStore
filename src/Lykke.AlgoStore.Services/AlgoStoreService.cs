@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Service.Logging.Client;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 
@@ -24,7 +25,7 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreService : BaseAlgoStoreService, IAlgoStoreService
     {
-        private readonly IUserLogRepository _userLogRepository;
+        private readonly ILoggingClient _loggingClient;
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoReadOnlyRepository _algoMetaDataRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
@@ -49,7 +50,7 @@ namespace Lykke.AlgoStore.Services
         /// <param name="algoInstanceRepository">The algo instance repository.</param>
         /// <param name="publicAlgosRepository">The public algo repository.</param>
         /// <param name="statisticsRepository">The statistics repository.</param>
-        /// <param name="userLogRepository">The user log repository.</param>
+        /// <param name="loggingClient">The user log repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
@@ -60,7 +61,7 @@ namespace Lykke.AlgoStore.Services
             IAlgoClientInstanceRepository algoInstanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IUserLogRepository userLogRepository) : base(log, nameof(AlgoStoreService))
+            ILoggingClient loggingClient) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
             _algoMetaDataRepository = algoMetaDataRepository;
@@ -70,7 +71,7 @@ namespace Lykke.AlgoStore.Services
             _algoInstanceRepository = algoInstanceRepository;
             _publicAlgosRepository = publicAlgosRepository;
             _statisticsRepository = statisticsRepository;
-            _userLogRepository = userLogRepository;
+            _loggingClient = loggingClient;
         }
 
         /// <summary>
@@ -223,7 +224,7 @@ namespace Lykke.AlgoStore.Services
                         $"Instance data not found data for clientId {data.ClientId}, algo {data.AlgoId} and instanceId {data.InstanceId}",
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-                var userLogs = await _userLogRepository.GetEntries(data.Tail, data.InstanceId);
+                var userLogs = await _loggingClient.GetTailLog(data.Tail, data.InstanceId);
                 return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.CustomDateTimeFormat)}] {l.Message}").ToArray();
             });
         }
