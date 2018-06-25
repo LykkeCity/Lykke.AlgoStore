@@ -32,7 +32,7 @@
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />
     <PackageReference Include="Lykke.AlgoStore.Service.Logging.Client" Version="1.0.3" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
-    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.6" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.9" />
     <PackageReference Include="Lykke.AzureQueueIntegration" Version="2.1.0" />
     <PackageReference Include="Lykke.Common" Version="6.8.6" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
