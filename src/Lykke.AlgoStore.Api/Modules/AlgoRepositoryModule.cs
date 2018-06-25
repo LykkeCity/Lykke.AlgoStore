@@ -7,10 +7,10 @@ using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.AzureRepositories.Utils;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Settings;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.SettingsReader;
-using AlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -33,19 +33,22 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterInstance(AzureBlobStorage.Create(reloadingDbManager));
             builder.RegisterInstance(AzureTableStorage<AlgoEntity>.Create(reloadingDbManager, AlgoRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoRuntimeDataEntity>.Create(reloadingDbManager, AlgoRuntimeDataRepository.TableName, _log));
-            builder.RegisterInstance(AzureTableStorage<AlgoClientInstanceEntity>.Create(reloadingDbManager, AlgoClientInstanceRepository.AlgoClientInstanceRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<PublicAlgoEntity>.Create(reloadingDbManager, PublicAlgosRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoRatingEntity>.Create(reloadingDbManager, AlgoRatingsRepository.TableName, _log));
             builder.RegisterInstance(AzureTableStorage<AlgoCommentEntity>.Create(reloadingDbManager, AlgoCommentsRepository.TableName, _log));
-
             builder.RegisterInstance(AzureTableStorage<StatisticsSummaryEntity>.Create(reloadingDbManager, StatisticsRepository.TableName, _log));
             
             builder.RegisterInstance<IStorageConnectionManager>(new StorageConnectionManager(reloadingDbManager));
 
+            builder.RegisterInstance<IAlgoClientInstanceRepository>(
+                    AzureRepoFactories.CreateAlgoClientInstanceRepository(reloadingDbManager, _log))
+                .SingleInstance();
+
             builder.RegisterType<AlgoBlobRepository>().As<IAlgoBlobReadOnlyRepository>().As<IAlgoBlobRepository>();
             builder.RegisterType<AlgoRepository>().As<IAlgoReadOnlyRepository>().As<IAlgoRepository>();
             builder.RegisterType<AlgoRuntimeDataRepository>().As<IAlgoRuntimeDataReadOnlyRepository>().As<IAlgoRuntimeDataRepository>();
-            builder.RegisterType<AlgoClientInstanceRepository.AlgoClientInstanceRepository>().As<IAlgoClientInstanceRepository>();
+            
+
             builder.RegisterType<StatisticsRepository>().As<IStatisticsRepository>();
             
             builder.RegisterType<AlgoRatingsRepository>().As<IAlgoRatingsRepository>();
