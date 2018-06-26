@@ -15,7 +15,7 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         public static IReloadingManager<AppSettings> InitConfigurationFromFile()
         {
             var config = new ConfigurationBuilder()
-                    .AddEnvironmentVariables()
+                .AddEnvironmentVariables()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .Build();
             config.Providers.First().Set("SettingsUrl", "appsettings.Development.json");
@@ -27,19 +27,19 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         {
             var reloadingMock = new Mock<IReloadingManager<AppSettings>>();
             reloadingMock.Setup(x => x.CurrentValue).Returns
-                (
-                    new AppSettings
+            (
+                new AppSettings
+                {
+                    AlgoApi = new AlgoApiSettings
                     {
-                        AlgoApi = new AlgoApiSettings
+                        Db = new DbSettings
                         {
-                            Db = new DbSettings
-                            {
-                                TableStorageConnectionString = "UseDevelopmentStorage=true",
-                                LogsConnectionString = "UseDevelopmentStorage=true"
-                            }
+                            TableStorageConnectionString = "UseDevelopmentStorage=true",
+                            LogsConnectionString = "UseDevelopmentStorage=true"
                         }
                     }
-                );
+                }
+            );
             return reloadingMock.Object;
         }
 
@@ -60,13 +60,6 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
             var config = InitConfig();
 
             return config.ConnectionString(x => x.AlgoApi.Db.LogsConnectionString);
-        }
-
-        public static IReloadingManager<string> GetKubeBasicAuthenticationValue()
-        {
-            var config = InitConfig();
-
-            return config.ConnectionString(x => x.AlgoApi.Kubernetes.BasicAuthenticationValue);
         }
     }
 }
