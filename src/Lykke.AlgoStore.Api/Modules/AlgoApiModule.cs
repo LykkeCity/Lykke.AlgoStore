@@ -26,10 +26,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 .As<ILog>()
                 .SingleInstance();
 
-            builder.RegisterAlgoInstanceStoppingClient("http://localhost:5000", _log);
             builder.RegisterType<LykkePrincipal>().As<ILykkePrincipal>().SingleInstance();
             builder.RegisterType<AssetsValidator>().SingleInstance();
-
         }
     }
 }
