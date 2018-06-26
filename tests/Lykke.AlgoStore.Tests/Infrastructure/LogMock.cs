@@ -1,5 +1,6 @@
 ﻿using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
+using Lykke.Logs;
 using System;
 using System.Threading.Tasks;
 
@@ -69,5 +70,14 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         {
             return WriteInfoAsync(string.Empty, process, context, info, dateTime);
         }
+
+        //public bool IsEnabled(LogLevel logLevel)
+        //{
+        //    return true;
+        //}
+
+        //public void Log<TState>(LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        //{
+        //}
     }
 }

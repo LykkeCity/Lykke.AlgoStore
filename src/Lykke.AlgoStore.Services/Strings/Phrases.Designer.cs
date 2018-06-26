@@ -214,6 +214,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}.
+        /// </summary>
+        internal static string DeleteKubernetesDeploymentError {
+            get {
+                return ResourceManager.GetString("DeleteKubernetesDeploymentError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo edit process failed due to code validation errors. Details: {0}.
         /// </summary>
         internal static string EditAlgoFailedOnCodeValidationDisplayMessage {
@@ -282,6 +291,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string ERROR_TYPE_NAMED_BASEALGO {
             get {
                 return ResourceManager.GetString("ERROR_TYPE_NAMED_BASEALGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was a problem getting pod information. Algo Instance Stopping client error: {0}.
+        /// </summary>
+        internal static string ErrorGettingPod {
+            get {
+                return ResourceManager.GetString("ErrorGettingPod", resourceCulture);
             }
         }
         
