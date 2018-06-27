@@ -173,7 +173,7 @@ namespace Lykke.AlgoStore.Services
 
                 if (!result.IsSuccessfulDeletion)
                 {
-                    await _loggingClient.WriteAsync(instanceData.InstanceId, string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage));
+                    await _loggingClient.WriteAsync(instanceData.InstanceId, string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage), instanceData.AuthToken);
                     return pod.Phase.ToUpper();
                 }
 
@@ -209,7 +209,7 @@ namespace Lykke.AlgoStore.Services
                         if (!result.IsSuccessfulDeletion)
                         {
                             await _loggingClient.WriteAsync(instanceData.InstanceId,
-                                string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage));
+                                string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage), instanceData.AuthToken);
                             throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
                                 $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
                         }
@@ -236,12 +236,12 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                if (!await _algoInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(data.ClientId, data.InstanceId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                        $"Instance data not found data for clientId {data.ClientId}, algo {data.AlgoId} and instanceId {data.InstanceId}",
+                var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
+                if (instanceData == null)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"No instance data for algo id {data.AlgoId}",
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-                var userLogs = await _loggingClient.GetTailLog(data.Tail, data.InstanceId);
+                var userLogs = await _loggingClient.GetTailLog(data.Tail, data.InstanceId, instanceData.AuthToken);
                 return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.CustomDateTimeFormat)}] {l.Message}").ToArray();
             });
         }

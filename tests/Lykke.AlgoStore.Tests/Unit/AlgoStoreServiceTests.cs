@@ -141,7 +141,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
-        public void GetLog_Returns_Exception()
+        public void GetLog_Returns_Data()
         {
             var apiReturnedLog = new List<UserLogResponse>
             {
@@ -166,8 +166,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var service = Given_Correct_AlgoStoreServiceMock(null, null, null, instanceRepo, null, null, null, null, userLogRepository);
 
             var response = When_Invoke_GetLog(service, data, out var exception);
-            Then_Exception_Should_Exist(exception);
-            Then_Exception_Should_Be_AggregateException(exception);
+            Then_Exception_ShouldBe_Null(exception);
         }
 
         #region Private Methods
@@ -270,7 +269,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<ILoggingClient>();
 
-            result.Setup(repo => repo.GetTailLog(It.IsAny<int>(), It.IsAny<string>()))
+            result.Setup(repo => repo.GetTailLog(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                   .ReturnsAsync(logs);
 
             return result.Object;
