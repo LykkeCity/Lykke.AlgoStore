@@ -19,6 +19,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -471,7 +472,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             try
             {
                 var runtimeData = await instancesService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
-
+                runtimeData.AlgoInstanceStatus = AlgoInstanceStatus.Started;
                 await algoStoreService.DeleteInstanceAsync(runtimeData);
 
                 await clientDataService.DeleteAsync(data);
