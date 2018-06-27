@@ -177,9 +177,6 @@ namespace Lykke.AlgoStore.Services
                     return pod.Phase.ToUpper();
                 }
 
-                instanceData.AlgoInstanceStatus = AlgoInstanceStatus.Stopped;
-                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
-
                 return AlgoInstanceStatus.Stopped.ToString();
             });
         }
@@ -192,22 +189,30 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data",
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-                var pods = await _algoInstanceStoppingClient.GetPodsAsync(instanceData.InstanceId, instanceData.AuthToken);
-
-                if (!string.IsNullOrEmpty(pods.Error?.ErrorMessage))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError, string.Format(Phrases.ErrorGettingPod, pods.Error?.ErrorMessage));
-
-                if (!pods.Records.IsNullOrEmptyCollection() && pods.Records[0] != null)
+                if (instanceData.AlgoInstanceStatus == AlgoInstanceStatus.Started)
                 {
-                    var pod = pods.Records[0];
+                    var pods = await _algoInstanceStoppingClient.GetPodsAsync(instanceData.InstanceId,
+                        instanceData.AuthToken);
 
-                    var result = await _algoInstanceStoppingClient.DeleteAlgoInstanceByInstanceIdAndPodAsync(instanceData.InstanceId, pod.NamespaceProperty, instanceData.AuthToken);
-
-                    if (!result.IsSuccessfulDeletion)
-                    {
-                        await _loggingClient.WriteAsync(instanceData.InstanceId, string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage));
+                    if (!string.IsNullOrEmpty(pods.Error?.ErrorMessage))
                         throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                            $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+                            string.Format(Phrases.ErrorGettingPod, pods.Error?.ErrorMessage));
+
+                    if (!pods.Records.IsNullOrEmptyCollection() && pods.Records[0] != null)
+                    {
+                        var pod = pods.Records[0];
+
+                        var result =
+                            await _algoInstanceStoppingClient.DeleteAlgoInstanceByInstanceIdAndPodAsync(
+                                instanceData.InstanceId, pod.NamespaceProperty, instanceData.AuthToken);
+
+                        if (!result.IsSuccessfulDeletion)
+                        {
+                            await _loggingClient.WriteAsync(instanceData.InstanceId,
+                                string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage));
+                            throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                                $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
+                        }
                     }
                 }
 
