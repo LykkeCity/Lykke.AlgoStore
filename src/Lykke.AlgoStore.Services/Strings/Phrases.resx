@@ -264,4 +264,10 @@
   <data name="NotFoundAlgo" xml:space="preserve">
     <value>Algo Not Found</value>
   </data>
+  <data name="ErrorGettingPod" xml:space="preserve">
+    <value>There was a problem getting pod information. Algo Instance Stopping client error: {0}</value>
+  </data>
+  <data name="DeleteKubernetesDeploymentError" xml:space="preserve">
+    <value>There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}</value>
+  </data>
 </root>
