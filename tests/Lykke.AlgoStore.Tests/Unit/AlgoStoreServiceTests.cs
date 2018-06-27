@@ -270,7 +270,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<ILoggingClient>();
 
-            result.Setup(repo => repo.GetTailLog(It.IsAny<int>(), It.IsAny<string>()))
+            result.Setup(repo => repo.GetTailLog(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
                   .ReturnsAsync(logs);
 
             return result.Object;
