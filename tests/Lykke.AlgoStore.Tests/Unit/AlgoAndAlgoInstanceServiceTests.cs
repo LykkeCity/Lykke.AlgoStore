@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoMapper;
-using Common;
 using JetBrains.Annotations;
 using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.AzureRepositories.Entities;
@@ -23,8 +13,9 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
-using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client.Models.ResponseModels;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -37,9 +28,15 @@ using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.PersonalData.Client.Models;
 using Lykke.Service.PersonalData.Contract;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Rest;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -215,7 +212,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
-            var assetService = Given_AssetsServiceWithCache(); 
+            var assetService = Given_AssetsServiceWithCache();
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
                 clientAccountService, null, null, null, assetService);
@@ -980,15 +977,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             return fixture.Build<AlgoData>().Create();
         }
 
-        private static IKubernetesApiReadOnlyClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
+        private static IAlgoInstanceStoppingClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
         {
-            var result = new Mock<IKubernetesApiReadOnlyClient>();
+            var result = new Mock<IAlgoInstanceStoppingClient>();
 
-            result.Setup(repo => repo.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(new List<Iok8skubernetespkgapiv1Pod>
+            result.Setup(c => c.GetPodsAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new PodsResponse
             {
-                new Fixture().Build<Iok8skubernetespkgapiv1Pod>()
-                .With(kub => kub.Status, new Iok8skubernetespkgapiv1PodStatus {Phase = status.ToUpperText()})
-                .Create()
+                Records = new List<PodResponseModel>()
+                {
+                    new PodResponseModel()
+                    {
+                      Phase =status.ToUpperText()
+                    }
+                }
             });
 
             return result.Object;
@@ -1156,7 +1157,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAssetsServiceWithCache>();
 
             result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync( isNotFound ? null :
+                .ReturnsAsync(isNotFound ? null :
                     fixture.Build<AssetPair>()
                     .With(pair => pair.QuotingAssetId, data.TradedAssetId)
                     .With(pair => pair.Id, data.AssetPairId)
@@ -1174,7 +1175,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     .With(asset => asset.Id, data.TradedAssetId)
                     .With(asset => asset.Accuracy, AssetAccuracy)
                     .With(asset => asset.IsDisabled, false)
-                    .Create()                   
+                    .Create()
                 );
 
             return result.Object;
@@ -1227,7 +1228,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(100);
 
             result.Setup(service => service.GetWalletBalancesAsync(It.IsAny<string>(), It.IsAny<AssetPair>()))
-                .ReturnsAsync(userHasBothAssetsInWallet ? new List <ClientBalanceResponseModel>
+                .ReturnsAsync(userHasBothAssetsInWallet ? new List<ClientBalanceResponseModel>
                 {
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, TradedAsset)
@@ -1236,7 +1237,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                      fixture.Build<ClientBalanceResponseModel>()
                        .With(w => w.AssetId, QuotingAsset)
                         .Create()
-                    
+
                 } : new List<ClientBalanceResponseModel>
                     {
                         fixture.Build<ClientBalanceResponseModel>()
@@ -1344,7 +1345,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Data_ShouldBe_Empty(AlgoDataInformation data)
         {
             Assert.Null(data);
-        }   
+        }
 
         private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type)
         {
@@ -1366,13 +1367,13 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(new List<AssetPair>());
 
             result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string assetPairId, CancellationToken token) =>                    
+                .ReturnsAsync((string assetPairId, CancellationToken token) =>
                     fixture.Build<AssetPair>()
                     .With(a => a.Id, assetPairId)
                     .Create());
 
             result.Setup(service => service.TryGetAssetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string assetId, CancellationToken token) => 
+                .ReturnsAsync((string assetId, CancellationToken token) =>
                     fixture.Build<Asset>()
                     .With(a => a.Id, TradedAssetKey)
                     .Create());

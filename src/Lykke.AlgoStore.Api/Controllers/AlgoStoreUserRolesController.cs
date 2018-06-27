@@ -29,6 +29,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("getAll")]
         [RequirePermission]
         [SwaggerOperation("GetAllUserRoles")]
+        [DescriptionAttribute("Allows users to  to see all currently existing roles")]
         [ProducesResponseType(typeof(List<UserRoleModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUserRoles()
@@ -41,6 +42,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("getById")]
         [RequirePermission]
         [SwaggerOperation("GetRoleById")]
+        [DescriptionAttribute("Allows users to see a specific role by a given ID")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -71,6 +73,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("saveRole")]
         [RequirePermission]
         [SwaggerOperation("SaveUserRole")]
+        [DescriptionAttribute("Allows users to create a new role")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> SaveUserRole([FromBody] UserRoleCreateModel role)
@@ -85,6 +88,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("updateRole")]
         [RequirePermission]
         [SwaggerOperation("SaveUserRole")]
+        [DescriptionAttribute("Allows users to edit an existing role")]
         [ProducesResponseType(typeof(UserRoleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> UpdateUserRole([FromBody] UserRoleUpdateModel role)
@@ -99,6 +103,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("assignRole")]
         [RequirePermission]
         [SwaggerOperation("AssignUserRole")]
+        [DescriptionAttribute("Allows users to assign a role to a specific user")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> AssignUserRole([FromBody] UserRoleMatchModel role)
@@ -113,6 +118,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpPost("revokeRole")]
         [RequirePermission]
         [SwaggerOperation("RevokeRoleFromUser")]
+        [DescriptionAttribute("Allows users to revoke a role to a specific user")]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         public async Task<IActionResult> RevokeRoleFromUser([FromBody] UserRoleMatchModel role)
@@ -141,6 +147,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpDelete("deleteRole")]
         [RequirePermission]
         [SwaggerOperation("DeleteUserRole")]
+        [DescriptionAttribute("Allows users delete an already existing role. If a role is deleted it is removed from all assigned users")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> DeleteUserRole(string roleId)

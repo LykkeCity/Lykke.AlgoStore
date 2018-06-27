@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-	<OutputType>Exe</OutputType>
+    <OutputType>Exe</OutputType>
     <Version>1.0.1</Version>
     <AssemblyName>Lykke.AlgoStore.Api</AssemblyName>
     <RootNamespace>Lykke.AlgoStore.Api</RootNamespace>
@@ -19,7 +19,7 @@
     <DocumentationFile>bin\Debug\netcoreapp2.0\Lykke.Service.LykkeService.xml</DocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Update="appsettings.json">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -32,8 +32,9 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.2" />
-    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.6" />
-    <PackageReference Include="Lykke.Common" Version="6.8.4" />
+    <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.5" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.9" />
+    <PackageReference Include="Lykke.Common" Version="6.8.6" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.7.1" />
     <PackageReference Include="Lykke.Logs" Version="4.3.4" />
     <PackageReference Include="Lykke.SettingsReader" Version="2.4.0" />
@@ -45,13 +46,13 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="1.1.0" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.1" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.AzureRepositories\Lykke.AlgoStore.AzureRepositories.csproj" />

@@ -27,6 +27,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("algoComments")]
         [SwaggerOperation("GetAllCommentsForAlgoAsync")]
+        [DescriptionAttribute("Gives users the ability to see all available comments for an algo")]
         [ProducesResponseType(typeof(List<AlgoCommentModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -43,6 +44,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getCommentById")]
         [SwaggerOperation("GetCommentById")]
+        [DescriptionAttribute("Allows users to see a single comment by a given ID")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -62,6 +64,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("algoComments")]
         [SwaggerOperation("CreateComment")]
+        [DescriptionAttribute("Allows the creation of comments")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -79,6 +82,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPatch("algoComments")]
         [SwaggerOperation("EditComment")]
+        [DescriptionAttribute("Allows the editing of an existing comment")]
         [ProducesResponseType(typeof(AlgoCommentModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -96,6 +100,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpDelete("algoComments")]
         [SwaggerOperation("DeleteComment")]
+        [DescriptionAttribute("Allows the deletion of a specific comment")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]

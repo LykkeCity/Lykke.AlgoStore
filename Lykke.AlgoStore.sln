@@ -33,8 +33,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExternalClient", "ExternalC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.DeploymentApiClient", "ExternalClient\Lykke.AlgoStore.DeploymentApiClient\Lykke.AlgoStore.DeploymentApiClient.csproj", "{A0322E63-ED58-4E41-83B3-4FB82BDAE16F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.KubernetesClient", "ExternalClient\Lykke.AlgoStore.KubernetesClient\Lykke.AlgoStore.KubernetesClient.csproj", "{0164CC4B-7354-400C-99B9-F42AE8D3ECE0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.AlgoStore.TeamCityClient", "Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj", "{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}"
 EndProject
 Global
@@ -71,10 +69,6 @@ Global
 		{A0322E63-ED58-4E41-83B3-4FB82BDAE16F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0322E63-ED58-4E41-83B3-4FB82BDAE16F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0322E63-ED58-4E41-83B3-4FB82BDAE16F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0164CC4B-7354-400C-99B9-F42AE8D3ECE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0164CC4B-7354-400C-99B9-F42AE8D3ECE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0164CC4B-7354-400C-99B9-F42AE8D3ECE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0164CC4B-7354-400C-99B9-F42AE8D3ECE0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -90,7 +84,6 @@ Global
 		{60845089-A7FE-4C4A-9107-B640C0B0D241} = {BF745453-B940-470E-81BC-43FB67703D4E}
 		{DD46D9BF-5839-40E0-AC0B-99902DEE7EED} = {8F9036B1-5106-4C69-B2D2-B78EE52687A0}
 		{A0322E63-ED58-4E41-83B3-4FB82BDAE16F} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
-		{0164CC4B-7354-400C-99B9-F42AE8D3ECE0} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
 		{9C6E840E-85ED-4EE0-AC0D-71A6A0796945} = {88436D79-8254-4BCB-9BD8-C85B898B85EC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

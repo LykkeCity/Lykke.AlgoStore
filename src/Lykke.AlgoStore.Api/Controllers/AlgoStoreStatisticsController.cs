@@ -28,6 +28,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet]
         [SwaggerOperation("GetAlgoInstanceStatisticsAsync")]
+        [DescriptionAttribute("Gives users the ability to see the statistics of the instance")]
         [ProducesResponseType(typeof(StatisticsSummary), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAlgoInstanceStatisticsAsync(string instanceId)
