@@ -21,6 +21,10 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Update="appsettings.Development.json">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
       <Generator>SettingsSingleFileGenerator</Generator>
     </None>
@@ -32,7 +36,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.2" />
-    <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.4" />
+    <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.9" />
     <PackageReference Include="Lykke.Common" Version="6.8.6" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.7.1" />
