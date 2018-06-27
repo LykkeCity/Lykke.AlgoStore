@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
@@ -10,11 +8,13 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
-    [RequirePermissionAttribute]   
+    [RequirePermissionAttribute]
     [Route("api/v1/management")]
     public class AlgoStoreManagementController : Controller
     {
@@ -27,7 +27,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             _statisticsService = algoStoreStatisticsService;
         }
 
-        
+
         [HttpPost("deploy/binary")]
         [SwaggerOperation("DeployBinaryImage")]
         [DescriptionAttribute("Allows users to sends the algo data to start a deployment")]
@@ -44,7 +44,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("test/stop")]
+        [HttpPost("stop")]
         [SwaggerOperation("StopTest")]
         [DescriptionAttribute("Allows users to stop a running instance")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
@@ -66,7 +66,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("test/tailLog")]
+        [HttpGet("tailLog")]
         [SwaggerOperation("GetTestTailLog")]
         [DescriptionAttribute("Gives you the ability to see the logs of the instance")]
         [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]

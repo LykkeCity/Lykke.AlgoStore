@@ -21,14 +21,10 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoController : Controller
     {
         private readonly IAlgosService _algosService;
-        private readonly IAlgoStoreService _service;
-        private readonly IAlgoInstancesService _algoInstancesService;
 
-        public AlgoController(IAlgosService clientDataService, IAlgoStoreService service, IAlgoInstancesService algoInstancesService)
+        public AlgoController(IAlgosService clientDataService)
         {
             _algosService = clientDataService;
-            _service = service;
-            _algoInstancesService = algoInstancesService;
         }
 
         //REMARK: This endpoint is a merge result between 'metadata - POST' and 'imageData/upload/string - POST' endpoints
@@ -217,7 +213,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             var response = Mapper.Map<AlgoDataInformationModel>(result);
 
             return Ok(response);
-        }  
+        }
 
         [HttpPost("sourceCode/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]

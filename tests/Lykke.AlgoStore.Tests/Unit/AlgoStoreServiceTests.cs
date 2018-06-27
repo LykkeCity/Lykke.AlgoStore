@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoFixture;
+﻿using AutoFixture;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
-using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client.Models.ResponseModels;
 using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
@@ -18,6 +15,9 @@ using Lykke.AlgoStore.Tests.Infrastructure;
 using Lykke.Service.Logging.Client.AutorestClient.Models;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -222,7 +222,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
-            IKubernetesApiClient deploymentApiClient,
+            IAlgoInstanceStoppingClient algoInstanceStoppingClient,
             IAlgoBlobReadOnlyRepository blobRepo,
             IAlgoReadOnlyRepository repo,
             IAlgoClientInstanceRepository instanceDataRepository,
@@ -233,7 +233,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             ILoggingClient loggingClient)
         {
             return new AlgoStoreService(new LogMock(), blobRepo, repo, storageConnectionManager, teamCityClient,
-                deploymentApiClient, instanceDataRepository, publicAlgosRepository, statisticsRepository, loggingClient);
+                algoInstanceStoppingClient, instanceDataRepository, publicAlgosRepository, statisticsRepository, loggingClient);
         }
 
         private static ManageImageData Given_ManageImageData()
@@ -245,17 +245,23 @@ namespace Lykke.AlgoStore.Tests.Unit
             return Fixture.Build<TailLogData>().Create();
         }
 
-        private static IKubernetesApiClient Given_Correct_KubernetesApiClientMock_WithLog(string log)
+        private static IAlgoInstanceStoppingClient Given_Correct_KubernetesApiClientMock_WithLog(string log)
         {
-            var result = new Mock<IKubernetesApiClient>();
+            var result = new Mock<IAlgoInstanceStoppingClient>();
 
-            result.Setup(client => client.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(
-                new List<Iok8skubernetespkgapiv1Pod>
+            result.Setup(client => client.GetPodsAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new PodsResponse
+            {
+                Records = new List<PodResponseModel>
                 {
-                    Fixture.Build<Iok8skubernetespkgapiv1Pod>().Create()
-                });
-            result.Setup(client => client.ReadPodLogAsync(It.IsAny<Iok8skubernetespkgapiv1Pod>(), It.IsAny<int>()))
-                .ReturnsAsync(log);
+                    Fixture.Build<PodResponseModel>().Create()
+                }
+            });
+
+            //result.Setup(client => client.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(
+            //new List<Iok8skubernetespkgapiv1Pod>
+            //{
+            //        Fixture.Build<Iok8skubernetespkgapiv1Pod>().Create()
+            //});
 
             return result.Object;
         }

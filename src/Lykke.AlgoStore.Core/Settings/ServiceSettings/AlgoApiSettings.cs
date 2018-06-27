@@ -7,7 +7,6 @@ namespace Lykke.AlgoStore.Core.Settings.ServiceSettings
         public DbSettings Db { get; set; }
         public DictionariesSettings Dictionaries { get; set; }
         public ServiceSettings Services { get; set; }
-        public KubernetesSettings Kubernetes { get; set; }
         public TeamCitySettings TeamCity { get; set; }
         public int MaxNumberOfRowsToFetch { get; set; }
     }
