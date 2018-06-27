@@ -224,6 +224,7 @@ namespace Lykke.AlgoStore.Services
 
             data.IsStraight = straight;
             data.OppositeAssetId = straight ? quotingAsset.Id : baseAsset.Id;
+            data.AlgoInstanceCreateDate = DateTime.UtcNow;
             await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
             var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);

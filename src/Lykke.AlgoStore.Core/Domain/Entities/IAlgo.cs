@@ -12,6 +12,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         string Description { get; set; }
         DateTime DateModified { get; }
         DateTime DateCreated { get; set; }
+        DateTime? DatePublished { get; set; }
         AlgoVisibility AlgoVisibility { get; set; }
         string AlgoMetaDataInformationJSON { get; set; }
     }
