@@ -14,10 +14,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
-using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 
@@ -120,7 +118,8 @@ namespace Lykke.AlgoStore.Services
                         Description = currentAlgo.Description,
                         DateModified = currentAlgo.DateModified,
                         DateCreated = currentAlgo.DateCreated,
-                        Author = authorName
+                        Author = authorName,
+                        DatePublished = currentAlgo.DatePublished
                     };
 
                     var rating = await _ratingsRepository.GetAlgoRatingsAsync(currentAlgo.AlgoId);
@@ -433,6 +432,7 @@ namespace Lykke.AlgoStore.Services
         /// Gets the information for an algo
         /// </summary>
         /// <param name="clientId">The client id</param>
+        /// <param name="algoClientId">The client id of the algo</param>
         /// <param name="algoId">The algo id</param>
         /// <returns></returns>
         public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId)
@@ -496,6 +496,7 @@ namespace Lykke.AlgoStore.Services
                 var algo = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
                 algo.AlgoVisibility = AlgoVisibility.Public;
+                algo.DatePublished = DateTime.UtcNow;
 
                 await _algoRepository.SaveAlgoAsync(algo);
 
@@ -539,6 +540,7 @@ namespace Lykke.AlgoStore.Services
                 var algo = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
                 algo.AlgoVisibility = AlgoVisibility.Private;
+                algo.DatePublished = null;
 
                 await _algoRepository.SaveAlgoAsync(algo);
 

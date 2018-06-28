@@ -14,6 +14,8 @@ namespace Lykke.AlgoStore.Api.Models
         public DateTime DateCreated { get; set; }
         [JsonConverter(typeof(DefaultDateTimeConverter))]
         public DateTime DateModified { get; set; }
+        [JsonConverter(typeof(DefaultDateTimeConverter))]
+        public DateTime? DatePublished { get; set; }
         public AlgoVisibility AlgoVisibility { get; set; }
         public string Author { get; set; }
 

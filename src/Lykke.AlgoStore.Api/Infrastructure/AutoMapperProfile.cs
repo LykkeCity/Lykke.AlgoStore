@@ -25,10 +25,18 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.ETag, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibilityValue, opt => opt.Ignore());
 
+            CreateMap<AlgoEntity, AlgoDataInformation>()
+                .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.RowKey))
+                .ForMember(dest => dest.Rating, opt => opt.Ignore())
+                .ForMember(dest => dest.RatedUsersCount, opt => opt.Ignore())
+                .ForMember(dest => dest.UsersCount, opt => opt.Ignore())
+                .ForMember(dest => dest.Author, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoMetaDataInformation, opt => opt.Ignore());
+                
             CreateMap<AlgoData, IAlgo>();
 
-            CreateMap<IAlgo, AlgoData>();        
-
+            CreateMap<IAlgo, AlgoData>();
+                        
             CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 
             CreateMap<AlgoDataModel, AlgoData>()
@@ -59,7 +67,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.FakeTradingTradingAssetBalance, opt => opt.Ignore())
                 .ForMember(dest => dest.FakeTradingAssetTwoBalance, opt => opt.Ignore())
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
-                .ForMember(dest => dest.AuthToken, opt => opt.Ignore());
+                .ForMember(dest => dest.AuthToken, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoInstanceCreateDate, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
 
             CreateMap<AlgoFakeTradingInstanceModel, AlgoClientInstanceData>()
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
@@ -71,7 +81,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.IsStraight, opt => opt.Ignore())
                 .ForMember(dest => dest.WalletId, opt => opt.Ignore())
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
-                .ForMember(dest => dest.AuthToken, opt => opt.Ignore());
+                .ForMember(dest => dest.AuthToken, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoInstanceCreateDate, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoDataModel, AlgoData>()
@@ -97,7 +109,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.UseValue(AlgoVisibility.Private))
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
                 .ForMember(dest => dest.DateCreated, opt => opt.Ignore())
-                .ForMember(dest => dest.DateModified, opt => opt.Ignore());
+                .ForMember(dest => dest.DateModified, opt => opt.Ignore())
+                .ForMember(dest => dest.DatePublished, opt => opt.Ignore());
 
             CreateMap<ClientWalletData, ClientWalletDataModel>();
 

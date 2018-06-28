@@ -9,14 +9,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
     {
         public static AlgoDataInformation ToAlgoDataInformation(this AlgoEntity entity)
         {
-            var result = new AlgoDataInformation();
-
-            result.AlgoId = entity.RowKey;
-            result.Description = entity.Description;
-            result.Name = entity.Name;
-            result.DateModified = entity.DateModified;
-            result.DateCreated = entity.DateCreated;
-            result.AlgoVisibility = entity.AlgoVisibility;
+           var result = AutoMapper.Mapper.Map<AlgoDataInformation>(entity);
 
             if (!string.IsNullOrEmpty(entity.AlgoMetaDataInformationJSON))
             {
