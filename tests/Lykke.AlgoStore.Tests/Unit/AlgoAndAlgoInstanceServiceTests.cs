@@ -1120,8 +1120,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                     var instances = new List<AlgoClientInstanceData>();
 
                     instances.AddRange(liveInstances);
-                    liveInstances.AddRange(demoInstances);
-                    liveInstances.AddRange(testInstances);
+                    instances.AddRange(demoInstances);
+                    instances.AddRange(testInstances);
                     
                     return Task.FromResult(instances);
                 });
