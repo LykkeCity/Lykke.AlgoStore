@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.AlgoStore.Service.Security.Client;
+using Lykke.AlgoStore.Core.Services;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -18,10 +19,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreUsersController: Controller
     {
         private readonly ISecurityClient _securityClient;
+        private readonly IAlgoInstancesService _instancesService;
 
-        public AlgoStoreUsersController(ISecurityClient securityClient)
+        public AlgoStoreUsersController(ISecurityClient securityClient, IAlgoInstancesService instancesService)
         {
             _securityClient = securityClient;
+            _instancesService = instancesService;
         }
 
         [HttpGet("getAllWithRoles")]
@@ -49,6 +52,20 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _securityClient.GetUserByIdWithRolesAsync(clientId);
 
             return Ok(Mapper.Map<AlgoStoreUserDataModel>(result));
+        }
+
+        [HttpGet("me/instances")]
+        [SwaggerOperation("GetInstancesForUser")]
+        [DescriptionAttribute("Allows users to see a list of all of his instances")]
+        [ProducesResponseType(typeof(List<UserInstanceModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetInstancesForUser()
+        {
+            string clientId = User.GetClientId();
+
+            var result = await _instancesService.GetUserInstancesAsync(clientId);
+
+            return Ok(Mapper.Map<List<UserInstanceModel>>(result));
         }
     }
 }
