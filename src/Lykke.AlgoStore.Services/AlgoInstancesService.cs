@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
@@ -366,10 +367,10 @@ namespace Lykke.AlgoStore.Services
             var startFromDate =  instanceParameters.SingleOrDefault(t => t.Key == "StartFrom")?.Value;
             var endOnDate = instanceParameters.SingleOrDefault(t => t.Key == "EndOn")?.Value;
 
-            var instanceStartFromDate = DateTime.ParseExact(startFromDate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+            var instanceStartFromDate = DateTime.ParseExact(startFromDate, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                 DateTimeStyles.AdjustToUniversal);
 
-            var instanceEndOnDateDate = DateTime.ParseExact(endOnDate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+            var instanceEndOnDateDate = DateTime.ParseExact(endOnDate, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                 DateTimeStyles.AdjustToUniversal);
 
             if (instanceStartFromDate >= instanceEndOnDateDate)
@@ -387,10 +388,10 @@ namespace Lykke.AlgoStore.Services
                 var functionEndingDateString = function.Parameters.Where(p => p.Type == dtType)
                     .SingleOrDefault(t => t.Key == "EndingDate")?.Value;
 
-                var functionStartingDate = DateTime.ParseExact(functionStartingDateString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                var functionStartingDate = DateTime.ParseExact(functionStartingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.AdjustToUniversal);
 
-                var functionEndingDate = DateTime.ParseExact(functionEndingDateString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                var functionEndingDate = DateTime.ParseExact(functionEndingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.AdjustToUniversal);
 
                 if (functionStartingDate >= functionEndingDate)
