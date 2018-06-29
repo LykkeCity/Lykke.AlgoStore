@@ -419,6 +419,7 @@ namespace Lykke.AlgoStore.Services
                     InstanceId = i.InstanceId,
                     InstanceName = i.InstanceName,
                     ClientId = i.ClientId,
+                    AlgoId = i.AlgoId,
                     CreateDate = i.AlgoInstanceCreateDate,
                     RunDate = i.AlgoInstanceRunDate,
                     StopDate = i.AlgoInstanceStopDate,
