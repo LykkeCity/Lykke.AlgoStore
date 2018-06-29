@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
@@ -11,6 +12,7 @@ using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
@@ -169,7 +171,9 @@ namespace Lykke.AlgoStore.Services
             if (!data.ValidateData(out var exception))
                 throw exception;
 
-            if(isFakeTradeInstance && data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            ValidateInstanceMetadataDates(data.AlgoMetaDataInformation);
+
+            if (isFakeTradeInstance && data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                     Phrases.LiveAlgoCantFakeTrade,
@@ -352,6 +356,50 @@ namespace Lykke.AlgoStore.Services
         {
             var algoInstances = await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId);
             return algoInstances != null && algoInstances.Any();
+        }
+
+        private void ValidateInstanceMetadataDates(AlgoMetaDataInformation instanceMetadata)
+        {
+            var dtType = typeof(DateTime).FullName;
+
+            var instanceParameters = instanceMetadata.Parameters.Where(p => p.Type == dtType).ToList();
+            var startFromDate =  instanceParameters.SingleOrDefault(t => t.Key == "StartFrom")?.Value;
+            var endOnDate = instanceParameters.SingleOrDefault(t => t.Key == "EndOn")?.Value;
+
+            var instanceStartFromDate = DateTime.ParseExact(startFromDate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal);
+
+            var instanceEndOnDateDate = DateTime.ParseExact(endOnDate, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal);
+
+            if (instanceStartFromDate >= instanceEndOnDateDate)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                    "StartFrom date cannot be later than or equal to EndOn date",
+                    string.Format(Phrases.DatesValidationMessage, "Algo"));
+            }
+
+            foreach (var function in instanceMetadata.Functions)
+            {
+                var functionStartingDateString = function.Parameters.Where(p => p.Type == dtType)
+                    .SingleOrDefault(t => t.Key == "StartingDate")?.Value;
+
+                var functionEndingDateString = function.Parameters.Where(p => p.Type == dtType)
+                    .SingleOrDefault(t => t.Key == "EndingDate")?.Value;
+
+                var functionStartingDate = DateTime.ParseExact(functionStartingDateString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal);
+
+                var functionEndingDate = DateTime.ParseExact(functionEndingDateString, "yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal);
+
+                if (functionStartingDate >= functionEndingDate)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        "StartFrom date cannot be later than or equal to EndOn date",
+                        string.Format(Phrases.DatesValidationMessage, "Algo Function"));
+                }
+            }
         }
     }
 }

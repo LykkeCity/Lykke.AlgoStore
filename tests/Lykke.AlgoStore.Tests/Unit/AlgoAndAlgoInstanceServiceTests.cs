@@ -62,6 +62,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static readonly Random rnd = new Random();
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
 
+        private static readonly DateTime StartFromDate = DateTime.UtcNow;
+
         [SetUp]
         public void SetUp()
         {
@@ -475,6 +477,24 @@ namespace Lykke.AlgoStore.Tests.Unit
             var assetsValidator = new AssetsValidator();
             var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
                 statisticsRepo, assetService, clientAccountService, null, assetsValidator, null);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_StartDate_Is_Later_Than_EndDate()
+        {
+            var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live, false);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
+            var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
+            var assetsValidator = new AssetsValidator();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
+            var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
+                statisticsRepo, assetService, clientAccountService, null, assetsValidator, walletBalanceService);
             When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
             Then_Exception_ShouldBe_ServiceException(exception);
         }
@@ -1347,14 +1367,55 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.Null(data);
         }
 
-        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type)
+        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type,
+            bool areDatesCorrect = true)
         {
             var fixture = new Fixture();
+            var dtType = typeof(DateTime).FullName;
+
+            var startFromParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "StartFrom")
+                .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))             
+                .Create();
+
+            var endOnParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "EndOn")
+                .With(v => v.Value, areDatesCorrect ? StartFromDate.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ") :
+                    StartFromDate.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
+                .Create();
+
+            var startingDateParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "StartingDate")
+                .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
+                .Create();
+
+            var endingDateParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "EndingDate")
+                .With(v => v.Value, areDatesCorrect ? StartFromDate.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ") :
+                    StartFromDate.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
+                .Create();
+
+            var metaDataFunction = fixture.Build<AlgoMetaDataFunction>()
+                .With(f => f.Parameters, new List<AlgoMetaDataParameter>
+                    { startingDateParameter, endingDateParameter })
+                .Create();
+
+            var metaDataInformation = fixture.Build<AlgoMetaDataInformation>()
+                .With(a => a.Parameters, new List<AlgoMetaDataParameter>
+                    { startFromParameter, endOnParameter })
+                .With(a => a.Functions, new List<AlgoMetaDataFunction> { metaDataFunction })
+                .Create();
+
             return fixture.Build<AlgoClientInstanceData>()
                 .With(a => a.Volume, volume)
                 .With(a => a.TradedAssetId, TradedAsset)
                 .With(a => a.AssetPairId, AssetPair)
                 .With(a => a.AlgoInstanceType, type)
+                .With(a => a.AlgoMetaDataInformation, metaDataInformation)
                 .Create();
         }
 
