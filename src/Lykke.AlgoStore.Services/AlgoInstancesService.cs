@@ -401,5 +401,35 @@ namespace Lykke.AlgoStore.Services
                 }
             }
         }
+
+        public async Task<List<UserInstanceData>> GetUserInstancesAsync(string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), clientId, async () =>
+            {
+                var instances = await _instanceRepository.GetAllAlgoInstancesByClientAsync(clientId);
+                var wallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
+                var walletData = wallets.Select(w => new ClientWalletData()
+                {
+                    Id = w.Id,
+                    Name = w.Name
+                });
+
+                var result = instances.Select(i => new UserInstanceData()
+                {
+                    InstanceId = i.InstanceId,
+                    InstanceName = i.InstanceName,
+                    AlgoClientId = i.AlgoClientId,
+                    AlgoId = i.AlgoId,
+                    CreateDate = i.AlgoInstanceCreateDate,
+                    RunDate = i.AlgoInstanceRunDate,
+                    StopDate = i.AlgoInstanceStopDate,
+                    InstanceType = i.AlgoInstanceType,
+                    InstanceStatus = i.AlgoInstanceStatus,
+                    Wallet = walletData.FirstOrDefault(w => w.Id == i.WalletId)
+                }).ToList();
+
+                return result;
+            });
+        }
     }
 }

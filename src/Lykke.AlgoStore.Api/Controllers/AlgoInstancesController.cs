@@ -227,5 +227,19 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("userInstances")]
+        [SwaggerOperation("GetInstancesForUser")]
+        [DescriptionAttribute("Allows users to see a list of all of his instances")]
+        [ProducesResponseType(typeof(List<UserInstanceModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetInstancesForUser()
+        {
+            var clientId = User.GetClientId();
+
+            var result = await _algoInstancesService.GetUserInstancesAsync(clientId);
+
+            return Ok(Mapper.Map<List<UserInstanceModel>>(result));
+        }
     }
 }

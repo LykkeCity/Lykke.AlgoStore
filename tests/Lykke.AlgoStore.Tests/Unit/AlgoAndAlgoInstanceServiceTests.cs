@@ -46,6 +46,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     {
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private const string AlgoClientId = "086ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
+        private static readonly string WalletId = Guid.NewGuid().ToString();
 
         private const int AssetAccuracy = 3;
         private const int MinVolume = 1;
@@ -552,6 +553,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Data_ShouldBe_Empty(result);
         }
 
+        [Test]
+        public void GetUserInstancesAsync_Returns_OK()
+        {
+            var clientId = Guid.NewGuid().ToString();
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var clientAccountService = Given_Customized_ClientAccountClientMock(clientId, WalletId);
+            var service = Given_AlgoInstanceService(null, repo, null,
+                null, null, clientAccountService, null, null, null);
+
+            var data = When_Invoke_GetUserAlgosAsync(service, clientId);
+
+            Then_Data_ShouldNotBe_Null(data);
+            Then_Live_Instances_Have_Wallet(data);
+            Then_Demo_Instances_Wallet_IsNull(data);
+        }        
+
         #region Private Methods
 
         private static void ThenAlgo_Binary_ShouldExist(string algoId, IAlgoBlobRepository blobRepository)
@@ -571,6 +588,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void When_Invoke_SaveAlgoAsBinary(AlgosService service, UploadAlgoBinaryData model)
         {
             service.SaveAlgoAsBinaryAsync(ClientId, model).Wait();
+        }
+
+        private List<UserInstanceData> When_Invoke_GetUserAlgosAsync(IAlgoInstancesService service, string clientId)
+        {
+            return service.GetUserInstancesAsync(clientId).Result;
         }
 
         private static AlgosService Given_AlgosService(
@@ -1077,10 +1099,31 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAllAlgoInstancesByClientAsync(It.IsAny<string>()))
                 .Returns((string clientId) =>
                 {
-                    return Task.FromResult(new List<AlgoClientInstanceData>
-                    {
-                        fixture.Build<AlgoClientInstanceData>().With(a => a.ClientId, clientId).Create()
-                    });
+                    var liveInstances = fixture.Build<AlgoClientInstanceData>()
+                    .With(a => a.ClientId, clientId)
+                    .With(a => a.WalletId, WalletId)
+                    .With(a => a.AlgoInstanceType, AlgoInstanceType.Live)
+                    .CreateMany().ToList();
+
+                    var demoInstances = fixture.Build<AlgoClientInstanceData>()
+                    .With(a => a.ClientId, clientId)
+                    .Without(a => a.WalletId)
+                    .With(a => a.AlgoInstanceType, AlgoInstanceType.Demo)
+                    .CreateMany().ToList();
+
+                    var testInstances = fixture.Build<AlgoClientInstanceData>()
+                    .With(a => a.ClientId, clientId)
+                    .Without(a => a.WalletId)
+                    .With(a => a.AlgoInstanceType, AlgoInstanceType.Test)
+                    .CreateMany().ToList();
+
+                    var instances = new List<AlgoClientInstanceData>();
+
+                    instances.AddRange(liveInstances);
+                    instances.AddRange(demoInstances);
+                    instances.AddRange(testInstances);
+                    
+                    return Task.FromResult(instances);
                 });
 
             result.Setup(repo => repo.GetAlgoInstanceDataByAlgoIdAsync(It.IsAny<string>(), It.IsAny<string>()))
@@ -1367,8 +1410,28 @@ namespace Lykke.AlgoStore.Tests.Unit
             Assert.Null(data);
         }
 
-        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type,
-            bool areDatesCorrect = true)
+        private void Then_Demo_Instances_Wallet_IsNull(List<UserInstanceData> data)
+        {
+            foreach (var elem in data.Where(i => i.InstanceType == AlgoInstanceType.Test || i.InstanceType == AlgoInstanceType.Demo))
+            {
+                Assert.Null(elem.Wallet);
+            }
+        }
+
+        private void Then_Live_Instances_Have_Wallet(List<UserInstanceData> data)
+        {
+            foreach (var elem in data.Where(i => i.InstanceType == AlgoInstanceType.Live))
+            {
+                Assert.NotNull(elem.Wallet);
+            }
+        }
+
+        private void Then_Data_ShouldNotBe_Null(List<UserInstanceData> data)
+        {
+            Assert.NotNull(data);
+        }
+
+        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type, bool areDatesCorrect = true)
         {
             var fixture = new Fixture();
             var dtType = typeof(DateTime).FullName;
