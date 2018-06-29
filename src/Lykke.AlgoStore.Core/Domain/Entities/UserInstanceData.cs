@@ -8,7 +8,7 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
     public class UserInstanceData
     {
         public string InstanceId { get; set; }
-        public string ClientId { get; set; }
+        public string AlgoClientId { get; set; }
         public string AlgoId { get; set; }
         public string InstanceName { get; set; }
         public DateTime CreateDate { get; set; }
