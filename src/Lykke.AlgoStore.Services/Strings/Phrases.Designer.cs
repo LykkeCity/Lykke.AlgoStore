@@ -214,6 +214,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} Start Date cannot be later than or equal to the End Date.
+        /// </summary>
+        internal static string DatesValidationMessage {
+            get {
+                return ResourceManager.GetString("DatesValidationMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}.
         /// </summary>
         internal static string DeleteKubernetesDeploymentError {

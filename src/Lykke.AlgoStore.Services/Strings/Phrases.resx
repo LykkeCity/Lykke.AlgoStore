@@ -270,4 +270,7 @@
   <data name="DeleteKubernetesDeploymentError" xml:space="preserve">
     <value>There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}</value>
   </data>
+  <data name="DatesValidationMessage" xml:space="preserve">
+    <value>{0} Start Date cannot be later than or equal to the End Date</value>
+  </data>
 </root>
