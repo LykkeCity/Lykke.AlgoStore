@@ -94,7 +94,31 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                return await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
+                var algoInstanceData = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
+                var algo = await _algoRepository.GetAlgoDataInformationAsync(algoInstanceData.AlgoClientId, algoInstanceData.AlgoId);
+
+                foreach(var param in algoInstanceData.AlgoMetaDataInformation.Parameters)
+                {
+                    param.PredefinedValues = algo.AlgoMetaDataInformation
+                                                 .Parameters
+                                                 .FirstOrDefault(p => p.Key == param.Key)
+                                                 ?.PredefinedValues ?? new List<EnumValue>();
+                }
+
+                foreach(var function in algoInstanceData.AlgoMetaDataInformation.Functions)
+                {
+                    var algoFunction = algo.AlgoMetaDataInformation.Functions.FirstOrDefault(f => f.Id == function.Id);
+                    if (algoFunction == null) continue;
+
+                    foreach(var fParam in function.Parameters)
+                    {
+                        fParam.PredefinedValues = algoFunction.Parameters
+                                                              .FirstOrDefault(p => p.Key == fParam.Key)
+                                                              ?.PredefinedValues ?? new List<EnumValue>();
+                    }
+                }
+
+                return algoInstanceData;
             });
         }
 
