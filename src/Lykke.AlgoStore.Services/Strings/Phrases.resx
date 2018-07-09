@@ -273,4 +273,7 @@
   <data name="DatesValidationMessage" xml:space="preserve">
     <value>{0} Start Date cannot be later than or equal to the End Date</value>
   </data>
+  <data name="InstanceMustBeStopped" xml:space="preserve">
+    <value>Instance {0} must be stopped before it can be deleted.</value>
+  </data>
 </root>

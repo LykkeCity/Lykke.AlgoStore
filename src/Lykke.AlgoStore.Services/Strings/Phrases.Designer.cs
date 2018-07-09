@@ -313,6 +313,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Instance {0} must be stopped before it can be deleted..
+        /// </summary>
+        internal static string InstanceMustBeStopped {
+            get {
+                return ResourceManager.GetString("InstanceMustBeStopped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance Not Found.
         /// </summary>
         internal static string InstanceNotFound {

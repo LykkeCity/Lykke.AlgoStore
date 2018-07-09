@@ -314,7 +314,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoInstanceDataAsync_Returns_Ok()
         {
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoInstanceService(null, repo, null, null, null, null, null, null, null);
+            var algoRepo = Given_Correct_AlgoRepositoryMock();
+            var service = Given_AlgoInstanceService(algoRepo, repo, null, null, null, null, null, null, null);
             var data = When_Invoke_GetAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
