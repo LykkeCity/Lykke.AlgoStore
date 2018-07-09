@@ -466,7 +466,7 @@ namespace Lykke.AlgoStore.Services
 
                     algoInformation.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
 
-                    algoInformation.Author = (await _personalDataService.GetAsync(clientId))?.FullName;
+                    algoInformation.Author = (await _personalDataService.GetAsync(algoClientId))?.FullName;
 
                     await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }
