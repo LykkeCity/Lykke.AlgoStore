@@ -271,8 +271,10 @@ namespace Lykke.AlgoStore.Services
                 data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
 
                 var algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
-                
+
+                algoToSave.DateModified = DateTime.UtcNow;
                 algoToSave.DateCreated = DateTime.UtcNow;
+
                 await _algoRepository.SaveAlgoAsync(algoToSave);
 
                 var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
@@ -333,26 +335,39 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.RunningAlgoInstanceExists,
                         Phrases.RunningAlgoInstanceExistsDisplayMessage);
 
-                //Validate algo code
-                var validationSession = _codeBuildService.StartSession(algoContent);
-                var validationResult = await validationSession.Validate();
+                var oldAlgoContent = await _blobRepository.GetBlobStringAsync(data.AlgoId);
+                var isSourceUpdated = oldAlgoContent != algoContent;
 
-                if (!validationResult.IsSuccessful)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId,
-                            data.AlgoId, validationResult),
-                        string.Format(Phrases.EditAlgoFailedOnCodeValidationDisplayMessage, validationResult));
+                if (isSourceUpdated)
+                {
+                    //Validate algo code
+                    var validationSession = _codeBuildService.StartSession(algoContent);
+                    var validationResult = await validationSession.Validate();
 
-                //Extract algo metadata (parameters)
-                var extractedMetadata = await validationSession.ExtractMetadata();
+                    if (!validationResult.IsSuccessful)
+                        throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                            string.Format(Phrases.AlgoDataSaveFailedOnCodeValidation, Environment.NewLine, data.ClientId,
+                                data.AlgoId, validationResult),
+                            string.Format(Phrases.EditAlgoFailedOnCodeValidationDisplayMessage, validationResult));
 
-                data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
+                    //Extract algo metadata (parameters)
+                    var extractedMetadata = await validationSession.ExtractMetadata();
+
+                    data.AlgoMetaDataInformationJSON = JsonConvert.SerializeObject(extractedMetadata);
+                }
 
                 var algoToSave = AutoMapper.Mapper.Map<IAlgo>(data);
+
+                if (!isSourceUpdated)
+                    algoToSave.AlgoMetaDataInformationJSON = res.AlgoMetaDataInformationJSON;
+
+                algoToSave.DateModified = isSourceUpdated ? DateTime.UtcNow : res.DateModified;
                 algoToSave.DateCreated = res.DateCreated;
 
                 await _algoRepository.SaveAlgoAsync(algoToSave);
-                await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
+
+                if(isSourceUpdated)
+                    await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
 
                 res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
