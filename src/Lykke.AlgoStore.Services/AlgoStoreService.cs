@@ -189,32 +189,10 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data",
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-                if (instanceData.AlgoInstanceStatus == AlgoInstanceStatus.Started)
-                {
-                    var pods = await _algoInstanceStoppingClient.GetPodsAsync(instanceData.InstanceId,
-                        instanceData.AuthToken);
-
-                    if (!string.IsNullOrEmpty(pods.Error?.ErrorMessage))
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                            string.Format(Phrases.ErrorGettingPod, pods.Error?.ErrorMessage));
-
-                    if (!pods.Records.IsNullOrEmptyCollection() && pods.Records[0] != null)
-                    {
-                        var pod = pods.Records[0];
-
-                        var result =
-                            await _algoInstanceStoppingClient.DeleteAlgoInstanceByInstanceIdAndPodAsync(
-                                instanceData.InstanceId, pod.NamespaceProperty, instanceData.AuthToken);
-
-                        if (!result.IsSuccessfulDeletion)
-                        {
-                            await _loggingClient.WriteAsync(instanceData.InstanceId,
-                                string.Format(Phrases.DeleteKubernetesDeploymentError, result.ErrorMessage), instanceData.AuthToken);
-                            throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                                $"Cannot delete image id {instanceData.InstanceId} for algo id {instanceData.AlgoId}");
-                        }
-                    }
-                }
+                if (instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Stopped)
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        string.Format(Phrases.InstanceMustBeStopped, instanceData.InstanceId),
+                        string.Format(Phrases.InstanceMustBeStopped, $"\"{instanceData.InstanceName}\""));
 
                 await _algoInstanceRepository.DeleteAlgoInstanceDataAsync(instanceData);
 

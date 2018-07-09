@@ -63,7 +63,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
-            Then_Exception_ShouldBeNull(ex);
+            Then_Exception_ShouldNotBeNull(ex);
         }
         [Test]
         public void DeleteAlgoMetadataTest_MetaDataNotExists_Throws()
@@ -241,9 +241,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
-            Then_Exception_ShouldBeNull(ex);
-            metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
+            Then_Exception_ShouldNotBeNull(ex);
         }
 
         [Test]
@@ -281,9 +279,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
-            Then_Exception_ShouldBeNull(ex);
-            metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
+            Then_Exception_ShouldNotBeNull(ex);
         }
 
         #region Private Methods
