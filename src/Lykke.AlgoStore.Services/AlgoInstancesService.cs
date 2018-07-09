@@ -204,6 +204,12 @@ namespace Lykke.AlgoStore.Services
                     Phrases.LiveAlgoCantFakeTrade,
                     Phrases.LiveAlgoCantFakeTrade);
             }
+            else if(!isFakeTradeInstance && data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                    Phrases.DemoOrBacktestCantRunLive,
+                    Phrases.DemoOrBacktestCantRunLive);
+            }
 
             if (!isFakeTradeInstance)
             {
