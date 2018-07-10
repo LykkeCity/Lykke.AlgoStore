@@ -232,6 +232,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Demo or BackTest instances are not allowed to run without fake trading..
+        /// </summary>
+        internal static string DemoOrBacktestCantRunLive {
+            get {
+                return ResourceManager.GetString("DemoOrBacktestCantRunLive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo edit process failed due to code validation errors. Details: {0}.
         /// </summary>
         internal static string EditAlgoFailedOnCodeValidationDisplayMessage {
@@ -327,6 +336,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string ErrorGettingPod {
             get {
                 return ResourceManager.GetString("ErrorGettingPod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Instance {0} must be stopped before it can be deleted..
+        /// </summary>
+        internal static string InstanceMustBeStopped {
+            get {
+                return ResourceManager.GetString("InstanceMustBeStopped", resourceCulture);
             }
         }
         

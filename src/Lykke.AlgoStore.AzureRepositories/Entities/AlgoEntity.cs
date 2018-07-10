@@ -20,7 +20,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Entities
         }
 
         public string Name { get; set; }
-        public DateTime DateModified => Timestamp.UtcDateTime;
+        public DateTime DateModified { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DatePublished { get; set; }
 

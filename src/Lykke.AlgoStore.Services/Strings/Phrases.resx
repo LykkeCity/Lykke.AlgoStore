@@ -279,4 +279,10 @@
   <data name="ERROR_NAMESPACE_NOT_FOUND" xml:space="preserve">
     <value>A required namespace is not found</value>
   </data>
+  <data name="InstanceMustBeStopped" xml:space="preserve">
+    <value>Instance {0} must be stopped before it can be deleted.</value>
+  </data>
+  <data name="DemoOrBacktestCantRunLive" xml:space="preserve">
+    <value>Demo or BackTest instances are not allowed to run without fake trading.</value>
+  </data>
 </root>
