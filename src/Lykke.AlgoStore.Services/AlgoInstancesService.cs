@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Log;
 using JetBrains.Annotations;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
@@ -91,7 +94,31 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                return await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
+                var algoInstanceData = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
+                var algo = await _algoRepository.GetAlgoDataInformationAsync(algoInstanceData.AlgoClientId, algoInstanceData.AlgoId);
+
+                foreach(var param in algoInstanceData.AlgoMetaDataInformation.Parameters)
+                {
+                    param.PredefinedValues = algo.AlgoMetaDataInformation
+                                                 .Parameters
+                                                 .FirstOrDefault(p => p.Key == param.Key)
+                                                 ?.PredefinedValues ?? new List<EnumValue>();
+                }
+
+                foreach(var function in algoInstanceData.AlgoMetaDataInformation.Functions)
+                {
+                    var algoFunction = algo.AlgoMetaDataInformation.Functions.FirstOrDefault(f => f.Id == function.Id);
+                    if (algoFunction == null) continue;
+
+                    foreach(var fParam in function.Parameters)
+                    {
+                        fParam.PredefinedValues = algoFunction.Parameters
+                                                              .FirstOrDefault(p => p.Key == fParam.Key)
+                                                              ?.PredefinedValues ?? new List<EnumValue>();
+                    }
+                }
+
+                return algoInstanceData;
             });
         }
 
@@ -169,11 +196,19 @@ namespace Lykke.AlgoStore.Services
             if (!data.ValidateData(out var exception))
                 throw exception;
 
-            if(isFakeTradeInstance && data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            ValidateInstanceMetadataDates(data.AlgoMetaDataInformation);
+
+            if (isFakeTradeInstance && data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                     Phrases.LiveAlgoCantFakeTrade,
                     Phrases.LiveAlgoCantFakeTrade);
+            }
+            else if(!isFakeTradeInstance && data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                    Phrases.DemoOrBacktestCantRunLive,
+                    Phrases.DemoOrBacktestCantRunLive);
             }
 
             if (!isFakeTradeInstance)
@@ -224,6 +259,7 @@ namespace Lykke.AlgoStore.Services
 
             data.IsStraight = straight;
             data.OppositeAssetId = straight ? quotingAsset.Id : baseAsset.Id;
+            data.AlgoInstanceCreateDate = DateTime.UtcNow;
             await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
             var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
@@ -351,6 +387,80 @@ namespace Lykke.AlgoStore.Services
         {
             var algoInstances = await _instanceRepository.GetAllByWalletIdAndInstanceStatusIsNotStoppedAsync(walletId);
             return algoInstances != null && algoInstances.Any();
+        }
+
+        private void ValidateInstanceMetadataDates(AlgoMetaDataInformation instanceMetadata)
+        {
+            var dtType = typeof(DateTime).FullName;
+
+            var instanceParameters = instanceMetadata.Parameters.Where(p => p.Type == dtType).ToList();
+            var startFromDate =  instanceParameters.SingleOrDefault(t => t.Key == "StartFrom")?.Value;
+            var endOnDate = instanceParameters.SingleOrDefault(t => t.Key == "EndOn")?.Value;
+
+            var instanceStartFromDate = DateTime.ParseExact(startFromDate, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal);
+
+            var instanceEndOnDateDate = DateTime.ParseExact(endOnDate, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal);
+
+            if (instanceStartFromDate >= instanceEndOnDateDate)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                    "StartFrom date cannot be later than or equal to EndOn date",
+                    string.Format(Phrases.DatesValidationMessage, "Algo"));
+            }
+
+            foreach (var function in instanceMetadata.Functions)
+            {
+                var functionStartingDateString = function.Parameters.Where(p => p.Type == dtType)
+                    .SingleOrDefault(t => t.Key == "StartingDate")?.Value;
+
+                var functionEndingDateString = function.Parameters.Where(p => p.Type == dtType)
+                    .SingleOrDefault(t => t.Key == "EndingDate")?.Value;
+
+                var functionStartingDate = DateTime.ParseExact(functionStartingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal);
+
+                var functionEndingDate = DateTime.ParseExact(functionEndingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal);
+
+                if (functionStartingDate >= functionEndingDate)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        "StartFrom date cannot be later than or equal to EndOn date",
+                        string.Format(Phrases.DatesValidationMessage, "Algo Function"));
+                }
+            }
+        }
+
+        public async Task<List<UserInstanceData>> GetUserInstancesAsync(string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(ValidateCascadeDeleteClientMetadataRequestAsync), clientId, async () =>
+            {
+                var instances = await _instanceRepository.GetAllAlgoInstancesByClientAsync(clientId);
+                var wallets = await _clientAccountService.GetWalletsByClientIdAsync(clientId);
+                var walletData = wallets.Select(w => new ClientWalletData()
+                {
+                    Id = w.Id,
+                    Name = w.Name
+                });
+
+                var result = instances.Select(i => new UserInstanceData()
+                {
+                    InstanceId = i.InstanceId,
+                    InstanceName = i.InstanceName,
+                    AlgoClientId = i.AlgoClientId,
+                    AlgoId = i.AlgoId,
+                    CreateDate = i.AlgoInstanceCreateDate,
+                    RunDate = i.AlgoInstanceRunDate,
+                    StopDate = i.AlgoInstanceStopDate,
+                    InstanceType = i.AlgoInstanceType,
+                    InstanceStatus = i.AlgoInstanceStatus,
+                    Wallet = walletData.FirstOrDefault(w => w.Id == i.WalletId)
+                }).ToList();
+
+                return result;
+            });
         }
     }
 }

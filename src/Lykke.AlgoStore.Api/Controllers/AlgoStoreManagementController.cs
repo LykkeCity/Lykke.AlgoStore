@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
@@ -10,6 +8,8 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -27,8 +27,10 @@ namespace Lykke.AlgoStore.Api.Controllers
             _statisticsService = algoStoreStatisticsService;
         }
 
+
         [HttpPost("deploy/binary")]
         [SwaggerOperation("DeployBinaryImage")]
+        [DescriptionAttribute("Allows users to sends the algo data to start a deployment")]
         [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -42,24 +44,9 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("test/start")]
-        [SwaggerOperation("StartTest")]
-        [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> StartTest([FromBody]ManageImageModel model)
-        {
-            var data = Mapper.Map<ManageImageData>(model);
-            data.ClientId = User.GetClientId();
-
-            var result = new StatusModel();
-            result.Status = await _service.StartTestImageAsync(data);
-
-            return Ok(result);
-        }
-
-        [HttpPost("test/stop")]
+        [HttpPost("stop")]
         [SwaggerOperation("StopTest")]
+        [DescriptionAttribute("Allows users to stop a running instance")]
         [ProducesResponseType(typeof(StatusModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -79,8 +66,9 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(result);
         }
 
-        [HttpGet("test/tailLog")]
+        [HttpGet("tailLog")]
         [SwaggerOperation("GetTestTailLog")]
+        [DescriptionAttribute("Gives you the ability to see the logs of the instance")]
         [ProducesResponseType(typeof(LogModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]

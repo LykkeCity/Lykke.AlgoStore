@@ -21,20 +21,17 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoController : Controller
     {
         private readonly IAlgosService _algosService;
-        private readonly IAlgoStoreService _service;
-        private readonly IAlgoInstancesService _algoInstancesService;
 
-        public AlgoController(IAlgosService clientDataService, IAlgoStoreService service, IAlgoInstancesService algoInstancesService)
+        public AlgoController(IAlgosService clientDataService)
         {
             _algosService = clientDataService;
-            _service = service;
-            _algoInstancesService = algoInstancesService;
         }
 
         //REMARK: This endpoint is a merge result between 'metadata - POST' and 'imageData/upload/string - POST' endpoints
         //In future, when we do a refactoring we should remove unused endpoints from code
         [HttpPost("create")]
         [SwaggerOperation("CreateAlgo")]
+        [DescriptionAttribute("Allows users to create a new algo")]
         [ProducesResponseType(typeof(AlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -52,6 +49,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("edit")]
         [SwaggerOperation("EditAlgo")]
+        [DescriptionAttribute("Allows users to edit an existing algo")]
         [ProducesResponseType(typeof(AlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -69,6 +67,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpDelete("delete")]
         [SwaggerOperation("DeleteAlgo")]
+        [DescriptionAttribute("Allows users to delete an existing algo if it's not public and doesn't have any running instances")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -83,6 +82,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAllAlgos")]
         [SwaggerOperation("GetAllAlgos")]
+        [DescriptionAttribute("Gives users the ability to see all available public algos")]
         [ProducesResponseType(typeof(List<AlgoRatingMetaDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -100,6 +100,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAllUserAlgos")]
         [SwaggerOperation("GetAllUserAlgos")]
+        [DescriptionAttribute("Gives users the ability to see their personal algos")]
         [ProducesResponseType(typeof(List<AlgoDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -115,6 +116,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("algoRating")]
         [SwaggerOperation("algoRating")]
+        [DescriptionAttribute("Allows users to set rating to a specific algo")]
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -133,6 +135,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("userAlgoRating")]
         [SwaggerOperation("userAlgoRating")]
+        [DescriptionAttribute("Allows users see the rating that a they provided for an algo")]
         [ProducesResponseType(typeof(AlgoRatingModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -153,6 +156,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("addToPublic")]
         [SwaggerOperation("addToPublic")]
+        [DescriptionAttribute("Allows users to change the Algo status to Public and make it visible in the Public Algos page")]
         [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -171,6 +175,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("removeFromPublic")]
         [SwaggerOperation("removeFromPublic")]
+        [DescriptionAttribute("Allows users to unpublish the algo if it doesn't have any instances. It will be visible only for the creator")]
         [ProducesResponseType(typeof(PublicAlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -189,6 +194,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAlgoInformation")]
         [SwaggerOperation("GetAlgoInformation")]
+        [DescriptionAttribute("Gives users the ability to see all available Algo information")]
         [ProducesResponseType(typeof(AlgoDataInformationModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -207,32 +213,11 @@ namespace Lykke.AlgoStore.Api.Controllers
             var response = Mapper.Map<AlgoDataInformationModel>(result);
 
             return Ok(response);
-        }       
-
-        [HttpPost("cascadeDelete")]
-        [SwaggerOperation("CascadeDeleteAlgo")]
-        [ProducesResponseType((int)HttpStatusCode.NoContent)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeleteAlgo([FromBody]ManageImageModel model)
-        {
-            var clientId = User.GetClientId();
-
-            var data = Mapper.Map<ManageImageData>(model);
-            data.ClientId = clientId;
-
-            var clientInstanceData = await _algoInstancesService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
-
-            await _service.DeleteImageAsync(clientInstanceData);
-
-            await _algosService.DeleteAsync(data);
-
-            return NoContent();
         }
 
         [HttpPost("sourceCode/upload/binary")]
         [SwaggerOperation("UploadBinaryFile")]
+        [DescriptionAttribute("Allows users to upload binary code for an algo")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -250,6 +235,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("sourceCode/upload/string")]
         [SwaggerOperation("UploadString")]
+        [DescriptionAttribute("Allows users to upload source code for an algo")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
@@ -266,6 +252,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("sourceCode/getString")]
         [SwaggerOperation("GetUploadString")]
+        [DescriptionAttribute("Gives users the ability to see the source code of the algo")]
         [ProducesResponseType(typeof(ContentStringModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -285,6 +272,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAssetsForAssetPair")]
         [SwaggerOperation("GetAssetsForAssetPair")]
+        [DescriptionAttribute("By given asset pair, returns the assets involved. Required for running an algo")]
         [ProducesResponseType(typeof(List<EnumValue>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]

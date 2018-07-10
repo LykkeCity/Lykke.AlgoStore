@@ -1,10 +1,12 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Common;
 using Common.Log;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Settings;
-using Lykke.AlgoStore.KubernetesClient;
 using Lykke.AlgoStore.Service.AlgoTrades.Client;
+using Lykke.AlgoStore.Service.Logging.Client;
+using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.TeamCityClient;
 using Lykke.Service.Assets.Client;
@@ -17,13 +19,8 @@ using Lykke.Service.RateCalculator.Client;
 using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Rest;
 using System;
-using System.Linq;
-using Common;
-using Lykke.AlgoStore.Service.Security.Client;
-using Lykke.Service.Assets.Client.Models;
-using Lykke.Service.CandlesHistory.Client;
+using Lykke.AlgoStore.Job.Stopping.Client;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -56,24 +53,18 @@ namespace Lykke.AlgoStore.Api.Modules
 
         private void RegisterExternalServices(ContainerBuilder builder)
         {
+            var date = DateTime.Now.ToIsoDateTime();
+
             builder.RegisterLykkeServiceClient(_settings.CurrentValue.ClientAccountServiceClient.ServiceUrl);
 
             builder.RegisterType<ClientSessionsClient>()
                 .As<IClientSessionsClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoApi.Services.SessionServiceUrl);
 
-            builder.RegisterType<KubernetesApiClient>()
-                .As<IKubernetesApiClient>()
-                .As<IKubernetesApiReadOnlyClient>()
-                .WithParameter("baseUri", new Uri(_settings.CurrentValue.AlgoApi.Kubernetes.Url))
-                .WithParameter("credentials", new TokenCredentials(_settings.CurrentValue.AlgoApi.Kubernetes.BasicAuthenticationValue))
-                .WithParameter("certificateHash", _settings.CurrentValue.AlgoApi.Kubernetes.CertificateHash)
-                .SingleInstance();
-
             builder.RegisterType<TeamCityClient.TeamCityClient>()
-                .As<ITeamCityClient>()
-                .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
-                .SingleInstance();         
+    .As<ITeamCityClient>()
+    .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
+    .SingleInstance();
 
             builder.RegisterType<CodeBuildService>()
                 .As<ICodeBuildService>()
@@ -88,6 +79,8 @@ namespace Lykke.AlgoStore.Api.Modules
              .As<IPersonalDataService>()
              .SingleInstance();
 
+            builder.RegisterAlgoInstanceStoppingClient(_settings.CurrentValue.AlgoStoreStoppingClient.ServiceUrl, _log);
+
             builder.RegisterType<Candleshistoryservice>()
                 .As<ICandleshistoryservice>()
                 .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
@@ -95,6 +88,11 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<SecurityClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreSecurityServiceClient.ServiceUrl)
                 .As<ISecurityClient>()
+                .SingleInstance();
+
+            builder.RegisterType<LoggingClient>()
+                .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreLoggingServiceClient.ServiceUrl)
+                .As<ILoggingClient>()
                 .SingleInstance();
         }
 

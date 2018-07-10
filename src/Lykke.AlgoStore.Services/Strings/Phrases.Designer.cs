@@ -214,6 +214,33 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} Start Date cannot be later than or equal to the End Date.
+        /// </summary>
+        internal static string DatesValidationMessage {
+            get {
+                return ResourceManager.GetString("DatesValidationMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}.
+        /// </summary>
+        internal static string DeleteKubernetesDeploymentError {
+            get {
+                return ResourceManager.GetString("DeleteKubernetesDeploymentError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Demo or BackTest instances are not allowed to run without fake trading..
+        /// </summary>
+        internal static string DemoOrBacktestCantRunLive {
+            get {
+                return ResourceManager.GetString("DemoOrBacktestCantRunLive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo edit process failed due to code validation errors. Details: {0}.
         /// </summary>
         internal static string EditAlgoFailedOnCodeValidationDisplayMessage {
@@ -282,6 +309,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string ERROR_TYPE_NAMED_BASEALGO {
             get {
                 return ResourceManager.GetString("ERROR_TYPE_NAMED_BASEALGO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There was a problem getting pod information. Algo Instance Stopping client error: {0}.
+        /// </summary>
+        internal static string ErrorGettingPod {
+            get {
+                return ResourceManager.GetString("ErrorGettingPod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Instance {0} must be stopped before it can be deleted..
+        /// </summary>
+        internal static string InstanceMustBeStopped {
+            get {
+                return ResourceManager.GetString("InstanceMustBeStopped", resourceCulture);
             }
         }
         

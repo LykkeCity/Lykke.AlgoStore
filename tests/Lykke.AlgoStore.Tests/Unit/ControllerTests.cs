@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoFixture;
+﻿using AutoFixture;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
-using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client.Models.ResponseModels;
+using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -17,6 +16,10 @@ using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Contract;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -35,7 +38,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientDataService = Given_ClientDataService(
                 Given_AlgosRepository_Exists(true).Object,
                 Given_BlobRepository_WithResult(true).Object,
-                instanceRepo,                
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -60,7 +63,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
-            Then_Exception_ShouldBeNull(ex);
+            Then_Exception_ShouldNotBeNull(ex);
         }
         [Test]
         public void DeleteAlgoMetadataTest_MetaDataNotExists_Throws()
@@ -71,7 +74,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientDataService = Given_ClientDataService(
                 Given_AlgosRepository_Exists(false).Object,
                 Given_BlobRepository_WithResult(true).Object,
-                instanceRepo,               
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -109,7 +112,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,               
+                null,
                 null,
                 null,
                 null);
@@ -133,7 +136,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Exception_ShouldNotBeNull(ex);
         }
         [Test]
-        public void DeleteAlgoMetadataTest_PodNotFound_Throws()
+        public void DeleteAlgoMetadataTest_GetPods_Throws()
         {
             var data = Given_ManageImageData();
             var instanceRepo = Given_InstanceDataRepository_Exists(true, false);
@@ -144,7 +147,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
-                null,               
+                null,
                 null,
                 null,
                 null);
@@ -176,7 +179,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientDataService = Given_ClientDataService(
                 Given_AlgosRepository_Exists(true).Object,
                 Given_BlobRepository_WithResult(true).Object,
-                instanceRepo,                
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -214,7 +217,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientDataService = Given_ClientDataService(
                 metadataRepoMock.Object,
                 blobRepoMock.Object,
-                instanceRepo,               
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(true),
                 null,
@@ -238,9 +241,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
-            Then_Exception_ShouldBeNull(ex);
-            metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
+            Then_Exception_ShouldNotBeNull(ex);
         }
 
         [Test]
@@ -254,7 +255,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientDataService = Given_ClientDataService(
                 metadataRepoMock.Object,
                 blobRepoMock.Object,
-                instanceRepo,               
+                instanceRepo,
                 null,
                 Given_PublicAlgoRepository_Exists(false),
                 null,
@@ -278,9 +279,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var ex = When_Execute_Delete(data, clientDataService, algosInstanceService, algoService).Result;
 
-            Then_Exception_ShouldBeNull(ex);
-            metadataRepoMock.Verify(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            blobRepoMock.Verify(repo => repo.DeleteBlobAsync(It.IsAny<string>()), Times.Never);
+            Then_Exception_ShouldNotBeNull(ex);
         }
 
         #region Private Methods
@@ -289,28 +288,45 @@ namespace Lykke.AlgoStore.Tests.Unit
             return fixture.Build<ManageImageData>().Create();
         }
 
-        private static IKubernetesApiClient Given_Correct_KubernetesApiClientMock_WithResult(bool res)
+        private static IAlgoInstanceStoppingClient Given_Correct_KubernetesApiClientMock_WithResult(bool res)
         {
-            var result = new Mock<IKubernetesApiClient>();
+            var result = new Mock<IAlgoInstanceStoppingClient>();
 
-            result.Setup(client => client.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(
-                new List<Iok8skubernetespkgapiv1Pod>
+            result.Setup(client => client.GetPodsAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new PodsResponse
+            {
+                Records = new List<PodResponseModel>
                 {
-                    fixture.Build<Iok8skubernetespkgapiv1Pod>().Create()
+                    fixture.Build<PodResponseModel>().Create()
+                }
+            });
+
+            result.Setup(client => client.DeleteAlgoInstanceByInstanceIdAndPodAsync(It.IsAny<string>(),
+                                                    It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new DeleteAlgoInstanceResponseModel()
+                {
+                    IsSuccessfulDeletion = res
                 });
-            result.Setup(client => client.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(res);
 
             return result.Object;
         }
-        private static IKubernetesApiClient Given_Correct_KubernetesApiClientMock_WithoutResult(bool res)
+        private static IAlgoInstanceStoppingClient Given_Correct_KubernetesApiClientMock_WithoutResult(bool res)
         {
-            var result = new Mock<IKubernetesApiClient>();
+            var result = new Mock<IAlgoInstanceStoppingClient>();
 
-            result.Setup(client => client.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(
-                new List<Iok8skubernetespkgapiv1Pod>());
-            result.Setup(client => client.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(res);
+            result.Setup(client => client.GetPodsAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(
+                new PodsResponse()
+                {
+                    Records = new List<PodResponseModel>(),
+                    Error = new ErrorModel()
+                    {
+                        ErrorMessage = "Unauthorized"
+                    }
+                });
+            result.Setup(client => client.DeleteAlgoInstanceByInstanceIdAndPodAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new DeleteAlgoInstanceResponseModel()
+                {
+                    IsSuccessfulDeletion = res
+                });
 
             return result.Object;
         }
@@ -428,16 +444,16 @@ namespace Lykke.AlgoStore.Tests.Unit
                 new LogMock());
         }
 
-        private static IAlgoStoreService Given_AlgoStoreService(IKubernetesApiClient kubernetesApiClient,
+        private static IAlgoStoreService Given_AlgoStoreService(IAlgoInstanceStoppingClient algoInstanceStoppingClient,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
             IAlgoReadOnlyRepository algoMetaDataRepository,
             IAlgoClientInstanceRepository instanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IUserLogRepository userLogRepository)
+            ILoggingClient loggingClient)
         {
             var result = new AlgoStoreService(new LogMock(), algoBlobRepository, algoMetaDataRepository,
-                null, null, kubernetesApiClient, instanceRepository, publicAlgosRepository, statisticsRepository, userLogRepository);
+                null, null, algoInstanceStoppingClient, instanceRepository, publicAlgosRepository, statisticsRepository, loggingClient);
             return result;
         }
 
@@ -452,8 +468,8 @@ namespace Lykke.AlgoStore.Tests.Unit
             try
             {
                 var runtimeData = await instancesService.ValidateCascadeDeleteClientMetadataRequestAsync(data);
-
-                await algoStoreService.DeleteImageAsync(runtimeData);
+                runtimeData.AlgoInstanceStatus = AlgoInstanceStatus.Started;
+                await algoStoreService.DeleteInstanceAsync(runtimeData);
 
                 await clientDataService.DeleteAsync(data);
             }

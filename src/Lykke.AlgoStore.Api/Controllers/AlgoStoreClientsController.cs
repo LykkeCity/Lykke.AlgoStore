@@ -26,6 +26,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("wallets")]
         [SwaggerOperation("GetAvailableClientWallets")]
+        [DescriptionAttribute("Gives users the ability to see their available wallets. Required for running a Live instance")]
         [ProducesResponseType(typeof(List<ClientWalletDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAvailableClientWallets()

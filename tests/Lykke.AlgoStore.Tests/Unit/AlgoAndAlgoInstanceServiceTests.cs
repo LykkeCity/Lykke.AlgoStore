@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoMapper;
-using Common;
 using JetBrains.Annotations;
 using Lykke.AlgoStore.Api.Infrastructure;
 using Lykke.AlgoStore.AzureRepositories.Entities;
@@ -23,8 +13,9 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.DeploymentApiClient.Models;
-using Lykke.AlgoStore.KubernetesClient;
-using Lykke.AlgoStore.KubernetesClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Job.Stopping.Client.Models.ResponseModels;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -37,9 +28,15 @@ using Lykke.Service.ClientAccount.Client.Models;
 using Lykke.Service.PersonalData.Client.Models;
 using Lykke.Service.PersonalData.Contract;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Rest;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using AlgoClientInstanceData = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoClientInstanceData;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -49,6 +46,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     {
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
         private const string AlgoClientId = "086ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
+        private static readonly string WalletId = Guid.NewGuid().ToString();
 
         private const int AssetAccuracy = 3;
         private const int MinVolume = 1;
@@ -64,6 +62,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static readonly string AlgoId = "AlgoId123";
         private static readonly Random rnd = new Random();
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
+
+        private static readonly DateTime StartFromDate = DateTime.UtcNow;
 
         [SetUp]
         public void SetUp()
@@ -215,7 +215,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var clientId = Guid.NewGuid().ToString();
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
-            var assetService = Given_AssetsServiceWithCache(); 
+            var assetService = Given_AssetsServiceWithCache();
 
             var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
                 clientAccountService, null, null, null, assetService);
@@ -314,7 +314,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void GetAlgoInstanceDataAsync_Returns_Ok()
         {
             var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
-            var service = Given_AlgoInstanceService(null, repo, null, null, null, null, null, null, null);
+            var algoRepo = Given_Correct_AlgoRepositoryMock();
+            var service = Given_AlgoInstanceService(algoRepo, repo, null, null, null, null, null, null, null);
             var data = When_Invoke_GetAlgoInstanceDataAsync(service, Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), out Exception exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -483,6 +484,24 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
+        public void SaveAlgoInstanceDataAsync_Returns_Error_StartDate_Is_Later_Than_EndDate()
+        {
+            var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live, false);
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var statisticsRepo = Given_Correct_StatisticsRepositoryMock();
+            var assetService = Given_Customized_AssetServiceWithCacheMock(data, false);
+            var algoRepo = Given_Correct_AlgoRepositoryMock_With_Exists(true);
+            var publicAlgosRepository = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var clientAccountService = Given_Customized_ClientAccountClientMock(data.ClientId, data.WalletId);
+            var assetsValidator = new AssetsValidator();
+            var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
+            var service = Given_AlgoInstanceService(algoRepo, repo, publicAlgosRepository,
+                statisticsRepo, assetService, clientAccountService, null, assetsValidator, walletBalanceService);
+            When_Invoke_SaveAlgoInstanceDataAsync(service, data, AlgoClientId, out Exception exception);
+            Then_Exception_ShouldBe_ServiceException(exception);
+        }
+
+        [Test]
         public void SaveAlgoInstanceDataAsync_Returns_Error_NoDataSaved()
         {
             var data = Given_AlgoClientInstanceData(1, AlgoInstanceType.Live);
@@ -535,6 +554,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Data_ShouldBe_Empty(result);
         }
 
+        [Test]
+        public void GetUserInstancesAsync_Returns_OK()
+        {
+            var clientId = Guid.NewGuid().ToString();
+            var repo = Given_Correct_AlgoClientInstanceRepositoryMock();
+            var clientAccountService = Given_Customized_ClientAccountClientMock(clientId, WalletId);
+            var service = Given_AlgoInstanceService(null, repo, null,
+                null, null, clientAccountService, null, null, null);
+
+            var data = When_Invoke_GetUserAlgosAsync(service, clientId);
+
+            Then_Data_ShouldNotBe_Null(data);
+            Then_Live_Instances_Have_Wallet(data);
+            Then_Demo_Instances_Wallet_IsNull(data);
+        }        
+
         #region Private Methods
 
         private static void ThenAlgo_Binary_ShouldExist(string algoId, IAlgoBlobRepository blobRepository)
@@ -554,6 +589,11 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void When_Invoke_SaveAlgoAsBinary(AlgosService service, UploadAlgoBinaryData model)
         {
             service.SaveAlgoAsBinaryAsync(ClientId, model).Wait();
+        }
+
+        private List<UserInstanceData> When_Invoke_GetUserAlgosAsync(IAlgoInstancesService service, string clientId)
+        {
+            return service.GetUserInstancesAsync(clientId).Result;
         }
 
         private static AlgosService Given_AlgosService(
@@ -980,15 +1020,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             return fixture.Build<AlgoData>().Create();
         }
 
-        private static IKubernetesApiReadOnlyClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
+        private static IAlgoInstanceStoppingClient Given_Correct_DeploymentApiClientMock(ClientAlgoRuntimeStatuses status)
         {
-            var result = new Mock<IKubernetesApiReadOnlyClient>();
+            var result = new Mock<IAlgoInstanceStoppingClient>();
 
-            result.Setup(repo => repo.ListPodsByAlgoIdAsync(It.IsAny<string>())).ReturnsAsync(new List<Iok8skubernetespkgapiv1Pod>
+            result.Setup(c => c.GetPodsAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new PodsResponse
             {
-                new Fixture().Build<Iok8skubernetespkgapiv1Pod>()
-                .With(kub => kub.Status, new Iok8skubernetespkgapiv1PodStatus {Phase = status.ToUpperText()})
-                .Create()
+                Records = new List<PodResponseModel>()
+                {
+                    new PodResponseModel()
+                    {
+                      Phase =status.ToUpperText()
+                    }
+                }
             });
 
             return result.Object;
@@ -1056,10 +1100,31 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAllAlgoInstancesByClientAsync(It.IsAny<string>()))
                 .Returns((string clientId) =>
                 {
-                    return Task.FromResult(new List<AlgoClientInstanceData>
-                    {
-                        fixture.Build<AlgoClientInstanceData>().With(a => a.ClientId, clientId).Create()
-                    });
+                    var liveInstances = fixture.Build<AlgoClientInstanceData>()
+                    .With(a => a.ClientId, clientId)
+                    .With(a => a.WalletId, WalletId)
+                    .With(a => a.AlgoInstanceType, AlgoInstanceType.Live)
+                    .CreateMany().ToList();
+
+                    var demoInstances = fixture.Build<AlgoClientInstanceData>()
+                    .With(a => a.ClientId, clientId)
+                    .Without(a => a.WalletId)
+                    .With(a => a.AlgoInstanceType, AlgoInstanceType.Demo)
+                    .CreateMany().ToList();
+
+                    var testInstances = fixture.Build<AlgoClientInstanceData>()
+                    .With(a => a.ClientId, clientId)
+                    .Without(a => a.WalletId)
+                    .With(a => a.AlgoInstanceType, AlgoInstanceType.Test)
+                    .CreateMany().ToList();
+
+                    var instances = new List<AlgoClientInstanceData>();
+
+                    instances.AddRange(liveInstances);
+                    instances.AddRange(demoInstances);
+                    instances.AddRange(testInstances);
+                    
+                    return Task.FromResult(instances);
                 });
 
             result.Setup(repo => repo.GetAlgoInstanceDataByAlgoIdAsync(It.IsAny<string>(), It.IsAny<string>()))
@@ -1156,7 +1221,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAssetsServiceWithCache>();
 
             result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync( isNotFound ? null :
+                .ReturnsAsync(isNotFound ? null :
                     fixture.Build<AssetPair>()
                     .With(pair => pair.QuotingAssetId, data.TradedAssetId)
                     .With(pair => pair.Id, data.AssetPairId)
@@ -1174,7 +1239,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     .With(asset => asset.Id, data.TradedAssetId)
                     .With(asset => asset.Accuracy, AssetAccuracy)
                     .With(asset => asset.IsDisabled, false)
-                    .Create()                   
+                    .Create()
                 );
 
             return result.Object;
@@ -1227,7 +1292,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(100);
 
             result.Setup(service => service.GetWalletBalancesAsync(It.IsAny<string>(), It.IsAny<AssetPair>()))
-                .ReturnsAsync(userHasBothAssetsInWallet ? new List <ClientBalanceResponseModel>
+                .ReturnsAsync(userHasBothAssetsInWallet ? new List<ClientBalanceResponseModel>
                 {
                     fixture.Build<ClientBalanceResponseModel>()
                         .With(w => w.AssetId, TradedAsset)
@@ -1236,7 +1301,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                      fixture.Build<ClientBalanceResponseModel>()
                        .With(w => w.AssetId, QuotingAsset)
                         .Create()
-                    
+
                 } : new List<ClientBalanceResponseModel>
                     {
                         fixture.Build<ClientBalanceResponseModel>()
@@ -1344,16 +1409,77 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static void Then_Data_ShouldBe_Empty(AlgoDataInformation data)
         {
             Assert.Null(data);
-        }   
+        }
 
-        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type)
+        private void Then_Demo_Instances_Wallet_IsNull(List<UserInstanceData> data)
+        {
+            foreach (var elem in data.Where(i => i.InstanceType == AlgoInstanceType.Test || i.InstanceType == AlgoInstanceType.Demo))
+            {
+                Assert.Null(elem.Wallet);
+            }
+        }
+
+        private void Then_Live_Instances_Have_Wallet(List<UserInstanceData> data)
+        {
+            foreach (var elem in data.Where(i => i.InstanceType == AlgoInstanceType.Live))
+            {
+                Assert.NotNull(elem.Wallet);
+            }
+        }
+
+        private void Then_Data_ShouldNotBe_Null(List<UserInstanceData> data)
+        {
+            Assert.NotNull(data);
+        }
+
+        private static AlgoClientInstanceData Given_AlgoClientInstanceData(double volume, AlgoInstanceType type, bool areDatesCorrect = true)
         {
             var fixture = new Fixture();
+            var dtType = typeof(DateTime).FullName;
+
+            var startFromParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "StartFrom")
+                .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))             
+                .Create();
+
+            var endOnParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "EndOn")
+                .With(v => v.Value, areDatesCorrect ? StartFromDate.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ") :
+                    StartFromDate.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
+                .Create();
+
+            var startingDateParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "StartingDate")
+                .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
+                .Create();
+
+            var endingDateParameter = fixture.Build<AlgoMetaDataParameter>()
+                .With(t => t.Type, dtType)
+                .With(k => k.Key, "EndingDate")
+                .With(v => v.Value, areDatesCorrect ? StartFromDate.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ") :
+                    StartFromDate.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
+                .Create();
+
+            var metaDataFunction = fixture.Build<AlgoMetaDataFunction>()
+                .With(f => f.Parameters, new List<AlgoMetaDataParameter>
+                    { startingDateParameter, endingDateParameter })
+                .Create();
+
+            var metaDataInformation = fixture.Build<AlgoMetaDataInformation>()
+                .With(a => a.Parameters, new List<AlgoMetaDataParameter>
+                    { startFromParameter, endOnParameter })
+                .With(a => a.Functions, new List<AlgoMetaDataFunction> { metaDataFunction })
+                .Create();
+
             return fixture.Build<AlgoClientInstanceData>()
                 .With(a => a.Volume, volume)
                 .With(a => a.TradedAssetId, TradedAsset)
                 .With(a => a.AssetPairId, AssetPair)
                 .With(a => a.AlgoInstanceType, type)
+                .With(a => a.AlgoMetaDataInformation, metaDataInformation)
                 .Create();
         }
 
@@ -1366,13 +1492,13 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .ReturnsAsync(new List<AssetPair>());
 
             result.Setup(service => service.TryGetAssetPairAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string assetPairId, CancellationToken token) =>                    
+                .ReturnsAsync((string assetPairId, CancellationToken token) =>
                     fixture.Build<AssetPair>()
                     .With(a => a.Id, assetPairId)
                     .Create());
 
             result.Setup(service => service.TryGetAssetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string assetId, CancellationToken token) => 
+                .ReturnsAsync((string assetId, CancellationToken token) =>
                     fixture.Build<Asset>()
                     .With(a => a.Id, TradedAssetKey)
                     .Create());

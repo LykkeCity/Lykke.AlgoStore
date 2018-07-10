@@ -26,6 +26,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getAllWithRoles")]
         [SwaggerOperation("GetAllUserRoles")]
+        [DescriptionAttribute("Allows users to see all available users and their roles")]
         [ProducesResponseType(typeof(List<AlgoStoreUserDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllUsersWithRoles()
@@ -37,6 +38,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getByIdWithRoles")]
         [SwaggerOperation("GetUserByIdWithRoles")]
+        [DescriptionAttribute("Allows users to see a specific user and his roles")]
         [ProducesResponseType(typeof(AlgoStoreUserDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetUserByIdWithRoles(string clientId)

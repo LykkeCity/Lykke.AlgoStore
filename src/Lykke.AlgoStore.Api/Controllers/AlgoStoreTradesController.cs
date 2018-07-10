@@ -26,6 +26,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet]
         [SwaggerOperation("GetAllTradesForAlgoInstanceAsync")]
+        [DescriptionAttribute("Gives users the ability to see the trades of the instance")]
         [ProducesResponseType(typeof(IEnumerable<AlgoInstanceTradeResponseModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         public async Task<IActionResult> GetAllTradesForAlgoInstanceAsync(string instanceId)
