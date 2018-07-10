@@ -304,6 +304,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provided namespace is not allowed.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_CORRECT {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_CORRECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A required namespace is not found.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A type named BaseAlgo is not allowed.
         /// </summary>
         internal static string ERROR_TYPE_NAMED_BASEALGO {

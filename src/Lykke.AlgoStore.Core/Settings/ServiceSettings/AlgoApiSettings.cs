@@ -9,6 +9,7 @@ namespace Lykke.AlgoStore.Core.Settings.ServiceSettings
         public ServiceSettings Services { get; set; }
         public TeamCitySettings TeamCity { get; set; }
         public int MaxNumberOfRowsToFetch { get; set; }
+        public string AlgoNamespaceValue { get; set; }
     }
 
     public class DictionariesSettings

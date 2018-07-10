@@ -13,6 +13,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     public class CodeBuildTests
     {
         #region Data Generation
+        private const string ALGONAMESPACE = "Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass";
 
         private static readonly List<EnumValue> CandleTimeIntervalPredefinedValues = new List<EnumValue>
         {
@@ -212,8 +213,8 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static AlgoMetaDataFunction CustomFunctionMetadata => new AlgoMetaDataFunction()
         {
             Id = "CustomFunc",
-            FunctionParameterType = "AlgoParameters",
-            Type = "CustomFunction",
+            FunctionParameterType = "Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass.AlgoParameters",
+            Type = "Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass.CustomFunction",
             Parameters = new List<AlgoMetaDataParameter>
             {
                 new AlgoMetaDataParameter
@@ -270,7 +271,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void SyntaxValidation_Fails_WhenNoClassInheritsBaseAlgo()
         {
-            var code = "class A {} class B : C {}";
+            var code = @"namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+                            class A {} class B : C {}
+                        }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
@@ -281,7 +284,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void SyntaxValidation_Fails_WhenMultipleClassesInheritBaseAlgo()
         {
-            var code = "class A : BaseAlgo {} class B : BaseAlgo {}";
+            var code = @"namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+                            class A : BaseAlgo {} class B : BaseAlgo {}
+                        }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
@@ -292,7 +297,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void SyntaxValidation_Fails_WhenAlgoNotSealed()
         {
-            var code = "class A : BaseAlgo {}";
+            var code = @"namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+                            class A : BaseAlgo {}
+                        }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
@@ -303,7 +310,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void SyntaxValidation_Fails_WhenTypeNamedBaseAlgo()
         {
-            var code = "interface BaseAlgo {} enum BaseAlgo {} class BaseAlgo {} struct BaseAlgo {}";
+            var code = @"namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+                            interface BaseAlgo {} enum BaseAlgo {} class BaseAlgo {} struct BaseAlgo {}
+                        }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
@@ -314,7 +323,9 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void SyntaxValidation_Fails_WhenEventsNotImplemented()
         {
-            var code = "class A : BaseAlgo {void A() {} void OnCandleReceived() {}}";
+            var code = @"namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+                        class A : BaseAlgo {void A() {} void OnCandleReceived() {}}
+                        }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
@@ -326,14 +337,48 @@ namespace Lykke.AlgoStore.Tests.Unit
         public void SyntaxValidation_Succeeds_WhenAlgoProperlyImplemented()
         {
             var code = @"using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
-                         sealed class A : BaseAlgo 
-                         { 
-                            public override void OnCandleReceived(ICandleContext context) {} 
-                         }";
+                         namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+                            sealed class A : BaseAlgo 
+                             { 
+                                public override void OnCandleReceived(ICandleContext context) {} 
+                             }
+                        }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
             Then_Result_MustSucceedAndContainNoMessages(result);
+        }
+
+        [Test]
+        public void SyntaxValidation_Fails_WhenNamespaceMissing()
+        {
+            var code = @"using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
+                        sealed class A : BaseAlgo 
+                            { 
+                            public override void OnCandleReceived(ICandleContext context) {} 
+                            }";
+
+            var result = When_Code_IsSyntaxValidated(code);
+
+            Then_Result_MustFailAndContainMessages(result);
+            Then_Result_MustContainMessage(result, "AS0007");
+        }
+
+        [Test]
+        public void SyntaxValidation_Fails_WhenNamespaceNotCorrect()
+        {
+            var code = @"using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
+                         namespace Lykke.AlgoStore.CSharp.Algo.Implemention.IncorrectNamespace{
+                            sealed class A : BaseAlgo 
+                             { 
+                                public override void OnCandleReceived(ICandleContext context) {} 
+                             }
+                        }";
+
+            var result = When_Code_IsSyntaxValidated(code);
+
+            Then_Result_MustFailAndContainMessages(result);
+            Then_Result_MustContainMessage(result, "AS0006");
         }
 
         [Test]
@@ -343,12 +388,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             var code = @"
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA;
-sealed class Algo : BaseAlgo 
-{ 
-    public SmaFunction Sma {get; set; }
-    public override void OnCandleReceived(ICandleContext context) {} 
-}
-";
+
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+    sealed class Algo : BaseAlgo 
+    { 
+        public SmaFunction Sma {get; set; }
+        public override void OnCandleReceived(ICandleContext context) {} 
+    }
+}";
 
             var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
@@ -366,11 +413,13 @@ sealed class Algo : BaseAlgo
         {
             var code = @"
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
-sealed class Algo : BaseAlgo 
-{ 
-    public override void OnCandleReceived(ICandleContext context) {} 
-}
-";
+
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+    sealed class Algo : BaseAlgo 
+    { 
+        public override void OnCandleReceived(ICandleContext context) {} 
+    }
+}";
 
             var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
@@ -437,37 +486,38 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Candles;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
 
-sealed class Algo : BaseAlgo
-{
-    public CustomFunction CustomFunc { get; set; }
-    public override void OnStartUp(IFunctionProvider functions) { }
-    public override void OnQuoteReceived(IQuoteContext context) { }
-    public override void OnCandleReceived(ICandleContext context) { }
-}
-
-public class CustomFunction : IFunction
-{
-    public AlgoParameters AlgoParams { get; set; }
-    public FunctionParamsBase FunctionParameters => AlgoParams;
-    public double? Value => 43;
-    public bool IsReady => true;
-
-    public double? WarmUp(IEnumerable<Candle> values)
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+    sealed class Algo : BaseAlgo
     {
-        return 43;
+        public CustomFunction CustomFunc { get; set; }
+        public override void OnStartUp(IFunctionProvider functions) { }
+        public override void OnQuoteReceived(IQuoteContext context) { }
+        public override void OnCandleReceived(ICandleContext context) { }
     }
 
-    public double? AddNewValue(Candle value)
+    public class CustomFunction : IFunction
     {
-        return 43;
-    }
-}
+        public AlgoParameters AlgoParams { get; set; }
+        public FunctionParamsBase FunctionParameters => AlgoParams;
+        public double? Value => 43;
+        public bool IsReady => true;
 
-public class AlgoParameters : FunctionParamsBase
-{
-    public int Period { get; set; }
-}
-";
+        public double? WarmUp(IEnumerable<Candle> values)
+        {
+            return 43;
+        }
+
+        public double? AddNewValue(Candle value)
+        {
+            return 43;
+        }
+    }
+
+    public class AlgoParameters : FunctionParamsBase
+    {
+        public int Period { get; set; }
+    }
+}";
 
             var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
@@ -490,52 +540,53 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Candles;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
 
-sealed class Algo : BaseAlgo
-{
-    public CustomFunction CustomFunc { get; set; }
-
-    public override void OnStartUp(IFunctionProvider functions)
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+    sealed class Algo : BaseAlgo
     {
+        public CustomFunction CustomFunc { get; set; }
+
+        public override void OnStartUp(IFunctionProvider functions)
+        {
+        }
+
+        public override void OnQuoteReceived(IQuoteContext context)
+        {
+        }
+
+        public override void OnCandleReceived(ICandleContext context)
+        {
+        }
     }
 
-    public override void OnQuoteReceived(IQuoteContext context)
+    public class CustomFunction : IFunction
     {
+        public AlgoParameters AlgoParams { get; set; }
+        public FunctionParamsBase FunctionParameters => AlgoParams;
+        public double? Value => 43;
+        public bool IsReady => true;
+
+        public double? WarmUp(IEnumerable<Candle> values)
+        {
+            return 43;
+        }
+
+        public double? AddNewValue(Candle value)
+        {
+            return 43;
+        }
+
+        public CustomFunction(AlgoParameters algoParameters)
+        {
+            AlgoParams = algoParameters;
+        }
     }
 
-    public override void OnCandleReceived(ICandleContext context)
+    public class AlgoParameters : FunctionParamsBase
     {
+        [DefaultValue(5), Description(""test"")]
+        public int Period { get; set; }
     }
-}
-
-public class CustomFunction : IFunction
-{
-    public AlgoParameters AlgoParams { get; set; }
-    public FunctionParamsBase FunctionParameters => AlgoParams;
-    public double? Value => 43;
-    public bool IsReady => true;
-
-    public double? WarmUp(IEnumerable<Candle> values)
-    {
-        return 43;
-    }
-
-    public double? AddNewValue(Candle value)
-    {
-        return 43;
-    }
-
-    public CustomFunction(AlgoParameters algoParameters)
-    {
-        AlgoParams = algoParameters;
-    }
-}
-
-public class AlgoParameters : FunctionParamsBase
-{
-    [DefaultValue(5), Description(""test"")]
-    public int Period { get; set; }
-}
-";
+}";
 
             var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
@@ -549,7 +600,7 @@ public class AlgoParameters : FunctionParamsBase
 
         private ICodeBuildSession GetCSharpCodeBuildSession(string code)
         {
-            var codeValidationService = new CodeBuildService();
+            var codeValidationService = new CodeBuildService(ALGONAMESPACE);
             var session = codeValidationService.StartSession(code);
 
             return session;
@@ -557,7 +608,7 @@ public class AlgoParameters : FunctionParamsBase
 
         private ValidationResult When_Code_IsSyntaxValidated(string code)
         {
-            var codeValidationService = new CodeBuildService();
+            var codeValidationService = new CodeBuildService(ALGONAMESPACE);
             var session = codeValidationService.StartSession(code);
 
             return session.Validate().Result;

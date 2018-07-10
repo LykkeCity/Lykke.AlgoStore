@@ -153,6 +153,9 @@
   <data name="ERROR_EVENT_NOT_IMPLEMENTED" xml:space="preserve">
     <value>Algo must override {0} and/or {1}</value>
   </data>
+  <data name="ERROR_NAMESPACE_NOT_CORRECT" xml:space="preserve">
+    <value>The provided namespace is not allowed</value>
+  </data>
   <data name="ClientIdEmpty" xml:space="preserve">
     <value>ClientId is empty</value>
   </data>
@@ -272,6 +275,9 @@
   </data>
   <data name="DatesValidationMessage" xml:space="preserve">
     <value>{0} Start Date cannot be later than or equal to the End Date</value>
+  </data>
+  <data name="ERROR_NAMESPACE_NOT_FOUND" xml:space="preserve">
+    <value>A required namespace is not found</value>
   </data>
   <data name="InstanceMustBeStopped" xml:space="preserve">
     <value>Instance {0} must be stopped before it can be deleted.</value>

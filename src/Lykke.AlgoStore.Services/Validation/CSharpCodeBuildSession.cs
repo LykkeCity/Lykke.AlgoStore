@@ -27,6 +27,7 @@ namespace Lykke.AlgoStore.Services.Validation
         };
 
         private readonly string _code;
+        private readonly string _algoNamespaceValue;
         private readonly SourceText _sourceText;
 
         private ValidationResult _syntaxValidationResult;
@@ -36,12 +37,13 @@ namespace Lykke.AlgoStore.Services.Validation
         private CSharpCompilation _compilation;
         private CSharpAlgoValidationWalker _syntaxWalker;
 
-        public CSharpCodeBuildSession(string code)
+        public CSharpCodeBuildSession(string code, string AlgoNamespaceValue)
         {
             if (string.IsNullOrEmpty(code))
                 throw new ArgumentNullException(nameof(code));
 
             _code = code;
+            _algoNamespaceValue = AlgoNamespaceValue;
             _sourceText = SourceText.From(code);
         }
 
@@ -58,9 +60,9 @@ namespace Lykke.AlgoStore.Services.Validation
             if (ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
 
-            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
+            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();           
 
-            _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText);
+            _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText, _algoNamespaceValue);
             _syntaxWalker.Visit(root);
 
             validationMessages.AddRange(_syntaxWalker.GetMessages());
