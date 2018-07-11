@@ -152,10 +152,10 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = await _algoInstancesService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
 
-            var deployStatus = await DeployAlgoInstance(data, result.InstanceId);
+            var isDeployed = await DeployAlgoInstance(data, result.InstanceId);
 
             var response = Mapper.Map<AlgoClientInstanceModel>(result);
-            response.IsAlgoInstanceDeployed = deployStatus;
+            response.IsAlgoInstanceDeployed = isDeployed;
             return Ok(response);
         }
 
@@ -209,10 +209,10 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             var result = await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, model.AlgoClientId);
 
-            var deployStatus = await DeployAlgoInstance(data, result.InstanceId);
+            var isDeployed = await DeployAlgoInstance(data, result.InstanceId);
 
             var response = Mapper.Map<AlgoFakeTradingInstanceModel>(result);
-            response.IsAlgoInstanceDeployed = deployStatus;
+            response.IsAlgoInstanceDeployed = isDeployed;
             return Ok(response);
         }
 

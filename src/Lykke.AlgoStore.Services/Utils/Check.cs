@@ -92,7 +92,7 @@ namespace Lykke.AlgoStore.Services.Utils
                 var count = (await repository.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(algoId, clientId)).Count(i => i.AlgoInstanceStatus == AlgoInstanceStatus.Started
                                                                                                                       || i.AlgoInstanceStatus == AlgoInstanceStatus.Deploying);
 
-                if (count >= AlgoStoreConstants.AlgoInsatncesCountLimit)
+                if (count >= AlgoStoreConstants.RunningAlgoInsatncesCountLimit)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInsatncesCountLimit,
                         string.Format(Phrases.NotAvailableCreationOfInstances, count, clientId, algoId), Phrases.LimitOfRunningInsatcnesReached);
