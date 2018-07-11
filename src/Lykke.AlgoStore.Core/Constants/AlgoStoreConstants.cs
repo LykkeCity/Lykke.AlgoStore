@@ -15,5 +15,7 @@
 
         public const string AdminRoleName = "Admin";
         public const string UserRoleName = "User";
+
+        public const int AlgoInsatncesCountLimit = 3;
     }
 }

@@ -15,7 +15,7 @@ namespace Lykke.AlgoStore.Api.Models
         public double FakeTradingAssetTwoBalance { get; set; }
         [JsonConverter(typeof(DefaultDateTimeConverter))]
         public DateTime? AlgoInstanceRunDate { get; set; }
-
+        public bool IsAlgoInstanceDeployed{ get; set; }
         public AlgoMetaDataInformationModel AlgoMetaDataInformation { get; set; }
         public AlgoInstanceStatus AlgoInstanceStatus { get; set; }
         public AlgoInstanceType AlgoInstanceType { get; set; }

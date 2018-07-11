@@ -32,6 +32,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Extensions
             {
                 case AlgoStoreErrorCodes.ValidationError:
                 case AlgoStoreErrorCodes.RuntimeSettingsExists:
+                case AlgoStoreErrorCodes.AlgoInsatncesCountLimit:
                     statusCode = HttpStatusCode.BadRequest;
                     break;
                 case AlgoStoreErrorCodes.AlgoNotFound:

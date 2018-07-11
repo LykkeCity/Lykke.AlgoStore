@@ -12,6 +12,7 @@ using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
@@ -97,7 +98,7 @@ namespace Lykke.AlgoStore.Services
                 var algoInstanceData = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
                 var algo = await _algoRepository.GetAlgoDataInformationAsync(algoInstanceData.AlgoClientId, algoInstanceData.AlgoId);
 
-                foreach(var param in algoInstanceData.AlgoMetaDataInformation.Parameters)
+                foreach (var param in algoInstanceData.AlgoMetaDataInformation.Parameters)
                 {
                     param.PredefinedValues = algo.AlgoMetaDataInformation
                                                  .Parameters
@@ -105,12 +106,12 @@ namespace Lykke.AlgoStore.Services
                                                  ?.PredefinedValues ?? new List<EnumValue>();
                 }
 
-                foreach(var function in algoInstanceData.AlgoMetaDataInformation.Functions)
+                foreach (var function in algoInstanceData.AlgoMetaDataInformation.Functions)
                 {
                     var algoFunction = algo.AlgoMetaDataInformation.Functions.FirstOrDefault(f => f.Id == function.Id);
                     if (algoFunction == null) continue;
 
-                    foreach(var fParam in function.Parameters)
+                    foreach (var fParam in function.Parameters)
                     {
                         fParam.PredefinedValues = algoFunction.Parameters
                                                               .FirstOrDefault(p => p.Key == fParam.Key)
@@ -204,7 +205,7 @@ namespace Lykke.AlgoStore.Services
                     Phrases.LiveAlgoCantFakeTrade,
                     Phrases.LiveAlgoCantFakeTrade);
             }
-            else if(!isFakeTradeInstance && data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            else if (!isFakeTradeInstance && data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                     Phrases.DemoOrBacktestCantRunLive,
@@ -394,7 +395,7 @@ namespace Lykke.AlgoStore.Services
             var dtType = typeof(DateTime).FullName;
 
             var instanceParameters = instanceMetadata.Parameters.Where(p => p.Type == dtType).ToList();
-            var startFromDate =  instanceParameters.SingleOrDefault(t => t.Key == "StartFrom")?.Value;
+            var startFromDate = instanceParameters.SingleOrDefault(t => t.Key == "StartFrom")?.Value;
             var endOnDate = instanceParameters.SingleOrDefault(t => t.Key == "EndOn")?.Value;
 
             var instanceStartFromDate = DateTime.ParseExact(startFromDate, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
@@ -461,6 +462,11 @@ namespace Lykke.AlgoStore.Services
 
                 return result;
             });
+        }
+
+        public async Task ValidateAlgoInstancesDeploymentLimits(string algoId, string clientId)
+        {
+            await Check.AlgoInstance.CheckClientInstancesLimitation(_instanceRepository, clientId, algoId);
         }
     }
 }
