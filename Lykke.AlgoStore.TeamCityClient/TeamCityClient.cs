@@ -24,7 +24,6 @@ namespace Lykke.AlgoStore.TeamCityClient
         private const string BlobVersionHeader = "CODE_Blob_VersionHeader";
         private const string BlobStorageAccountName = "CODE_Blob_StorageAccountName";
         private const string BlobContainerName = "CODE_Blob_ContainerName";
-        private const string BlobInstanceId = "CODE_Blob_InstanceId";
         private const string BlobAccessKey = "CODE_Blob_AccessKey";
         private const string AlgoId = "CODE_ALGO_ID";
         private const string TradedAsset = "CODE_ASSET";
@@ -140,9 +139,6 @@ namespace Lykke.AlgoStore.TeamCityClient
                         break;
                     case BlobContainerName:
                         propertyBase.Value = buildData.ContainerName;
-                        break;
-                    case BlobInstanceId:
-                        propertyBase.Value = buildData.InstanceId;
                         break;
                     case BlobAccessKey:
                         propertyBase.Value = buildData.AccessKey;
