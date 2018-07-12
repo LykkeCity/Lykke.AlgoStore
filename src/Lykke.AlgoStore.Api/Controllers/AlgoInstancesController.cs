@@ -203,7 +203,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                 return BadRequest(validationError);
             }
 
-            await _algoInstancesService.ValidateAlgoInstancesDeploymentLimits(data.AlgoId, data.ClientId);
+            //await _algoInstancesService.ValidateAlgoInstancesDeploymentLimits(data.AlgoId, data.ClientId);
 
             SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 

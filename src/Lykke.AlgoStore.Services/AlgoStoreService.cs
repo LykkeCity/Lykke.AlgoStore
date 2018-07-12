@@ -111,13 +111,10 @@ namespace Lykke.AlgoStore.Services
 
                 var buildData = new TeamCityClientBuildData
                 {
-                    BlobAuthorizationHeader = headers.AuthorizationHeader,
-                    BlobUrl = headers.Url,
-                    BlobVersionHeader = headers.VersionHeader,
-                    BlobDateHeader = headers.DateHeader,
                     StorageAccountName = headers.StorageAccountName,
                     AccessKey = headers.AccessKey,
                     ContainerName = headers.ContainerName,
+                    InstanceId = data.InstanceId,
                     AlgoId = data.AlgoId,
                     TradedAsset = instanceData.TradedAssetId,
                     AssetPair = instanceData.AssetPairId,
