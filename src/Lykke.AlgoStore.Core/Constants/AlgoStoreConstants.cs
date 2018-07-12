@@ -16,6 +16,6 @@
         public const string AdminRoleName = "Admin";
         public const string UserRoleName = "User";
 
-        public const int RunningAlgoInsatncesCountLimit = 3;
+        public const int RunningAlgoInstancesCountLimit = 3;
     }
 }

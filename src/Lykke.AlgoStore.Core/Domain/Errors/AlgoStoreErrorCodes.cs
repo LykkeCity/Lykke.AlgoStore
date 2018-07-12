@@ -28,7 +28,7 @@
         StatisticsSumaryNotFound = 512,
         AlgoTradesClientError = 513,
         AlgoPublic = 514,
-        AlgoInsatncesCountLimit = 515,
+        AlgoInstancesCountLimit = 515,
         //Operation
         UnableToDeleteData = 601,
 

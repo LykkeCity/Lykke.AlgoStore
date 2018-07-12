@@ -466,7 +466,7 @@ namespace Lykke.AlgoStore.Services
 
         public async Task ValidateAlgoInstancesDeploymentLimits(string algoId, string clientId)
         {
-            await Check.AlgoInstance.CheckClientInstancesLimitation(_instanceRepository, clientId, algoId);
+            await Check.AlgoInstance.InstancesOverDeploymentLimit(_instanceRepository, clientId, algoId);
         }
     }
 }
