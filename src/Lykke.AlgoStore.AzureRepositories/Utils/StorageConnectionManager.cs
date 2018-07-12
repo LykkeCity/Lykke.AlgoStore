@@ -39,6 +39,9 @@ namespace Lykke.AlgoStore.AzureRepositories.Utils
             var result = new StorageConnectionData();
             result.DateHeader = GetDateHeader();
             result.VersionHeader = GetServerVersionHeader();
+            result.StorageAccountName = _storageAccount.Credentials.AccountName;
+            result.ContainerName = "algo-store-binary";
+            result.AccessKey = _storageAccount.Credentials.ExportBase64EncodedKey();
             result.Url = GetUrl(key);
 
             GetAuthenticationHeader(result, key);
