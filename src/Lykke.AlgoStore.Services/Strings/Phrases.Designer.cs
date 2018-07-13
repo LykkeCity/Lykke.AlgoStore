@@ -304,6 +304,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provided namespace is not allowed.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_CORRECT {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_CORRECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A required namespace is not found.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A type named BaseAlgo is not allowed.
         /// </summary>
         internal static string ERROR_TYPE_NAMED_BASEALGO {
@@ -340,6 +358,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have reached the limit of running/deploying instances. You can&apos;t run more instances..
+        /// </summary>
+        internal static string LimitOfRunningInsatcnesReached {
+            get {
+                return ResourceManager.GetString("LimitOfRunningInsatcnesReached", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Live algo instances are not allowed to use fake trading..
         /// </summary>
         internal static string LiveAlgoCantFakeTrade {
@@ -372,6 +399,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string NoAlgoDataDisplayMessage {
             get {
                 return ResourceManager.GetString("NoAlgoDataDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}.
+        /// </summary>
+        internal static string NotAvailableCreationOfInstances {
+            get {
+                return ResourceManager.GetString("NotAvailableCreationOfInstances", resourceCulture);
             }
         }
         

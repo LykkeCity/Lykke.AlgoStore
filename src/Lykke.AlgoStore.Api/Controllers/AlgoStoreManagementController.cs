@@ -20,28 +20,14 @@ namespace Lykke.AlgoStore.Api.Controllers
     {
         private readonly IAlgoStoreService _service;
         private readonly IAlgoStoreStatisticsService _statisticsService;
+        private readonly IAlgoInstancesService _algoInstancesService;
 
-        public AlgoStoreManagementController(IAlgoStoreService service, IAlgoStoreStatisticsService algoStoreStatisticsService)
+        public AlgoStoreManagementController(IAlgoStoreService service,
+            IAlgoStoreStatisticsService algoStoreStatisticsService, IAlgoInstancesService algoInstancesService)
         {
             _service = service;
             _statisticsService = algoStoreStatisticsService;
-        }
-
-
-        [HttpPost("deploy/binary")]
-        [SwaggerOperation("DeployBinaryImage")]
-        [DescriptionAttribute("Allows users to sends the algo data to start a deployment")]
-        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeployBinaryImage([FromBody]ManageImageModel model)
-        {
-            var data = Mapper.Map<ManageImageData>(model);
-            data.ClientId = User.GetClientId();
-
-            var result = await _service.DeployImageAsync(data);
-
-            return Ok(result);
+            _algoInstancesService = algoInstancesService;
         }
 
         [HttpPost("stop")]

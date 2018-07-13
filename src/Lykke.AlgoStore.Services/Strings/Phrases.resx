@@ -153,6 +153,9 @@
   <data name="ERROR_EVENT_NOT_IMPLEMENTED" xml:space="preserve">
     <value>Algo must override {0} and/or {1}</value>
   </data>
+  <data name="ERROR_NAMESPACE_NOT_CORRECT" xml:space="preserve">
+    <value>The provided namespace is not allowed</value>
+  </data>
   <data name="ClientIdEmpty" xml:space="preserve">
     <value>ClientId is empty</value>
   </data>
@@ -273,10 +276,19 @@
   <data name="DatesValidationMessage" xml:space="preserve">
     <value>{0} Start Date cannot be later than or equal to the End Date</value>
   </data>
+  <data name="ERROR_NAMESPACE_NOT_FOUND" xml:space="preserve">
+    <value>A required namespace is not found</value>
+  </data>
   <data name="InstanceMustBeStopped" xml:space="preserve">
     <value>Instance {0} must be stopped before it can be deleted.</value>
   </data>
   <data name="DemoOrBacktestCantRunLive" xml:space="preserve">
     <value>Demo or BackTest instances are not allowed to run without fake trading.</value>
+  </data>
+  <data name="NotAvailableCreationOfInstances" xml:space="preserve">
+    <value>The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}</value>
+  </data>
+  <data name="LimitOfRunningInsatcnesReached" xml:space="preserve">
+    <value>You have reached the limit of running/deploying instances. You can't run more instances.</value>
   </data>
 </root>

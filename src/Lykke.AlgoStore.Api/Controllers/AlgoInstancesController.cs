@@ -98,7 +98,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         private ErrorResponse ValidateDateTimeParameters(AlgoMetaDataInformationModel algoMetaData)
         {
             var dtType = typeof(DateTime).FullName;
-            
+
             var parameters = algoMetaData.Parameters.ToList();
             parameters.AddRange(algoMetaData.Functions.SelectMany(f => f.Parameters));
             parameters = parameters.Where(p => p.Type == dtType).Select(p => p).ToList();
@@ -109,7 +109,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                 {
                     return new ErrorResponse()
                     {
-                        ErrorCode = (int) AlgoStoreErrorCodes.ValidationError,
+                        ErrorCode = (int)AlgoStoreErrorCodes.ValidationError,
                         DisplayMessage = "Parameter DateTime format error",
                         ErrorMessage = $"Invalid DateTime format parameter. Name: {param.Key}, Value: {param.Value}",
                         ErrorDescription = $"Expected DateTime format is {AlgoStoreConstants.DateTimeFormat}"
@@ -129,7 +129,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
         }
 
-
         [HttpPost("saveAlgoInstance")]
         [SwaggerOperation("SaveAlgoInstanceDataAsync")]
         [DescriptionAttribute("Gives users the ability to create Live instances")]
@@ -147,11 +146,16 @@ namespace Lykke.AlgoStore.Api.Controllers
                 return BadRequest(validationError);
             }
 
+            await _algoInstancesService.ValidateAlgoInstancesDeploymentLimits(data.AlgoId, data.ClientId);
+
             SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
             var result = await _algoInstancesService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
-            var response = Mapper.Map<AlgoClientInstanceModel>(result);
 
+            var isDeployed = await DeployAlgoInstance(data, result.InstanceId);
+
+            var response = Mapper.Map<AlgoClientInstanceModel>(result);
+            response.IsAlgoInstanceDeployed = isDeployed;
             return Ok(response);
         }
 
@@ -174,7 +178,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             data.InstanceName = model.Name;
 
-            if(data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            if (data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
                 await _algoInstancesService.SaveAlgoInstanceDataAsync(data, data.AlgoClientId);
             else
                 await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, data.AlgoClientId);
@@ -199,11 +203,16 @@ namespace Lykke.AlgoStore.Api.Controllers
                 return BadRequest(validationError);
             }
 
+            await _algoInstancesService.ValidateAlgoInstancesDeploymentLimits(data.AlgoId, data.ClientId);
+
             SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
             var result = await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, model.AlgoClientId);
-            var response = Mapper.Map<AlgoFakeTradingInstanceModel>(result);
 
+            var isDeployed = await DeployAlgoInstance(data, result.InstanceId);
+
+            var response = Mapper.Map<AlgoFakeTradingInstanceModel>(result);
+            response.IsAlgoInstanceDeployed = isDeployed;
             return Ok(response);
         }
 
@@ -240,6 +249,19 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _algoInstancesService.GetUserInstancesAsync(clientId);
 
             return Ok(Mapper.Map<List<UserInstanceModel>>(result));
+        }
+
+        private async Task<bool> DeployAlgoInstance(AlgoClientInstanceData data, string instanceId)
+        {
+            ManageImageData dataToDeploy = new ManageImageData()
+            {
+                AlgoId = data.AlgoId,
+                ClientId = data.ClientId,
+                AlgoClientId = data.AlgoClientId,
+                InstanceId = instanceId
+            };
+
+            return await _service.DeployImageAsync(dataToDeploy);
         }
     }
 }
