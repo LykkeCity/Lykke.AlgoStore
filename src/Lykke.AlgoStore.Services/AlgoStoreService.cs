@@ -128,6 +128,9 @@ namespace Lykke.AlgoStore.Services
 
                 var response = await _teamCityClient.StartBuild(buildData);
 
+                instanceData.TcBuildId = response.Id.ToString();
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
+
                 return response.GetBuildState() != BuildStates.Undefined;
             });
         }
@@ -222,6 +225,39 @@ namespace Lykke.AlgoStore.Services
                 var userLogs = await _loggingClient.GetTailLog(data.Tail, data.InstanceId, instanceData.AuthToken);
                 return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.CustomDateTimeFormat)}] {l.Message}").ToArray();
             });
+        }
+
+
+        public async Task<bool> UpdateAlgoInstanceStatusAsync(TeamCityWebHookResponse payload)
+        {
+            var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildNumber.ToString());
+
+            if (teamCityInstanceEntity == null)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve TCBuild entity with TcBuildId {payload.BuildNumber.ToString()}",
+                    string.Format(Phrases.ParamNotFoundDisplayMessage, "TCBuild entity"));
+            }
+
+            var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(teamCityInstanceEntity.ClientId, teamCityInstanceEntity.InstanceId);
+
+            if (algoInstance == null)
+            {
+                throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve algo instance with id {teamCityInstanceEntity.InstanceId}",
+                    string.Format(Phrases.ParamNotFoundDisplayMessage, "Algo instance"));
+            }
+
+            if (payload.BuildEvent == "buildFinished" && payload.BuildResult == "success")
+                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Started;
+
+            if (payload.BuildEvent == "buildFinished" && payload.BuildResult == "failure")
+                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+
+            if (payload.BuildEvent == "buildInterrupted" && payload.BuildResult == "failure")
+                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+
+            await _algoInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
+
+            return true;        
         }
     }
 }

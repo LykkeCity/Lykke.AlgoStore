@@ -10,5 +10,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<string> StopTestImageAsync(ManageImageData data);
         Task<string[]> GetTestTailLogAsync(TailLogData data);
         Task DeleteInstanceAsync(AlgoClientInstanceData instanceData);
+        Task<bool> UpdateAlgoInstanceStatusAsync(TeamCityWebHookResponse payload);
     }
 }
