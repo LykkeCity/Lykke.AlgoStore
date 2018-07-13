@@ -214,11 +214,29 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} Start Date cannot be later than or equal to the End Date.
+        /// </summary>
+        internal static string DatesValidationMessage {
+            get {
+                return ResourceManager.GetString("DatesValidationMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}.
         /// </summary>
         internal static string DeleteKubernetesDeploymentError {
             get {
                 return ResourceManager.GetString("DeleteKubernetesDeploymentError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Demo or BackTest instances are not allowed to run without fake trading..
+        /// </summary>
+        internal static string DemoOrBacktestCantRunLive {
+            get {
+                return ResourceManager.GetString("DemoOrBacktestCantRunLive", resourceCulture);
             }
         }
         
@@ -286,6 +304,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provided namespace is not allowed.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_CORRECT {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_CORRECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A required namespace is not found.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A type named BaseAlgo is not allowed.
         /// </summary>
         internal static string ERROR_TYPE_NAMED_BASEALGO {
@@ -304,11 +340,29 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Instance {0} must be stopped before it can be deleted..
+        /// </summary>
+        internal static string InstanceMustBeStopped {
+            get {
+                return ResourceManager.GetString("InstanceMustBeStopped", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance Not Found.
         /// </summary>
         internal static string InstanceNotFound {
             get {
                 return ResourceManager.GetString("InstanceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have reached the limit of running/deploying instances. You can&apos;t run more instances..
+        /// </summary>
+        internal static string LimitOfRunningInsatcnesReached {
+            get {
+                return ResourceManager.GetString("LimitOfRunningInsatcnesReached", resourceCulture);
             }
         }
         
@@ -345,6 +399,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string NoAlgoDataDisplayMessage {
             get {
                 return ResourceManager.GetString("NoAlgoDataDisplayMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}.
+        /// </summary>
+        internal static string NotAvailableCreationOfInstances {
+            get {
+                return ResourceManager.GetString("NotAvailableCreationOfInstances", resourceCulture);
             }
         }
         

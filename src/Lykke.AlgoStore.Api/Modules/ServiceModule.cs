@@ -62,12 +62,13 @@ namespace Lykke.AlgoStore.Api.Modules
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoApi.Services.SessionServiceUrl);
 
             builder.RegisterType<TeamCityClient.TeamCityClient>()
-    .As<ITeamCityClient>()
-    .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
-    .SingleInstance();
+                .As<ITeamCityClient>()
+                .WithParameter("settings", _settings.CurrentValue.AlgoApi.TeamCity)
+                .SingleInstance();
 
             builder.RegisterType<CodeBuildService>()
                 .As<ICodeBuildService>()
+                .WithParameter("algoNamespaceValue", _settings.CurrentValue.AlgoApi.AlgoNamespaceValue)
                 .SingleInstance();
 
             builder.RegisterBalancesClient(_settings.CurrentValue.BalancesServiceClient.ServiceUrl, _log);

@@ -13,7 +13,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
         public AutoMapperProfile()
         {
             CreateMap<AlgoData, AlgoDataModel>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));              
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));
 
             CreateMap<AlgoEntity, IAlgo>()
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
@@ -32,11 +32,11 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.UsersCount, opt => opt.Ignore())
                 .ForMember(dest => dest.Author, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoMetaDataInformation, opt => opt.Ignore());
-                
+
             CreateMap<AlgoData, IAlgo>();
 
             CreateMap<IAlgo, AlgoData>();
-                        
+
             CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 
             CreateMap<AlgoDataModel, AlgoData>()
@@ -51,12 +51,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<TailLogData, TailLogModel>().ReverseMap();
 
             CreateMap<AlgoClientInstanceData, AlgoClientInstanceModel>()
-                .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
+                .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
+                .ForMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore());
 
             CreateMap<AlgoClientInstanceData, AlgoFakeTradingInstanceModel>()
-                .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
+                .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
+                .ForMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore());
 
             CreateMap<AlgoClientInstanceModel, AlgoClientInstanceData>()
+                .ForSourceMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore())
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
                 .ForMember(dest => dest.AssetPairId, opt => opt.Ignore())
                 .ForMember(dest => dest.HftApiKey, opt => opt.Ignore())
@@ -72,6 +75,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
 
             CreateMap<AlgoFakeTradingInstanceModel, AlgoClientInstanceData>()
+                .ForSourceMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore())
                 .ForMember(dest => dest.ClientId, opt => opt.Ignore())
                 .ForMember(dest => dest.AssetPairId, opt => opt.Ignore())
                 .ForMember(dest => dest.HftApiKey, opt => opt.Ignore())
