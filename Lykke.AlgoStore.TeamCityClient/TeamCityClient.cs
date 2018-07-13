@@ -18,14 +18,11 @@ namespace Lykke.AlgoStore.TeamCityClient
     public class TeamCityClient : ITeamCityClient
     {
         #region Parameters
-        private const string BlobAuthorizationHeader = "CODE_Blob_AuthorizationHeader";
-        private const string BlobDateHeader = "CODE_Blob_DateHeader";
-        private const string BlobUrl = "CODE_Blob_Url";
-        private const string BlobVersionHeader = "CODE_Blob_VersionHeader";
         private const string BlobStorageAccountName = "CODE_Blob_StorageAccountName";
         private const string BlobContainerName = "CODE_Blob_ContainerName";
         private const string BlobAccessKey = "CODE_Blob_AccessKey";
         private const string AlgoId = "CODE_ALGO_ID";
+        private const string InstanceId = "CODE_INSTANCE_ID";
         private const string TradedAsset = "CODE_ASSET";
         private const string AssetPair = "CODE_ASSET_PAIR";
         private const string HftKey = "CODE_HFT_KEY";
@@ -122,19 +119,7 @@ namespace Lykke.AlgoStore.TeamCityClient
 
                 switch (responsePropery.Name)
                 {
-                    case BlobAuthorizationHeader:
-                        propertyBase.Value = buildData.BlobAuthorizationHeader;
-                        break;
-                    case BlobDateHeader:
-                        propertyBase.Value = buildData.BlobDateHeader;
-                        break;
-                    case BlobUrl:
-                        propertyBase.Value = buildData.BlobUrl;
-                        break;
-                    case BlobVersionHeader:
-                        propertyBase.Value = buildData.BlobVersionHeader;
-                        break;
-                    case BlobStorageAccountName:
+                case BlobStorageAccountName:
                         propertyBase.Value = buildData.StorageAccountName;
                         break;
                     case BlobContainerName:
@@ -145,6 +130,9 @@ namespace Lykke.AlgoStore.TeamCityClient
                         break;
                     case AlgoId:
                         propertyBase.Value = buildData.AlgoId;
+                        break;
+                    case InstanceId:
+                        propertyBase.Value = buildData.InstanceId;
                         break;
                     case TradedAsset:
                         propertyBase.Value = buildData.TradedAsset;
@@ -168,7 +156,7 @@ namespace Lykke.AlgoStore.TeamCityClient
                         propertyBase.Value = buildData.WalletApiKey;
                         break;
                     case ServiceName:
-                        propertyBase.Value = buildData.AlgoId;
+                        propertyBase.Value = buildData.InstanceId;
                         break;
                     case AlgoInstanceParameters:
                         propertyBase.Value = buildData.AlgoInstanceParameters;
