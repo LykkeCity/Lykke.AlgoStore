@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.WebSockets;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
-using Lykke.Common.Log;
-using MessagePack;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+#pragma warning disable 618
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers
 {
@@ -33,10 +27,16 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         public override async Task<bool> OnConnected(HttpContext context)
         {
             Socket = await context.WebSockets.AcceptWebSocketAsync();
-            if (!string.IsNullOrWhiteSpace(context.Request.Query["AssetId"]))
+            var assetId = context.Request.Query["AssetId"];
+            ConnectionId = context.Request.Query["InstanceId"];
+            var infoMsg = $"Connection opened. ConnectionId = {ConnectionId}.";
+
+            if (!string.IsNullOrWhiteSpace(assetId))
             {
-                _orderBooksListener.SupplyDataFilter(new DataFilter(String.Empty, context.Request.Query["AssetId"]));
+                _orderBooksListener.SupplyDataFilter(new DataFilter(String.Empty, assetId));
+                infoMsg = String.Concat(infoMsg, " AssetId=", assetId);
             }
+            await Log.WriteInfoAsync(nameof(DummyWebSocketHandler), nameof(OnConnected), infoMsg);
             return true;
         }
     }

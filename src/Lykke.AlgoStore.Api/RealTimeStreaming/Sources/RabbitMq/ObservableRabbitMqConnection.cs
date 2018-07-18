@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Common.Log;
-using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
+﻿using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
+using System;
+using System.Collections.Concurrent;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
 {

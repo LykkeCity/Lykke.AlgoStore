@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.AlgoStore.Api.RealTimeStreaming
+﻿namespace Lykke.AlgoStore.Api.RealTimeStreaming
 {
     public class Constants
     {
