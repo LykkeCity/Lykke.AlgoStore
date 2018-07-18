@@ -20,7 +20,15 @@ using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
 using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.Common.Log;
+using Lykke.Logs;
+using Lykke.Logs.Loggers.LykkeConsole;
+using Lykke.RabbitMqBroker.Subscriber;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -48,7 +56,47 @@ namespace Lykke.AlgoStore.Api.Modules
                 _log,
                 autoRefresh: true);
 
+            RegisterRealTimeDataStreamServices(builder);
+
             builder.Populate(_services);
+        }
+
+        private void RegisterRealTimeDataStreamServices(ContainerBuilder builder)
+        {
+            var logFactory = LogFactory.Create().AddConsole();
+
+            builder.RegisterInstance(logFactory).As<ILogFactory>();
+
+
+            RabbitMqSubscriptionSettings rabbitMqDummyDataOrderBooks = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Dummy.ConnectionString,
+                ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Dummy.ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Dummy.QueueName
+            };
+
+            RabbitMqSubscriptionSettings rabbitMqCandles = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Candles.ConnectionString,
+                ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Candles.ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Candles.QueueName
+            };
+
+            RegisterObservableRabbitMqConnection<OrderBook>(builder, rabbitMqDummyDataOrderBooks, logFactory);
+            RegisterObservableRabbitMqConnection<Candle>(builder, rabbitMqCandles, logFactory);
+
+            builder.RegisterGeneric(typeof(WebSocketHandlerBase<>)).InstancePerDependency();
+            builder.RegisterType<DummyWebSocketHandler>().InstancePerDependency();
+            
+        }
+
+        private void RegisterObservableRabbitMqConnection<T>(ContainerBuilder container, RabbitMqSubscriptionSettings exchangeConfiguration, ILogFactory logFactory, string regKey = "") where T : BaseDataModel, new()
+        {
+            container.RegisterType<ObservableRabbitMqConnection<T>>()
+                .WithParameter("rabbitSettings", exchangeConfiguration)
+                .WithParameter("logFactory", logFactory)
+                .InstancePerDependency()
+                .As<RealTimeDataSourceBase<T>>();
         }
 
         private void RegisterExternalServices(ContainerBuilder builder)
