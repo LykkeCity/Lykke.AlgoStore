@@ -12,17 +12,10 @@ namespace Lykke.AlgoStore.Services.Validation
 {
     internal class CSharpAlgoValidationWalker : CSharpSyntaxWalker
     {
-        private const string ERROR_BASEALGO_NOT_INHERITED = "AS0001";
-        private const string ERROR_BASEALGO_MULTIPLE_INHERITANCE = "AS0002";
-        private const string ERROR_ALGO_NOT_SEALED = "AS0003";
-        private const string ERROR_TYPE_NAMED_BASEALGO = "AS0004";
-        private const string ERROR_EVENT_NOT_IMPLEMENTED = "AS0005";
-        private const string ERROR_NAMESPACE_NOT_CORRECT = "AS0006";
-        private const string ERROR_NAMESPACE_NOT_FOUND = "AS0007";
-
         private const string BASE_ALGO_NAME = "BaseAlgo";
         private const string CANDLE_RECEIVED_METHOD = "OnCandleReceived";
         private const string QUOTE_RECEIVED_METHOD = "OnQuoteReceived";
+        private const string STARTUP_METHOD = "OnStartUp";
 
         private readonly SourceText _sourceText;
         private readonly string _algoNamespaceValue;
@@ -34,6 +27,8 @@ namespace Lykke.AlgoStore.Services.Validation
         private List<ValidationMessage> _validationMessages = new List<ValidationMessage>();
 
         public ClassDeclarationSyntax ClassNode { get; private set; }
+        public FastIndicatorInitCandidate[] IndicatorInitializations { get; set; } 
+            = new FastIndicatorInitCandidate[0];
 
         public NamespaceDeclarationSyntax NamespaceNode
         {
@@ -73,14 +68,16 @@ namespace Lykke.AlgoStore.Services.Validation
             // More than one class inheriting BaseAlgo is not allowed
             if (_foundAlgoClass)
             {
-                AddValidationMessage(ERROR_BASEALGO_MULTIPLE_INHERITANCE, Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
+                AddValidationMessage(
+                    ValidationErrors.ERROR_BASEALGO_MULTIPLE_INHERITANCE, 
+                    Phrases.ERROR_BASEALGO_MULTIPLE_INHERITANCE,
                     position: node.SpanStart);
             }
 
             // Class inheriting base algo must be sealed
             if (!node.Modifiers.Any(m => m.Text == "sealed"))
             {
-                AddValidationMessage(ERROR_ALGO_NOT_SEALED, Phrases.ERROR_ALGO_NOT_SEALED,
+                AddValidationMessage(ValidationErrors.ERROR_ALGO_NOT_SEALED, Phrases.ERROR_ALGO_NOT_SEALED,
                     position: node.SpanStart);
             }
 
@@ -109,14 +106,15 @@ namespace Lykke.AlgoStore.Services.Validation
         public IEnumerable<ValidationMessage> GetMessages()
         {
             if (!_foundAlgoClass)
-                AddValidationMessage(ERROR_BASEALGO_NOT_INHERITED, Phrases.ERROR_BASEALGO_NOT_INHERITED);
+                AddValidationMessage(ValidationErrors.ERROR_BASEALGO_NOT_INHERITED, 
+                                     Phrases.ERROR_BASEALGO_NOT_INHERITED);
 
             if (_foundAlgoClass && !_foundEventMethod)
-                AddValidationMessage(ERROR_EVENT_NOT_IMPLEMENTED,
+                AddValidationMessage(ValidationErrors.ERROR_EVENT_NOT_IMPLEMENTED,
                     string.Format(Phrases.ERROR_EVENT_NOT_IMPLEMENTED, CANDLE_RECEIVED_METHOD, QUOTE_RECEIVED_METHOD));
 
             if (!_foundNamespace)
-                AddValidationMessage(ERROR_NAMESPACE_NOT_FOUND, Phrases.ERROR_NAMESPACE_NOT_CORRECT);
+                AddValidationMessage(ValidationErrors.ERROR_NAMESPACE_NOT_FOUND, Phrases.ERROR_NAMESPACE_NOT_CORRECT);
 
             return _validationMessages;
         }
@@ -125,7 +123,7 @@ namespace Lykke.AlgoStore.Services.Validation
         {
             if (typeDecl.Identifier.Text == BASE_ALGO_NAME)
             {
-                AddValidationMessage(ERROR_TYPE_NAMED_BASEALGO, Phrases.ERROR_TYPE_NAMED_BASEALGO,
+                AddValidationMessage(ValidationErrors.ERROR_TYPE_NAMED_BASEALGO, Phrases.ERROR_TYPE_NAMED_BASEALGO,
                     position: typeDecl.SpanStart);
             }
         }
@@ -134,13 +132,16 @@ namespace Lykke.AlgoStore.Services.Validation
         {
             if (namespaceDecl.Name.ToString() != _algoNamespaceValue)
             {
-                AddValidationMessage(ERROR_NAMESPACE_NOT_CORRECT, Phrases.ERROR_NAMESPACE_NOT_CORRECT,
+                AddValidationMessage(ValidationErrors.ERROR_NAMESPACE_NOT_CORRECT, Phrases.ERROR_NAMESPACE_NOT_CORRECT,
                     position: namespaceDecl.SpanStart); 
             }          
         }
 
         private void ValidateMethod(MethodDeclarationSyntax method)
         {
+            if (method.Identifier.Text == STARTUP_METHOD)
+                ExtractFastInitializers(method.Body.Statements);
+            
             if (method.Identifier.Text != CANDLE_RECEIVED_METHOD &&
                 method.Identifier.Text != QUOTE_RECEIVED_METHOD)
                 return;
@@ -162,6 +163,48 @@ namespace Lykke.AlgoStore.Services.Validation
                                || x.Type is QualifiedNameSyntax &&
                                ((QualifiedNameSyntax) x.Type).Right.Identifier.Text == baseTypeName
                        );
+        }
+
+        private void ExtractFastInitializers(IEnumerable<StatementSyntax> statements)
+        {
+            var candidateList = new List<FastIndicatorInitCandidate>();
+
+            foreach(var stmt in statements)
+            {
+                // Looking only for some type of expression like a = b or func();
+                var expressionStmt = stmt as ExpressionStatementSyntax;
+                if (expressionStmt == null) continue;
+
+                // Look for only member assignment expression
+                var assignmentExpression = expressionStmt.Expression as AssignmentExpressionSyntax;
+                if (assignmentExpression == null) continue;
+
+                // Look only for equals assignment
+                if (assignmentExpression.OperatorToken.Kind() != SyntaxKind.EqualsToken) continue;
+
+                // Look only for assignments where the left side is some variable like
+                // MyProperty = something;
+                var targetVariable = assignmentExpression.Left as IdentifierNameSyntax;
+                if (targetVariable == null) continue;
+
+                // Look only for assignments where the right side is an invocation like
+                // MyProperty = MyFunction(...);
+                var methodInvocation = assignmentExpression.Right as InvocationExpressionSyntax;
+                if (methodInvocation == null) continue;
+
+                // This will exclude cases where you can call a function like myClass.MyFunction();
+                var methodIdentifier = methodInvocation.Expression as IdentifierNameSyntax;
+                if (methodIdentifier == null) continue;
+
+                var fastInitCandidate = new FastIndicatorInitCandidate();
+
+                fastInitCandidate.Invocation = methodInvocation;
+                fastInitCandidate.MemberIdentifier = targetVariable;
+
+                candidateList.Add(fastInitCandidate);
+            }
+
+            IndicatorInitializations = candidateList.ToArray();
         }
 
         private void AddValidationMessage(

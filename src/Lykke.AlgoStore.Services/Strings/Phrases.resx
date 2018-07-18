@@ -291,4 +291,13 @@
   <data name="LimitOfRunningInsatcnesReached" xml:space="preserve">
     <value>You have reached the limit of running/deploying instances. You can't run more instances.</value>
   </data>
+  <data name="ERROR_DEFAULT_VALUE_NULL" xml:space="preserve">
+    <value>Setting null as the default value is not allowed</value>
+  </data>
+  <data name="ERROR_INDICATOR_DUPLICATE_NAME" xml:space="preserve">
+    <value>Duplicate indicator names are not allowed</value>
+  </data>
+  <data name="ERROR_INDICATOR_NAME_NOT_LITERAL" xml:space="preserve">
+    <value>Indicator name must be a string literal</value>
+  </data>
 </root>
