@@ -5,6 +5,9 @@ namespace Lykke.AlgoStore.Api.Models
 {
     public class TeamCityWebHookResponseModel
     {
+        [JsonProperty("buildId")]
+        public int BuildId { get; set; }
+
         [JsonProperty("build_start_time")]
         public DateTime BuildStartTime { get; set; }
 

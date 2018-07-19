@@ -6,6 +6,8 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
 {
     public class TeamCityWebHookResponse
     {
+        public int BuildId { get; set; }
+
         public DateTime BuildStartTime { get; set; }
 
         public DateTime Timestamp { get; set; }
