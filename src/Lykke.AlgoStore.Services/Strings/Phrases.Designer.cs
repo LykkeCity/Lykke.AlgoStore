@@ -295,6 +295,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Setting null as the default value is not allowed.
+        /// </summary>
+        internal static string ERROR_DEFAULT_VALUE_NULL {
+            get {
+                return ResourceManager.GetString("ERROR_DEFAULT_VALUE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo must override {0} and/or {1}.
         /// </summary>
         internal static string ERROR_EVENT_NOT_IMPLEMENTED {
@@ -318,6 +327,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string ERROR_NAMESPACE_NOT_FOUND {
             get {
                 return ResourceManager.GetString("ERROR_NAMESPACE_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate indicator names are not allowed.
+        /// </summary>
+        internal static string ERROR_INDICATOR_DUPLICATE_NAME {
+            get {
+                return ResourceManager.GetString("ERROR_INDICATOR_DUPLICATE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicator name must be a string literal.
+        /// </summary>
+        internal static string ERROR_INDICATOR_NAME_NOT_LITERAL {
+            get {
+                return ResourceManager.GetString("ERROR_INDICATOR_NAME_NOT_LITERAL", resourceCulture);
             }
         }
         
