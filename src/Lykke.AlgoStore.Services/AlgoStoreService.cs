@@ -234,7 +234,6 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-
         public async Task<bool> UpdateAlgoInstanceStatusAsync(TeamCityWebHookResponse payload)
         {
             var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildId.ToString());
