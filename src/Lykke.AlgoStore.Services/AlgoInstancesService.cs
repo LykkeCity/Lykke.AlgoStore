@@ -414,10 +414,10 @@ namespace Lykke.AlgoStore.Services
             foreach (var function in instanceMetadata.Functions)
             {
                 var functionStartingDateString = function.Parameters.Where(p => p.Type == dtType)
-                    .SingleOrDefault(t => t.Key == "StartingDate")?.Value;
+                    .SingleOrDefault(t => t.Key == "startingDate")?.Value;
 
                 var functionEndingDateString = function.Parameters.Where(p => p.Type == dtType)
-                    .SingleOrDefault(t => t.Key == "EndingDate")?.Value;
+                    .SingleOrDefault(t => t.Key == "endingDate")?.Value;
 
                 var functionStartingDate = DateTime.ParseExact(functionStartingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.AdjustToUniversal);
