@@ -256,8 +256,9 @@ namespace Lykke.AlgoStore.Services
             if (payload.BuildEvent == TcBuildEventStarted && payload.BuildResult == TcBuildResultRunning)
                 algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Deploying;
 
-            if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultSuccess)
-                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Started;
+            //REMARK: This can be used to set the status to Started when deploy is successfull
+            //if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultSuccess)
+            //    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Started;
 
             if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultFailure)
                 algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;

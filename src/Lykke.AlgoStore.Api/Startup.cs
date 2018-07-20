@@ -27,6 +27,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.Service.Security.Client.AutorestClient.Models;
+using Lykke.AlgoStore.Api.RealTimeStreaming;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -131,6 +133,8 @@ namespace Lykke.AlgoStore.Api
                 });
                 app.UseStaticFiles();
 
+                RegisterWebSocketsForRealTimeData(app);
+
                 appLifetime.ApplicationStarted.Register(() => StartApplication(securityClient).Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
@@ -139,6 +143,24 @@ namespace Lykke.AlgoStore.Api
                 Log?.WriteFatalErrorAsync(nameof(Startup), nameof(ConfigureServices), "", ex).Wait();
                 throw;
             }
+        }
+
+        private void RegisterWebSocketsForRealTimeData(IApplicationBuilder app)
+        {
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(Constants.WebSocketKeepAliveIntervalSeconds),
+                ReceiveBufferSize = Constants.WebSocketRecieveBufferSize
+
+            };
+
+            app.UseWebSockets(webSocketOptions);
+
+            app.Map("/live/dummy", (_app) => _app.UseMiddleware<DummyWebSocketsMiddleware>());
+
+            //app.Map("/live/candles", (_app) => _app.UseMiddleware<CandlesWebSocketsMiddleware>());
+            //app.Map("/live/trades", (_app) => _app.UseMiddleware<TradesWebSocketsMiddleware>());
+            //app.Map("/live/functions", (_app) => _app.UseMiddleware<FunctionsWebSocketsMiddleware>());
         }
 
         private async Task StartApplication(ISecurityClient securityClient)

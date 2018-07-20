@@ -21,6 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="RealTimeStreaming\RabbitMq\**" />
+    <EmbeddedResource Remove="RealTimeStreaming\RabbitMq\**" />
+    <None Remove="RealTimeStreaming\RabbitMq\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="appsettings.json">
       <Generator>SettingsSingleFileGenerator</Generator>
     </None>
@@ -36,6 +42,7 @@
     <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.9" />
     <PackageReference Include="Lykke.Common" Version="7.0.1" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.7.1" />
+    <PackageReference Include="Lykke.RabbitMqBroker" Version="7.1.0" />
     <PackageReference Include="Lykke.Logs" Version="5.1.1" />
     <PackageReference Include="Lykke.SettingsReader" Version="2.4.0" />
     <PackageReference Include="Lykke.SlackNotification.AzureQueue" Version="2.0.5" />
@@ -44,9 +51,11 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="1.1.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
+    <PackageReference Include="System.Reactive" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
