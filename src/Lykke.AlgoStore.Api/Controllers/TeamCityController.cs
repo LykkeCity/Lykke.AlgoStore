@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Lykke.AlgoStore.Api.Controllers
 {
     //[Authorize]
-    //[RequirePermissionAttribute]
     [Route("api/v1/algoInstances")]
     public class TeamCityController : Controller
     {
