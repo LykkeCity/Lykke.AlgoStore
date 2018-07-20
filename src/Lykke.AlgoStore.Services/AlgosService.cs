@@ -668,7 +668,7 @@ namespace Lykke.AlgoStore.Services
 
             foreach (var function in algoMetaDataInformation.Functions)
             {
-                var assetPairParameter = function.Parameters.SingleOrDefault(p => p.Key == "AssetPair");
+                var assetPairParameter = function.Parameters.SingleOrDefault(p => p.Key == "assetPair");
                 if (assetPairParameter != null)
                     assetPairParameter.PredefinedValues = assetPairsList;
             }

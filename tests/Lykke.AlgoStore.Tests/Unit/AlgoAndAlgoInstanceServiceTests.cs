@@ -1452,13 +1452,13 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var startingDateParameter = fixture.Build<AlgoMetaDataParameter>()
                 .With(t => t.Type, dtType)
-                .With(k => k.Key, "StartingDate")
+                .With(k => k.Key, "startingDate")
                 .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
                 .Create();
 
             var endingDateParameter = fixture.Build<AlgoMetaDataParameter>()
                 .With(t => t.Type, dtType)
-                .With(k => k.Key, "EndingDate")
+                .With(k => k.Key, "endingDate")
                 .With(v => v.Value, areDatesCorrect ? StartFromDate.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ") :
                     StartFromDate.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
                 .Create();
