@@ -1089,7 +1089,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo => repo.GetAllAlgoInstancesByAlgoAsync(It.IsAny<string>()))
-                .Returns((string algoId, string clientId) =>
+                .Returns((string algoId) =>
                 {
                     return Task.FromResult(new List<AlgoClientInstanceData>
                     {
