@@ -1,6 +1,7 @@
 ﻿using Common.Log;
 using Lykke.AlgoStore.Core.Constants;
-using Lykke.Logs;
+using Lykke.Common.Log;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Lykke.Common.Log;
@@ -11,6 +12,21 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
 {
     public class LogMock : ILog
     {
+        public IDisposable BeginScope(string scopeMessage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) where TState : LogEntryParameters
+        {
+            throw new NotImplementedException();
+        }
+
         public Task WriteErrorAsync(string component, string process, string context, Exception exception,
             DateTime? dateTime = null)
         {
@@ -34,21 +50,6 @@ namespace Lykke.AlgoStore.Tests.Infrastructure
         public Task WriteFatalErrorAsync(string process, string context, Exception exception, DateTime? dateTime = null)
         {
             return WriteErrorAsync(string.Empty, process, context, exception, dateTime);
-        }
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) where TState : LogEntryParameters
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDisposable BeginScope(string scopeMessage)
-        {
-            throw new NotImplementedException();
         }
 
         public Task WriteInfoAsync(string component, string process, string context, string info,

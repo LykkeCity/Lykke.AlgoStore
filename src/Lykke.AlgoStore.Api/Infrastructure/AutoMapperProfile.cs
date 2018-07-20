@@ -72,7 +72,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthToken, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoInstanceCreateDate, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
+                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore())
+                .ForMember(dest => dest.TcBuildId, opt => opt.Ignore());
 
             CreateMap<AlgoFakeTradingInstanceModel, AlgoClientInstanceData>()
                 .ForSourceMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore())
@@ -87,7 +88,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthToken, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoInstanceCreateDate, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
+                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore())
+                .ForMember(dest => dest.TcBuildId, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoDataModel, AlgoData>()
@@ -126,6 +128,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<UserRoleCreateModel, Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+
+            CreateMap<TeamCityWebHookResponseModel, TeamCityWebHookResponse>();
         }
     }
 }
