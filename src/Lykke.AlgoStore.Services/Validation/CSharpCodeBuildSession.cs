@@ -291,7 +291,7 @@ namespace Lykke.AlgoStore.Services.Validation
                 for(var i = 1; i < invocation.Arguments.Length; i++)
                 {
                     var arg = invocation.Arguments[i];
-                    var param = invocation.TargetMethod.Parameters[i];
+                    var param = arg.Parameter;
 
                     var metaDataParam = new AlgoMetaDataParameter
                     {
