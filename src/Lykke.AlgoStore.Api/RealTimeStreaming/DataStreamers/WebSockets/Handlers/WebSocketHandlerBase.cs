@@ -3,6 +3,7 @@ using Lykke.Common.Log;
 using MessagePack;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Reactive;
 using System.Text;
@@ -71,46 +72,95 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
                 using (Messages.Subscribe(observer))
                 {
-                    while (Socket.State == WebSocketState.Open)
+                    try
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        while (Socket.State == WebSocketState.Open)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(1));
+                        }
                     }
-                    SendCancelToDataSource();
+                    catch (WebSocketException ex)
+                    {
+                        await OnDisconnected(ex);
+                    }
+                    finally
+                    {
+                        SendCancelToDataSource();
+                    }
                 }
             });
         }
 
         public virtual async Task ListenForClosure()
         {
-            while (Socket.State == WebSocketState.Open)
+            try
             {
-                var buffer = new byte[Constants.WebSocketRecieveBufferSize];
-                var result = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                if (result.MessageType == WebSocketMessageType.Close)
+                while (Socket.State == WebSocketState.Open)
                 {
-                    await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(ListenForClosure), $"WebSocket close request received from client for ConnectionId={ConnectionId}");
-                    await OnDisconnected();
+                    var result = await ReceiveFullMessage(CancellationToken.None);
+
+                    if (result.ReceiveResult.MessageType == WebSocketMessageType.Close)
+                    {
+                        await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(ListenForClosure), $"WebSocket close request received from client for ConnectionId={ConnectionId}");
+                        await OnDisconnected();
+                    }
                 }
             }
+            catch (WebSocketException ex)
+            {
+                await OnDisconnected(ex);
+            }
+            finally
+            {
+                SendCancelToDataSource();
+            }
+        }
+
+        protected async Task<(WebSocketReceiveResult ReceiveResult, IEnumerable<byte> Message)> ReceiveFullMessage(CancellationToken cancelToken)
+        {
+            WebSocketReceiveResult response;
+            var message = new List<byte>();
+
+            var buffer = new byte[Constants.WebSocketRecieveBufferSize];
+            do
+            {
+                response = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancelToken);
+                message.AddRange(new ArraySegment<byte>(buffer, 0, response.Count));
+            } while (!response.EndOfMessage);
+
+            return (ReceiveResult: response, Message: message);
         }
 
         protected virtual async Task OnDisconnected(Exception exception = null)
         {
-            SendCancelToDataSource();
-
-            if (Socket.State == WebSocketState.Open || Socket.State == WebSocketState.CloseReceived || Socket.State == WebSocketState.CloseSent)
+            try
             {
-                if (exception == null)
+                SendCancelToDataSource();
+
+                if (Socket.CloseStatus == WebSocketCloseStatus.EndpointUnavailable)
                 {
-                    await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Socket closure requested.", CancellationToken.None);
-                    await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed.");
+                    Socket.Dispose();
+                    await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed due to client disconnect. " + exception);
+                    return;
                 }
-                else
+
+                if (Socket.State == WebSocketState.Open || Socket.State == WebSocketState.CloseReceived || Socket.State == WebSocketState.CloseSent)
                 {
-                    await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, $"{exception}", CancellationToken.None);
-                    await Log.WriteWarningAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed due to error.", exception);
+                    if (exception == null)
+                    {
+                        await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Socket closure requested.", CancellationToken.None);
+                        await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed.");
+                    }
+                    else
+                    {
+                        await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, $"{exception}", CancellationToken.None);
+                        await Log.WriteWarningAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed due to error.", exception);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                await Log.WriteErrorAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"Error while trying to close WebSocket ConnectionId={ConnectionId}. Current socket state {Socket?.State}, closure status {Socket?.CloseStatus}  ", ex);
             }
         }
     }
