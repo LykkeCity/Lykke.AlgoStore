@@ -62,14 +62,13 @@ namespace Lykke.AlgoStore.Api
         {
             try
             {
-                services.AddMvc()
+                services.AddMvc(options => { options.Filters.Add(typeof(PermissionFilter)); })
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                     .AddJsonOptions(options =>
                     {
                         options.SerializerSettings.ContractResolver =
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                     });
-
-                services.AddMvc(options => { options.Filters.Add(typeof(PermissionFilter)); });
 
                 services.AddScoped<ValidateMimeMultipartContentFilter>();
 
