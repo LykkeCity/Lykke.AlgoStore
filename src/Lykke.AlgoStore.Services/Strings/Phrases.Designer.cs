@@ -403,7 +403,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}.
+        ///   Looks up a localized string similar to The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}.
         /// </summary>
         internal static string NotAvailableCreationOfInstances {
             get {
