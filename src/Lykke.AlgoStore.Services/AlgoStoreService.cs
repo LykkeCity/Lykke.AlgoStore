@@ -236,38 +236,41 @@ namespace Lykke.AlgoStore.Services
 
         public async Task<bool> UpdateAlgoInstanceStatusAsync(TeamCityWebHookResponse payload)
         {
-            var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildId.ToString());
-
-            if (teamCityInstanceEntity == null)
+            return await LogTimedInfoAsync(nameof(UpdateAlgoInstanceStatusAsync), "TCWebHook", async () =>
             {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve TCBuild entity with TcBuildId {payload.BuildId.ToString()}",
-                    string.Format(Phrases.ParamNotFoundDisplayMessage, "TCBuild entity"));
-            }
+                var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildId.ToString());
 
-            var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(teamCityInstanceEntity.ClientId, teamCityInstanceEntity.InstanceId);
+                if (teamCityInstanceEntity == null)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve TCBuild entity with TcBuildId {payload.BuildId.ToString()}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "TCBuild entity"));
+                }
 
-            if (algoInstance == null)
-            {
-                throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve algo instance with id {teamCityInstanceEntity.InstanceId}",
-                    string.Format(Phrases.ParamNotFoundDisplayMessage, "Algo instance"));
-            }
+                var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(teamCityInstanceEntity.ClientId, teamCityInstanceEntity.InstanceId);
 
-            if (payload.BuildEvent == TcBuildEventStarted && payload.BuildResult == TcBuildResultRunning)
-                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Deploying;
+                if (algoInstance == null)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve algo instance with id {teamCityInstanceEntity.InstanceId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "Algo instance"));
+                }
 
-            //REMARK: This can be used to set the status to Started when deploy is successfull
-            //if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultSuccess)
-            //    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Started;
+                if (payload.BuildEvent == TcBuildEventStarted && payload.BuildResult == TcBuildResultRunning)
+                    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Deploying;
 
-            if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultFailure)
-                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+                //REMARK: This can be used to set the status to Started when deploy is successfull
+                //if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultSuccess)
+                //    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Started;
 
-            if (payload.BuildEvent == TcBuildEventInterrupted && payload.BuildResult == TcBuildResultFailure)
-                algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+                if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultFailure)
+                    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
 
-            await _algoInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
+                if (payload.BuildEvent == TcBuildEventInterrupted && payload.BuildResult == TcBuildResultFailure)
+                    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
 
-            return true;        
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
+
+                return true;
+            });
         }
     }
 }
