@@ -183,6 +183,9 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
                 .SingleInstance();
+
+            builder.RegisterType<AlgoInstanceHistoryService>()
+                .As<IAlgoInstanceHistoryService>().SingleInstance();
         }
     }
 }
