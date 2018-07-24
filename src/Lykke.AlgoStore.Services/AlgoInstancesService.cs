@@ -464,9 +464,9 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        public async Task ValidateAlgoInstancesDeploymentLimits(string algoId, string clientId)
+        public async Task ValidateAlgoInstancesDeploymentLimits(string clientId)
         {
-            await Check.AlgoInstance.InstancesOverDeploymentLimit(_instanceRepository, clientId, algoId);
+            await Check.AlgoInstance.InstancesOverDeploymentLimit(_instanceRepository, clientId);
         }
     }
 }

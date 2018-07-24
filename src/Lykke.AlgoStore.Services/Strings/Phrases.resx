@@ -286,7 +286,7 @@
     <value>Demo or BackTest instances are not allowed to run without fake trading.</value>
   </data>
   <data name="NotAvailableCreationOfInstances" xml:space="preserve">
-    <value>The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}</value>
+    <value>The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}</value>
   </data>
   <data name="LimitOfRunningInsatcnesReached" xml:space="preserve">
     <value>You have reached the limit of running/deploying instances. You can't run more instances.</value>

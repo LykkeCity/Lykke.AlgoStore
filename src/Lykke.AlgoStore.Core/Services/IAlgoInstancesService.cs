@@ -14,6 +14,6 @@ namespace Lykke.AlgoStore.Core.Services
         Task<AlgoClientInstanceData> SaveAlgoFakeTradingInstanceDataAsync(AlgoClientInstanceData data, string algoClientId);
         Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data);
         Task<List<UserInstanceData>> GetUserInstancesAsync(string clientId);
-        Task ValidateAlgoInstancesDeploymentLimits(string algoId, string clientId);
+        Task ValidateAlgoInstancesDeploymentLimits(string clientId);
     }
 }
