@@ -419,6 +419,9 @@ namespace Lykke.AlgoStore.Services
                 var functionEndingDateString = function.Parameters.Where(p => p.Type == dtType)
                     .SingleOrDefault(t => t.Key == "endingDate")?.Value;
 
+                if (string.IsNullOrEmpty(functionStartingDateString) || string.IsNullOrEmpty(functionEndingDateString))
+                    continue;
+
                 var functionStartingDate = DateTime.ParseExact(functionStartingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.AdjustToUniversal);
 
