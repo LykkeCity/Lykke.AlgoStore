@@ -316,9 +316,9 @@ namespace Lykke.AlgoStore.Services
                 }
                 //show balance for the quoting asset from the Asset pair - for back test
                 if (data.IsStraight)
-                    initialWalletBalance = clientAssetTwoBalance + (tradedAssetBalanceAbsoluteValue?.History.First().Close ?? 0) * clientTradedAssetBalance;
+                    initialWalletBalance = clientAssetTwoBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientTradedAssetBalance;
                 else
-                    initialWalletBalance = clientTradedAssetBalance + (tradedAssetBalanceAbsoluteValue?.History.First().Close ?? 0) * clientAssetTwoBalance;
+                    initialWalletBalance = clientTradedAssetBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientAssetTwoBalance;
             }
             else
             {
