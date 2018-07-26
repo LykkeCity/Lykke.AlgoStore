@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
@@ -102,11 +103,12 @@ namespace Lykke.AlgoStore.Api.Modules
             RegisterObservableRabbitMqConnection<TradeChartingUpdate>(builder, rabbitMqTrades, logFactory);
             RegisterObservableRabbitMqConnection<FunctionChartingUpdate>(builder, rabbitMqFunctions, logFactory);
 
+            builder.RegisterGeneric(typeof(WebSocketMiddleware<>)).InstancePerDependency();
             builder.RegisterGeneric(typeof(WebSocketHandlerBase<>)).InstancePerDependency();
             builder.RegisterType<DummyWebSocketHandler>().InstancePerDependency();
             builder.RegisterType<CandlesWebSocketHandler>().InstancePerDependency();
-            builder.RegisterType<TradesWebSocketHandler>().InstancePerDependency();
-            builder.RegisterType<FunctionsWebSocketHandler>().InstancePerDependency();
+            builder.RegisterType<WebSocketHandlerBase<TradeChartingUpdate>>().InstancePerDependency();
+            builder.RegisterType<WebSocketHandlerBase<FunctionChartingUpdate>>().InstancePerDependency();
 
         }
 

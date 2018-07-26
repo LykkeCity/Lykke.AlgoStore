@@ -12,16 +12,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 {
     public class DummyWebSocketHandler : WebSocketHandlerBase<OrderBook>
     {
-        private readonly RealTimeDataSourceBase<OrderBook> _orderBooksListener;
-
-        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log) : base(log)
+        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log) : base(log, orderBooksListener)
         {
-            _orderBooksListener = orderBooksListener;
-            Messages = orderBooksListener.Select(t => t);
-            SendCancelToDataSource = () =>
-            {
-                _orderBooksListener.TokenSource.Cancel();
-            };
+           
         }
 
         public override async Task<bool> OnConnected(HttpContext context)
@@ -31,7 +24,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             ConnectionId = context.Request.Query[Constants.InstanceIdIdentifier];
             var infoMsg = $"Connection opened. ConnectionId = {ConnectionId}. AssetId= {assetId}";
 
-            _orderBooksListener.Configure(ConnectionId, !string.IsNullOrWhiteSpace(assetId) ? new DataFilter(String.Empty, assetId) : null);
+            DataListener.Configure(ConnectionId, !string.IsNullOrWhiteSpace(assetId) ? new DataFilter(String.Empty, assetId) : null);
             await Log.WriteInfoAsync(nameof(DummyWebSocketHandler), nameof(OnConnected), infoMsg);
             return true;
         }

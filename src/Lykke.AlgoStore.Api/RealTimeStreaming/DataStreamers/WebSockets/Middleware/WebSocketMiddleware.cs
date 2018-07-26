@@ -1,26 +1,30 @@
-﻿using Lykke.AlgoStore.Algo.Charting;
+﻿using System;
+using System.Net;
+using System.Threading.Tasks;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware
 {
-    public class CandlesWebSocketsMiddleware : WebSocketMiddlewareBase<CandleChartingUpdate>
+    public class WebSocketMiddleware<T> : WebSocketMiddlewareBase<T>
     {
         private readonly RequestDelegate _next;
 
-        public CandlesWebSocketsMiddleware(RequestDelegate next)
+        public WebSocketMiddleware(RequestDelegate next)
         {
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, CandlesWebSocketHandler candleWebSocketHandler)
+        public async Task Invoke(HttpContext context, WebSocketHandlerBase<T> webSocketHandler)
         {
-            var processed = await ProcessWebSocketRequest(context, candleWebSocketHandler);
+            var processed = await ProcessWebSocketRequest(context, webSocketHandler);
             if (!processed)
             {
                 await this._next(context);
             }
         }
+
+        
+
     }
 }

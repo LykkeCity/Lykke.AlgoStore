@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 
 #pragma warning disable 618
 
@@ -19,13 +22,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         protected WebSocket Socket;
         protected IObservable<T> Messages;
         protected readonly ILog Log;
-        protected Action SendCancelToDataSource;
         protected Action ConfigureDataSource;
         protected string ConnectionId;
+        protected readonly RealTimeDataSourceBase<T> DataListener;
 
-        public WebSocketHandlerBase(ILog log)
+        public WebSocketHandlerBase(ILog log, RealTimeDataSourceBase<T> dataListener)
         {
             Log = log;
+            DataListener = dataListener;
+            Messages = DataListener.Select(t => t);
         }
 
         public virtual async Task<bool> OnConnected(HttpContext context)
@@ -38,7 +43,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             }
 
             Socket = await context.WebSockets.AcceptWebSocketAsync();
-            ConfigureDataSource?.Invoke();
+
+            if (ConfigureDataSource != null)
+            {
+                ConfigureDataSource.Invoke();
+            }
+            else
+            {
+                DataListener.Configure(ConnectionId, new DataFilter(ConnectionId));
+            }
 
             var requestType = context.Request.PathBase.Value;
             await Log.WriteInfoAsync(nameof(DummyWebSocketHandler), nameof(OnConnected), $"Web socket connection for {requestType} opened. ConnectionId = {ConnectionId}.");
@@ -69,7 +82,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                         }
                         else
                         {
-                            SendCancelToDataSource?.Invoke();
+                            DataListener.TokenSource.Cancel();
                         }
                     },
                     onError: async ex =>
@@ -80,7 +93,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     onCompleted: async () =>
                     {
                         await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(StreamData), $"Data source for ConnectionId={ConnectionId} completed.");
-                        SendCancelToDataSource?.Invoke();
+                        DataListener.TokenSource.Cancel();
                     });
 
                 using (Messages.Subscribe(observer))
@@ -98,7 +111,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     }
                     finally
                     {
-                        SendCancelToDataSource?.Invoke();
+                        DataListener.TokenSource.Cancel();
                     }
                 }
             });
@@ -125,7 +138,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             }
             finally
             {
-                SendCancelToDataSource?.Invoke();
+                DataListener.TokenSource.Cancel();
             }
         }
 
@@ -148,7 +161,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         {
             try
             {
-                SendCancelToDataSource?.Invoke();
+                DataListener.TokenSource.Cancel();
 
                 if (Socket.CloseStatus == WebSocketCloseStatus.EndpointUnavailable)
                 {

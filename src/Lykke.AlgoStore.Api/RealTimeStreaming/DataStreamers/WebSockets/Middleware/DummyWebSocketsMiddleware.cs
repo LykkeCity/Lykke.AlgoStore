@@ -1,10 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware
 {
-    public class DummyWebSocketsMiddleware : WebSocketMiddlewareBase
+    public class DummyWebSocketsMiddleware :  WebSocketMiddlewareBase<OrderBook>
     {
         private readonly RequestDelegate _next;
 
@@ -22,7 +23,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
                 await this._next(context);
             }
 
-            
+
         }
     }
 }

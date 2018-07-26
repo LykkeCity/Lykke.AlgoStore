@@ -25,10 +25,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.Service.Security.Client.AutorestClient.Models;
 using Lykke.AlgoStore.Api.RealTimeStreaming;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -156,10 +158,9 @@ namespace Lykke.AlgoStore.Api
             app.UseWebSockets(webSocketOptions);
 
             app.Map("/live/dummy", (_app) => _app.UseMiddleware<DummyWebSocketsMiddleware>());
-
             app.Map("/live/candles", (_app) => _app.UseMiddleware<CandlesWebSocketsMiddleware>());
-            app.Map("/live/trades", (_app) => _app.UseMiddleware<TradesWebSocketsMiddleware>());
-            app.Map("/live/functions", (_app) => _app.UseMiddleware<FunctionsWebSocketsMiddleware>());
+            app.Map("/live/trades", (_app) => _app.UseMiddleware<WebSocketMiddleware<TradeChartingUpdate>>());
+            app.Map("/live/functions", (_app) => _app.UseMiddleware<WebSocketMiddleware<FunctionChartingUpdate>>());
         }
 
         private async Task StartApplication(ISecurityClient securityClient)
