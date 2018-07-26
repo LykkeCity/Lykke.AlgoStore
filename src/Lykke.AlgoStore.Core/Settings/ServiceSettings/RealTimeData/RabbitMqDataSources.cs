@@ -8,5 +8,7 @@ namespace Lykke.AlgoStore.Core.Settings.ServiceSettings.RealTimeDataStreamingSet
     {
         public RabbitMqConfig Dummy { get; set; }
         public RabbitMqConfig Candles { get; set; }
+        public RabbitMqConfig Trades { get; set; }
+        public RabbitMqConfig Functions { get; set; }
     }
 }

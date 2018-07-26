@@ -157,9 +157,9 @@ namespace Lykke.AlgoStore.Api
 
             app.Map("/live/dummy", (_app) => _app.UseMiddleware<DummyWebSocketsMiddleware>());
 
-            //app.Map("/live/candles", (_app) => _app.UseMiddleware<CandlesWebSocketsMiddleware>());
-            //app.Map("/live/trades", (_app) => _app.UseMiddleware<TradesWebSocketsMiddleware>());
-            //app.Map("/live/functions", (_app) => _app.UseMiddleware<FunctionsWebSocketsMiddleware>());
+            app.Map("/live/candles", (_app) => _app.UseMiddleware<CandlesWebSocketsMiddleware>());
+            app.Map("/live/trades", (_app) => _app.UseMiddleware<TradesWebSocketsMiddleware>());
+            app.Map("/live/functions", (_app) => _app.UseMiddleware<FunctionsWebSocketsMiddleware>());
         }
 
         private async Task StartApplication(ISecurityClient securityClient)

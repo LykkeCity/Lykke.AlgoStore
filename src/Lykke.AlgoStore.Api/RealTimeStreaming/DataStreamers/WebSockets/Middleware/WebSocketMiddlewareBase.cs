@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Microsoft.AspNetCore.Http;
 
@@ -10,17 +11,28 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                var connected = await webSocketHandler.OnConnected(context);
-                if (connected)
+                try
                 {
-                    var outbandData = webSocketHandler.StreamData();
-                    var inboundData = webSocketHandler.ListenForClosure();
+                    var connected = await webSocketHandler.OnConnected(context);
+                    if (connected)
+                    {
+                        var outbandData = webSocketHandler.StreamData();
+                        var inboundData = webSocketHandler.ListenForClosure();
 
-                    await Task.WhenAny(outbandData, inboundData);
+                        await Task.WhenAny(outbandData, inboundData);
+                    }
                     return true;
+                }
+                catch (Exception ex)
+                {
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsync("Unable to process connection");
+                    //return true; //its was a web socket request, dont pass the request to the next middleware
+                    throw;
                 }
             }
             return false;
         }
+
     }
 }

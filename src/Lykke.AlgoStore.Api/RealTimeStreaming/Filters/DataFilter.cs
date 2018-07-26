@@ -10,5 +10,9 @@
             InstanceId = instanceId;
             AssetId = assetId;
         }
+        public DataFilter(string instanceId)
+        {
+            InstanceId = instanceId;
+        }
     }
 }

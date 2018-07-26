@@ -28,14 +28,10 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         {
             Socket = await context.WebSockets.AcceptWebSocketAsync();
             var assetId = context.Request.Query["AssetId"];
-            ConnectionId = context.Request.Query["InstanceId"];
-            var infoMsg = $"Connection opened. ConnectionId = {ConnectionId}.";
+            ConnectionId = context.Request.Query[Constants.InstanceIdIdentifier];
+            var infoMsg = $"Connection opened. ConnectionId = {ConnectionId}. AssetId= {assetId}";
 
-            if (!string.IsNullOrWhiteSpace(assetId))
-            {
-                _orderBooksListener.SupplyDataFilter(new DataFilter(String.Empty, assetId));
-                infoMsg = String.Concat(infoMsg, " AssetId=", assetId);
-            }
+            _orderBooksListener.Configure(ConnectionId, !string.IsNullOrWhiteSpace(assetId) ? new DataFilter(String.Empty, assetId) : null);
             await Log.WriteInfoAsync(nameof(DummyWebSocketHandler), nameof(OnConnected), infoMsg);
             return true;
         }

@@ -1,38 +1,51 @@
-﻿using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
-using Lykke.Common.Log;
+﻿using Lykke.Common.Log;
 using Lykke.RabbitMqBroker;
 using Lykke.RabbitMqBroker.Subscriber;
 using System;
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Algo.Charting;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
 {
-    public class ObservableRabbitMqConnection<T> : RealTimeDataSourceBase<T> where T : BaseDataModel, new()
+    public class ObservableRabbitMqConnection<T> : RealTimeDataSourceBase<T> where T : IChartingUpdate//, new()
     {
         private readonly IObservable<T> _messages;
-        private RabbitMqSubscriber<T> _subscriber;
+        private RabbitMqSubscriber<T> _rabbitMq;
         private readonly ILogFactory _logFactory; //https://github.com/LykkeCity/Lykke.Logs/blob/master/migration-to-v5.md
-        private readonly BlockingCollection<T> _messageQueue;
+        private BlockingCollection<T> _messageQueue;
         private readonly RabbitMqSubscriptionSettings _rabbitSettings;
+        private static object syncLock = new object();
 
         public ObservableRabbitMqConnection(RabbitMqSubscriptionSettings rabbitSettings, ILogFactory logFactory)
         {
             _messages = Observable.Create<T>(async (obs) => { await ReadRabbitMqMessagesLoop(obs); });
-            _messageQueue = new BlockingCollection<T>();
             _rabbitSettings = rabbitSettings;
             _logFactory = logFactory;
-            InitializeRabbitMqConnection();
         }
 
-        private void InitializeRabbitMqConnection()
+        private void EnsureRabbitMqIsInitialized()
         {
-            _subscriber = new RabbitMqSubscriber<T>(_logFactory, _rabbitSettings, new DefaultErrorHandlingStrategy(_logFactory, _rabbitSettings))
-                .SetMessageDeserializer(new GenericRabbitModelConverter<T>())
-                .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
-                .CreateDefaultBinding()
-                .Subscribe(OnMessageReceived);
+            if (_rabbitMq == null)
+            {
+                lock (syncLock)
+                {
+                    if (_rabbitMq == null)
+                    {
+                        if (String.IsNullOrWhiteSpace(ConnectionId))
+                        {
+                            throw new InvalidOperationException($"ConnectionId not set for ObservableRabbitMqConnection. Call {nameof(Configure)} first supplying unique connectionId.");
+                        }
+                        _rabbitSettings.QueueName = $"{_rabbitSettings.QueueName}{ConnectionId}";
+                        _rabbitMq = new RabbitMqSubscriber<T>(_logFactory, _rabbitSettings, new DefaultErrorHandlingStrategy(_logFactory, _rabbitSettings))
+                            .SetMessageDeserializer(new GenericRabbitModelConverter<T>())
+                            .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
+                            .CreateDefaultBinding()
+                            .Subscribe(OnMessageReceived);
+                    }
+                }
+            }
         }
 
         private Task OnMessageReceived(T message)
@@ -46,6 +59,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
 
         public override IDisposable Subscribe(IObserver<T> observer)
         {
+            EnsureRabbitMqIsInitialized();
             return _messages.Subscribe(observer);
         }
 
@@ -55,7 +69,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
             {
                 try
                 {
-                    _subscriber.Start();
+                    _rabbitMq.Start();
+                    _messageQueue = new BlockingCollection<T>();
 
                     while (!TokenSource.IsCancellationRequested && !_messageQueue.IsCompleted)
                     {
@@ -74,7 +89,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
                 }
                 finally
                 {
-                    _subscriber.Dispose();
+                    _rabbitMq.Dispose();
                     _messageQueue.Dispose();
                 }
             });
