@@ -17,7 +17,16 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers
 {
-    public class WebSocketHandlerBase<T>
+    public interface IWebSocketHandler
+    {
+        Task<bool> OnConnected(HttpContext context);
+        Task StreamData();
+        Task ListenForClosure();
+        Task OnDisconnected(Exception exception = null);
+    }
+
+
+    public class WebSocketHandlerBase<T> : IWebSocketHandler
     {
         protected WebSocket Socket;
         protected IObservable<T> Messages;
@@ -157,7 +166,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             return (ReceiveResult: response, Message: message);
         }
 
-        protected virtual async Task OnDisconnected(Exception exception = null)
+        public virtual async Task OnDisconnected(Exception exception = null)
         {
             try
             {
