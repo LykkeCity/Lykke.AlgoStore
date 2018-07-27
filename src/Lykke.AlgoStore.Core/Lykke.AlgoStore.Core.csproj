@@ -31,6 +31,7 @@
     <PackageReference Include="Lykke.AlgoStore.Algo" Version="1.0.22" />
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.71" />
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.5" />
+    <PackageReference Include="Lykke.AlgoStore.Security.InstanceAuth" Version="1.0.5" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.5-beta" />
     <PackageReference Include="Lykke.AlgoStore.Service.Logging.Client" Version="1.0.4" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
@@ -41,7 +42,7 @@
     <PackageReference Include="Lykke.Service.ClientAccount.Client" Version="1.3.0" />
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.32" />
     <PackageReference Include="Lykke.Service.RateCalculator.Client" Version="1.0.12" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
   </ItemGroup>
 
 </Project>

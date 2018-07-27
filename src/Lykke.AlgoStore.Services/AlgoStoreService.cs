@@ -31,7 +31,7 @@ namespace Lykke.AlgoStore.Services
         private const string TcBuildResultRunning = "running";
         private const string TcBuildResultSuccess = "success";
         private const string TcBuildResultFailure = "failure";
-       
+
         private readonly ILoggingClient _loggingClient;
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoReadOnlyRepository _algoMetaDataRepository;

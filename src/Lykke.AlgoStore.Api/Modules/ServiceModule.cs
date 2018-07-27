@@ -58,6 +58,10 @@ namespace Lykke.AlgoStore.Api.Modules
                 _log,
                 autoRefresh: true);
 
+            builder.RegisterInstance(_settings.CurrentValue.AlgoApi.RateLimitSettings)
+                .AsSelf()
+                .SingleInstance();
+
             RegisterRealTimeDataStreamServices(builder);
 
             builder.Populate(_services);

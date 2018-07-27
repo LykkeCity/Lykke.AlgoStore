@@ -224,11 +224,11 @@ namespace Lykke.AlgoStore.Api
                     (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null ||
                      m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
                 .Select(i => new UserPermissionData
-                    {
-                        Id = i.Name,
-                        Name = i.ReflectedType.Name,
-                        DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart(),
-                        Description = (i.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute).Description
+                {
+                    Id = i.Name,
+                    Name = i.ReflectedType.Name,
+                    DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart(),
+                    Description = (i.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute).Description
                 })
                 .ToList();
         }

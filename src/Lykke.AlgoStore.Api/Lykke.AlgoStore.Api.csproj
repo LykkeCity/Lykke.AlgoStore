@@ -61,5 +61,4 @@
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Services\Lykke.AlgoStore.Services.csproj" />
   </ItemGroup>
-
 </Project>
