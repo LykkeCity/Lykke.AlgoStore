@@ -238,6 +238,8 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(UpdateAlgoInstanceStatusAsync), "TCWebHook", async () =>
             {
+                await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Received TCWebHook payload with buildId {payload.BuildId.ToString()}");
+                             
                 var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildId.ToString());
 
                 if (teamCityInstanceEntity == null)
@@ -268,6 +270,8 @@ namespace Lykke.AlgoStore.Services
                     algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
 
                 await _algoInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
+
+                await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Instance saved with status: {algoInstance.AlgoInstanceStatus.ToUpperText()}");
 
                 return true;
             });
