@@ -84,9 +84,6 @@ namespace Lykke.AlgoStore.Services.Validation
 
             var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
 
-            var testWalker = new CSharpIdentifierCollectionWalker();
-            testWalker.Visit(root);
-
             _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText, _algoNamespaceValue);
             _syntaxWalker.Visit(root);
 
@@ -94,6 +91,9 @@ namespace Lykke.AlgoStore.Services.Validation
 
             if (ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
+
+            var collectionWalker = new CSharpIdentifierCollectionWalker();
+            collectionWalker.Visit(root);
 
             // Semantic validation
 
@@ -122,7 +122,7 @@ namespace Lykke.AlgoStore.Services.Validation
                                                         .WithMetadataImportOptions(MetadataImportOptions.All));
             _semanticModel = _compilation.GetSemanticModel(_syntaxTree, false);
 
-            ValidateBlacklistedTypes(validationMessages, testWalker);
+            ValidateBlacklistedTypes(validationMessages, collectionWalker);
 
             var usedIndicatorNames = new HashSet<string>();
 
