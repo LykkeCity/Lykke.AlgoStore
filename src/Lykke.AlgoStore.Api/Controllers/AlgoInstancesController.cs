@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Security.InstanceAuth;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -129,6 +130,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.AlgoInstanceStatus = CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceStatus.Deploying;
         }
 
+        [RateLimit]
         [HttpPost("saveAlgoInstance")]
         [SwaggerOperation("SaveAlgoInstanceDataAsync")]
         [DescriptionAttribute("Gives users the ability to create Live instances")]
@@ -186,6 +188,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok();
         }
 
+        [RateLimit]
         [HttpPost("fakeTradingInstanceData")]
         [SwaggerOperation("SaveAlgoFakeTradingInstanceDataAsync")]
         [DescriptionAttribute("Gives users the ability to create Demo / Backtest instances")]

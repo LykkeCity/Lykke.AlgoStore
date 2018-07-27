@@ -62,4 +62,10 @@
     <ProjectReference Include="..\Lykke.AlgoStore.Services\Lykke.AlgoStore.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
