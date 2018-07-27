@@ -12,30 +12,19 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 {
     public class DummyWebSocketHandler : WebSocketHandlerBase<OrderBook>
     {
-        private readonly RealTimeDataSourceBase<OrderBook> _orderBooksListener;
-
-        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log) : base(log)
+        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log) : base(log, orderBooksListener)
         {
-            _orderBooksListener = orderBooksListener;
-            Messages = orderBooksListener.Select(t => t);
-            SendCancelToDataSource = () =>
-            {
-                _orderBooksListener.TokenSource.Cancel();
-            };
+           
         }
 
         public override async Task<bool> OnConnected(HttpContext context)
         {
             Socket = await context.WebSockets.AcceptWebSocketAsync();
             var assetId = context.Request.Query["AssetId"];
-            ConnectionId = context.Request.Query["InstanceId"];
-            var infoMsg = $"Connection opened. ConnectionId = {ConnectionId}.";
+            ConnectionId = context.Request.Query[Constants.InstanceIdIdentifier];
+            var infoMsg = $"Connection opened. ConnectionId = {ConnectionId}. AssetId= {assetId}";
 
-            if (!string.IsNullOrWhiteSpace(assetId))
-            {
-                _orderBooksListener.SupplyDataFilter(new DataFilter(String.Empty, assetId));
-                infoMsg = String.Concat(infoMsg, " AssetId=", assetId);
-            }
+            DataListener.Configure(ConnectionId, !string.IsNullOrWhiteSpace(assetId) ? new DataFilter(String.Empty, assetId) : null);
             await Log.WriteInfoAsync(nameof(DummyWebSocketHandler), nameof(OnConnected), infoMsg);
             return true;
         }

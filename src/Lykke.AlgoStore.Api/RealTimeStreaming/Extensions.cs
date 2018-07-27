@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 
@@ -8,7 +9,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming
 {
     public static class Extensions
     {
-        public static bool IsAllowedByFilter(this BaseDataModel data, DataFilter filter)
+        public static bool IsAllowedByFilter(this IChartingUpdate data, DataFilter filter)
         {
             if (filter == null) return true;
 
