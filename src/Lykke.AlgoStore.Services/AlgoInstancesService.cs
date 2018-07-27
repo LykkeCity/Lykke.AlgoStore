@@ -21,6 +21,7 @@ using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
 using Lykke.Service.CandlesHistory.Client;
+using Lykke.Service.CandlesHistory.Client.Models;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.ClientAccount.Client.Models;
 
@@ -187,9 +188,9 @@ namespace Lykke.AlgoStore.Services
         }
 
         private async Task<AlgoClientInstanceData> SaveInstanceDataAsync(
-           AlgoClientInstanceData data,
-           string algoClientId,
-           bool isFakeTradeInstance = false)
+            AlgoClientInstanceData data,
+            string algoClientId,
+            bool isFakeTradeInstance = false)
         {
             if (string.IsNullOrWhiteSpace(data.InstanceId))
                 data.InstanceId = Guid.NewGuid().ToString();
@@ -199,13 +200,15 @@ namespace Lykke.AlgoStore.Services
 
             ValidateInstanceMetadataDates(data.AlgoMetaDataInformation);
 
-            if (isFakeTradeInstance && data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            if (isFakeTradeInstance &&
+                data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                     Phrases.LiveAlgoCantFakeTrade,
                     Phrases.LiveAlgoCantFakeTrade);
             }
-            else if (!isFakeTradeInstance && data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
+            else if (!isFakeTradeInstance &&
+                     data.AlgoInstanceType != CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                     Phrases.DemoOrBacktestCantRunLive,
@@ -261,15 +264,20 @@ namespace Lykke.AlgoStore.Services
             data.IsStraight = straight;
             data.OppositeAssetId = straight ? quotingAsset.Id : baseAsset.Id;
             data.AlgoInstanceCreateDate = DateTime.UtcNow;
+
+            await SaveSummaryStatistic(data, assetPairResponse, tradedAsset, straight ? quotingAsset : baseAsset);
+
             await _instanceRepository.SaveAlgoInstanceDataAsync(data);
 
             var res = await _instanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
             if (res == null)
-                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
-                    $"Cannot save {(isFakeTradeInstance ? "back test" : "")} algo instance data for {data.ClientId} id: {data.AlgoId}",
-                    string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
+            {
+                await _statisticsRepository.DeleteSummaryAsync(data.InstanceId);
 
-            await SaveSummaryStatistic(data, assetPairResponse, tradedAsset, straight ? quotingAsset : baseAsset);
+                throw new AlgoStoreException(AlgoStoreErrorCodes.InternalError,
+                    $"Cannot save {(isFakeTradeInstance ? "back test" : "")} algo instance data with insatnce id: {data.InstanceId} for client id: {data.ClientId} and algo id: {data.AlgoId}",
+                    string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
+            }
 
             return res;
         }
@@ -311,7 +319,6 @@ namespace Lykke.AlgoStore.Services
                     initialWalletBalance = clientAssetTwoBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientTradedAssetBalance;
                 else
                     initialWalletBalance = clientTradedAssetBalance + tradedAssetBalanceAbsoluteValue.History.First().Close * clientAssetTwoBalance;
-
             }
             else
             {
@@ -419,6 +426,9 @@ namespace Lykke.AlgoStore.Services
                 var functionEndingDateString = function.Parameters.Where(p => p.Type == dtType)
                     .SingleOrDefault(t => t.Key == "endingDate")?.Value;
 
+                if (string.IsNullOrEmpty(functionStartingDateString) || string.IsNullOrEmpty(functionEndingDateString))
+                    continue;
+
                 var functionStartingDate = DateTime.ParseExact(functionStartingDateString, AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.AdjustToUniversal);
 
@@ -464,9 +474,9 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        public async Task ValidateAlgoInstancesDeploymentLimits(string algoId, string clientId)
+        public async Task ValidateAlgoInstancesDeploymentLimits(string clientId)
         {
-            await Check.AlgoInstance.InstancesOverDeploymentLimit(_instanceRepository, clientId, algoId);
+            await Check.AlgoInstance.InstancesOverDeploymentLimit(_instanceRepository, clientId);
         }
     }
 }

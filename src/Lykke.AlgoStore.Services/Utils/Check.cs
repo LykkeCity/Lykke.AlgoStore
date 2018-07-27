@@ -86,15 +86,15 @@ namespace Lykke.AlgoStore.Services.Utils
             /// <param name="repository">The repository to check for the algo instances</param>
             /// <param name="clientId">The algo owner ID</param>
             /// <param name="algoId">The algo ID</param>
-            public static async Task InstancesOverDeploymentLimit(IAlgoClientInstanceRepository repository, string clientId, string algoId)
+            public static async Task InstancesOverDeploymentLimit(IAlgoClientInstanceRepository repository, string clientId)
             {
-                var count = (await repository.GetAllAlgoInstancesByAlgoIdAndClienIdAsync(algoId, clientId)).Count(i => i.AlgoInstanceStatus == AlgoInstanceStatus.Started
+                var count = (await repository.GetAllAlgoInstancesByClientAsync(clientId)).Count(i => i.AlgoInstanceStatus == AlgoInstanceStatus.Started
                                                                                                                       || i.AlgoInstanceStatus == AlgoInstanceStatus.Deploying);
 
                 if (count >= AlgoStoreConstants.RunningAlgoInstancesCountLimit)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstancesCountLimit,
-                        string.Format(Phrases.NotAvailableCreationOfInstances, count, clientId, algoId), Phrases.LimitOfRunningInsatcnesReached);
+                        string.Format(Phrases.NotAvailableCreationOfInstances, count, clientId), Phrases.LimitOfRunningInsatcnesReached);
                 }
             }
         }

@@ -1,10 +1,11 @@
 ﻿using System;
+using Lykke.AlgoStore.Algo.Charting;
 using MessagePack;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes
 {
-    [MessagePackObject]
-    public class OrderBook : BaseDataModel
+    [MessagePackObject(keyAsPropertyName:true)]
+    public class OrderBook : IChartingUpdate
     {
         [Key(0)]
         public string Source { get; set; }
@@ -20,9 +21,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes
 
         [Key(4)]
         public PriceVolume[] Bids { get; set; }
+
+        public string InstanceId { get; set; }
     }
 
-    [MessagePackObject]
+    [MessagePackObject(keyAsPropertyName: true)]
     public class PriceVolume
     {
         [Key(0)]
