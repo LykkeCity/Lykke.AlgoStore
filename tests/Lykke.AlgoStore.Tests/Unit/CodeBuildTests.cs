@@ -432,49 +432,39 @@ namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
 
             metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithNoFunctions);
         }
-
+        
         [Test]
-        public void
-            SyntaxValidation_Fails_WhenCustomFunctionIsNotProperlyImplementedFromAbstractFunction()
+        [TestCase("using System.Reflection;", "", "", "AS0012")]
+        [TestCase("using System;", "", "Type test = null;", "AS0011")]
+        [TestCase("using System;", "class c { Type f; }", "", "AS0011")]
+        [TestCase("using System;", "class c { Type p {get;} }", "", "AS0011")]
+        [TestCase("using System;", "class c { Type m() {return null;} }", "", "AS0011")]
+        [TestCase("", "class c { T m<T>(System.Type t) {return default(T);} }", "", "AS0011")]
+        [TestCase("", "class c {object m() {return System.Activator.CreateInstance(typeof(int));}}", "", "AS0011")]
+        public void SyntaxValidation_Fails_WhenUsingBlacklistedCode(
+            string usingToTest,
+            string classToTest,
+            string codeToTest,
+            string error)
         {
-            var code = @"
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
-sealed class Algo : BaseAlgo 
-{ 
-    public SmaFunction Sma {get; set; }
-    public override void OnCandleReceived(ICandleContext context) {} 
-}
-public class SmaFunction : AbstractFunction
-{
-}
-";
-
+            var code = $@"
+using Lykke.AlgoStore.Algo;
+{usingToTest}
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
+{{
+    {classToTest}
+    sealed class Algo : BaseAlgo 
+    {{ 
+        public override void OnCandleReceived(ICandleContext context) 
+        {{
+            {codeToTest}
+        }}
+    }}
+}}";
             var result = When_Code_IsSyntaxValidated(code);
 
             Then_Result_MustFailAndContainMessages(result);
-        }
-
-        [Test]
-        public void
-            SyntaxValidation_Fails_WhenCustomFunctionIsNotProperlyImplementedFromFunctionInterface()
-        {
-            var code = @"
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.Algo.Core.Functions;
-sealed class Algo : BaseAlgo 
-{ 
-    public SmaFunction Sma {get; set; }
-    public override void OnCandleReceived(ICandleContext context) {} 
-}
-public class SmaFunction : IFunction
-{
-}
-";
-
-            var result = When_Code_IsSyntaxValidated(code);
-
-            Then_Result_MustFailAndContainMessages(result);
+            Then_Result_MustContainMessage(result, error);
         }
 
         private ICodeBuildSession GetCSharpCodeBuildSession(string code)

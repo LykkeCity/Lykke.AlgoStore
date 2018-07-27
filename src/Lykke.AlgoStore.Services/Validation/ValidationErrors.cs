@@ -12,5 +12,7 @@
         public const string ERROR_DEFAULT_VALUE_NULL = "AS0008";
         public const string ERROR_NAMESPACE_NOT_CORRECT = "AS0009";
         public const string ERROR_NAMESPACE_NOT_FOUND = "AS0010";
+        public const string ERROR_BLACKLISTED_TYPE_USED = "AS0011";
+        public const string ERROR_BLACKLISTED_NAMESPACE_USED = "AS0012";
     }
 }

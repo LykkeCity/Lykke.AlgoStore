@@ -300,4 +300,10 @@
   <data name="ERROR_INDICATOR_NAME_NOT_LITERAL" xml:space="preserve">
     <value>Indicator name must be a string literal</value>
   </data>
+  <data name="ERROR_BLACKLISTED_NAMESPACE_USED" xml:space="preserve">
+    <value>Using blacklisted namespaces is not allowed</value>
+  </data>
+  <data name="ERROR_BLACKLISTED_TYPE_USED" xml:space="preserve">
+    <value>Using blacklisted types is not allowed</value>
+  </data>
 </root>

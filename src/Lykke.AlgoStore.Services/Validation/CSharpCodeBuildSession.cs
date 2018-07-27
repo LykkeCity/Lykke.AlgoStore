@@ -24,12 +24,25 @@ namespace Lykke.AlgoStore.Services.Validation
             ("System.Runtime", "4.2.0.0")
         };
 
-        private static readonly List<string> BlacklistedPropertyNames = new List<string>
+        private static readonly HashSet<string> BlacklistedPropertyNames = new HashSet<string>
         {
             "AssetPair",
             "CandleInterval",
             "StartFrom",
             "EndOn"
+        };
+
+        private static readonly HashSet<string> BlacklistedNamespaces = new HashSet<string>
+        {
+            "System.Reflection",
+            "System.Net",
+            "System.IO"
+        };
+
+        private static readonly HashSet<string> BlacklistedTypes = new HashSet<string>
+        {
+            "System.Type",
+            "System.Activator"
         };
 
         private const string INDICATORS_ASSEMBLY = "Lykke.AlgoStore.Algo";
@@ -69,7 +82,10 @@ namespace Lykke.AlgoStore.Services.Validation
             if (ErrorExists(validationMessages))
                 return CreateAndSetValidationResult(out _syntaxValidationResult, false, validationMessages);
 
-            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();           
+            var root = (CompilationUnitSyntax)await _syntaxTree.GetRootAsync();
+
+            var testWalker = new CSharpIdentifierCollectionWalker();
+            testWalker.Visit(root);
 
             _syntaxWalker = new CSharpAlgoValidationWalker(_sourceText, _algoNamespaceValue);
             _syntaxWalker.Visit(root);
@@ -105,6 +121,8 @@ namespace Lykke.AlgoStore.Services.Validation
             _compilation = _compilation.WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                                                         .WithMetadataImportOptions(MetadataImportOptions.All));
             _semanticModel = _compilation.GetSemanticModel(_syntaxTree, false);
+
+            ValidateBlacklistedTypes(validationMessages, testWalker);
 
             var usedIndicatorNames = new HashSet<string>();
 
@@ -196,6 +214,79 @@ namespace Lykke.AlgoStore.Services.Validation
             metadata.Functions = ExtractIndicators();
 
             return Task.FromResult(metadata);
+        }
+
+        private void ValidateBlacklistedTypes(List<ValidationMessage> messages, CSharpIdentifierCollectionWalker walker)
+        {
+            foreach (var usedNamespace in walker.Usings)
+            {
+                ValidateNamespace(messages, usedNamespace, usedNamespace.Name.ToString());
+            }
+
+            foreach (var invocation in walker.Invocations)
+            {
+                var operation = _semanticModel.GetOperation(invocation) as IInvocationOperation;
+
+                if (operation == null) continue;
+
+                foreach (var typeParam in operation.TargetMethod.TypeParameters)
+                    ValidateType(messages, typeParam.DeclaringSyntaxReferences.First().GetSyntax(), typeParam);
+
+                ValidateType(messages, invocation, operation.TargetMethod.ReturnType);
+                ValidateType(messages, invocation, operation.TargetMethod.ContainingType);
+            }
+
+            foreach (var declarator in walker.Declarators)
+            {
+                var declaredSymbol = _semanticModel.GetDeclaredSymbol(declarator) as ILocalSymbol;
+
+                if (declaredSymbol == null) continue;
+
+                ValidateType(messages, declarator, declaredSymbol.Type);
+            }
+
+            foreach (var typeDeclaration in walker.TypeDeclarations)
+            {
+                var declaredSymbol = _semanticModel.GetDeclaredSymbol(typeDeclaration) as INamedTypeSymbol;
+
+                if (declaredSymbol == null) continue;
+
+                var members = declaredSymbol.GetMembers();
+
+                foreach(var member in members)
+                {
+                    var propertyDecl = member as IPropertySymbol;
+
+                    if(propertyDecl != null)
+                    {
+                        ValidateType(messages, member.GetSyntaxNode(), propertyDecl.Type);
+                        continue;
+                    }
+
+                    var fieldDecl = member as IFieldSymbol;
+
+                    if(fieldDecl != null)
+                    {
+                        ValidateType(messages, member.GetSyntaxNode(), fieldDecl.Type);
+                        continue;
+                    }
+
+                    var methodDecl = member as IMethodSymbol;
+
+                    if(methodDecl != null)
+                    {
+                        foreach(var param in methodDecl.Parameters)
+                        {
+                            if (param.Type is INamedTypeSymbol && ((INamedTypeSymbol)param.Type).IsGenericType) continue;
+
+                            ValidateType(messages, param.GetSyntaxNode(), param.Type);
+                        }
+
+                        if (!(methodDecl.ReturnType is INamedTypeSymbol) || !((INamedTypeSymbol)methodDecl.ReturnType).IsGenericType)
+                            ValidateType(messages, methodDecl.GetSyntaxNode(), methodDecl.ReturnType);
+                    }
+                }
+            }
         }
 
         private List<AlgoMetaDataParameter> ExtractAlgoParameters(INamedTypeSymbol classInfo)
@@ -364,14 +455,14 @@ namespace Lykke.AlgoStore.Services.Validation
 
         private ValidationMessage CreateFromError(string id, string message, Location location)
         {
-            var position = location.GetLineSpan().StartLinePosition;
+            var position = location?.GetLineSpan().StartLinePosition;
 
             return new ValidationMessage
             {
                 Id = id,
                 Message = message,
-                Line = (uint)position.Line,
-                Column = (uint)position.Character,
+                Line = (uint)(position?.Line ?? 0),
+                Column = (uint)(position?.Character ?? 0),
                 Severity = ValidationSeverity.Error
             };
         }
@@ -419,6 +510,36 @@ namespace Lykke.AlgoStore.Services.Validation
             }
 
             return values;
+        }
+
+        private void ValidateType(List<ValidationMessage> messages, SyntaxNode syntaxNode, ITypeSymbol typeSymbol)
+        {
+            while(typeSymbol.Kind == SymbolKind.ArrayType)
+            {
+                typeSymbol = (typeSymbol as IArrayTypeSymbol).ElementType;
+            }
+
+            if (BlacklistedTypes.Contains(typeSymbol.ToString().Replace("?", "")))
+            {
+                messages.Add(CreateFromError(
+                        ValidationErrors.ERROR_BLACKLISTED_TYPE_USED,
+                        Phrases.ERROR_BLACKLISTED_TYPE_USED,
+                        syntaxNode?.GetLocation()));
+            }
+
+            if(typeSymbol.ContainingNamespace != null)
+                ValidateNamespace(messages, syntaxNode, typeSymbol.ContainingNamespace.ToString());
+        }
+
+        private void ValidateNamespace(List<ValidationMessage> messages, SyntaxNode syntaxNode, string nameSpc)
+        {
+            if(BlacklistedNamespaces.Any(n => nameSpc.StartsWith(n)))
+            {
+                messages.Add(CreateFromError(
+                       ValidationErrors.ERROR_BLACKLISTED_NAMESPACE_USED,
+                       Phrases.ERROR_BLACKLISTED_NAMESPACE_USED,
+                       syntaxNode?.GetLocation()));
+            }
         }
 
         private bool IsPropertyValidType(IPropertySymbol property)
