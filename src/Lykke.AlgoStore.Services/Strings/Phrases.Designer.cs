@@ -295,6 +295,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using blacklisted namespaces is not allowed.
+        /// </summary>
+        internal static string ERROR_BLACKLISTED_NAMESPACE_USED {
+            get {
+                return ResourceManager.GetString("ERROR_BLACKLISTED_NAMESPACE_USED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Using blacklisted types is not allowed.
+        /// </summary>
+        internal static string ERROR_BLACKLISTED_TYPE_USED {
+            get {
+                return ResourceManager.GetString("ERROR_BLACKLISTED_TYPE_USED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Setting null as the default value is not allowed.
         /// </summary>
         internal static string ERROR_DEFAULT_VALUE_NULL {
@@ -313,24 +331,6 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The provided namespace is not allowed.
-        /// </summary>
-        internal static string ERROR_NAMESPACE_NOT_CORRECT {
-            get {
-                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_CORRECT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A required namespace is not found.
-        /// </summary>
-        internal static string ERROR_NAMESPACE_NOT_FOUND {
-            get {
-                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_FOUND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Duplicate indicator names are not allowed.
         /// </summary>
         internal static string ERROR_INDICATOR_DUPLICATE_NAME {
@@ -345,6 +345,24 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string ERROR_INDICATOR_NAME_NOT_LITERAL {
             get {
                 return ResourceManager.GetString("ERROR_INDICATOR_NAME_NOT_LITERAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided namespace is not allowed.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_CORRECT {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_CORRECT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A required namespace is not found.
+        /// </summary>
+        internal static string ERROR_NAMESPACE_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("ERROR_NAMESPACE_NOT_FOUND", resourceCulture);
             }
         }
         
