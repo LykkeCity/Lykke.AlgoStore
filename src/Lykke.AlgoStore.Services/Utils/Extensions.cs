@@ -33,29 +33,5 @@ namespace Lykke.AlgoStore.Services.Utils
                 return (T)response.Body;
             }
         }
-
-        public static Candle ToAlgoCandle(this Lykke.Service.CandlesHistory.Client.Models.Candle serviceCandle)
-        {
-            return new Candle
-            {
-                 DateTime = serviceCandle.DateTime,
-                 Close = serviceCandle.Close,
-                 High = serviceCandle.High,
-                 Low = serviceCandle.Low,
-                 Open = serviceCandle.Open
-            };
-        }
-
-        public static CandleChartingUpdate ToCandleChartingUpdate(this Candle algoCandle)
-        {
-            return new CandleChartingUpdate
-            {
-                DateTime = algoCandle.DateTime,
-                Close = algoCandle.Close,
-                High = algoCandle.High,
-                Low = algoCandle.Low,
-                Open = algoCandle.Open
-            };
-        }
     }
 }
