@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.Service.AlgoTrades.Client.AutorestClient.Models;
 using Lykke.Service.Security.Client.AutorestClient.Models;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
@@ -130,6 +132,16 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
 
             CreateMap<TeamCityWebHookResponseModel, TeamCityWebHookResponse>();
+
+            CreateMap<Lykke.Service.CandlesHistory.Client.Models.Candle, Lykke.AlgoStore.Algo.Candle>();
+            CreateMap<Lykke.AlgoStore.Algo.Candle, CandleChartingUpdate>().ForMember(dest => dest.InstanceId, opt => opt.Ignore());
+
+            CreateMap<AlgoInstanceTradeResponseModel, AlgoInstanceTrade>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.AssetPairId, opt => opt.MapFrom(src => src.AssetPair))
+                .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName));
+            CreateMap<AlgoInstanceTrade, TradeChartingUpdate>();
+
         }
     }
 }

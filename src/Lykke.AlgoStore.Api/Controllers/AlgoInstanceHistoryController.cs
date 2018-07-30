@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -10,8 +11,6 @@ using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
-using Lykke.AlgoStore.Services.Utils;
-using Lykke.Common.Log;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -31,6 +30,50 @@ namespace Lykke.AlgoStore.Api.Controllers
             this._service = service;
             this._log = log;
         }
+
+        /// <summary>
+        /// Get history trades for instance
+        /// </summary>
+        /// <param name="instanceId">Instance ID</param>
+        /// <param name="tradedAssetId">Traded asset</param>
+        /// <param name="fromMoment">From moment in ISO 8601</param>
+        /// <param name="toMoment">To moment in ISO 8601</param>
+        [HttpGet("trades")]
+        [SwaggerOperation("GetHistoryTrades")]
+        [Description("Get history trades")]
+        [ProducesResponseType(typeof(IEnumerable<TradeChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetHistoryTrades([FromQuery][Required]string instanceId, [FromQuery][Required]string tradedAssetId, [FromQuery]DateTime fromMoment, [FromQuery]DateTime toMoment)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+                
+                var trades = await _service.GetTradesAsync(instanceId, tradedAssetId, fromMoment, toMoment, ModelState);
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                if (trades == null)
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
+                }
+                var result = trades.Select(AutoMapper.Mapper.Map<TradeChartingUpdate>).ToList();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryTrades), ex);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         /// <summary>
         /// Get history candles
@@ -63,7 +106,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                 {
                     return StatusCode((int) HttpStatusCode.InternalServerError);
                 }
-                var result = candles.Select(c => c.ToCandleChartingUpdate()).ToList();
+                var result = candles.Select(AutoMapper.Mapper.Map<CandleChartingUpdate>).ToList();
                 return Ok(result);
             }
             catch (OperationCanceledException ex)

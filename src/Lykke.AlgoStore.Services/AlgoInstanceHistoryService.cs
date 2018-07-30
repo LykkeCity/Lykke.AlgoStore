@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.Service.AlgoTrades.Client;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
@@ -20,10 +22,29 @@ namespace Lykke.AlgoStore.Services
     public class AlgoInstanceHistoryService : BaseAlgoStoreService, IAlgoInstanceHistoryService
     {
         private readonly ICandleshistoryservice _candlesHistoryService;
+        private readonly IAlgoTradesClient _tradesHistoryService;
 
-        public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService, ILog log) : base (log, nameof(AlgoInstanceHistoryService))
+        public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService,
+                                          IAlgoTradesClient tradesHistoryService,
+                                          ILog log) : base (log, nameof(AlgoInstanceHistoryService))
         {
             this._candlesHistoryService = candlesHistoryService;
+            this._tradesHistoryService = tradesHistoryService;
+        }
+
+        public async Task<IEnumerable<AlgoInstanceTrade>> GetTradesAsync(string instanceId, string tradedAssetId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
+        {
+            var trades = await _tradesHistoryService.GetAlgoInstanceTradesByPeriod(instanceId, tradedAssetId, fromMoment, toMoment);
+
+            if (trades == null || trades.Error != null || trades.Records == null)
+            {
+                errorsDictionary.AddModelError("ServiceError", trades?.Error?.Message ?? "Unknown");
+                return null;
+            }
+
+            var result = trades.Records.Select(AutoMapper.Mapper.Map<AlgoInstanceTrade>);
+
+            return result;
         }
 
         public async Task<IEnumerable<Candle>> GetCandlesAsync(string assetPair, CandlePriceType priceType, CandleTimeInterval timeInterval, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary, CancellationToken ctoken)
@@ -42,7 +63,7 @@ namespace Lykke.AlgoStore.Services
                 return null;
             }
 
-            var candles = response.History.Select(c => c.ToAlgoCandle());
+            var candles = response.History.Select(AutoMapper.Mapper.Map<Candle>);
 
             return candles;
         }
