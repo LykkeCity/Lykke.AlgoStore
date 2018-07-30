@@ -20,6 +20,7 @@ using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Dynamic;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
@@ -27,10 +28,12 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
 using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.RabbitMqBroker.Subscriber;
+using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -169,6 +172,18 @@ namespace Lykke.AlgoStore.Api.Modules
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreLoggingServiceClient.ServiceUrl)
                 .As<ILoggingClient>()
                 .SingleInstance();
+
+            dynamic dynamicSettings =
+                JsonConvert.DeserializeObject<ExpandoObject>(Environment.GetEnvironmentVariable("ALGO_INSTANCE_PARAMS"));
+
+            var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(dynamicSettings.AuthToken);
+
+            var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
+                .BuildForUrl(_settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl)
+                .WithAdditionalDelegatingHandler(authHandler);
+
+            builder.RegisterInstance(instanceEventHandler.Create().Generate<IStatisticsClient>())
+                .As<IStatisticsClient>();
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
