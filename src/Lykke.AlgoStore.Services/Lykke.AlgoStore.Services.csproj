@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Lykke.AlgoStore.Service.Statistics\client\Lykke.AlgoStore.Service.Statistics.Client\Lykke.AlgoStore.Service.Statistics.Client.csproj" />
     <ProjectReference Include="..\..\ExternalClient\Lykke.AlgoStore.DeploymentApiClient\Lykke.AlgoStore.DeploymentApiClient.csproj" />
     <ProjectReference Include="..\..\Lykke.AlgoStore.TeamCityClient\Lykke.AlgoStore.TeamCityClient.csproj" />
     <ProjectReference Include="..\Lykke.AlgoStore.Core\Lykke.AlgoStore.Core.csproj" />

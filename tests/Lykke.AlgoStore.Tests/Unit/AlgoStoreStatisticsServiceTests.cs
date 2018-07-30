@@ -8,6 +8,7 @@ using AutoFixture;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.AlgoStore.Tests.Infrastructure;
@@ -38,8 +39,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
             var assetsService = Given_Customized_AssetServiceWithCacheMock();
             var assetsValidator = new AssetsValidator();
+            var statisticsClient = Given_Correct_StatisticsClient();
             var statisticsService = Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo,
-                walletBalanceService, assetsService, assetsValidator);
+                walletBalanceService, assetsService, assetsValidator, statisticsClient);
 
             var result = When_Invoke_GetStatisticsSummaryAsync(statisticsService, ClientId, InstanceId, out Exception ex);
             Then_Exception_Should_BeNull(ex);
@@ -54,8 +56,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var walletBalanceService = Given_Customized_WalletBalanceServiceMock(true);
             var assetsService = Given_Customized_AssetServiceWithCacheMock();
             var assetsValidator = new AssetsValidator();
+            var statisticsClient = Given_Correct_StatisticsClient();
             var statisticsService = Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo,
-                walletBalanceService, assetsService, assetsValidator);
+                walletBalanceService, assetsService, assetsValidator, statisticsClient);
 
             var result = When_Invoke_UpdateStatisticsSummaryAsync(statisticsService, ClientId, InstanceId, out Exception ex);
             Then_Exception_Should_BeNull(ex);
@@ -64,12 +67,25 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         #region Private methods
 
-        private static AlgoStoreStatisticsService Given_Correct_AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
+        private static AlgoStoreStatisticsService Given_Correct_AlgoStoreStatisticsService(
+            IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            IWalletBalanceService walletBalanceService, IAssetsServiceWithCache assetsService, AssetsValidator assetsValidator)
+            IWalletBalanceService walletBalanceService, IAssetsServiceWithCache assetsService,
+            AssetsValidator assetsValidator, IStatisticsClient statisticsClient)
         {
-            return new AlgoStoreStatisticsService(statisticsRepository, algoClientInstanceRepository, walletBalanceService, assetsService,
-                assetsValidator, new LogMock());
+            return new AlgoStoreStatisticsService(statisticsRepository, algoClientInstanceRepository,
+                walletBalanceService, assetsService,
+                assetsValidator, statisticsClient, new LogMock());
+        }
+
+        private IStatisticsClient Given_Correct_StatisticsClient()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IStatisticsClient>();
+
+            result.Setup(x => x.UpdateSummaryAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
+
+            return result.Object;
         }
 
         private static IStatisticsRepository Given_Correct_StatisticsRepository()

@@ -7,6 +7,7 @@ using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.Assets.Client;
@@ -15,6 +16,7 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreStatisticsService : BaseAlgoStoreService, IAlgoStoreStatisticsService
     {
+        private readonly IStatisticsClient _statisticsClient;
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
         private readonly IWalletBalanceService _walletBalanceService;
@@ -23,8 +25,10 @@ namespace Lykke.AlgoStore.Services
 
         public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            IWalletBalanceService walletBalanceService, IAssetsServiceWithCache assetsService,
+            IWalletBalanceService walletBalanceService, 
+            IAssetsServiceWithCache assetsService,
             [NotNull] AssetsValidator assetsValidator,
+            IStatisticsClient statisticsClient,
             ILog log)
             : base(log, nameof(AlgoStoreStatisticsService))
         {
@@ -32,9 +36,14 @@ namespace Lykke.AlgoStore.Services
             _algoInstanceRepository = algoClientInstanceRepository;
             _walletBalanceService = walletBalanceService;
             _assetService = assetsService;
+            _statisticsClient = statisticsClient;
             _assetsValidator = assetsValidator;
         }
 
+        //REMARK: In future we will MOVE this method into new statistics service (Lykke.AlgoStore.Statistics.Service solution)
+        //When that is done we should reconsider if we need additional endpoint,
+        //e.g. GetSummaryAsync that is doing same thing here and in method below
+        //All of this will require us to MOVE everything related to statistics from shared Models project too
         public async Task<StatisticsSummary> GetStatisticsSummaryAsync(string clientId, string instanceId)
         {
             return await LogTimedInfoAsync(
@@ -78,39 +87,7 @@ namespace Lykke.AlgoStore.Services
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
-                    var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                    if (algoInstance == null || algoInstance.AlgoId == null)
-                    {
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}",
-                            string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
-                    }
-
-                    var assetPairResponse = await _assetService.TryGetAssetPairAsync(algoInstance.AssetPairId);
-                    _assetsValidator.ValidateAssetPair(algoInstance.AssetPairId, assetPairResponse);
-
-                    var tradedAsset = await _assetService.TryGetAssetAsync(algoInstance.IsStraight
-                        ? assetPairResponse.BaseAssetId
-                        : assetPairResponse.QuotingAssetId);
-                    _assetsValidator.ValidateAssetResponse(tradedAsset);
-
-                    if (algoInstance.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
-                    {
-                        var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse);
-                        var clientBalanceResponseModels = walletBalances.ToList();
-                        var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
-                            algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse);
-
-                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId == tradedAsset.Id)?.Balance ?? 0;
-                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId != tradedAsset.Id)?.Balance ?? 0;
-                        statisticsSummary.LastWalletBalance = latestWalletBalance;
-                    }
-
-                    statisticsSummary.NetProfit = statisticsSummary.InitialWalletBalance.Equals(0.0) ? 0 : Math.Round(
-                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
-
-                    await _statisticsRepository.CreateOrUpdateSummaryAsync(statisticsSummary);
+                    await _statisticsClient.UpdateSummaryAsync(clientId, instanceId);
 
                     return statisticsSummary;
                 }
