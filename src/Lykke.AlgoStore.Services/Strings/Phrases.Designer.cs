@@ -385,6 +385,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error has occurred, please contact an administrator.
+        /// </summary>
+        internal static string InstanceDeploymentGenericError {
+            get {
+                return ResourceManager.GetString("InstanceDeploymentGenericError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Instance {0} must be stopped before it can be deleted..
         /// </summary>
         internal static string InstanceMustBeStopped {

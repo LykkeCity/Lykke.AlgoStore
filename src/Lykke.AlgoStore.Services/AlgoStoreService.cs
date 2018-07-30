@@ -271,7 +271,10 @@ namespace Lykke.AlgoStore.Services
 
                 await _algoInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
 
-                await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Instance saved with status: {algoInstance.AlgoInstanceStatus.ToUpperText()}");
+                if (algoInstance.AlgoInstanceStatus == AlgoInstanceStatus.Errored)
+                    await _loggingClient.WriteAsync(algoInstance.InstanceId, Phrases.InstanceDeploymentGenericError, algoInstance.AuthToken);
+
+                await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Instance saved with status: {algoInstance.AlgoInstanceStatus.ToUpperText()} after TCWebHook request");
 
                 return true;
             });
