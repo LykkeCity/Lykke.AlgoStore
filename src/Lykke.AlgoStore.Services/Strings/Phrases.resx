@@ -306,4 +306,7 @@
   <data name="ERROR_BLACKLISTED_TYPE_USED" xml:space="preserve">
     <value>Using blacklisted types is not allowed</value>
   </data>
+  <data name="InstanceDeploymentGenericError" xml:space="preserve">
+    <value>An error has occurred, please contact an administrator</value>
+  </data>
 </root>
