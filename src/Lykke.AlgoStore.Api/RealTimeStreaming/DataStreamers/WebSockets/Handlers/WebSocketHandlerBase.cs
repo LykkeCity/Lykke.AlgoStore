@@ -3,6 +3,7 @@ using MessagePack;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reactive;
@@ -21,7 +22,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
     {
         Task<bool> OnConnected(HttpContext context);
         Task StreamData();
-        Task ListenForClosure();
+        Task Listen();
         Task OnDisconnected(Exception exception = null);
     }
 
@@ -34,12 +35,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         protected Action ConfigureDataSource;
         protected string ConnectionId;
         protected readonly RealTimeDataSourceBase<T> DataListener;
+        protected readonly WebSocketAuthenticationManager _authManager;
 
-        public WebSocketHandlerBase(ILog log, RealTimeDataSourceBase<T> dataListener)
+        public WebSocketHandlerBase(ILog log, RealTimeDataSourceBase<T> dataListener, WebSocketAuthenticationManager authManager)
         {
             Log = log;
             DataListener = dataListener;
             Messages = DataListener.Select(t => t);
+            _authManager = authManager;
+            _authManager.StartSession(this);
         }
 
         public virtual async Task<bool> OnConnected(HttpContext context)
@@ -77,7 +81,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                         var msgJson = MessagePackSerializer.ToJson(message, MessagePack.Resolvers.ContractlessStandardResolver.Instance);
                         var bytes = Encoding.UTF8.GetBytes(msgJson);
 
-                        if (Socket.State == WebSocketState.Open)
+                        if (Socket.State == WebSocketState.Open && _authManager.IsAuthenticated())
                         {
                             try
                             {
@@ -88,10 +92,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                                 await Log.WriteErrorAsync(nameof(WebSocketHandlerBase<T>), "Error while attempting to send message over socket for ConnectionId={ConnectionId}. Message={msgJson}", ex);
                                 await OnDisconnected(ex);
                             }
-                        }
-                        else
-                        {
-                            DataListener.TokenSource.Cancel();
                         }
                     },
                     onError: async ex =>
@@ -126,7 +126,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             });
         }
 
-        public virtual async Task ListenForClosure()
+        public virtual async Task Listen()
         {
             try
             {
@@ -136,8 +136,12 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
                     if (result.ReceiveResult.MessageType == WebSocketMessageType.Close)
                     {
-                        await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(ListenForClosure), $"WebSocket close request received from client for ConnectionId={ConnectionId}");
                         await OnDisconnected();
+                    }
+                    else if (!_authManager.IsAuthenticated())
+                    {
+                        var message = Encoding.UTF8.GetString(result.Message.ToArray());
+                        await _authManager.AuthenticateAsync(message);
                     }
                 }
             }
@@ -188,7 +192,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     }
                     else
                     {
-                        await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, Constants.WebSocketErrorMessage, CancellationToken.None);
+                        if ((exception as WebSocketException)?.Message == _authManager.UNAUTHORIZED_MESSAGE)
+                        {
+                            await Socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, _authManager.UNAUTHORIZED_MESSAGE ?? Constants.WebSocketErrorMessage, CancellationToken.None);
+                        }
+                        else
+                        {
+                            await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, Constants.WebSocketErrorMessage, CancellationToken.None);
+                        }
+                        
                         await Log.WriteWarningAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed due to error.", exception);
                     }
                 }

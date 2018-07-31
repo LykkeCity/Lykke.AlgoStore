@@ -12,7 +12,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 {
     public class DummyWebSocketHandler : WebSocketHandlerBase<OrderBook>
     {
-        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log) : base(log, orderBooksListener)
+        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log, WebSocketAuthenticationManager authManager) : base(log, orderBooksListener, authManager)
         {
            
         }

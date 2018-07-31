@@ -7,7 +7,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 {
     public class CandlesWebSocketHandler : WebSocketHandlerBase<CandleChartingUpdate>
     {
-        public CandlesWebSocketHandler(RealTimeDataSourceBase<CandleChartingUpdate> candlesListener, ILog log) : base(log, candlesListener)
+        public CandlesWebSocketHandler(RealTimeDataSourceBase<CandleChartingUpdate> candlesListener, ILog log, WebSocketAuthenticationManager authManager) : base(log, candlesListener, authManager)
         {
             ConfigureDataSource = () =>
             {
