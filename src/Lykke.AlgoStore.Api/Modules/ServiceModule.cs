@@ -20,6 +20,7 @@ using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Dynamic;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
@@ -27,10 +28,12 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
 using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.Common.Log;
 using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.RabbitMqBroker.Subscriber;
+using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -208,6 +211,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
+                .WithParameter("statisticsServiceUrl", _settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl)
                 .SingleInstance();
 
             builder.RegisterType<AlgoInstanceHistoryService>()

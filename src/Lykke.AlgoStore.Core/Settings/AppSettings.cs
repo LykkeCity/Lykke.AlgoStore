@@ -5,6 +5,7 @@ using Lykke.AlgoStore.Job.Stopping.Client;
 using Lykke.AlgoStore.Service.AlgoTrades.Client;
 using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.AlgoStore.Service.Security.Client;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.PersonalData.Settings;
@@ -25,5 +26,6 @@ namespace Lykke.AlgoStore.Core.Settings
         public SecurityServiceClientSettings AlgoStoreSecurityServiceClient { get; set; }
         public LoggingServiceClientSettings AlgoStoreLoggingServiceClient { get; set; }
         public AlgoStoreStoppingClientSettings AlgoStoreStoppingClient { get; set; }
+        public StatisticsServiceClientSettings AlgoStoreStatisticsClient { get; set; }
     }
 }

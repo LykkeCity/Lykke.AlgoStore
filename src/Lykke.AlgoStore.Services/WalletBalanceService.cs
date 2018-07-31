@@ -13,6 +13,10 @@ using AssetPair = Lykke.Service.Assets.Client.Models.AssetPair;
 
 namespace Lykke.AlgoStore.Services
 {
+    //REMARK: There is a similar (copy/pasted) service inside Lykke.AlgoStore.Statistics.Service solution
+    //When we move ALL other statistics related things (e.g. get summary) into new statistics service
+    //we have to delete this class. If needed, these methods can become new endpoints in new statistics service
+    //All of this will require us to MOVE everything related to statistics from shared Models project too
     public class WalletBalanceService : BaseAlgoStoreService, IWalletBalanceService
     {
         private readonly IRateCalculatorClient _rateCalculator;

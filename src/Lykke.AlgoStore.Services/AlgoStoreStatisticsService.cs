@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
-using Lykke.Service.Assets.Client;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -17,24 +15,23 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
-        private readonly IWalletBalanceService _walletBalanceService;
-        private readonly IAssetsServiceWithCache _assetService;
-        private readonly AssetsValidator _assetsValidator;
+        private readonly string _statisticsServiceUrl;
 
         public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            IWalletBalanceService walletBalanceService, IAssetsServiceWithCache assetsService,
-            [NotNull] AssetsValidator assetsValidator,
+            string statisticsServiceUrl,
             ILog log)
             : base(log, nameof(AlgoStoreStatisticsService))
         {
             _statisticsRepository = statisticsRepository;
             _algoInstanceRepository = algoClientInstanceRepository;
-            _walletBalanceService = walletBalanceService;
-            _assetService = assetsService;
-            _assetsValidator = assetsValidator;
+            _statisticsServiceUrl = statisticsServiceUrl;
         }
 
+        //REMARK: In future we will MOVE this method into new statistics service (Lykke.AlgoStore.Statistics.Service solution)
+        //When that is done we should reconsider if we need additional endpoint,
+        //e.g. GetSummaryAsync that is doing same thing here and in method below
+        //All of this will require us to MOVE everything related to statistics from shared Models project too
         public async Task<StatisticsSummary> GetStatisticsSummaryAsync(string clientId, string instanceId)
         {
             return await LogTimedInfoAsync(
@@ -70,47 +67,25 @@ namespace Lykke.AlgoStore.Services
                 {
                     Check.IsEmpty(instanceId, nameof(instanceId));
 
-                    var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
-                    if (statisticsSummary == null)
+                    var statisticsSummaryExists = await _statisticsRepository.SummaryExistsAsync(instanceId);
+                    if (!statisticsSummaryExists)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
                             $"Could not find statistic summary row for AlgoInstance: {instanceId}",
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
-                    var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                    if (algoInstance == null || algoInstance.AlgoId == null)
-                    {
-                        throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound,
-                            $"Could not find AlgoInstance with InstanceId {instanceId} and ClientId {clientId}",
-                            string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
-                    }
+                    var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
+                    var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(instanceData.AuthToken);
+                    var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
+                        .BuildForUrl(_statisticsServiceUrl)
+                        .WithAdditionalDelegatingHandler(authHandler);
 
-                    var assetPairResponse = await _assetService.TryGetAssetPairAsync(algoInstance.AssetPairId);
-                    _assetsValidator.ValidateAssetPair(algoInstance.AssetPairId, assetPairResponse);
+                    var statisticsClient = instanceEventHandler.Create().Generate<IStatisticsClient>();
 
-                    var tradedAsset = await _assetService.TryGetAssetAsync(algoInstance.IsStraight
-                        ? assetPairResponse.BaseAssetId
-                        : assetPairResponse.QuotingAssetId);
-                    _assetsValidator.ValidateAssetResponse(tradedAsset);
+                    await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
 
-                    if (algoInstance.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
-                    {
-                        var walletBalances = await _walletBalanceService.GetWalletBalancesAsync(algoInstance.WalletId, assetPairResponse);
-                        var clientBalanceResponseModels = walletBalances.ToList();
-                        var latestWalletBalance = await _walletBalanceService.GetTotalWalletBalanceInBaseAssetAsync(
-                            algoInstance.WalletId, statisticsSummary.UserCurrencyBaseAssetId, assetPairResponse);
-
-                        statisticsSummary.LastTradedAssetBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId == tradedAsset.Id)?.Balance ?? 0;
-                        statisticsSummary.LastAssetTwoBalance = clientBalanceResponseModels.FirstOrDefault(b => b.AssetId != tradedAsset.Id)?.Balance ?? 0;
-                        statisticsSummary.LastWalletBalance = latestWalletBalance;
-                    }
-
-                    statisticsSummary.NetProfit = statisticsSummary.InitialWalletBalance.Equals(0.0) ? 0 : Math.Round(
-                        ((statisticsSummary.LastWalletBalance - statisticsSummary.InitialWalletBalance) /
-                         statisticsSummary.InitialWalletBalance) * 100, 2, MidpointRounding.AwayFromZero);
-
-                    await _statisticsRepository.CreateOrUpdateSummaryAsync(statisticsSummary);
+                    var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
 
                     return statisticsSummary;
                 }

@@ -18,6 +18,7 @@
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.7" />
     <PackageReference Include="Lykke.AlgoStore.Service.Logging.Client" Version="1.0.4" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.3" />
     <PackageReference Include="Lykke.Common" Version="7.0.2" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
