@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Common.Log;
-using JetBrains.Annotations;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -10,34 +8,24 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
-using Lykke.Service.Assets.Client;
 
 namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreStatisticsService : BaseAlgoStoreService, IAlgoStoreStatisticsService
     {
-        private readonly IStatisticsClient _statisticsClient;
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
-        private readonly IWalletBalanceService _walletBalanceService;
-        private readonly IAssetsServiceWithCache _assetService;
-        private readonly AssetsValidator _assetsValidator;
+        private readonly string _statisticsServiceUrl;
 
         public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            IWalletBalanceService walletBalanceService, 
-            IAssetsServiceWithCache assetsService,
-            [NotNull] AssetsValidator assetsValidator,
-            IStatisticsClient statisticsClient,
+            string statisticsServiceUrl,
             ILog log)
             : base(log, nameof(AlgoStoreStatisticsService))
         {
             _statisticsRepository = statisticsRepository;
             _algoInstanceRepository = algoClientInstanceRepository;
-            _walletBalanceService = walletBalanceService;
-            _assetService = assetsService;
-            _statisticsClient = statisticsClient;
-            _assetsValidator = assetsValidator;
+            _statisticsServiceUrl = statisticsServiceUrl;
         }
 
         //REMARK: In future we will MOVE this method into new statistics service (Lykke.AlgoStore.Statistics.Service solution)
@@ -79,15 +67,25 @@ namespace Lykke.AlgoStore.Services
                 {
                     Check.IsEmpty(instanceId, nameof(instanceId));
 
-                    var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
-                    if (statisticsSummary == null)
+                    var statisticsSummaryExists = await _statisticsRepository.SummaryExistsAsync(instanceId);
+                    if (!statisticsSummaryExists)
                     {
                         throw new AlgoStoreException(AlgoStoreErrorCodes.StatisticsSumaryNotFound,
                             $"Could not find statistic summary row for AlgoInstance: {instanceId}",
                             string.Format(Phrases.ParamNotFoundDisplayMessage, "statistics summary"));
                     }
 
-                    await _statisticsClient.UpdateSummaryAsync(clientId, instanceId);
+                    var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
+                    var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(instanceData.AuthToken);
+                    var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
+                        .BuildForUrl(_statisticsServiceUrl)
+                        .WithAdditionalDelegatingHandler(authHandler);
+
+                    var statisticsClient = instanceEventHandler.Create().Generate<IStatisticsClient>();
+
+                    await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
+
+                    var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
 
                     return statisticsSummary;
                 }

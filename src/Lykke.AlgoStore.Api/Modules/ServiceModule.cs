@@ -172,18 +172,6 @@ namespace Lykke.AlgoStore.Api.Modules
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreLoggingServiceClient.ServiceUrl)
                 .As<ILoggingClient>()
                 .SingleInstance();
-
-            dynamic dynamicSettings =
-                JsonConvert.DeserializeObject<ExpandoObject>(Environment.GetEnvironmentVariable("ALGO_INSTANCE_PARAMS"));
-
-            var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(dynamicSettings.AuthToken);
-
-            var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
-                .BuildForUrl(_settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl)
-                .WithAdditionalDelegatingHandler(authHandler);
-
-            builder.RegisterInstance(instanceEventHandler.Create().Generate<IStatisticsClient>())
-                .As<IStatisticsClient>();
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
@@ -223,6 +211,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
+                .WithParameter("statisticsServiceUrl", _settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl)
                 .SingleInstance();
 
             builder.RegisterType<AlgoInstanceHistoryService>()

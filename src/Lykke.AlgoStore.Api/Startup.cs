@@ -167,9 +167,9 @@ namespace Lykke.AlgoStore.Api
         {
             try
             {
-                await SeedPermissions(securityClient);
+                //await SeedPermissions(securityClient);
 
-                await SeedRoles(securityClient);
+                //await SeedRoles(securityClient);
 
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
