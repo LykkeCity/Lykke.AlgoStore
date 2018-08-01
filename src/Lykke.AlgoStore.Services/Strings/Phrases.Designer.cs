@@ -223,7 +223,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}.
+        ///   Looks up a localized string similar to There was a problem while deleting the Kubernetes deployment.  Algo Instance Stopping client error: {0}.
         /// </summary>
         internal static string DeleteKubernetesDeploymentError {
             get {
