@@ -43,7 +43,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
                     if (connected)
                     {
                         var outbandData = webSocketHandler.StreamData();
-                        var inboundData = webSocketHandler.ListenForClosure();
+                        var inboundData = webSocketHandler.Listen();
 
                         await Task.WhenAny(outbandData, inboundData);
                     }

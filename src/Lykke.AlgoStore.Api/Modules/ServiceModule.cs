@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Dynamic;
 using Lykke.AlgoStore.Algo.Charting;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
@@ -104,6 +105,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions.ExchangeName,
                 QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions.QueueName
             };
+
+            builder.RegisterType<WebSocketAuthenticationManager>().As<WebSocketAuthenticationManager>().InstancePerDependency();
 
             RegisterObservableRabbitMqConnection<OrderBook>(builder, rabbitMqDummyDataOrderBooks, logFactory);
             RegisterObservableRabbitMqConnection<CandleChartingUpdate>(builder, rabbitMqCandles, logFactory);
