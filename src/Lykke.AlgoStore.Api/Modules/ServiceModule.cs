@@ -27,9 +27,11 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Job.Stopping.Client;
 using Lykke.Common.Log;
 using Lykke.Logs;
+using Lykke.Logs.Loggers.LykkeAzureTable;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.RabbitMqBroker.Subscriber;
 
@@ -70,7 +72,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
         private void RegisterRealTimeDataStreamServices(ContainerBuilder builder)
         {
-            var logFactory = LogFactory.Create().AddConsole();
+            var logFactory = LogFactory.Create().AddAzureTable(_settings.Nested(x => x.AlgoApi.Db.LogsConnectionString), AlgoStoreConstants.LogTableName).AddConsole();
 
             builder.RegisterInstance(logFactory).As<ILogFactory>();
 

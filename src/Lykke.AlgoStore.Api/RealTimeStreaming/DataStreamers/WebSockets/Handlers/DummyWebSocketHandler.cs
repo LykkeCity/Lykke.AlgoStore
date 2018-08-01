@@ -1,18 +1,18 @@
-﻿using Common.Log;
-using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
+﻿using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
+using Lykke.Common.Log;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
+
 #pragma warning disable 618
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers
 {
     public class DummyWebSocketHandler : WebSocketHandlerBase<OrderBook>
     {
-        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILog log, WebSocketAuthenticationManager authManager) : base(log, orderBooksListener, authManager)
+        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILogFactory log, WebSocketAuthenticationManager authManager) : base(log, orderBooksListener, authManager)
         {
            
         }
