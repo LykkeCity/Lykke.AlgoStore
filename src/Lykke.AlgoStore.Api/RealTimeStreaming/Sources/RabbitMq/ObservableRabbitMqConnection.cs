@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Common.Log;
 using Lykke.AlgoStore.Algo.Charting;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
@@ -17,12 +18,14 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
         private BlockingCollection<T> _messageQueue;
         private readonly RabbitMqSubscriptionSettings _rabbitSettings;
         private static object syncLock = new object();
+        private readonly ILog Log;
 
         public ObservableRabbitMqConnection(RabbitMqSubscriptionSettings rabbitSettings, ILogFactory logFactory)
         {
             _messages = Observable.Create<T>(async (obs) => { await ReadRabbitMqMessagesLoop(obs); });
             _rabbitSettings = rabbitSettings;
             _logFactory = logFactory;
+            Log = _logFactory.CreateLog(Constants.LogComponent);
         }
 
         private void EnsureRabbitMqIsInitialized()
@@ -43,6 +46,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
                             .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
                             .CreateDefaultBinding()
                             .Subscribe(OnMessageReceived);
+
+                       Log.Info(nameof(EnsureRabbitMqIsInitialized), $"{typeof(T).Name} RabbitMq connection created:  {_rabbitSettings.QueueName}", "RabbitMqInit");
                     }
                 }
             }
@@ -70,6 +75,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
                 try
                 {
                     _rabbitMq.Start();
+                    Log.Info(nameof(ReadRabbitMqMessagesLoop), $"{typeof(T).Name} RabbitMq connection started:  {_rabbitSettings.QueueName}", "RabbitMqStarted");
                     _messageQueue = new BlockingCollection<T>();
 
                     while (!TokenSource.IsCancellationRequested && !_messageQueue.IsCompleted)
@@ -91,6 +97,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
                 {
                     _rabbitMq.Dispose();
                     _messageQueue.Dispose();
+                    Log.Info(nameof(ReadRabbitMqMessagesLoop), $"{typeof(T).Name} RabbitMq connection closed:  {_rabbitSettings.QueueName}.", "RabbitMqClosed");
                 }
             });
         }

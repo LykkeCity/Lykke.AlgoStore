@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
+using Lykke.Common.Log;
 
 #pragma warning disable 618
 
@@ -37,9 +38,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         protected readonly RealTimeDataSourceBase<T> DataListener;
         protected readonly WebSocketAuthenticationManager _authManager;
 
-        public WebSocketHandlerBase(ILog log, RealTimeDataSourceBase<T> dataListener, WebSocketAuthenticationManager authManager)
+        public WebSocketHandlerBase(ILogFactory logFactory, RealTimeDataSourceBase<T> dataListener, WebSocketAuthenticationManager authManager)
         {
-            Log = log;
+            Log = logFactory.CreateLog(Constants.LogComponent);
             DataListener = dataListener;
             Messages = DataListener.Select(t => t);
             _authManager = authManager;
@@ -67,7 +68,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             }
 
             var requestType = context.Request.PathBase.Value;
-            await Log.WriteInfoAsync(nameof(DummyWebSocketHandler), nameof(OnConnected), $"Web socket connection for {requestType} opened. ConnectionId = {ConnectionId}.");
+            Log.Info(nameof(WebSocketHandlerBase<T>), $"Web socket {requestType} connection opened. InstanceId = {ConnectionId}.", nameof(OnConnected));
             return true;
         }
 
@@ -89,19 +90,19 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                             }
                             catch (WebSocketException ex)
                             {
-                                await Log.WriteErrorAsync(nameof(WebSocketHandlerBase<T>), "Error while attempting to send message over socket for ConnectionId={ConnectionId}. Message={msgJson}", ex);
+                                Log.Error(ex, "Error while attempting to send message over socket for ConnectionId={ConnectionId}. Message={msgJson}", nameof(StreamData));
                                 await OnDisconnected(ex);
                             }
                         }
                     },
                     onError: async ex =>
                     {
-                        await Log.WriteErrorAsync(nameof(WebSocketHandlerBase<T>), "Error while reading data from source for ConnectionId={ConnectionId}.", ex);
+                        Log.Error(ex, $"Error while reading data from source for ConnectionId={ConnectionId}.", nameof(StreamData));
                         await OnDisconnected(ex);
                     },
                     onCompleted: async () =>
                     {
-                        await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(StreamData), $"Data source for ConnectionId={ConnectionId} completed.");
+                        Log.Info(nameof(WebSocketHandlerBase<T>), $"Data source for ConnectionId={ConnectionId} completed.", "DataCompleted");
                         DataListener.TokenSource.Cancel();
                     });
 
@@ -114,7 +115,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                             await Task.Delay(TimeSpan.FromSeconds(1));
                         }
                     }
-                    catch (WebSocketException ex)
+                    catch (Exception ex)
                     {
                         await OnDisconnected(ex);
                     }
@@ -145,7 +146,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     }
                 }
             }
-            catch (WebSocketException ex)
+            catch (Exception ex)
             {
                 await OnDisconnected(ex);
             }
@@ -179,7 +180,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 if (Socket.CloseStatus == WebSocketCloseStatus.EndpointUnavailable)
                 {
                     Socket.Dispose();
-                    await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed due to client disconnect. " + exception);
+                    Log.Info(nameof(WebSocketHandlerBase<T>), $"WebSocket ConnectionId={ConnectionId} closed due to client disconnect. ", nameof(OnDisconnected));
                     return;
                 }
 
@@ -188,26 +189,26 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     if (exception == null)
                     {
                         await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Socket closure requested.", CancellationToken.None);
-                        await Log.WriteInfoAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed.");
+                        Log.Info(nameof(WebSocketHandlerBase<T>), $"WebSocket ConnectionId={ConnectionId} closed.", nameof(OnDisconnected));
                     }
                     else
                     {
                         if ((exception as WebSocketException)?.Message == _authManager.UNAUTHORIZED_MESSAGE)
                         {
                             await Socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, _authManager.UNAUTHORIZED_MESSAGE ?? Constants.WebSocketErrorMessage, CancellationToken.None);
+                            Log.Warning($"WebSocket ConnectionId={ConnectionId} closed due to client not authorized.", exception, nameof(OnDisconnected));
                         }
                         else
                         {
                             await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, Constants.WebSocketErrorMessage, CancellationToken.None);
+                            Log.Warning($"WebSocket ConnectionId={ConnectionId} closed due to error.", exception, nameof(OnDisconnected));
                         }
-                        
-                        await Log.WriteWarningAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"WebSocket ConnectionId={ConnectionId} closed due to error.", exception);
                     }
                 }
             }
             catch (Exception ex)
             {
-                await Log.WriteErrorAsync(nameof(WebSocketHandlerBase<T>), nameof(OnDisconnected), $"Error while trying to close WebSocket ConnectionId={ConnectionId}. Current socket state {Socket?.State}, closure status {Socket?.CloseStatus}  ", ex);
+                Log.Error(ex, $"Error while trying to close WebSocket ConnectionId={ConnectionId}. Current socket state {Socket?.State}, closure status {Socket?.CloseStatus}  ", nameof(OnDisconnected));
             }
         }
     }
