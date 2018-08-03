@@ -138,6 +138,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             try
             {
                 var session = new StompSession(Socket);
+                session.AddAuthenticationCallback(_authManager.AuthenticateAsync);
+
                 await session.Listen();
 
                 while (Socket.State == WebSocketState.Open)
@@ -150,8 +152,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     }
                     else if (!_authManager.IsAuthenticated())
                     {
-                        var message = Encoding.UTF8.GetString(result.Message.ToArray());
-                        await _authManager.AuthenticateAsync(message);
+                        //var message = Encoding.UTF8.GetString(result.Message.ToArray());
+                        //await _authManager.AuthenticateAsync(message);
                     }
                 }
             }
@@ -202,16 +204,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     }
                     else
                     {
-                        if ((exception as WebSocketException)?.Message == _authManager.UNAUTHORIZED_MESSAGE)
-                        {
-                            await Socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, _authManager.UNAUTHORIZED_MESSAGE ?? Constants.WebSocketErrorMessage, CancellationToken.None);
-                            Log.Warning($"WebSocket ConnectionId={ConnectionId} closed due to client not authorized.", exception, nameof(OnDisconnected));
-                        }
-                        else
-                        {
-                            await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, Constants.WebSocketErrorMessage, CancellationToken.None);
-                            Log.Warning($"WebSocket ConnectionId={ConnectionId} closed due to error.", exception, nameof(OnDisconnected));
-                        }
+                        await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, Constants.WebSocketErrorMessage, CancellationToken.None);
+                        Log.Warning($"WebSocket ConnectionId={ConnectionId} closed due to error.", exception, nameof(OnDisconnected));
                     }
                 }
             }

@@ -14,10 +14,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets
         private readonly IClientSessionsClient _clientSessionsClient;
         private bool _isAuthenticated = false;
         private IWebSocketHandler _webSocketHandler;
-        private Timer _timer;
         private ILog Log;
-        private readonly int UNAUTHORIZED_TIME_ALLOWANCE_SECONDS = 10;
-        public readonly string UNAUTHORIZED_MESSAGE = "Unauthorized";
 
         public WebSocketAuthenticationManager(IClientSessionsClient clientSessionsClient, ILogFactory log)
         {
@@ -29,19 +26,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets
         {
             _webSocketHandler = webSocketHandler;
             _isAuthenticated = false;
-            _timer = new Timer(UNAUTHORIZED_TIME_ALLOWANCE_SECONDS * 1000)
-            {
-                Enabled = true,
-                AutoReset = false
-            };
-            _timer.Elapsed += (sender, args) =>
-            {
-                if (!IsAuthenticated())
-                {
-                    //_webSocketHandler.OnDisconnected(new WebSocketException(UNAUTHORIZED_MESSAGE));
-                }
-                CancelTimer(); 
-            };
         }
 
         public bool IsAuthenticated()
@@ -49,34 +33,24 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets
             return _isAuthenticated;
         }
 
-        public async Task AuthenticateAsync(string authString)
+        public async Task<bool> AuthenticateAsync(string clientId, string token)
         {
             if (!IsAuthenticated())
             {
-                if (new Regex(@"^(Token:[a-zA-Z\d-]+)(_)(ClientId:.*)").IsMatch(authString))
+                var session = await _clientSessionsClient.GetAsync(token);
+                if (session != null && session.ClientId == clientId)
                 {
-                    var tokenParsed = authString.Split("_")[0].Replace("Token:", "");
-                    var clientIdParsed = authString.Split("_")[1].Replace("ClientId:", "");
-
-                    var session = await _clientSessionsClient.GetAsync(tokenParsed);
-                    if (session != null && session.ClientId == clientIdParsed)
-                    {
-                        _isAuthenticated = true;
-                        Log.Info(nameof(WebSocketAuthenticationManager), $"Successful websocket authentication for cleintId {clientIdParsed}. {_webSocketHandler.GetType().Name}", "AuthenticateOK");
-                        CancelTimer();
-                    }
-                    else
-                    {
-                        await _webSocketHandler.OnDisconnected(new WebSocketException(UNAUTHORIZED_MESSAGE));
-                    }
+                    _isAuthenticated = true;
+                    Log.Info(nameof(WebSocketAuthenticationManager), 
+                        $"Successful websocket authentication for clientId {clientId}." +
+                        $" {_webSocketHandler.GetType().Name}", "AuthenticateOK");
+                    return true;
                 }
-            }
-        }
 
-        private void CancelTimer()
-        {
-            _timer.Stop();
-            _timer.Dispose();
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -27,11 +27,30 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
         private string _subscribed;
 
+        private readonly HashSet<Func<string, string, Task<bool>>> _authenticationCallbacks
+            = new HashSet<Func<string, string, Task<bool>>>();
+
         public StompSession(WebSocket webSocket, 
             TimeSpan? connectTimeout = null, TimeSpan? maxHeartbeatTimespan = null)
         {
             _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
             _connectTimeout = connectTimeout ?? TimeSpan.FromSeconds(10);
+        }
+
+        public void AddAuthenticationCallback(Func<string, string, Task<bool>> callback)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            _authenticationCallbacks.Add(callback);
+        }
+
+        public void RemoveAuthenticationCallback(Func<string, string, Task<bool>> callback)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            _authenticationCallbacks.Remove(callback);
         }
 
         public async Task Listen()
@@ -126,13 +145,22 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private async Task<bool> Handshake()
         {
             var cts = new CancellationTokenSource(_connectTimeout);
-            var result = await ReceiveFullMessage(cts.Token);
+            WebSocketReceiveResult result;
+            IEnumerable<byte> message;
+            try
+            {
+                (result, message) = await ReceiveFullMessage(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
 
-            if (result.ReceiveResult.MessageType == WebSocketMessageType.Close)
+            if (result.MessageType == WebSocketMessageType.Close)
                 return false;
             else
             {
-                var msg = Message.Deserialize(Encoding.UTF8.GetString(result.Message.ToArray()));
+                var msg = Message.Deserialize(Encoding.UTF8.GetString(message.ToArray()));
 
                 if (msg == null || !Message.IsClientCommandValid(msg.Command) || (msg.Command != "CONNECT" && msg.Command != "STOMP"))
                 {
@@ -153,6 +181,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 var heartbeatHeader = await NegotiateHeartbeat(msg);
                 if (heartbeatHeader == null)
                     return false;
+
+                foreach(var callback in _authenticationCallbacks)
+                {
+                    if(!await callback(msg.HeaderDictionary["login"], msg.HeaderDictionary["passcode"]))
+                    {
+                        await CloseWithError("invalid credentials", "");
+                        return false;
+                    }
+                }
 
                 var response = new Message
                 {
