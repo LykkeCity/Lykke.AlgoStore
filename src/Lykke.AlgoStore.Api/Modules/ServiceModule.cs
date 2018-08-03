@@ -109,8 +109,6 @@ namespace Lykke.AlgoStore.Api.Modules
                 QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions.QueueName
             };
 
-            builder.RegisterType<WebSocketAuthenticationManager>().As<WebSocketAuthenticationManager>().InstancePerDependency();
-
             RegisterObservableRabbitMqConnection<OrderBook>(builder, rabbitMqDummyDataOrderBooks, logFactory);
             RegisterObservableRabbitMqConnection<CandleChartingUpdate>(builder, rabbitMqCandles, logFactory);
             RegisterObservableRabbitMqConnection<TradeChartingUpdate>(builder, rabbitMqTrades, logFactory);

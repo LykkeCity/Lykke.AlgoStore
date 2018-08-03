@@ -1,7 +1,9 @@
 ﻿using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.Common.Log;
+using Lykke.Service.Session;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
@@ -12,7 +14,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 {
     public class DummyWebSocketHandler : WebSocketHandlerBase<OrderBook>
     {
-        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> orderBooksListener, ILogFactory log, WebSocketAuthenticationManager authManager) : base(log, orderBooksListener, authManager)
+        public DummyWebSocketHandler(RealTimeDataSourceBase<OrderBook> candlesListener, ILogFactory log,
+            IClientSessionsClient sessionClient, IAlgoClientInstanceRepository instanceRepo) : base(log, candlesListener, sessionClient, instanceRepo)
         {
            
         }

@@ -1,4 +1,5 @@
 ﻿using Lykke.AlgoStore.Algo;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
 using Newtonsoft.Json;
 using System;
@@ -16,12 +17,19 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private readonly WebSocket _webSocket;
         private readonly TimeSpan _connectTimeout;
 
+        private readonly Dictionary<string, string> _subscribedQueues = new Dictionary<string, string>();
+        private readonly HashSet<Func<string, string, Task<bool>>> _authenticationCallbacks
+            = new HashSet<Func<string, string, Task<bool>>>();
+        private readonly HashSet<Func<string, Task<bool>>> _subscriptionCallbacks = new HashSet<Func<string, Task<bool>>>();
+
         private bool _listening;
 
         private bool _expectClientHeartbeats;
         private bool _expectServerHeartbeats;
+
         private TimeSpan _clientHeartbeatInterval;
         private TimeSpan _serverHeartbeatInterval;
+
         private DateTime _lastClientMessage = DateTime.UtcNow;
         private DateTime _lastServerMessage = DateTime.UtcNow;
 
@@ -31,9 +39,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private string _version;
 
         private string _subscribed;
-
-        private readonly HashSet<Func<string, string, Task<bool>>> _authenticationCallbacks
-            = new HashSet<Func<string, string, Task<bool>>>();
 
         public StompSession(WebSocket webSocket, 
             TimeSpan? connectTimeout = null, TimeSpan? maxHeartbeatTimespan = null)
@@ -58,6 +63,22 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             _authenticationCallbacks.Remove(callback);
         }
 
+        public void AddSubscriptionCallback(Func<string, Task<bool>> callback)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            _subscriptionCallbacks.Add(callback);
+        }
+
+        public void RemoveSubscriptionCallback(Func<string, Task<bool>> callback)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            _subscriptionCallbacks.Remove(callback);
+        }
+
         public async Task Listen()
         {
             if (_listening) throw new InvalidOperationException("Already listening to this WebSocket");
@@ -80,15 +101,40 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                         var message = Encoding.UTF8.GetString(result.Message.ToArray());
 
                         // Heartbeat message
-                        if (string.IsNullOrEmpty(Utils.RemoveEol(message)))
-                            continue;
+                        if (!string.IsNullOrEmpty(message) && (message == "\n" || message == "\r\n")) continue;
 
                         var msg = Message.Deserialize(message);
 
                         if (msg.Command == "SUBSCRIBE")
                         {
-                            _subscribed = msg.HeaderDictionary["id"];
-                            BeginSending();
+                            if (!msg.HasHeader("id") || !msg.HasHeader("destination"))
+                            {
+                                await CloseWithError("id and destination headers are required", "");
+                                return;
+                            }
+
+                            var subscriptionId = msg.HeaderDictionary["id"];
+                            var queue = msg.HeaderDictionary["destination"];
+
+                            if (queue == "dummy")
+                            {
+                                _subscribed = subscriptionId;
+                                BeginSending();
+                                continue;
+                            }
+
+                            var callbackSuccess = false;
+
+                            foreach (var callback in _subscriptionCallbacks)
+                            {
+                                callbackSuccess |= await callback(queue);
+                            }
+
+                            if (!callbackSuccess)
+                            {
+                                await CloseWithError("invalid queue", "");
+                                return;
+                            }
                         }
                     }
                 }
@@ -109,7 +155,38 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
             while(_webSocket.State == WebSocketState.Open)
             {
-                var msg = JsonConvert.SerializeObject(new Candle { DateTime = DateTime.UtcNow });
+                string msg;
+                var instanceId = Guid.NewGuid();
+
+                if (msgId % 3 == 0)
+                    msg = JsonConvert.SerializeObject(new CandleChartingUpdate
+                    {
+                        DateTime = DateTime.UtcNow,
+                    });
+                else if (msgId % 3 == 1)
+                    msg = JsonConvert.SerializeObject(new FunctionChartingUpdate
+                    {
+                        CalculatedOn = DateTime.UtcNow,
+                        FunctionName = "asdf",
+                        InnerFunctions = new List<FunctionChartingUpdate>(),
+                        InstanceId = instanceId.ToString(),
+                        Value = 69
+                    });
+                else
+                    msg = JsonConvert.SerializeObject(new TradeChartingUpdate
+                    {
+                        AssetId = "BTC",
+                        Amount = 1,
+                        AssetPairId = "BTCUSD",
+                        DateOfTrade = DateTime.UtcNow,
+                        InstanceId = instanceId.ToString(),
+                        Id = Guid.NewGuid().ToString(),
+                        OrderId = Guid.NewGuid().ToString(),
+                        Fee = 0.123,
+                        IsBuy = false,
+                        Price = 1234,
+                        WalletId = Guid.NewGuid().ToString()
+                    });
 
                 var dummyMsg = new Message
                 {
@@ -118,14 +195,22 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                     Headers = new Header[]
                     {
                         new Header("subscription", _subscribed),
-                        new Header("destination", "/queue/foo"),
-                        new Header("content-type", "text/plain"),
+                        new Header("destination", "dummy"),
+                        new Header("content-type", "application/json"),
                         new Header("content-length", msg.Length.ToString()),
                         new Header("message-id", msgId.ToString())
                     }
                 };
 
-                await SendMessage(dummyMsg);
+                try
+                {
+                    await SendMessage(dummyMsg);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+
                 msgId++;
 
                 await Task.Delay(1000);
@@ -222,13 +307,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 if (heartbeatHeader == null)
                     return false;
 
+                var callbackSuccess = false;
+
                 foreach(var callback in _authenticationCallbacks)
                 {
-                    if(!await callback(msg.HeaderDictionary["login"], msg.HeaderDictionary["passcode"]))
-                    {
-                        await CloseWithError("invalid credentials", "");
-                        return false;
-                    }
+                    callbackSuccess |= await callback(msg.HeaderDictionary["login"], msg.HeaderDictionary["passcode"]);
+                }
+
+                if (!callbackSuccess)
+                {
+                    await CloseWithError("invalid credentials", "");
+                    return false;
                 }
 
                 var response = new Message

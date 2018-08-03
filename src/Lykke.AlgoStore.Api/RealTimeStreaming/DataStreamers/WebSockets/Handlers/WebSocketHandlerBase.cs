@@ -15,6 +15,8 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.Common.Log;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.Service.Session;
 
 #pragma warning disable 618
 
@@ -37,15 +39,23 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         protected Action ConfigureDataSource;
         protected string ConnectionId;
         protected readonly RealTimeDataSourceBase<T> DataListener;
-        protected readonly WebSocketAuthenticationManager _authManager;
+        
+        private readonly IAlgoClientInstanceRepository _clientInstanceRepository;
+        private readonly IClientSessionsClient _clientSessionsClient;
 
-        public WebSocketHandlerBase(ILogFactory logFactory, RealTimeDataSourceBase<T> dataListener, WebSocketAuthenticationManager authManager)
+        private string _clientId;
+
+        public WebSocketHandlerBase(
+            ILogFactory logFactory,
+            RealTimeDataSourceBase<T> dataListener,
+            IClientSessionsClient clientSessionsClient,
+            IAlgoClientInstanceRepository clientInstanceRepository)
         {
             Log = logFactory.CreateLog(Constants.LogComponent);
             DataListener = dataListener;
             Messages = DataListener.Select(t => t);
-            _authManager = authManager;
-            _authManager.StartSession(this);
+            _clientSessionsClient = clientSessionsClient;
+            _clientInstanceRepository = clientInstanceRepository;
         }
 
         public virtual async Task<bool> OnConnected(HttpContext context)
@@ -88,7 +98,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                         var msgJson = MessagePackSerializer.ToJson(message, MessagePack.Resolvers.ContractlessStandardResolver.Instance);
                         var bytes = Encoding.UTF8.GetBytes(msgJson);
 
-                        if (Socket.State == WebSocketState.Open && _authManager.IsAuthenticated())
+                        if (Socket.State == WebSocketState.Open)
                         {
                             try
                             {
@@ -138,7 +148,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             try
             {
                 var session = new StompSession(Socket);
-                session.AddAuthenticationCallback(_authManager.AuthenticateAsync);
+                session.AddAuthenticationCallback(AuthenticateAsync);
 
                 await session.Listen();
 
@@ -149,11 +159,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     if (result.ReceiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         await OnDisconnected();
-                    }
-                    else if (!_authManager.IsAuthenticated())
-                    {
-                        //var message = Encoding.UTF8.GetString(result.Message.ToArray());
-                        //await _authManager.AuthenticateAsync(message);
                     }
                 }
             }
@@ -213,6 +218,39 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             {
                 Log.Error(ex, $"Error while trying to close WebSocket ConnectionId={ConnectionId}. Current socket state {Socket?.State}, closure status {Socket?.CloseStatus}  ", nameof(OnDisconnected));
             }
+        }
+
+        private async Task<bool> SubscribeAsync(string queueName)
+        {
+            var splits = queueName.Split('/');
+
+            if (splits.Length < 3) return false;
+
+            if (splits[0] != "instance") return false;
+
+            var instanceId = splits[1];
+
+            if (!await _clientInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(_clientId, instanceId))
+                return false;
+
+            return true;
+        }
+
+        public async Task<bool> AuthenticateAsync(string clientId, string token)
+        {
+            var session = await _clientSessionsClient.GetAsync(token);
+            if (session != null && session.ClientId == clientId)
+            {
+                Log.Info(nameof(WebSocketHandlerBase<T>),
+                    $"Successful websocket authentication for clientId {clientId}." +
+                    $" {GetType().Name}", "AuthenticateOK");
+
+                _clientId = clientId;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }
