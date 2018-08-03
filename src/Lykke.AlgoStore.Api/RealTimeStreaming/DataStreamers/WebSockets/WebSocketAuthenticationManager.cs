@@ -38,7 +38,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets
             {
                 if (!IsAuthenticated())
                 {
-                    _webSocketHandler.OnDisconnected(new WebSocketException(UNAUTHORIZED_MESSAGE));
+                    //_webSocketHandler.OnDisconnected(new WebSocketException(UNAUTHORIZED_MESSAGE));
                 }
                 CancelTimer(); 
             };

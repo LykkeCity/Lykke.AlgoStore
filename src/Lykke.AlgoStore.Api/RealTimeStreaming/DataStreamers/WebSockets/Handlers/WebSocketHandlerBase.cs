@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Filters;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.Common.Log;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp;
 
 #pragma warning disable 618
 
@@ -131,6 +132,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         {
             try
             {
+                var session = new StompSession(Socket);
+                await session.Listen();
+
                 while (Socket.State == WebSocketState.Open)
                 {
                     var result = await ReceiveFullMessage(CancellationToken.None);
