@@ -31,7 +31,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         protected IObservable<CandleChartingUpdate> Messages;
         protected readonly ILog Log;
         protected Action ConfigureDataSource;
-        protected string ConnectionId;
 
         private readonly RealTimeDataSource<CandleChartingUpdate> _candleSource;
         private readonly RealTimeDataSource<FunctionChartingUpdate> _functionSource;
@@ -70,13 +69,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         public virtual async Task<bool> OnConnected(HttpContext context)
         {
-            ConnectionId = context.Request.Query[Constants.InstanceIdIdentifier];
-
-            if (String.IsNullOrWhiteSpace(ConnectionId))
-            {
-                throw new HttpRequestException("Incorrect instance id supplied.");
-            }
-
             if (context.WebSockets.WebSocketRequestedProtocols.Contains("v12.stomp"))
                 Socket = await context.WebSockets.AcceptWebSocketAsync("v12.stomp");
             else if (context.WebSockets.WebSocketRequestedProtocols.Contains("v11.stomp"))
@@ -87,7 +79,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             SubscribeAll();
 
             var requestType = context.Request.PathBase.Value;
-            Log.Info(nameof(WebSocketHandler), $"Web socket {requestType} connection opened. InstanceId = {ConnectionId}.", nameof(OnConnected));
             return true;
         }
 
@@ -145,7 +136,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 if (Socket.CloseStatus == WebSocketCloseStatus.EndpointUnavailable)
                 {
                     Socket.Dispose();
-                    Log.Info(nameof(WebSocketHandler), $"WebSocket ConnectionId={ConnectionId} closed due to client disconnect. ", nameof(OnDisconnected));
+                    Log.Info(nameof(WebSocketHandler), $"WebSocket ConnectionId={_clientId} closed due to client disconnect. ", nameof(OnDisconnected));
                     return;
                 }
 
@@ -154,18 +145,18 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     if (exception == null)
                     {
                         await Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Socket closure requested.", CancellationToken.None);
-                        Log.Info(nameof(WebSocketHandler), $"WebSocket ConnectionId={ConnectionId} closed.", nameof(OnDisconnected));
+                        Log.Info(nameof(WebSocketHandler), $"WebSocket ConnectionId={_clientId} closed.", nameof(OnDisconnected));
                     }
                     else
                     {
                         await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, Constants.WebSocketErrorMessage, CancellationToken.None);
-                        Log.Warning($"WebSocket ConnectionId={ConnectionId} closed due to error.", exception, nameof(OnDisconnected));
+                        Log.Warning($"WebSocket ConnectionId={_clientId} closed due to error.", exception, nameof(OnDisconnected));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"Error while trying to close WebSocket ConnectionId={ConnectionId}. Current socket state {Socket?.State}, closure status {Socket?.CloseStatus}  ", nameof(OnDisconnected));
+                Log.Error(ex, $"Error while trying to close WebSocket ConnectionId={_clientId}. Current socket state {Socket?.State}, closure status {Socket?.CloseStatus}  ", nameof(OnDisconnected));
             }
         }
 
