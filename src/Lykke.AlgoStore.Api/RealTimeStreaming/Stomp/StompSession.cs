@@ -317,7 +317,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                     _serverHeartbeat = ServerHeartbeat();
 
                 return new Header("heart-beat",
-                    $"{clientHeartbeat},{serverHeartbeat}");
+                    $"{serverHeartbeat},{clientHeartbeat}");
             }
             else
             {
