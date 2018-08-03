@@ -1,4 +1,6 @@
-﻿using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
+﻿using Lykke.AlgoStore.Algo;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +24,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private TimeSpan _serverHeartbeatInterval;
 
         private string _version;
+
+        private string _subscribed;
 
         public StompSession(WebSocket webSocket, 
             TimeSpan? connectTimeout = null, TimeSpan? maxHeartbeatTimespan = null)
@@ -47,6 +51,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                     {
                         //await OnDisconnected();
                     }
+                    else
+                    {
+                        var message = Encoding.UTF8.GetString(result.Message.ToArray());
+                        var msg = Message.Deserialize(message);
+
+                        if (msg.Command == "SUBSCRIBE")
+                        {
+                            _subscribed = msg.HeaderDictionary["id"];
+                            BeginSending();
+                        }
+                    }
                     //else if (!_authManager.IsAuthenticated())
                     //{
                     //    var message = Encoding.UTF8.GetString(result.Message.ToArray());
@@ -61,6 +76,35 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             finally
             {
                 //DataListener.TokenSource.Cancel();
+            }
+        }
+
+        private async void BeginSending()
+        {
+            var msgId = 1;
+
+            while(_webSocket.State == WebSocketState.Open)
+            {
+                var msg = JsonConvert.SerializeObject(new Candle { DateTime = DateTime.UtcNow });
+
+                var dummyMsg = new Message
+                {
+                    Command = "MESSAGE",
+                    Body = msg,
+                    Headers = new Header[]
+                    {
+                        new Header("subscription", _subscribed),
+                        new Header("destination", "/queue/foo"),
+                        new Header("content-type", "text/plain"),
+                        new Header("content-length", msg.Length.ToString()),
+                        new Header("message-id", msgId.ToString())
+                    }
+                };
+
+                await SendMessage(dummyMsg);
+                msgId++;
+
+                await Task.Delay(1000);
             }
         }
 
