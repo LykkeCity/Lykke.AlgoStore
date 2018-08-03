@@ -2,10 +2,7 @@
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.Common.Log;
 using Lykke.Service.Session;
-using System.Net.WebSockets;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets
 {

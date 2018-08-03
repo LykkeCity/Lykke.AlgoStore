@@ -22,6 +22,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private bool _expectServerHeartbeats;
         private TimeSpan _clientHeartbeatInterval;
         private TimeSpan _serverHeartbeatInterval;
+        private DateTime _lastClientMessage = DateTime.UtcNow;
+        private DateTime _lastServerMessage = DateTime.UtcNow;
+
+        private Task _serverHeartbeat;
+        private Task _clientHeartbeat;
 
         private string _version;
 
@@ -73,6 +78,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                     else
                     {
                         var message = Encoding.UTF8.GetString(result.Message.ToArray());
+
+                        // Heartbeat message
+                        if (string.IsNullOrEmpty(Utils.RemoveEol(message)))
+                            continue;
+
                         var msg = Message.Deserialize(message);
 
                         if (msg.Command == "SUBSCRIBE")
@@ -81,11 +91,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                             BeginSending();
                         }
                     }
-                    //else if (!_authManager.IsAuthenticated())
-                    //{
-                    //    var message = Encoding.UTF8.GetString(result.Message.ToArray());
-                    //    await _authManager.AuthenticateAsync(message);
-                    //}
                 }
             }
             catch (Exception ex)
@@ -127,6 +132,39 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             }
         }
 
+        private async Task ServerHeartbeat()
+        {
+            while(_webSocket.State == WebSocketState.Open)
+            {
+                var delayTime = _serverHeartbeatInterval - (DateTime.UtcNow - _lastServerMessage);
+
+                if (delayTime > TimeSpan.Zero)
+                    await Task.Delay(delayTime);
+
+                if (DateTime.UtcNow - _lastServerMessage < _serverHeartbeatInterval)
+                    continue;
+
+                if(_webSocket.State == WebSocketState.Open)
+                    await SendMessage(Encoding.UTF8.GetBytes("\n"));
+            }
+        }
+
+        private async Task ClientHeartbeat()
+        {
+            while (_webSocket.State == WebSocketState.Open)
+            {
+                var delayTime = _clientHeartbeatInterval - (DateTime.UtcNow - _lastClientMessage);
+
+                if (delayTime > TimeSpan.Zero)
+                    await Task.Delay(delayTime);
+
+                if (DateTime.UtcNow - _lastClientMessage < _clientHeartbeatInterval)
+                    continue;
+
+                await CloseWithError("heart-beat expired", "");
+            }
+        }
+
         private async Task<(WebSocketReceiveResult ReceiveResult, IEnumerable<byte> Message)> ReceiveFullMessage(CancellationToken cancelToken)
         {
             WebSocketReceiveResult response;
@@ -138,6 +176,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 response = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancelToken);
                 message.AddRange(new ArraySegment<byte>(buffer, 0, response.Count));
             } while (!response.EndOfMessage);
+
+            _lastClientMessage = DateTime.UtcNow;
 
             return (ReceiveResult: response, Message: message);
         }
@@ -226,13 +266,23 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
             await SendMessage(message);
             await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "See STOMP ERROR frame", CancellationToken.None);
+            if (_expectClientHeartbeats)
+                await _clientHeartbeat;
+            if (_expectServerHeartbeats)
+                await _serverHeartbeat;
         }
 
         private async Task SendMessage(Message msg)
         {
             var msgBytes = Encoding.UTF8.GetBytes(msg.Serialize());
 
-            await _webSocket.SendAsync(new ArraySegment<byte>(msgBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            await SendMessage(msgBytes);
+        }
+
+        private async Task SendMessage(byte[] bytes)
+        {
+            await _webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            _lastServerMessage = DateTime.UtcNow;
         }
 
         private async Task<Header> NegotiateHeartbeat(Message msg)
@@ -260,7 +310,14 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 _clientHeartbeatInterval = TimeSpan.FromMilliseconds(clientHeartbeat + 1000);
                 _serverHeartbeatInterval = TimeSpan.FromMilliseconds(serverHeartbeat);
 
-                return new Header("heart-beat", $"0,0");
+                if (_expectClientHeartbeats)
+                    _clientHeartbeat = ClientHeartbeat();
+
+                if (_expectServerHeartbeats)
+                    _serverHeartbeat = ServerHeartbeat();
+
+                return new Header("heart-beat",
+                    $"{clientHeartbeat},{serverHeartbeat}");
             }
             else
             {
