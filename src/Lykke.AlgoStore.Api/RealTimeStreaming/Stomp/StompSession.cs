@@ -108,7 +108,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             }
         }
 
-        protected async Task<(WebSocketReceiveResult ReceiveResult, IEnumerable<byte> Message)> ReceiveFullMessage(CancellationToken cancelToken)
+        private async Task<(WebSocketReceiveResult ReceiveResult, IEnumerable<byte> Message)> ReceiveFullMessage(CancellationToken cancelToken)
         {
             WebSocketReceiveResult response;
             var message = new List<byte>();
@@ -134,7 +134,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             {
                 var msg = Message.Deserialize(Encoding.UTF8.GetString(result.Message.ToArray()));
 
-                if (msg == null || !Message.IsClientCommandValid(msg.Command) || msg.Command != "CONNECT")
+                if (msg == null || !Message.IsClientCommandValid(msg.Command) || (msg.Command != "CONNECT" && msg.Command != "STOMP"))
                 {
                     await CloseWithError("Expected CONNECT message", "");
                     return false;

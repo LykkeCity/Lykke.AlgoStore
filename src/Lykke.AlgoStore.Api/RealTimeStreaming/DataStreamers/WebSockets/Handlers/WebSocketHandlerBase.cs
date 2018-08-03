@@ -57,7 +57,12 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 throw new HttpRequestException("Incorrect instance id supplied.");
             }
 
-            Socket = await context.WebSockets.AcceptWebSocketAsync();
+            if (context.WebSockets.WebSocketRequestedProtocols.Contains("v12.stomp"))
+                Socket = await context.WebSockets.AcceptWebSocketAsync("v12.stomp");
+            else if (context.WebSockets.WebSocketRequestedProtocols.Contains("v11.stomp"))
+                Socket = await context.WebSockets.AcceptWebSocketAsync("v11.stomp");
+            else
+                Socket = await context.WebSockets.AcceptWebSocketAsync();
 
             if (ConfigureDataSource != null)
             {
