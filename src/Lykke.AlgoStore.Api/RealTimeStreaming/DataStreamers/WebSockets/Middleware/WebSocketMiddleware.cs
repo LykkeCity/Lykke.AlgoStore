@@ -42,10 +42,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
                     var connected = await webSocketHandler.OnConnected(context);
                     if (connected)
                     {
-                        var outbandData = webSocketHandler.StreamData();
-                        var inboundData = webSocketHandler.Listen();
-
-                        await Task.WhenAny(outbandData, inboundData);
+                        await webSocketHandler.Listen();
                     }
                     return true;
                 }

@@ -40,6 +40,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
         private string _subscribed;
 
+        private ulong _currentMessageId;
+
         public StompSession(WebSocket webSocket, 
             TimeSpan? connectTimeout = null, TimeSpan? maxHeartbeatTimespan = null)
         {
@@ -79,6 +81,29 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             _subscriptionCallbacks.Remove(callback);
         }
 
+        public async Task SendToQueueAsync<T>(string queueName, T message)
+        {
+            var msgBody = JsonConvert.SerializeObject(message);
+
+            var msg = new Message
+            {
+                Command = "MESSAGE",
+                Body = msgBody,
+                Headers = new Header[]
+                {
+                    new Header("subscription", _subscribedQueues[queueName]),
+                    new Header("destination", queueName),
+                    new Header("content-type", "application/json"),
+                    new Header("content-length", msgBody.Length.ToString()),
+                    new Header("message-id", _currentMessageId.ToString())
+                }
+            };
+
+            _currentMessageId++;
+
+            await SendMessage(msg);
+        }
+
         public async Task Listen()
         {
             if (_listening) throw new InvalidOperationException("Already listening to this WebSocket");
@@ -116,6 +141,12 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                             var subscriptionId = msg.HeaderDictionary["id"];
                             var queue = msg.HeaderDictionary["destination"];
 
+                            if(_subscribedQueues.ContainsKey(queue))
+                            {
+                                await CloseWithError("already subscribed to queue", "");
+                                return;
+                            }
+
                             if (queue == "dummy")
                             {
                                 _subscribed = subscriptionId;
@@ -135,6 +166,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                                 await CloseWithError("invalid queue", "");
                                 return;
                             }
+
+                            _subscribedQueues.Add(queue, subscriptionId);
                         }
                     }
                 }

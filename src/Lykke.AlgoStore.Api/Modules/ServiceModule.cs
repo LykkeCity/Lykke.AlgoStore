@@ -20,12 +20,9 @@ using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Dynamic;
 using Lykke.AlgoStore.Algo.Charting;
-using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
-using Lykke.AlgoStore.Api.RealTimeStreaming.DataTypes;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
 using Lykke.AlgoStore.Core.Constants;
@@ -37,7 +34,6 @@ using Lykke.Logs;
 using Lykke.Logs.Loggers.LykkeAzureTable;
 using Lykke.Logs.Loggers.LykkeConsole;
 using Lykke.RabbitMqBroker.Subscriber;
-using Newtonsoft.Json;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -109,27 +105,21 @@ namespace Lykke.AlgoStore.Api.Modules
                 QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions.QueueName
             };
 
-            RegisterObservableRabbitMqConnection<OrderBook>(builder, rabbitMqDummyDataOrderBooks, logFactory);
-            RegisterObservableRabbitMqConnection<CandleChartingUpdate>(builder, rabbitMqCandles, logFactory);
-            RegisterObservableRabbitMqConnection<TradeChartingUpdate>(builder, rabbitMqTrades, logFactory);
-            RegisterObservableRabbitMqConnection<FunctionChartingUpdate>(builder, rabbitMqFunctions, logFactory);
+            RegisterRabbitMqConnection<CandleChartingUpdate>(builder, rabbitMqCandles, logFactory);
+            RegisterRabbitMqConnection<TradeChartingUpdate>(builder, rabbitMqTrades, logFactory);
+            RegisterRabbitMqConnection<FunctionChartingUpdate>(builder, rabbitMqFunctions, logFactory);
 
             builder.RegisterGeneric(typeof(WebSocketMiddleware<>)).InstancePerDependency();
-            builder.RegisterGeneric(typeof(WebSocketHandlerBase<>)).InstancePerDependency();
-            builder.RegisterType<DummyWebSocketHandler>().InstancePerDependency();
-            builder.RegisterType<CandlesWebSocketHandler>().InstancePerDependency();
-            builder.RegisterType<WebSocketHandlerBase<TradeChartingUpdate>>().InstancePerDependency();
-            builder.RegisterType<WebSocketHandlerBase<FunctionChartingUpdate>>().InstancePerDependency();
-
+            builder.RegisterType<WebSocketHandler>().InstancePerDependency();
         }
 
-        private void RegisterObservableRabbitMqConnection<T>(ContainerBuilder container, RabbitMqSubscriptionSettings exchangeConfiguration, ILogFactory logFactory, string regKey = "") where T : IChartingUpdate
+        private void RegisterRabbitMqConnection<T>(ContainerBuilder container, RabbitMqSubscriptionSettings exchangeConfiguration, ILogFactory logFactory, string regKey = "") where T : IChartingUpdate
         {
-            container.RegisterType<ObservableRabbitMqConnection<T>>()
+            container.RegisterType<RabbitMqDataSource<T>>()
                 .WithParameter("rabbitSettings", exchangeConfiguration)
                 .WithParameter("logFactory", logFactory)
-                .InstancePerDependency()
-                .As<RealTimeDataSourceBase<T>>();
+                .SingleInstance()
+                .As<RealTimeDataSource<T>>();
         }
 
         private void RegisterExternalServices(ContainerBuilder builder)
