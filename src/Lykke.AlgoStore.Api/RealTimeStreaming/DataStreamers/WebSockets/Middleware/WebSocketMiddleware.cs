@@ -32,13 +32,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
             {
                 try
                 {
-                    if (String.IsNullOrWhiteSpace(context.Request.Query[Constants.InstanceIdIdentifier]))
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        await context.Response.WriteAsync("Incorrect InstanceId");
-                        return true;
-                    }
-
                     var connected = await webSocketHandler.OnConnected(context);
                     if (connected)
                     {
