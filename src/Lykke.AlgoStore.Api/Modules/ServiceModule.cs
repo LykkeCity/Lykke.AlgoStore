@@ -159,7 +159,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterAlgoTradesClient(_settings.CurrentValue.AlgoTradesServiceClient, _log);
 
-            builder.RegisterHistoryClient(_settings.CurrentValue.HistoryServiceClient);
+            builder.RegisterHistoryClient(_settings.CurrentValue.AlgoStoreHistoryServiceClient);
 
             builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
              .As<IPersonalDataService>()

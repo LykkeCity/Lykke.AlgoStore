@@ -28,6 +28,6 @@ namespace Lykke.AlgoStore.Core.Settings
         public LoggingServiceClientSettings AlgoStoreLoggingServiceClient { get; set; }
         public AlgoStoreStoppingClientSettings AlgoStoreStoppingClient { get; set; }
         public StatisticsServiceClientSettings AlgoStoreStatisticsClient { get; set; }
-        public HistoryServiceClientSettings HistoryServiceClient { get; set; }
+        public HistoryServiceClientSettings AlgoStoreHistoryServiceClient { get; set; }
     }
 }
