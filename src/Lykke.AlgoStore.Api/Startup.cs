@@ -31,6 +31,7 @@ using Lykke.Service.Security.Client.AutorestClient.Models;
 using Lykke.AlgoStore.Api.RealTimeStreaming;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
+using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -68,8 +69,9 @@ namespace Lykke.AlgoStore.Api
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                     .AddJsonOptions(options =>
                     {
-                        options.SerializerSettings.ContractResolver =
+                        options.SerializerSettings.ContractResolver = 
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                        options.SerializerSettings.Converters.Add(new DefaultDateTimeConverter());
                     });
 
                 services.AddScoped<ValidateMimeMultipartContentFilter>();

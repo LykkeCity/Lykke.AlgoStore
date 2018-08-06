@@ -30,6 +30,7 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
 using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Service.History.Client;
 using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.Common.Log;
 using Lykke.Logs;
@@ -157,6 +158,8 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterRateCalculatorClient(_settings.CurrentValue.RateCalculatorServiceClient.ServiceUrl, _log);
 
             builder.RegisterAlgoTradesClient(_settings.CurrentValue.AlgoTradesServiceClient, _log);
+
+            builder.RegisterHistoryClient(_settings.CurrentValue.AlgoStoreHistoryServiceClient);
 
             builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
              .As<IPersonalDataService>()

@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.Service.AlgoTrades.Client;
+using Lykke.AlgoStore.Service.History.Client;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
@@ -23,13 +25,16 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly IAlgoTradesClient _tradesHistoryService;
+        private readonly IHistoryClient _functionHistoryService;
 
         public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService,
                                           IAlgoTradesClient tradesHistoryService,
+                                          IHistoryClient functionHistoryService,
                                           ILog log) : base (log, nameof(AlgoInstanceHistoryService))
         {
             this._candlesHistoryService = candlesHistoryService;
             this._tradesHistoryService = tradesHistoryService;
+            this._functionHistoryService = functionHistoryService;
         }
 
         public async Task<IEnumerable<AlgoInstanceTrade>> GetTradesAsync(string instanceId, string tradedAssetId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
@@ -43,6 +48,21 @@ namespace Lykke.AlgoStore.Services
             }
 
             var result = trades.Records.Select(AutoMapper.Mapper.Map<AlgoInstanceTrade>);
+
+            return result;
+        }
+
+        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
+        {
+            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment);
+
+            if (functions == null)
+            {
+                errorsDictionary.AddModelError("ServiceError", "Unknown");
+                return null;
+            }
+
+            var result = functions.Select(AutoMapper.Mapper.Map<Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>);
 
             return result;
         }

@@ -142,6 +142,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName));
             CreateMap<AlgoInstanceTrade, TradeChartingUpdate>();
 
+            CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
+                Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>();
         }
     }
 }
