@@ -109,8 +109,14 @@ namespace Lykke.AlgoStore.Api.Modules
             RegisterRabbitMqConnection<TradeChartingUpdate>(builder, rabbitMqTrades, logFactory);
             RegisterRabbitMqConnection<FunctionChartingUpdate>(builder, rabbitMqFunctions, logFactory);
 
-            builder.RegisterGeneric(typeof(WebSocketMiddleware<>)).InstancePerDependency();
-            builder.RegisterType<WebSocketHandler>().InstancePerDependency();
+            builder.RegisterType<WebSocketMiddleware>().AsSelf().InstancePerDependency();
+            builder.RegisterType<WebSocketHandler>()
+                .As<IWebSocketHandler>()
+                .WithParameter(new NamedParameter("maxInstancesPerClient",
+                    _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.MaxInstancesPerClient))
+                .WithParameter(new NamedParameter("maxConnectionsPerClient",
+                    _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.MaxConnectionsPerClient))
+                .InstancePerDependency();
         }
 
         private void RegisterRabbitMqConnection<T>(ContainerBuilder container, RabbitMqSubscriptionSettings exchangeConfiguration, ILogFactory logFactory, string regKey = "") where T : IChartingUpdate

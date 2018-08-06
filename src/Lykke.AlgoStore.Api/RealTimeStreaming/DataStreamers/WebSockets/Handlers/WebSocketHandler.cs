@@ -11,6 +11,7 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.Service.Session;
 using Lykke.AlgoStore.Algo.Charting;
+using System.Linq;
 
 #pragma warning disable 618
 
@@ -25,6 +26,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
     public class WebSocketHandler : IWebSocketHandler
     {
+        private static readonly Dictionary<(string, string), uint> _clientSubscribedInstances
+            = new Dictionary<(string, string), uint>();
+
         protected WebSocket Socket;
         protected IObservable<CandleChartingUpdate> Messages;
         protected readonly ILog Log;
@@ -37,15 +41,16 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         private readonly IAlgoClientInstanceRepository _clientInstanceRepository;
         private readonly IClientSessionsClient _clientSessionsClient;
 
+        private readonly uint _maxConnectionsPerClient;
+        private readonly uint _maxInstancesPerClient;
+
+        private readonly object _sync = new object();
+
         private readonly Dictionary<(string, string), string> _subscribedQueues
             = new Dictionary<(string, string), string>();
 
         private string _clientId;
         private StompSession _stompSession;
-
-        private bool _candlesSubscribed;
-        private bool _functionsSubscribed;
-        private bool _tradesSubscribed;
 
         private bool _dataSourceSubscribed;
 
@@ -55,7 +60,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             RealTimeDataSource<FunctionChartingUpdate> functionRealTimeSource,
             RealTimeDataSource<TradeChartingUpdate> tradeRealTimeSource,
             IClientSessionsClient clientSessionsClient,
-            IAlgoClientInstanceRepository clientInstanceRepository)
+            IAlgoClientInstanceRepository clientInstanceRepository,
+            uint maxInstancesPerClient,
+            uint maxConnectionsPerClient)
         {
             Log = logFactory.CreateLog(Constants.LogComponent);
 
@@ -65,6 +72,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
             _clientSessionsClient = clientSessionsClient;
             _clientInstanceRepository = clientInstanceRepository;
+
+            _maxInstancesPerClient = maxInstancesPerClient;
+            _maxConnectionsPerClient = maxConnectionsPerClient;
         }
 
         public virtual async Task<bool> OnConnected(HttpContext context)
@@ -77,6 +87,13 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 Socket = await context.WebSockets.AcceptWebSocketAsync();
 
             var requestType = context.Request.PathBase.Value;
+
+            _stompSession = new StompSession(Socket, _maxConnectionsPerClient);
+            _stompSession.AddAuthenticationCallback(AuthenticateAsync);
+            _stompSession.AddSubscribeCallback(SubscribeAsync);
+            _stompSession.AddUnsubscribeCallback(UnsubscribeAsync);
+            _stompSession.AddDisconnectCallback(async () => await OnDisconnected());
+
             return true;
         }
 
@@ -84,12 +101,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         {
             try
             {
-                _stompSession = new StompSession(Socket);
-                _stompSession.AddAuthenticationCallback(AuthenticateAsync);
-                _stompSession.AddSubscribeCallback(SubscribeAsync);
-                _stompSession.AddUnsubscribeCallback(UnsubscribeAsync);
-                _stompSession.AddDisconnectCallback(async () => await OnDisconnected());
-
                 await _stompSession.Listen();
 
                 while (Socket.State == WebSocketState.Open)
@@ -166,27 +177,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
             if (splits == null) return false;
 
-            switch(splits[2])
+            if (_subscribedQueues.ContainsKey((splits[1], splits[2]))) return false;
+
+            if(!_subscribedQueues.Any(kvp => kvp.Key.Item1 == splits[1]))
             {
-                case "candles":
-                    if (_candlesSubscribed) return false;
-                    _candlesSubscribed = true;
-                    break;
-                case "functions":
-                    if (_functionsSubscribed) return false;
-                    _functionsSubscribed = true;
-                    break;
-                case "trades":
-                    if (_tradesSubscribed) return false;
-                    _tradesSubscribed = true;
-                    break;
-                default:
+                if (!IncrementInstanceUsage(_clientId, splits[1]))
                     return false;
             }
 
             _subscribedQueues.Add((splits[1], splits[2]), queueName);
 
-            if (_candlesSubscribed || _functionsSubscribed || _tradesSubscribed) SubscribeAll();
+            SubscribeAll();
 
             return true;
         }
@@ -197,24 +198,16 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
             if (splits == null) return;
 
-            switch (splits[2])
-            {
-                case "candles":
-                    _candlesSubscribed = false;
-                    break;
-                case "functions":
-                    _functionsSubscribed = false;
-                    break;
-                case "trades":
-                    _tradesSubscribed = false;
-                    break;
-                default:
-                    return;
-            }
+            var key = (splits[1], splits[2]);
+
+            if (!_subscribedQueues.ContainsKey(key)) return;
 
             _subscribedQueues.Remove((splits[1], splits[2]));
 
-            if (!_candlesSubscribed && !_functionsSubscribed && !_tradesSubscribed) UnsubscribeAll();
+            if (!_subscribedQueues.Any(kvp => kvp.Key.Item1 == splits[1]))
+                DecrementInstanceUsage(_clientId, splits[1]);
+
+            if (!_subscribedQueues.Any()) UnsubscribeAll();
         }
 
         private async Task<string[]> ValidateQueueName(string queueName)
@@ -274,8 +267,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private async Task OnCandleReceived(CandleChartingUpdate candleUpdate)
         {
-            if (!_candlesSubscribed) return;
-
             if (!_subscribedQueues.TryGetValue((candleUpdate.InstanceId, "candles"), out string queue)) return;
 
             await _stompSession.SendToQueueAsync(queue, candleUpdate);
@@ -283,8 +274,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private async Task OnFunctionReceived(FunctionChartingUpdate functionUpdate)
         {
-            if (!_functionsSubscribed) return;
-
             if (!_subscribedQueues.TryGetValue((functionUpdate.InstanceId, "functions"), out string queue)) return;
 
             await _stompSession.SendToQueueAsync(queue, functionUpdate);
@@ -292,11 +281,45 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private async Task OnTradeReceived(TradeChartingUpdate tradeUpdate)
         {
-            if (!_tradesSubscribed) return;
-
             if (!_subscribedQueues.TryGetValue((tradeUpdate.InstanceId, "trades"), out string queue)) return;
 
             await _stompSession.SendToQueueAsync(queue, tradeUpdate);
+        }
+
+        private bool IncrementInstanceUsage(string clientId, string instanceId)
+        {
+            lock(_sync)
+            {
+                var key = (clientId, instanceId);
+
+                if (!_clientSubscribedInstances.ContainsKey(key))
+                {
+                    if (_clientSubscribedInstances.Count >= _maxInstancesPerClient)
+                        return false;
+
+                    _clientSubscribedInstances.Add(key, 0);
+                }
+
+                _clientSubscribedInstances[key] += 1;
+
+                return true;
+            }
+        }
+
+        private void DecrementInstanceUsage(string clientId, string instanceId)
+        {
+            lock(_sync)
+            {
+                var key = (clientId, instanceId);
+
+                if (!_clientSubscribedInstances.ContainsKey(key)) return;
+
+                if (_clientSubscribedInstances[key] > 0)
+                    _clientSubscribedInstances[key] -= 1;
+
+                if (_clientSubscribedInstances[key] == 0)
+                    _clientSubscribedInstances.Remove(key);
+            }
         }
     }
 }

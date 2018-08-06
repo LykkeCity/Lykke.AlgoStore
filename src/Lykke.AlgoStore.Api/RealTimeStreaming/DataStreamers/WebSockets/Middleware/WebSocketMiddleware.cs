@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
-using AzureStorage.Tables;
-using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware
 {
-    public class WebSocketMiddleware<T> where T : IWebSocketHandler
+    public class WebSocketMiddleware
     {
         private readonly RequestDelegate _next;
 
@@ -17,7 +14,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, T webSocketHandler)
+        public async Task Invoke(HttpContext context, IWebSocketHandler webSocketHandler)
         {
             var processed = await ProcessWebSocketRequest(context, webSocketHandler);
             if (!processed)
@@ -26,7 +23,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
             }
         }
 
-        protected virtual async Task<bool> ProcessWebSocketRequest(HttpContext context, T webSocketHandler)
+        protected virtual async Task<bool> ProcessWebSocketRequest(
+            HttpContext context, 
+            IWebSocketHandler webSocketHandler)
         {
             if (context.WebSockets.IsWebSocketRequest)
             {

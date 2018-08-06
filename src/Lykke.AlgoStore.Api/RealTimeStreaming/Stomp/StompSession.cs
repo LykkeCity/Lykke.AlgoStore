@@ -12,7 +12,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 {
     public sealed class StompSession
     {
-        private readonly HashSet<string> _supportedCommands = new HashSet<string>
+        private static readonly HashSet<string> _supportedCommands = new HashSet<string>
         {
             Message.COMMAND_SUBSCRIBE,
             Message.COMMAND_UNSUBSCRIBE,
@@ -21,8 +21,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             Message.COMMAND_DISCONNECT
         };
 
+        private static Dictionary<string, uint> _clientConnections = new Dictionary<string, uint>();
+
         private readonly WebSocket _webSocket;
         private readonly TimeSpan _connectTimeout;
+        private readonly uint _maxConnectionsPerClient;
 
         private readonly Dictionary<string, string> _subscribedQueues = new Dictionary<string, string>();
         private readonly HashSet<Func<string, string, Task<bool>>> _authenticationCallbacks
@@ -32,6 +35,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private readonly HashSet<Func<Task>> _disconnectCallbacks = new HashSet<Func<Task>>();
 
         private readonly CancellationTokenSource _taskCancellationSource = new CancellationTokenSource();
+
+        private static readonly object _sync = new object();
 
         private bool _listening;
 
@@ -54,13 +59,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private string _login;
         private string _passcode;
 
+        private bool _authenticated;
+
         private ulong _currentMessageId;
 
         public StompSession(WebSocket webSocket, 
+            uint maxConnectionsPerClient = 3,
             TimeSpan? connectTimeout = null,
             TimeSpan? reauthenticationInterval = null)
         {
             _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
+            _maxConnectionsPerClient = maxConnectionsPerClient;
             _connectTimeout = connectTimeout ?? TimeSpan.FromSeconds(10);
             _reauthenticationInterval = reauthenticationInterval ?? TimeSpan.FromMinutes(1);
         }
@@ -295,6 +304,27 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 if (!await TryAuthenticate("invalid credentials"))
                     return false;
 
+                bool overConnectionLimit;
+
+                lock (_sync)
+                {
+                    if (!_clientConnections.ContainsKey(_login))
+                        _clientConnections.TryAdd(_login, 0);
+
+                    overConnectionLimit = _clientConnections[_login] >= _maxConnectionsPerClient;
+
+                    if (!overConnectionLimit)
+                        _clientConnections[_login] += 1;
+                }
+
+                if(overConnectionLimit)
+                {
+                    await CloseWithError("Maximum connection limit reached", "");
+                    return false;
+                }
+
+                _authenticated = true;
+
                 var response = new Message
                 {
                     Command = Message.COMMAND_CONNECTED,
@@ -485,6 +515,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             foreach (var subscription in _subscribedQueues)
             {
                 await Task.WhenAll(_unsubscribeCallbacks.Select(c => c(subscription.Key)).ToArray());
+            }
+
+            lock(_sync)
+            {
+                if(_authenticated && _clientConnections.ContainsKey(_login))
+                {
+                    _clientConnections[_login] -= 1;
+
+                    if (_clientConnections[_login] == 0)
+                        _clientConnections.Remove(_login);
+                }
             }
 
             await Task.WhenAll(_disconnectCallbacks.Select(c => c()).ToArray());

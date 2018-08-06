@@ -9,6 +9,7 @@ using Common.Log;
 using Lykke.AlgoStore.Algo.Charting;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
 {
@@ -56,6 +57,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
         {
             if (_rabbitMq != null) return;
 
+            _rabbitSettings.QueueName += Regex.Replace(Environment.GetEnvironmentVariable("ENV_INFO"), "[^a-zA-Z0-9]", "-");
             _rabbitMq = new RabbitMqSubscriber<T>(_logFactory, _rabbitSettings, new DefaultErrorHandlingStrategy(_logFactory, _rabbitSettings))
                 .SetMessageDeserializer(new GenericRabbitModelConverter<T>())
                 .SetMessageReadStrategy(new MessageReadWithTemporaryQueueStrategy())
