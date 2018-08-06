@@ -3,6 +3,7 @@ using Lykke.AlgoStore.Core.Settings.ServiceSettings;
 using Lykke.AlgoStore.Core.Settings.SlackNotifications;
 using Lykke.AlgoStore.Job.Stopping.Client;
 using Lykke.AlgoStore.Service.AlgoTrades.Client;
+using Lykke.AlgoStore.Service.History.Client;
 using Lykke.AlgoStore.Service.Logging.Client;
 using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.AlgoStore.Service.Statistics.Client;
@@ -27,5 +28,6 @@ namespace Lykke.AlgoStore.Core.Settings
         public LoggingServiceClientSettings AlgoStoreLoggingServiceClient { get; set; }
         public AlgoStoreStoppingClientSettings AlgoStoreStoppingClient { get; set; }
         public StatisticsServiceClientSettings AlgoStoreStatisticsClient { get; set; }
+        public HistoryServiceClientSettings HistoryServiceClient { get; set; }
     }
 }

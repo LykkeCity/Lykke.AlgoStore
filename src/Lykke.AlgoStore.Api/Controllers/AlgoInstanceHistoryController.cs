@@ -32,6 +32,48 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         /// <summary>
+        /// Get history function values for instance
+        /// </summary>
+        /// <param name="instanceId">Instance ID</param>
+        /// <param name="fromMoment">From moment in ISO 8601</param>
+        /// <param name="toMoment">To moment in ISO 8601</param>
+        [HttpGet("functions")]
+        [SwaggerOperation("GetHistoryFunctions")]
+        [Description("Get history function values")]
+        [ProducesResponseType(typeof(IEnumerable<FunctionChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetHistoryFunctions([FromQuery][Required]string instanceId, [FromQuery]DateTime fromMoment, [FromQuery]DateTime toMoment)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                var functions = await _service.GetFunctionsAsync(instanceId, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), ModelState);
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                if (functions == null)
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
+                }
+
+                return Ok(functions);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryFunctions), ex);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        /// <summary>
         /// Get history trades for instance
         /// </summary>
         /// <param name="instanceId">Instance ID</param>
