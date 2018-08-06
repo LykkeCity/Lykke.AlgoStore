@@ -102,16 +102,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             try
             {
                 await _stompSession.Listen();
-
-                while (Socket.State == WebSocketState.Open)
-                {
-                    var result = await ReceiveFullMessage(CancellationToken.None);
-
-                    if (result.ReceiveResult.MessageType == WebSocketMessageType.Close)
-                    {
-                        await OnDisconnected();
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -121,21 +111,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             {
                 UnsubscribeAll();
             }
-        }
-
-        protected async Task<(WebSocketReceiveResult ReceiveResult, IEnumerable<byte> Message)> ReceiveFullMessage(CancellationToken cancelToken)
-        {
-            WebSocketReceiveResult response;
-            var message = new List<byte>();
-
-            var buffer = new byte[Constants.WebSocketRecieveBufferSize];
-            do
-            {
-                response = await Socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancelToken);
-                message.AddRange(new ArraySegment<byte>(buffer, 0, response.Count));
-            } while (!response.EndOfMessage);
-
-            return (ReceiveResult: response, Message: message);
         }
 
         public virtual async Task OnDisconnected(Exception exception = null)
