@@ -7,17 +7,18 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
 {
     public class Message
     {
-        private static readonly HashSet<string> ValidClientCommands = new HashSet<string>
-        {
-            "CONNECT",
-            "SEND",
-            "DISCONNECT"
-        };
+        public const string COMMAND_CONNECT = "CONNECT";
+        public const string COMMAND_STOMP = "STOMP";
+        public const string COMMAND_DISCONNECT = "DISCONNECT";
+        public const string COMMAND_SUBSCRIBE = "SUBSCRIBE";
+        public const string COMMAND_UNSUBSCRIBE = "UNSUBSCRIBE";
+        public const string COMMAND_ACK = "ACK";
+        public const string COMMAND_NACK = "NACK";
 
-        public static bool IsClientCommandValid(string command)
-        {
-            return ValidClientCommands.Contains(command);
-        }
+        public const string COMMAND_CONNECTED = "CONNECTED";
+        public const string COMMAND_MESSAGE = "MESSAGE";
+        public const string COMMAND_RECEIPT = "RECEIPT";
+        public const string COMMAND_ERROR = "ERROR";
 
         private Header[] _headers = new Header[0];
 

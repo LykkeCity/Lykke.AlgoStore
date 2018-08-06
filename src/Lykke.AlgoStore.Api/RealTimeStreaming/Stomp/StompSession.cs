@@ -1,6 +1,4 @@
-﻿using Lykke.AlgoStore.Algo;
-using Lykke.AlgoStore.Algo.Charting;
-using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
+﻿using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,13 +12,24 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 {
     public sealed class StompSession
     {
+        private readonly HashSet<string> _supportedCommands = new HashSet<string>
+        {
+            Message.COMMAND_SUBSCRIBE,
+            Message.COMMAND_UNSUBSCRIBE,
+            Message.COMMAND_ACK,
+            Message.COMMAND_NACK,
+            Message.COMMAND_DISCONNECT
+        };
+
         private readonly WebSocket _webSocket;
         private readonly TimeSpan _connectTimeout;
 
         private readonly Dictionary<string, string> _subscribedQueues = new Dictionary<string, string>();
         private readonly HashSet<Func<string, string, Task<bool>>> _authenticationCallbacks
             = new HashSet<Func<string, string, Task<bool>>>();
-        private readonly HashSet<Func<string, Task<bool>>> _subscriptionCallbacks = new HashSet<Func<string, Task<bool>>>();
+        private readonly HashSet<Func<string, Task<bool>>> _subscribeCallbacks = new HashSet<Func<string, Task<bool>>>();
+        private readonly HashSet<Func<string, Task>> _unsubscribeCallbacks = new HashSet<Func<string, Task>>();
+        private readonly HashSet<Func<Task>> _disconnectCallbacks = new HashSet<Func<Task>>();
 
         private bool _listening;
 
@@ -38,48 +47,32 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
         private string _version;
 
-        private string _subscribed;
-
         private ulong _currentMessageId;
 
         public StompSession(WebSocket webSocket, 
-            TimeSpan? connectTimeout = null, TimeSpan? maxHeartbeatTimespan = null)
+            TimeSpan? connectTimeout = null)
         {
             _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
             _connectTimeout = connectTimeout ?? TimeSpan.FromSeconds(10);
         }
 
         public void AddAuthenticationCallback(Func<string, string, Task<bool>> callback)
-        {
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
-
-            _authenticationCallbacks.Add(callback);
-        }
+            => AddCallback(_authenticationCallbacks, callback);
 
         public void RemoveAuthenticationCallback(Func<string, string, Task<bool>> callback)
-        {
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
+            => RemoveCallback(_authenticationCallbacks, callback);
 
-            _authenticationCallbacks.Remove(callback);
-        }
+        public void AddSubscribeCallback(Func<string, Task<bool>> callback)
+            => AddCallback(_subscribeCallbacks, callback);
 
-        public void AddSubscriptionCallback(Func<string, Task<bool>> callback)
-        {
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
+        public void RemoveSubscribeCallback(Func<string, Task<bool>> callback)
+            => RemoveCallback(_subscribeCallbacks, callback);
 
-            _subscriptionCallbacks.Add(callback);
-        }
+        public void AddUnsubscribeCallback(Func<string, Task> callback) => AddCallback(_unsubscribeCallbacks, callback);
+        public void RemoveUnsubscribeCallback(Func<string, Task> callback) => RemoveCallback(_unsubscribeCallbacks, callback);
 
-        public void RemoveSubscriptionCallback(Func<string, Task<bool>> callback)
-        {
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
-
-            _subscriptionCallbacks.Remove(callback);
-        }
+        public void AddDisconnectCallback(Func<Task> callback) => AddCallback(_disconnectCallbacks, callback);
+        public void RemoveDisconnectCallback(Func<Task> callback) => RemoveCallback(_disconnectCallbacks, callback);
 
         public async Task SendToQueueAsync<T>(string queueName, T message)
         {
@@ -87,15 +80,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
             var msg = new Message
             {
-                Command = "MESSAGE",
+                Command = Message.COMMAND_MESSAGE,
                 Body = msgBody,
                 Headers = new Header[]
                 {
-                    new Header("subscription", _subscribedQueues[queueName]),
-                    new Header("destination", queueName),
-                    new Header("content-type", "application/json"),
-                    new Header("content-length", msgBody.Length.ToString()),
-                    new Header("message-id", _currentMessageId.ToString())
+                    new Header(Header.SUBSCRIPTION, _subscribedQueues[queueName]),
+                    new Header(Header.DESTINATION, queueName),
+                    new Header(Header.CONTENT_TYPE, "application/json"),
+                    new Header(Header.CONTENT_LENGTH, msgBody.Length.ToString()),
+                    new Header(Header.MESSAGE_ID, _currentMessageId.ToString())
                 }
             };
 
@@ -108,145 +101,69 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         {
             if (_listening) throw new InvalidOperationException("Already listening to this WebSocket");
 
-            if (!await Handshake())
-                return;
+            _listening = true;
 
             try
             {
+                if (!await Handshake())
+                    return;
+
                 while (_webSocket.State == WebSocketState.Open)
                 {
                     var result = await ReceiveFullMessage(CancellationToken.None);
 
-                    if (result.ReceiveResult.MessageType == WebSocketMessageType.Close)
+                    if (result.ReceiveResult.MessageType == WebSocketMessageType.Close) return;
+
+                    var message = Encoding.UTF8.GetString(result.Message.ToArray());
+
+                    // Heartbeat message
+                    if (!string.IsNullOrEmpty(message) && (message == "\n" || message == "\r\n")) continue;
+
+                    var msg = Message.Deserialize(message);
+
+                    if (msg == null || !_supportedCommands.Contains(msg.Command))
                     {
-                        //await OnDisconnected();
+                        await CloseWithError("invalid or unsupported message", "");
+                        return;
                     }
-                    else
+
+                    if(msg.HasHeader(Header.RECEIPT))
                     {
-                        var message = Encoding.UTF8.GetString(result.Message.ToArray());
-
-                        // Heartbeat message
-                        if (!string.IsNullOrEmpty(message) && (message == "\n" || message == "\r\n")) continue;
-
-                        var msg = Message.Deserialize(message);
-
-                        if (msg.Command == "SUBSCRIBE")
+                        await SendMessage(new Message
                         {
-                            if (!msg.HasHeader("id") || !msg.HasHeader("destination"))
+                            Command = Message.COMMAND_RECEIPT,
+                            Headers = new Header[]
                             {
-                                await CloseWithError("id and destination headers are required", "");
-                                return;
-                            }
+                                new Header(Header.RECEIPT_ID, msg.HeaderDictionary[Header.RECEIPT])
+                            },
+                            Body = "",
+                        });
+                    }
 
-                            var subscriptionId = msg.HeaderDictionary["id"];
-                            var queue = msg.HeaderDictionary["destination"];
-
-                            if(_subscribedQueues.ContainsKey(queue))
-                            {
-                                await CloseWithError("already subscribed to queue", "");
-                                return;
-                            }
-
-                            if (queue == "dummy")
-                            {
-                                _subscribed = subscriptionId;
-                                BeginSending();
-                                continue;
-                            }
-
-                            var callbackSuccess = false;
-
-                            foreach (var callback in _subscriptionCallbacks)
-                            {
-                                callbackSuccess |= await callback(queue);
-                            }
-
-                            if (!callbackSuccess)
-                            {
-                                await CloseWithError("invalid queue", "");
-                                return;
-                            }
-
-                            _subscribedQueues.Add(queue, subscriptionId);
-                        }
+                    switch(msg.Command)
+                    {
+                        case Message.COMMAND_SUBSCRIBE:
+                            if (!await HandleSubscribe(msg)) return;
+                            break;
+                        case Message.COMMAND_UNSUBSCRIBE:
+                            if (!await HandleUnsubscribe(msg)) return;
+                            break;
+                        case Message.COMMAND_DISCONNECT:
+                            await Close();
+                            return;
+                        default:
+                            continue;
                     }
                 }
             }
-            catch (Exception ex)
+            catch(Exception)
             {
-                //await OnDisconnected(ex);
+                await Close();
+                throw;
             }
             finally
             {
-                //DataListener.TokenSource.Cancel();
-            }
-        }
-
-        private async void BeginSending()
-        {
-            var msgId = 1;
-
-            while(_webSocket.State == WebSocketState.Open)
-            {
-                string msg;
-                var instanceId = Guid.NewGuid();
-
-                if (msgId % 3 == 0)
-                    msg = JsonConvert.SerializeObject(new CandleChartingUpdate
-                    {
-                        DateTime = DateTime.UtcNow,
-                    });
-                else if (msgId % 3 == 1)
-                    msg = JsonConvert.SerializeObject(new FunctionChartingUpdate
-                    {
-                        CalculatedOn = DateTime.UtcNow,
-                        FunctionName = "asdf",
-                        InnerFunctions = new List<FunctionChartingUpdate>(),
-                        InstanceId = instanceId.ToString(),
-                        Value = 69
-                    });
-                else
-                    msg = JsonConvert.SerializeObject(new TradeChartingUpdate
-                    {
-                        AssetId = "BTC",
-                        Amount = 1,
-                        AssetPairId = "BTCUSD",
-                        DateOfTrade = DateTime.UtcNow,
-                        InstanceId = instanceId.ToString(),
-                        Id = Guid.NewGuid().ToString(),
-                        OrderId = Guid.NewGuid().ToString(),
-                        Fee = 0.123,
-                        IsBuy = false,
-                        Price = 1234,
-                        WalletId = Guid.NewGuid().ToString()
-                    });
-
-                var dummyMsg = new Message
-                {
-                    Command = "MESSAGE",
-                    Body = msg,
-                    Headers = new Header[]
-                    {
-                        new Header("subscription", _subscribed),
-                        new Header("destination", "dummy"),
-                        new Header("content-type", "application/json"),
-                        new Header("content-length", msg.Length.ToString()),
-                        new Header("message-id", msgId.ToString())
-                    }
-                };
-
-                try
-                {
-                    await SendMessage(dummyMsg);
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-
-                msgId++;
-
-                await Task.Delay(1000);
+                await HandleDisconnect();
             }
         }
 
@@ -279,7 +196,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 if (DateTime.UtcNow - _lastClientMessage < _clientHeartbeatInterval)
                     continue;
 
-                await CloseWithError("heart-beat expired", "");
+                await CloseWithError($"{Header.HEARTBEAT} expired", "");
             }
         }
 
@@ -320,15 +237,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             {
                 var msg = Message.Deserialize(Encoding.UTF8.GetString(message.ToArray()));
 
-                if (msg == null || !Message.IsClientCommandValid(msg.Command) || (msg.Command != "CONNECT" && msg.Command != "STOMP"))
+                if (msg == null || (msg.Command != Message.COMMAND_CONNECT && msg.Command != Message.COMMAND_STOMP))
                 {
-                    await CloseWithError("Expected CONNECT message", "");
+                    await CloseWithError($"Expected {Message.COMMAND_CONNECT} or {Message.COMMAND_STOMP} message", "");
                     return false;
                 }
 
-                if(!msg.HasHeader("login") || !msg.HasHeader("passcode"))
+                if(!msg.HasHeader(Header.LOGIN) || !msg.HasHeader(Header.PASSCODE))
                 {
-                    await CloseWithError("login and passcode headers are required", "");
+                    await CloseWithError($"{Header.LOGIN} and {Header.PASSCODE} headers are required", "");
                     return false;
                 }
 
@@ -344,7 +261,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
                 foreach(var callback in _authenticationCallbacks)
                 {
-                    callbackSuccess |= await callback(msg.HeaderDictionary["login"], msg.HeaderDictionary["passcode"]);
+                    callbackSuccess |= await callback(msg.HeaderDictionary[Header.LOGIN], msg.HeaderDictionary[Header.PASSCODE]);
                 }
 
                 if (!callbackSuccess)
@@ -355,11 +272,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
                 var response = new Message
                 {
-                    Command = "CONNECTED",
+                    Command = Message.COMMAND_CONNECTED,
                     Headers = new Header[]
                     {
                         heartbeatHeader,
-                        new Header("version", _version)
+                        new Header(Header.VERSION, _version)
                     }
                 };
 
@@ -373,13 +290,13 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         {
             var message = new Message
             {
-                Command = "ERROR",
+                Command = Message.COMMAND_ERROR,
                 Body = description,
                 Headers = new Header[]
                 {
-                    new Header("content-type", "text/plain"),
-                    new Header("content-length", description.Length.ToString()),
-                    new Header("message", reason)
+                    new Header(Header.CONTENT_TYPE, "text/plain"),
+                    new Header(Header.CONTENT_LENGTH, description.Length.ToString()),
+                    new Header(Header.MESSAGE, reason)
                 }
             };
 
@@ -387,7 +304,13 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 message.Headers = message.Headers.Concat(additionalHeaders).ToArray();
 
             await SendMessage(message);
-            await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "See STOMP ERROR frame", CancellationToken.None);
+            await Close($"See STOMP {Message.COMMAND_ERROR} frame");
+        }
+
+        private async Task Close(string message = "Normal closure")
+        {
+            await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
+                message, CancellationToken.None);
             if (_expectClientHeartbeats)
                 await _clientHeartbeat;
             if (_expectServerHeartbeats)
@@ -412,16 +335,16 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             uint clientHeartbeat;
             uint serverHeartbeat;
 
-            if(msg.HasHeader("heart-beat"))
+            if(msg.HasHeader(Header.HEARTBEAT))
             {
-                var heartBeatValue = msg.HeaderDictionary["heart-beat"];
+                var heartBeatValue = msg.HeaderDictionary[Header.HEARTBEAT];
                 var splits = heartBeatValue.Split(',');
 
                 if (splits.Length != 2 ||
                     !uint.TryParse(splits[0], out clientHeartbeat) ||
                     !uint.TryParse(splits[1], out serverHeartbeat))
                 {
-                    await CloseWithError("invalid heart-beat header", "");
+                    await CloseWithError($"invalid {Header.HEARTBEAT} header", "");
                     return null;
                 }
 
@@ -438,7 +361,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 if (_expectServerHeartbeats)
                     _serverHeartbeat = ServerHeartbeat();
 
-                return new Header("heart-beat",
+                return new Header(Header.HEARTBEAT,
                     $"{serverHeartbeat},{clientHeartbeat}");
             }
             else
@@ -446,27 +369,112 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 _expectServerHeartbeats = false;
                 _expectClientHeartbeats = false;
 
-                return new Header("heart-beat", "0,0");
+                return new Header(Header.HEARTBEAT, "0,0");
             }
         }
 
         private async Task<string> NegotiateVersion(Message msg)
         {
-            if(!msg.HasHeader("accept-version"))
+            if(!msg.HasHeader(Header.ACCEPT_VERSION))
             {
-                await CloseWithError("accept-version header required", "");
+                await CloseWithError($"{Header.ACCEPT_VERSION} header required", "");
                 return "";
             }
 
-            var msgHeader = msg.HeaderDictionary["accept-version"].Split(',');
+            var msgHeader = msg.HeaderDictionary[Header.ACCEPT_VERSION].Split(',');
 
-            if (msgHeader.Any(s => s == "1.2"))
-                return "1.2";
-            else if (msgHeader.Any(s => s == "1.1"))
-                return "1.1";
+            if (msgHeader.Any(s => s == StompVersion.VERSION_12))
+                return StompVersion.VERSION_12;
+            else if (msgHeader.Any(s => s == StompVersion.VERSION_11))
+                return StompVersion.VERSION_12;
 
-            await CloseWithError("unsupported version", "", new Header[] { new Header("version", "1.1,1.2") });
+            await CloseWithError("unsupported version", "", 
+                new Header[] { new Header(Header.VERSION, $"{StompVersion.VERSION_11},{StompVersion.VERSION_12}") });
             return "";
+        }
+
+        private async Task<bool> HandleSubscribe(Message msg)
+        {
+            if (!msg.HasHeader(Header.SUBSCRIPTION_ID) || !msg.HasHeader(Header.DESTINATION))
+            {
+                await CloseWithError(
+                    $"{Header.SUBSCRIPTION_ID} and {Header.DESTINATION} headers are required", "");
+                return false;
+            }
+
+            var subscriptionId = msg.HeaderDictionary[Header.SUBSCRIPTION_ID];
+            var queue = msg.HeaderDictionary[Header.DESTINATION];
+
+            if (_subscribedQueues.ContainsKey(queue))
+            {
+                await CloseWithError("already subscribed to queue", "");
+                return false;
+            }
+
+            var callbackSuccess = false;
+
+            foreach (var callback in _subscribeCallbacks)
+            {
+                callbackSuccess |= await callback(queue);
+            }
+
+            if (!callbackSuccess)
+            {
+                await CloseWithError("invalid queue", "");
+                return false;
+            }
+
+            _subscribedQueues.Add(queue, subscriptionId);
+
+            return true;
+        }
+
+        private async Task<bool> HandleUnsubscribe(Message msg)
+        {
+            if (!msg.HasHeader(Header.SUBSCRIPTION_ID))
+            {
+                await CloseWithError($"{Header.SUBSCRIPTION_ID} header is required", "");
+                return false;
+            }
+
+            var subscriptionId = msg.HeaderDictionary[Header.SUBSCRIPTION_ID];
+            var kvp = _subscribedQueues.FirstOrDefault(k => k.Value == subscriptionId);
+
+            if (kvp.Equals(default(KeyValuePair<string, string>)))
+            {
+                await CloseWithError("unknown subscription id", "");
+                return false;
+            }
+
+            _subscribedQueues.Remove(kvp.Key);
+            await Task.WhenAll(_unsubscribeCallbacks.Select(c => c(kvp.Key)).ToArray());
+            return true;
+        }
+
+        private async Task HandleDisconnect()
+        {
+            foreach (var subscription in _subscribedQueues)
+            {
+                await Task.WhenAll(_unsubscribeCallbacks.Select(c => c(subscription.Key)).ToArray());
+            }
+
+            await Task.WhenAll(_disconnectCallbacks.Select(c => c()).ToArray());
+        }
+
+        private void AddCallback<T>(HashSet<T> callbackSet, T callback)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            callbackSet.Add(callback);
+        }
+
+        private void RemoveCallback<T>(HashSet<T> callbackSet, T callback)
+        {
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            callbackSet.Remove(callback);
         }
     }
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +11,6 @@ using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.Service.Session;
 using Lykke.AlgoStore.Algo.Charting;
-using System.Linq;
 
 #pragma warning disable 618
 
@@ -49,6 +47,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         private bool _functionsSubscribed;
         private bool _tradesSubscribed;
 
+        private bool _dataSourceSubscribed;
+
         public WebSocketHandler(
             ILogFactory logFactory,
             RealTimeDataSource<CandleChartingUpdate> candleRealTimeSource,
@@ -76,8 +76,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             else
                 Socket = await context.WebSockets.AcceptWebSocketAsync();
 
-            SubscribeAll();
-
             var requestType = context.Request.PathBase.Value;
             return true;
         }
@@ -88,7 +86,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             {
                 _stompSession = new StompSession(Socket);
                 _stompSession.AddAuthenticationCallback(AuthenticateAsync);
-                _stompSession.AddSubscriptionCallback(SubscribeAsync);
+                _stompSession.AddSubscribeCallback(SubscribeAsync);
+                _stompSession.AddUnsubscribeCallback(UnsubscribeAsync);
+                _stompSession.AddDisconnectCallback(async () => await OnDisconnected());
 
                 await _stompSession.Listen();
 
@@ -162,16 +162,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private async Task<bool> SubscribeAsync(string queueName)
         {
-            var splits = queueName.Split('/');
+            var splits = await ValidateQueueName(queueName);
 
-            if (splits.Length < 3) return false;
-
-            if (splits[0] != "instance") return false;
-
-            var instanceId = splits[1];
-
-            if (!await _clientInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(_clientId, instanceId))
-                return false;
+            if (splits == null) return false;
 
             switch(splits[2])
             {
@@ -191,9 +184,53 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     return false;
             }
 
-            _subscribedQueues.Add((instanceId, splits[2]), queueName);
+            _subscribedQueues.Add((splits[1], splits[2]), queueName);
+
+            if (_candlesSubscribed || _functionsSubscribed || _tradesSubscribed) SubscribeAll();
 
             return true;
+        }
+
+        private async Task UnsubscribeAsync(string queueName)
+        {
+            var splits = await ValidateQueueName(queueName);
+
+            if (splits == null) return;
+
+            switch (splits[2])
+            {
+                case "candles":
+                    _candlesSubscribed = false;
+                    break;
+                case "functions":
+                    _functionsSubscribed = false;
+                    break;
+                case "trades":
+                    _tradesSubscribed = false;
+                    break;
+                default:
+                    return;
+            }
+
+            _subscribedQueues.Remove((splits[1], splits[2]));
+
+            if (!_candlesSubscribed && !_functionsSubscribed && !_tradesSubscribed) UnsubscribeAll();
+        }
+
+        private async Task<string[]> ValidateQueueName(string queueName)
+        {
+            var splits = queueName.Split('/');
+
+            if (splits.Length < 3) return null;
+
+            if (splits[0] != "instance") return null;
+
+            var instanceId = splits[1];
+
+            if (!await _clientInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(_clientId, instanceId))
+                return null;
+
+            return splits;
         }
 
         private async Task<bool> AuthenticateAsync(string clientId, string token)
@@ -215,16 +252,24 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private void SubscribeAll()
         {
+            if (_dataSourceSubscribed) return;
+
             _candleSource.Subscribe(OnCandleReceived);
             _functionSource.Subscribe(OnFunctionReceived);
             _tradeSource.Subscribe(OnTradeReceived);
+
+            _dataSourceSubscribed = true;
         }
 
         private void UnsubscribeAll()
         {
+            if (!_dataSourceSubscribed) return;
+
             _candleSource.Unsubscribe(OnCandleReceived);
             _functionSource.Unsubscribe(OnFunctionReceived);
             _tradeSource.Unsubscribe(OnTradeReceived);
+
+            _dataSourceSubscribed = false;
         }
 
         private async Task OnCandleReceived(CandleChartingUpdate candleUpdate)
