@@ -31,6 +31,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private readonly HashSet<Func<string, Task>> _unsubscribeCallbacks = new HashSet<Func<string, Task>>();
         private readonly HashSet<Func<Task>> _disconnectCallbacks = new HashSet<Func<Task>>();
 
+        private readonly CancellationTokenSource _taskCancellationSource = new CancellationTokenSource();
+
         private bool _listening;
 
         private bool _expectClientHeartbeats;
@@ -38,22 +40,29 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
         private TimeSpan _clientHeartbeatInterval;
         private TimeSpan _serverHeartbeatInterval;
+        private TimeSpan _reauthenticationInterval;
 
         private DateTime _lastClientMessage = DateTime.UtcNow;
         private DateTime _lastServerMessage = DateTime.UtcNow;
 
         private Task _serverHeartbeat;
         private Task _clientHeartbeat;
+        private Task _reauthenticationTask;
 
         private string _version;
+
+        private string _login;
+        private string _passcode;
 
         private ulong _currentMessageId;
 
         public StompSession(WebSocket webSocket, 
-            TimeSpan? connectTimeout = null)
+            TimeSpan? connectTimeout = null,
+            TimeSpan? reauthenticationInterval = null)
         {
             _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
             _connectTimeout = connectTimeout ?? TimeSpan.FromSeconds(10);
+            _reauthenticationInterval = reauthenticationInterval ?? TimeSpan.FromMinutes(1);
         }
 
         public void AddAuthenticationCallback(Func<string, string, Task<bool>> callback)
@@ -173,8 +182,12 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             {
                 var delayTime = _serverHeartbeatInterval - (DateTime.UtcNow - _lastServerMessage);
 
-                if (delayTime > TimeSpan.Zero)
-                    await Task.Delay(delayTime);
+                try
+                {
+                    if (delayTime > TimeSpan.Zero)
+                        await Task.Delay(delayTime, _taskCancellationSource.Token);
+                }
+                catch(TaskCanceledException) { return; }
 
                 if (DateTime.UtcNow - _lastServerMessage < _serverHeartbeatInterval)
                     continue;
@@ -190,13 +203,32 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             {
                 var delayTime = _clientHeartbeatInterval - (DateTime.UtcNow - _lastClientMessage);
 
-                if (delayTime > TimeSpan.Zero)
-                    await Task.Delay(delayTime);
+                try
+                {
+                    if (delayTime > TimeSpan.Zero)
+                        await Task.Delay(delayTime, _taskCancellationSource.Token);
+                }
+                catch(TaskCanceledException) { return; }
 
                 if (DateTime.UtcNow - _lastClientMessage < _clientHeartbeatInterval)
                     continue;
 
                 await CloseWithError($"{Header.HEARTBEAT} expired", "");
+            }
+        }
+
+        private async Task Reauthenticate()
+        {
+            while (_webSocket.State == WebSocketState.Open)
+            {
+                try
+                {
+                    await Task.Delay(_reauthenticationInterval, _taskCancellationSource.Token);
+                }
+                catch (TaskCanceledException) { return; }
+
+                if (!await TryAuthenticate("session expired"))
+                    return;
             }
         }
 
@@ -257,18 +289,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 if (heartbeatHeader == null)
                     return false;
 
-                var callbackSuccess = false;
+                _login = msg.HeaderDictionary[Header.LOGIN];
+                _passcode = msg.HeaderDictionary[Header.PASSCODE];
 
-                foreach(var callback in _authenticationCallbacks)
-                {
-                    callbackSuccess |= await callback(msg.HeaderDictionary[Header.LOGIN], msg.HeaderDictionary[Header.PASSCODE]);
-                }
-
-                if (!callbackSuccess)
-                {
-                    await CloseWithError("invalid credentials", "");
+                if (!await TryAuthenticate("invalid credentials"))
                     return false;
-                }
 
                 var response = new Message
                 {
@@ -280,6 +305,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                     }
                 };
 
+                _reauthenticationTask = Reauthenticate();
                 await SendMessage(response);
 
                 return true;
@@ -311,6 +337,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         {
             await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
                 message, CancellationToken.None);
+
+            _taskCancellationSource.Cancel();
+
             if (_expectClientHeartbeats)
                 await _clientHeartbeat;
             if (_expectServerHeartbeats)
@@ -459,6 +488,24 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             }
 
             await Task.WhenAll(_disconnectCallbacks.Select(c => c()).ToArray());
+        }
+
+        private async Task<bool> TryAuthenticate(string errorMessage)
+        {
+            var callbackSuccess = false;
+
+            foreach (var callback in _authenticationCallbacks)
+            {
+                callbackSuccess |= await callback(_login, _passcode);
+            }
+
+            if (!callbackSuccess)
+            {
+                await CloseWithError(errorMessage, "");
+                return false;
+            }
+
+            return true;
         }
 
         private void AddCallback<T>(HashSet<T> callbackSet, T callback)
