@@ -1,4 +1,5 @@
-﻿using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
+﻿using Common.Log;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private static Dictionary<string, uint> _clientConnections = new Dictionary<string, uint>();
 
         private readonly WebSocket _webSocket;
+        private readonly ILog _log;
         private readonly TimeSpan _connectTimeout;
         private readonly uint _maxConnectionsPerClient;
 
@@ -74,12 +76,14 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         // Counter for the number of sent messages
         private ulong _currentMessageId;
 
-        public StompSession(WebSocket webSocket, 
+        public StompSession(WebSocket webSocket,
+            ILog log,
             uint maxConnectionsPerClient = 3,
             TimeSpan? connectTimeout = null,
             TimeSpan? reauthenticationInterval = null)
         {
             _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
+            _log = log;
             _maxConnectionsPerClient = maxConnectionsPerClient;
             _connectTimeout = connectTimeout ?? TimeSpan.FromSeconds(10);
             _reauthenticationInterval = reauthenticationInterval ?? TimeSpan.FromMinutes(1);
@@ -151,6 +155,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
                     if (result.ReceiveResult.MessageType == WebSocketMessageType.Close) return;
 
+                    await _log.WriteInfoAsync(nameof(StompSession), nameof(Listen),
+                        $"Received websocket message: \n{Encoding.UTF8.GetString(result.Message.ToArray())}\n");
                     var message = Encoding.UTF8.GetString(result.Message.ToArray());
 
                     // Heartbeat message
@@ -313,6 +319,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 return false;
             else
             {
+                await _log.WriteInfoAsync(nameof(StompSession), nameof(Handshake),
+                    $"Received websocket message: \n{Encoding.UTF8.GetString(message.ToArray())}\n");
                 var msg = Message.Deserialize(Encoding.UTF8.GetString(message.ToArray()));
 
                 // Message should be either a CONNECT or a STOMP

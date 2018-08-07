@@ -88,7 +88,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
             var requestType = context.Request.PathBase.Value;
 
-            _stompSession = new StompSession(Socket, _maxConnectionsPerClient);
+            _stompSession = new StompSession(Socket, Log, _maxConnectionsPerClient);
             _stompSession.AddAuthenticationCallback(AuthenticateAsync);
             _stompSession.AddSubscribeCallback(SubscribeAsync);
             _stompSession.AddUnsubscribeCallback(UnsubscribeAsync);
