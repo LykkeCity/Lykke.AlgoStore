@@ -156,7 +156,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                     if (result.ReceiveResult.MessageType == WebSocketMessageType.Close) return;
 
                     await _log.WriteInfoAsync(nameof(StompSession), nameof(Listen),
-                        $"Received websocket message: \n{Encoding.UTF8.GetString(result.Message.ToArray())}\n");
+                        $"Received websocket message: \n{Encoding.UTF8.GetString(result.Message.ToArray())}\n" +
+                        $"{BitConverter.ToString(result.Message.ToArray())}");
                     var message = Encoding.UTF8.GetString(result.Message.ToArray());
 
                     // Heartbeat message
@@ -320,7 +321,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             else
             {
                 await _log.WriteInfoAsync(nameof(StompSession), nameof(Handshake),
-                    $"Received websocket message: \n{Encoding.UTF8.GetString(message.ToArray())}\n");
+                    $"Received websocket message: \n{Encoding.UTF8.GetString(message.ToArray())}\n" +
+                    $"{BitConverter.ToString(message.ToArray())}");
                 var msg = Message.Deserialize(Encoding.UTF8.GetString(message.ToArray()));
 
                 // Message should be either a CONNECT or a STOMP
