@@ -26,15 +26,19 @@ namespace Lykke.AlgoStore.Services
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly IAlgoTradesClient _tradesHistoryService;
         private readonly IHistoryClient _functionHistoryService;
+        private readonly IAlgoInstancesService _algoInstancesService;
 
         public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService,
                                           IAlgoTradesClient tradesHistoryService,
                                           IHistoryClient functionHistoryService,
+                                          IAlgoInstancesService algoInstancesService,
                                           ILog log) : base (log, nameof(AlgoInstanceHistoryService))
         {
             this._candlesHistoryService = candlesHistoryService;
             this._tradesHistoryService = tradesHistoryService;
             this._functionHistoryService = functionHistoryService;
+            _algoInstancesService = algoInstancesService;
+            
         }
 
         public async Task<IEnumerable<AlgoInstanceTrade>> GetTradesAsync(string instanceId, string tradedAssetId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
@@ -52,10 +56,19 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
-        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
+        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, string clientId, ModelStateDictionary errorsDictionary)
         {
-            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment);
+            var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
 
+            if (String.IsNullOrEmpty(data?.AuthToken))
+            {
+                errorsDictionary.AddModelError("instanceId", "Invalid or not found");
+                await Log.WriteWarningAsync(nameof(AlgoInstanceHistoryService), nameof(GetFunctionsAsync), $"AuthToken not found for clientId {clientId} and instanceId {instanceId}");
+                return null;
+            }
+
+            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment, data.AuthToken);
+         
             if (functions == null)
             {
                 errorsDictionary.AddModelError("ServiceError", "Unknown");

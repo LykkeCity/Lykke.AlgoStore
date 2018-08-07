@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
@@ -52,7 +53,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                var functions = await _service.GetFunctionsAsync(instanceId, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), ModelState);
+                var functions = await _service.GetFunctionsAsync(instanceId, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), User.GetClientId(), ModelState);
 
                 if (!ModelState.IsValid)
                 {
