@@ -159,10 +159,7 @@ namespace Lykke.AlgoStore.Api
 
             app.UseWebSockets(webSocketOptions);
 
-            app.Map("/live/dummy", (_app) => _app.UseMiddleware<WebSocketMiddleware<DummyWebSocketHandler>>());
-            app.Map("/live/candles", (_app) => _app.UseMiddleware<WebSocketMiddleware<CandlesWebSocketHandler>>());
-            app.Map("/live/trades", (_app) => _app.UseMiddleware<WebSocketMiddleware<WebSocketHandlerBase<TradeChartingUpdate>>>());
-            app.Map("/live/functions", (_app) => _app.UseMiddleware<WebSocketMiddleware<WebSocketHandlerBase<FunctionChartingUpdate>>>());
+            app.Map("/live", (_app) => _app.UseMiddleware<WebSocketMiddleware>());
         }
 
         private async Task StartApplication(ISecurityClient securityClient)

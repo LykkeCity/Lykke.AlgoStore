@@ -10,7 +10,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq
     {
         private readonly JsonSerializerSettings _serializeSettings = new JsonSerializerSettings
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             DateTimeZoneHandling = DateTimeZoneHandling.Utc
         };
