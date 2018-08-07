@@ -17,7 +17,7 @@
     <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.74" />
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.7" />
-    <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.4" />
+    <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.AlgoStore.Service.Logging.Client" Version="1.0.4" />
     <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.3" />
     <PackageReference Include="Lykke.Common" Version="7.0.2" />

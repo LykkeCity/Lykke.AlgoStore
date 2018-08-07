@@ -52,9 +52,9 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
-        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
+        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, string instanceAuthToken, ModelStateDictionary errorsDictionary)
         {
-            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment);
+            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment, instanceAuthToken);
 
             if (functions == null)
             {

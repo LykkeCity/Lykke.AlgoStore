@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
@@ -23,12 +24,14 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoInstanceHistoryController : Controller
     {
         private readonly IAlgoInstanceHistoryService _service;
+        private readonly IAlgoInstancesService _algoInstancesService;
         private readonly ILog _log;
 
-        public AlgoInstanceHistoryController(IAlgoInstanceHistoryService service, ILog log)
+        public AlgoInstanceHistoryController(IAlgoInstanceHistoryService service, IAlgoInstancesService algoInstancesService, ILog log)
         {
             this._service = service;
             this._log = log;
+            _algoInstancesService = algoInstancesService;
         }
 
         /// <summary>
@@ -52,7 +55,18 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                var functions = await _service.GetFunctionsAsync(instanceId, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), ModelState);
+                var clientId = User.GetClientId();
+
+                var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
+
+                if (data == null || String.IsNullOrEmpty(data.AuthToken))
+                {
+                    ModelState.AddModelError("instanceId", "Invalid or not found");
+                    await _log.WriteWarningAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryFunctions), $"AuthToken not found for clientId {clientId} and instanceId {instanceId}");
+                    return BadRequest(ModelState);
+                }
+
+                var functions = await _service.GetFunctionsAsync(instanceId, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), data.AuthToken, ModelState);
 
                 if (!ModelState.IsValid)
                 {
