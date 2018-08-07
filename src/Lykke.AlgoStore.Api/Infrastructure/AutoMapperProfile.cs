@@ -134,7 +134,10 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<TeamCityWebHookResponseModel, TeamCityWebHookResponse>();
 
             CreateMap<Lykke.Service.CandlesHistory.Client.Models.Candle, Lykke.AlgoStore.Algo.Candle>();
-            CreateMap<Lykke.AlgoStore.Algo.Candle, CandleChartingUpdate>().ForMember(dest => dest.InstanceId, opt => opt.Ignore());
+            CreateMap<Lykke.AlgoStore.Algo.Candle, CandleChartingUpdate>()
+                .ForMember(dest => dest.InstanceId, opt => opt.Ignore())
+                .ForMember(dest => dest.AssetPair, opt => opt.Ignore())
+                .ForMember(dest => dest.CandleTimeInterval, opt => opt.Ignore());
 
             CreateMap<AlgoInstanceTradeResponseModel, AlgoInstanceTrade>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
