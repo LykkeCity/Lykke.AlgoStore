@@ -58,9 +58,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
             if (string.IsNullOrEmpty(str))
                 return null;
 
-            if (str.EndsWith("\r\n"))
+            if (str.EndsWith("\r\n", StringComparison.Ordinal))
                 return str.Substring(0, str.Length - 2);
-            else if (str.EndsWith("\n"))
+            else if (str.EndsWith("\n", StringComparison.Ordinal))
                 return str.Substring(0, str.Length - 1);
             else
                 return null;

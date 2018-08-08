@@ -58,62 +58,33 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
             return sb.ToString();
         }
 
-        public static Message Deserialize(string str, out string debugStr)
+        public static Message Deserialize(string str)
         {
-            debugStr = "";
-
             if (string.IsNullOrEmpty(str))
-            {
-                debugStr += "input str was null or empty\n";
                 return null;
-            }
 
             string removedEol = str;
-
-            debugStr += "input str before removing EOL: " + 
-                str.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0") + "\n";
 
             while (!string.IsNullOrEmpty((removedEol = Utils.RemoveEol(removedEol))))
                 str = removedEol;
 
-            debugStr += "input str after removing EOL: " +
-                str.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0") + "\n";
-
-            if (!str.EndsWith("\0"))
-            {
-                debugStr += "input str did not end with \\0\n";
-                return null;
-            }
+            if (!str.EndsWith("\0", StringComparison.Ordinal)) return null;
 
             var splits = str.Split("\r\n", StringSplitOptions.None)
                             .SelectMany(s => s.Split("\n", StringSplitOptions.None))
                             .ToArray();
 
-            debugStr += "splits: " +
-                string.Join(" ", splits.Select(s => ("[" + s.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0") + "]")).ToArray()) + "\n";
-
-            if (splits.Length < 3)
-            {
-                debugStr += "splits were less than 3\n";
-                return null;
-            }
+            if (splits.Length < 3) return null;
 
             var command = splits[0];
 
-            debugStr += "command: " + command + "\n";
-            if (string.IsNullOrEmpty(command))
-            {
-                debugStr += "command was null or empty\n";
-                return null;
-            }
+            if (string.IsNullOrEmpty(command)) return null;
 
             var headers = new List<Header>();
 
             for(var i = 1; i < splits.Length - 2; i++)
             {
-                var header = Header.Deserialize(splits[i], out var headerDebug);
-
-                debugStr += "header: \n" + headerDebug + "\n";
+                var header = Header.Deserialize(splits[i]);
 
                 if (header == null)
                     return null;
@@ -123,14 +94,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
 
             // Required blank line
             if (!string.IsNullOrEmpty(splits[splits.Length - 2]))
-            {
-                debugStr += $"required blank line was not blank: {splits[splits.Length - 2]}\n";
                 return null;
-            }
 
             var body = splits[splits.Length - 1];
-
-            debugStr += "body: " + body.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0") + "\n";
 
             return new Message
             {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
 {
@@ -46,26 +45,15 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
             return $"{Utils.EscapeString(Key)}:{Utils.EscapeString(Value)}\n";
         }
 
-        public static Header Deserialize(string row, out string debugStr)
+        public static Header Deserialize(string row)
         {
-            debugStr = "";
-
             if (string.IsNullOrEmpty(row))
-            {
-                debugStr += "    row was null or empty\n";
                 return null;
-            }
 
             var splits = row.Split(':', StringSplitOptions.None);
 
-            debugStr += "    splits: " +
-                string.Join(" ", splits.Select(s => ("[" + s.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0") + "]")).ToArray()) + "\n";
-
             if (splits.Length != 2)
-            {
-                debugStr += "    splits were not 2\n";
                 return null;
-            }
 
             var header = new Header
             {
@@ -73,14 +61,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
                 Value = Utils.UnescapeString(splits[1])
             };
 
-            debugStr += "    escaped header key: " + header.Key.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0")
-                + "; escaped header value" + header.Value.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\0", "\\0") + "\n";
-
             if (string.IsNullOrEmpty(header.Key) || string.IsNullOrEmpty(header.Value))
-            {
-                debugStr += "    header key or value was null or empty\n";
                 return null;
-            }
 
             return header;
         }
