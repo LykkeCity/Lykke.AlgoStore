@@ -27,7 +27,6 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private static Dictionary<string, uint> _clientConnections = new Dictionary<string, uint>();
 
         private readonly WebSocket _webSocket;
-        private readonly ILog _log;
         private readonly TimeSpan _connectTimeout;
         private readonly uint _maxConnectionsPerClient;
 
@@ -77,13 +76,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private ulong _currentMessageId;
 
         public StompSession(WebSocket webSocket,
-            ILog log,
             uint maxConnectionsPerClient = 3,
             TimeSpan? connectTimeout = null,
             TimeSpan? reauthenticationInterval = null)
         {
             _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
-            _log = log;
             _maxConnectionsPerClient = maxConnectionsPerClient;
             _connectTimeout = connectTimeout ?? TimeSpan.FromSeconds(10);
             _reauthenticationInterval = reauthenticationInterval ?? TimeSpan.FromMinutes(1);
@@ -155,18 +152,12 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 
                     if (result.ReceiveResult.MessageType == WebSocketMessageType.Close) return;
 
-                    await _log.WriteInfoAsync(nameof(StompSession), nameof(Listen),
-                        $"Received websocket message: \n{Encoding.UTF8.GetString(result.Message.ToArray())}\n" +
-                        $"{BitConverter.ToString(result.Message.ToArray())}");
                     var message = Encoding.UTF8.GetString(result.Message.ToArray());
-                    
+
                     // Heartbeat message
                     if (!string.IsNullOrEmpty(message) && (message == "\n" || message == "\r\n")) continue;
 
-                    var msg = Message.Deserialize(message, out string debugStr);
-
-                    await _log.WriteInfoAsync(nameof(StompSession), nameof(Listen),
-                        $"Deserialized message debug string:\n{debugStr}");
+                    var msg = Message.Deserialize(message);
 
                     if (msg == null || !_supportedCommands.Contains(msg.Command))
                     {
@@ -323,13 +314,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 return false;
             else
             {
-                await _log.WriteInfoAsync(nameof(StompSession), nameof(Handshake),
-                    $"Received websocket message: \n{Encoding.UTF8.GetString(message.ToArray())}\n" +
-                    $"{BitConverter.ToString(message.ToArray())}");
-                var msg = Message.Deserialize(Encoding.UTF8.GetString(message.ToArray()), out var debugStr);
-
-                await _log.WriteInfoAsync(nameof(StompSession), nameof(Handshake),
-                        $"Deserialized message debug string:\n{debugStr}");
+                var msg = Message.Deserialize(Encoding.UTF8.GetString(message.ToArray()));
 
                 // Message should be either a CONNECT or a STOMP
                 if (msg == null || (msg.Command != Message.COMMAND_CONNECT && msg.Command != Message.COMMAND_STOMP))
