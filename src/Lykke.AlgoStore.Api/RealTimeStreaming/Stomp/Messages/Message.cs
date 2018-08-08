@@ -68,7 +68,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp.Messages
             while (!string.IsNullOrEmpty((removedEol = Utils.RemoveEol(removedEol))))
                 str = removedEol;
 
-            if (!str.EndsWith("\0")) return null;
+            if (!str.EndsWith("\0", StringComparison.Ordinal)) return null;
 
             var splits = str.Split("\r\n", StringSplitOptions.None)
                             .SelectMany(s => s.Split("\n", StringSplitOptions.None))

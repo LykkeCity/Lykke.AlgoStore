@@ -531,7 +531,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
             if (msgHeader.Any(s => s == StompVersion.VERSION_12))
                 return StompVersion.VERSION_12;
             else if (msgHeader.Any(s => s == StompVersion.VERSION_11))
-                return StompVersion.VERSION_12;
+                return StompVersion.VERSION_11;
 
             // If not, send an error containing the versions supported by the server
             await CloseWithError("unsupported version", "", 
