@@ -136,11 +136,10 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<Lykke.Service.CandlesHistory.Client.Models.Candle, Lykke.AlgoStore.Algo.Candle>();
             CreateMap<Lykke.AlgoStore.Algo.Candle, CandleChartingUpdate>().ForMember(dest => dest.InstanceId, opt => opt.Ignore());
 
-            CreateMap<AlgoInstanceTradeResponseModel, AlgoInstanceTrade>()
+            CreateMap<AlgoInstanceTradeResponseModel, TradeChartingUpdate>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.AssetPairId, opt => opt.MapFrom(src => src.AssetPair))
                 .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName));
-            CreateMap<AlgoInstanceTrade, TradeChartingUpdate>();
 
             CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
                 Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>();
