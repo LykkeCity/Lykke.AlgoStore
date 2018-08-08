@@ -14,6 +14,7 @@ using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Rest;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.AlgoStore.Api.Controllers
@@ -62,10 +63,14 @@ namespace Lykke.AlgoStore.Api.Controllers
 
                 if (functions == null)
                 {
-                    return StatusCode((int)HttpStatusCode.InternalServerError);
+                    return StatusCode((int) HttpStatusCode.InternalServerError);
                 }
 
                 return Ok(functions);
+            }
+            catch (HttpOperationException ex)
+            {
+                return StatusCode((int) ex.Response.StatusCode, ex.Response.ReasonPhrase);
             }
             catch (Exception ex)
             {
@@ -96,19 +101,21 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
                 
-                var trades = await _service.GetTradesAsync(instanceId, tradedAssetId, fromMoment, toMoment, ModelState);
+                var result = await _service.GetTradesAsync(instanceId, tradedAssetId, fromMoment, toMoment);
 
-                if (!ModelState.IsValid)
+                if (result.Error != null)
                 {
-                    return BadRequest(ErrorResponse.Create(ModelState));
+                    foreach (var error in result.Error.modelErrors)
+                    {
+                        ModelState.AddModelError(error.Key, String.Join(",",error.Value) );
+                    }
+                    var response = ErrorResponse.Create(ModelState);
+                    
+                    return StatusCode((int)result.Error.StatusCode, response);
                 }
 
-                if (trades == null)
-                {
-                    return StatusCode((int)HttpStatusCode.InternalServerError);
-                }
-                var result = trades.Select(AutoMapper.Mapper.Map<TradeChartingUpdate>).ToList();
-                return Ok(result);
+                var trades = result.Records.Select(AutoMapper.Mapper.Map<TradeChartingUpdate>);
+                return Ok(trades);
             }
             catch (Exception ex)
             {

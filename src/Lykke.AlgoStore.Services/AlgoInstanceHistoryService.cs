@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Log;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.Service.AlgoTrades.Client;
+using Lykke.AlgoStore.Service.AlgoTrades.Client.Models;
 using Lykke.AlgoStore.Service.History.Client;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.CodeAnalysis.Operations;
 using Candle = Lykke.AlgoStore.Algo.Candle;
 using CandlePriceType = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandlePriceType;
 using CandleTimeInterval = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval;
@@ -41,18 +39,9 @@ namespace Lykke.AlgoStore.Services
             
         }
 
-        public async Task<IEnumerable<AlgoInstanceTrade>> GetTradesAsync(string instanceId, string tradedAssetId, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary)
+        public async Task<AlgoInstanceTradeResponse> GetTradesAsync(string instanceId, string tradedAssetId, DateTime fromMoment, DateTime toMoment/*, ModelStateDictionary errorsDictionary*/)
         {
-            var trades = await _tradesHistoryService.GetAlgoInstanceTradesByPeriod(instanceId, tradedAssetId, fromMoment, toMoment);
-
-            if (trades == null || trades.Error != null || trades.Records == null)
-            {
-                errorsDictionary.AddModelError("ServiceError", trades?.Error?.Message ?? "Unknown");
-                return null;
-            }
-
-            var result = trades.Records.Select(AutoMapper.Mapper.Map<AlgoInstanceTrade>);
-
+            var result = await _tradesHistoryService.GetAlgoInstanceTradesByPeriod(instanceId, tradedAssetId, fromMoment, toMoment);
             return result;
         }
 
