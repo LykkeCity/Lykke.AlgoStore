@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
@@ -16,6 +9,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Rest;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -63,14 +63,14 @@ namespace Lykke.AlgoStore.Api.Controllers
 
                 if (functions == null)
                 {
-                    return StatusCode((int) HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
                 return Ok(functions);
             }
             catch (HttpOperationException ex)
             {
-                return StatusCode((int) ex.Response.StatusCode, ex.Response.ReasonPhrase);
+                return StatusCode((int)ex.Response.StatusCode, ex.Response.ReasonPhrase);
             }
             catch (Exception ex)
             {
@@ -100,17 +100,17 @@ namespace Lykke.AlgoStore.Api.Controllers
                 {
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
-                
+
                 var result = await _service.GetTradesAsync(instanceId, tradedAssetId, fromMoment, toMoment);
 
                 if (result.Error != null)
                 {
                     foreach (var error in result.Error.modelErrors)
                     {
-                        ModelState.AddModelError(error.Key, String.Join(",",error.Value) );
+                        ModelState.AddModelError(error.Key, String.Join(",", error.Value));
                     }
                     var response = ErrorResponse.Create(ModelState);
-                    
+
                     return StatusCode((int)result.Error.StatusCode, response);
                 }
 
@@ -152,22 +152,31 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
+                string assetPairName = await _service.GetAssetPairName(assetPairId);
+
                 if (candles == null)
                 {
-                    return StatusCode((int) HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
-                var result = candles.Select(AutoMapper.Mapper.Map<CandleChartingUpdate>).ToList();
+
+                var result = AutoMapper.Mapper.Map<CandleChartingUpdate[]>(candles).Select(c =>
+                {
+                    c.AssetPair = assetPairName;
+                    c.CandleTimeInterval = timeInterval;
+                    return c;
+                }).ToList();
+
                 return Ok(result);
             }
             catch (OperationCanceledException ex)
             {
                 Response.Headers.Add("Retry-After", "60");
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryCandles), "Call to Lykke Candles service timed out. Requested data was too big or the service is unavailable", ex);
-                return StatusCode((int) HttpStatusCode.ServiceUnavailable);
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable);
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController),nameof(GetHistoryCandles),ex);
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryCandles), ex);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
