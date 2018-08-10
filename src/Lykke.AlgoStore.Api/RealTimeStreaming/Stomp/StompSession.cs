@@ -487,7 +487,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                 _expectServerHeartbeats = serverHeartbeat > 0;
 
                 // Allow for client network delay here
-                _clientHeartbeatInterval = TimeSpan.FromMilliseconds(clientHeartbeat + 1000);
+                _clientHeartbeatInterval = TimeSpan.FromMilliseconds(clientHeartbeat + 5000);
                 _serverHeartbeatInterval = TimeSpan.FromMilliseconds(serverHeartbeat);
 
                 // Start each task based on the request
@@ -619,16 +619,10 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         /// <returns>Task which will complete once the disconnect has been handled</returns>
         private async Task HandleDisconnect()
         {
-            // Unsubscribe from every queue before disconnecting
-            foreach (var subscription in _subscribedQueues)
-            {
-                await Task.WhenAll(_unsubscribeCallbacks.Select(c => c(subscription.Key)).ToArray());
-            }
-
             // Decrement the user connection count
-            lock(_sync)
+            lock (_sync)
             {
-                if(_authenticated && _clientConnections.ContainsKey(_login))
+                if (_authenticated && _clientConnections.ContainsKey(_login))
                 {
                     _clientConnections[_login] -= 1;
 
@@ -636,6 +630,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
                         _clientConnections.Remove(_login);
                 }
             }
+
+            // Unsubscribe from every queue before disconnecting
+            foreach (var subscription in _subscribedQueues)
+            {
+                try
+                {
+                    await Task.WhenAll(_unsubscribeCallbacks.Select(c => c(subscription.Key)).ToArray());
+                }
+                catch (Exception) { }
+            }
+            
 
             // Run all of the disconnection callbacks
             await Task.WhenAll(_disconnectCallbacks.Select(c => c()).ToArray());

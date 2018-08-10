@@ -29,21 +29,12 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                try
+                var connected = await webSocketHandler.OnConnected(context);
+                if (connected)
                 {
-                    var connected = await webSocketHandler.OnConnected(context);
-                    if (connected)
-                    {
-                        await webSocketHandler.Listen();
-                    }
-                    return true;
+                    await webSocketHandler.Listen();
                 }
-                catch (Exception ex)
-                {
-                    context.Response.StatusCode = 500;
-                    await context.Response.WriteAsync("Unable to process connection");
-                    throw;
-                }
+                return true;
             }
             return false;
         }

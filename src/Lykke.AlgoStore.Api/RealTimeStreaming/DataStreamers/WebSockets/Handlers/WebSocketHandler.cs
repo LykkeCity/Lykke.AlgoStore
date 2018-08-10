@@ -117,6 +117,11 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         {
             try
             {
+                foreach(var kvp in _subscribedQueues.ToArray())
+                {
+                    await UnsubscribeAsync($"instance/{kvp.Key.Item2}/{kvp.Value}");
+                }
+
                 UnsubscribeAll();
 
                 if (Socket.CloseStatus == WebSocketCloseStatus.EndpointUnavailable)
@@ -125,6 +130,9 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                     Log.Info(nameof(WebSocketHandler), $"WebSocket ConnectionId={_clientId} closed due to client disconnect. ", nameof(OnDisconnected));
                     return;
                 }
+
+                if (exception != null && !(exception is WebSocketException))
+                    Log.Warning("Error encountered during websocket operation", exception);
 
                 if (Socket.State == WebSocketState.Open || Socket.State == WebSocketState.CloseReceived || Socket.State == WebSocketState.CloseSent)
                 {
@@ -148,34 +156,39 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private async Task<bool> SubscribeAsync(string queueName)
         {
-            var splits = await ValidateQueueName(queueName);
+            var splits = SplitQueueName(queueName);
 
             if (splits == null) return false;
 
-            if (_subscribedQueues.ContainsKey((splits[1], splits[2]))) return false;
+            var instanceId = splits[1];
 
-            if(!_subscribedQueues.Any(kvp => kvp.Key.Item1 == splits[1]))
+            if (!await _clientInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(_clientId, instanceId))
+                return false;
+
+            if (_subscribedQueues.ContainsKey((instanceId, splits[2]))) return false;
+
+            if(!_subscribedQueues.Any(kvp => kvp.Key.Item1 == instanceId))
             {
-                if (!IncrementInstanceUsage(_clientId, splits[1]))
+                if (!IncrementInstanceUsage(_clientId, instanceId))
                     return false;
             }
 
-            _subscribedQueues.Add((splits[1], splits[2]), queueName);
+            _subscribedQueues.Add((instanceId, splits[2]), queueName);
 
             SubscribeAll();
 
             return true;
         }
 
-        private async Task UnsubscribeAsync(string queueName)
+        private Task UnsubscribeAsync(string queueName)
         {
-            var splits = await ValidateQueueName(queueName);
+            var splits = SplitQueueName(queueName);
 
-            if (splits == null) return;
+            if (splits == null) return Task.CompletedTask;
 
             var key = (splits[1], splits[2]);
 
-            if (!_subscribedQueues.ContainsKey(key)) return;
+            if (!_subscribedQueues.ContainsKey(key)) return Task.CompletedTask;
 
             _subscribedQueues.Remove((splits[1], splits[2]));
 
@@ -183,20 +196,17 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 DecrementInstanceUsage(_clientId, splits[1]);
 
             if (!_subscribedQueues.Any()) UnsubscribeAll();
+
+            return Task.CompletedTask;
         }
 
-        private async Task<string[]> ValidateQueueName(string queueName)
+        private string[] SplitQueueName(string queueName)
         {
             var splits = queueName.Split('/');
 
             if (splits.Length < 3) return null;
 
             if (splits[0] != "instance") return null;
-
-            var instanceId = splits[1];
-
-            if (!await _clientInstanceRepository.ExistsAlgoInstanceDataWithClientIdAsync(_clientId, instanceId))
-                return null;
 
             return splits;
         }
@@ -220,24 +230,30 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
 
         private void SubscribeAll()
         {
-            if (_dataSourceSubscribed) return;
+            lock (_sync)
+            {
+                if (_dataSourceSubscribed) return;
 
-            _candleSource.Subscribe(OnCandleReceived);
-            _functionSource.Subscribe(OnFunctionReceived);
-            _tradeSource.Subscribe(OnTradeReceived);
+                _candleSource.Subscribe(OnCandleReceived);
+                _functionSource.Subscribe(OnFunctionReceived);
+                _tradeSource.Subscribe(OnTradeReceived);
 
-            _dataSourceSubscribed = true;
+                _dataSourceSubscribed = true;
+            }
         }
 
         private void UnsubscribeAll()
         {
-            if (!_dataSourceSubscribed) return;
+            lock (_sync)
+            {
+                if (!_dataSourceSubscribed) return;
 
-            _candleSource.Unsubscribe(OnCandleReceived);
-            _functionSource.Unsubscribe(OnFunctionReceived);
-            _tradeSource.Unsubscribe(OnTradeReceived);
+                _candleSource.Unsubscribe(OnCandleReceived);
+                _functionSource.Unsubscribe(OnFunctionReceived);
+                _tradeSource.Unsubscribe(OnTradeReceived);
 
-            _dataSourceSubscribed = false;
+                _dataSourceSubscribed = false;
+            }
         }
 
         private async Task OnCandleReceived(CandleChartingUpdate candleUpdate)
