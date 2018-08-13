@@ -9,6 +9,7 @@ using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.AlgoStore.Service.Security.Client;
+using Lykke.AlgoStore.Core.Services;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -18,10 +19,12 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreUsersController: Controller
     {
         private readonly ISecurityClient _securityClient;
+        private readonly IUsersService _usersService;
 
-        public AlgoStoreUsersController(ISecurityClient securityClient)
+        public AlgoStoreUsersController(ISecurityClient securityClient, IUsersService usersService)
         {
             _securityClient = securityClient;
+            _usersService = usersService;
         }
 
         [HttpGet("getAllWithRoles")]
@@ -49,6 +52,48 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _securityClient.GetUserByIdWithRolesAsync(clientId);
 
             return Ok(Mapper.Map<AlgoStoreUserDataModel>(result));
+        }
+
+        [HttpPost("gdprConsent")]
+        [SwaggerOperation("SetUserGDPRConsent")]
+        [DescriptionAttribute("Allows users to agree with the GDPR requirements")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SetUserGDPRConsent()
+        {            
+            var clientId = User.GetClientId();
+
+            await _usersService.SetGDPRConsentAsync(clientId);
+
+            return NoContent();
+        }
+
+        [HttpPost("cookieConsent")]
+        [SwaggerOperation("SetUserCookieConsent")]
+        [DescriptionAttribute("Allows users to agree with the Cookie requirements")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SetUserCookieConsent()
+        {
+            var clientId = User.GetClientId();
+
+            await _usersService.SetCookieConsentAsync(clientId);
+
+            return NoContent();
+        }
+
+        [HttpPost("deactivateAccount")]
+        [SwaggerOperation("DeactivateUserAccount")]
+        [DescriptionAttribute("Allows users to deactivate his account")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> DeactivateUserAccount()
+        {
+            var clientId = User.GetClientId();
+
+            await _usersService.DeactivateAccountAsync(clientId);
+
+            return NoContent();
         }
     }
 }
