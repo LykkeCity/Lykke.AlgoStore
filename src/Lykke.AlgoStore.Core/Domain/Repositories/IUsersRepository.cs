@@ -9,7 +9,8 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
     public interface IUsersRepository
     {
         Task<UserData> GetByIdAsync(string clientId);
-        Task UpdateAsync(string clientId);
+        Task SaveAsync(UserData data);
+        Task UpdateAsync(UserData data);
         Task DeleteAsync(string clientId);
     }
 }

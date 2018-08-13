@@ -309,4 +309,7 @@
   <data name="InstanceDeploymentGenericError" xml:space="preserve">
     <value>An error has occurred, please contact an administrator</value>
   </data>
+  <data name="ConsentAlreadyGiven" xml:space="preserve">
+    <value>{0} consent has already been given for clientId {1}</value>
+  </data>
 </root>

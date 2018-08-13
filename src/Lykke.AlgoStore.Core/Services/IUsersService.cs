@@ -7,8 +7,8 @@ namespace Lykke.AlgoStore.Core.Services
     public interface IUsersService
     {
         Task<UserData> GetByIdAsync(string clientId);
-        Task SetGDPRConsentAsync(string clientId, bool accepted = true);
-        Task SetCookieConsentAsync(string clientId, bool accepted = true);
+        Task SetGDPRConsentAsync(string clientId);
+        Task SetCookieConsentAsync(string clientId);
         Task DeactivateAccountAsync(string clientId);
     }
 }
