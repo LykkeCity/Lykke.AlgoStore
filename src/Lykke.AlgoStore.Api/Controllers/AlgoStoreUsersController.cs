@@ -54,6 +54,20 @@ namespace Lykke.AlgoStore.Api.Controllers
             return Ok(Mapper.Map<AlgoStoreUserDataModel>(result));
         }
 
+        [HttpGet("legalConsents")]
+        [SwaggerOperation("GetLegalConsents")]
+        [DescriptionAttribute("Allows users to check if a specific user has agreed the legal requirements")]
+        [ProducesResponseType(typeof(UserModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetLegalConsents()
+        {
+            var clientId = User.GetClientId();
+
+            var result = await _usersService.GetByIdAsync(clientId);
+
+            return Ok(Mapper.Map<UserModel>(result));
+        }
+
         [HttpPost("gdprConsent")]
         [SwaggerOperation("SetUserGDPRConsent")]
         [DescriptionAttribute("Allows users to agree with the GDPR requirements")]
