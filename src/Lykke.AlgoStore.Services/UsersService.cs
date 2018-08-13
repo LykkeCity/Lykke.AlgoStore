@@ -36,7 +36,15 @@ namespace Lykke.AlgoStore.Services
             {
                 var entity = await _usersRepository.GetByIdAsync(clientId);
 
-                if(entity.CookieConsent)
+                if (entity == null)
+                {
+                    entity = new UserData
+                    {
+                        ClientId = clientId
+                    };
+                }
+
+                if (entity.CookieConsent)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, $"Cookie consent already given for clientId {clientId}",
                         string.Format(Phrases.ConsentAlreadyGiven, "Cookie", clientId));
@@ -53,6 +61,14 @@ namespace Lykke.AlgoStore.Services
             await LogTimedInfoAsync(nameof(SetGDPRConsentAsync), clientId, async () =>
             {
                 var entity = await _usersRepository.GetByIdAsync(clientId);
+
+                if (entity == null)
+                {
+                    entity = new UserData
+                    {
+                        ClientId = clientId
+                    };
+                }
 
                 if (entity.GDPRConsent)
                 {

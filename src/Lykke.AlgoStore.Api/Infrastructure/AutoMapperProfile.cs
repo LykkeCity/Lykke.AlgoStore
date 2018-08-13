@@ -149,6 +149,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<UserData, UserEntity>()
                 .ForMember(dest => dest.PartitionKey, opt => opt.Ignore())
+                .ForMember(dest => dest.ETag, opt => opt.Ignore())
+                .ForMember(dest => dest.Timestamp, opt => opt.Ignore())
                 .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.ClientId));
 
             CreateMap<UserEntity, UserData>()
