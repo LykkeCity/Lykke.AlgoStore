@@ -146,6 +146,14 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
                 Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>();
+
+            CreateMap<UserData, UserEntity>()
+                .ForMember(dest => dest.PartitionKey, opt => opt.Ignore())
+                .ForMember(dest => dest.RowKey, opt => opt.MapFrom(src => src.ClientId));
+
+            CreateMap<UserEntity, UserData>()
+                .ForSourceMember(src => src.PartitionKey, dest => dest.Ignore())
+                .ForMember(dest => dest.ClientId, opt => opt.MapFrom(src => src.RowKey));
         }
     }
 }
