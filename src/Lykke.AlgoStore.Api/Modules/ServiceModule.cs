@@ -174,6 +174,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreLoggingServiceClient.ServiceUrl)
                 .As<ILoggingClient>()
                 .SingleInstance();
+
+            builder.RegisterStatisticsClient(_settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl);
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
@@ -213,7 +215,6 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
-                .WithParameter("statisticsServiceUrl", _settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl)
                 .SingleInstance();
 
             builder.RegisterType<AlgoInstanceHistoryService>()
@@ -221,3 +222,4 @@ namespace Lykke.AlgoStore.Api.Modules
         }
     }
 }
+

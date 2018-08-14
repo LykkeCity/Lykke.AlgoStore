@@ -38,7 +38,7 @@
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Service.Security.Client" Version="1.0.9" />
-    <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.3" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.Common" Version="7.0.3" />
     <PackageReference Include="Lykke.Common.ApiLibrary" Version="1.10.1" />
     <PackageReference Include="Lykke.RabbitMqBroker" Version="7.1.0" />

@@ -19,7 +19,7 @@
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.8" />
     <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Service.Logging.Client" Version="1.0.4" />
-    <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.3" />
+    <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.Common" Version="7.0.3" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
     <PackageReference Include="Lykke.Service.Balances.Client" Version="1.0.21" />
