@@ -44,11 +44,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = new StatusModel();
             result.Status = await _service.StopTestImageAsync(data);
 
-            if (result.Status == AlgoInstanceStatus.Stopped.ToString())
-            {
-                await _statisticsService.UpdateStatisticsSummaryAsync(data.ClientId, data.InstanceId);
-            }
-
             return Ok(result);
         }
 

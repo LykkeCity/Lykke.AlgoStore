@@ -15,17 +15,17 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
-        private readonly string _statisticsServiceUrl;
+        private readonly IStatisticsClient _statisticsClient;
 
         public AlgoStoreStatisticsService(IStatisticsRepository statisticsRepository,
             IAlgoClientInstanceRepository algoClientInstanceRepository,
-            string statisticsServiceUrl,
+            IStatisticsClient statisticsClient,
             ILog log)
             : base(log, nameof(AlgoStoreStatisticsService))
         {
             _statisticsRepository = statisticsRepository;
             _algoInstanceRepository = algoClientInstanceRepository;
-            _statisticsServiceUrl = statisticsServiceUrl;
+            _statisticsClient = statisticsClient;
         }
 
         //REMARK: In future we will MOVE this method into new statistics service (Lykke.AlgoStore.Statistics.Service solution)
@@ -76,14 +76,8 @@ namespace Lykke.AlgoStore.Services
                     }
 
                     var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(clientId, instanceId);
-                    var authHandler = new AlgoAuthorizationHeaderHttpClientHandler(instanceData.AuthToken);
-                    var instanceEventHandler = HttpClientGenerator.HttpClientGenerator
-                        .BuildForUrl(_statisticsServiceUrl)
-                        .WithAdditionalDelegatingHandler(authHandler);
 
-                    var statisticsClient = instanceEventHandler.Create().Generate<IStatisticsClient>();
-
-                    await statisticsClient.UpdateSummaryAsync(clientId, instanceId);
+                    await _statisticsClient.UpdateSummaryAsync(clientId, instanceId, instanceData.AuthToken.ToBearerToken());
 
                     var statisticsSummary = await _statisticsRepository.GetSummaryAsync(instanceId);
 

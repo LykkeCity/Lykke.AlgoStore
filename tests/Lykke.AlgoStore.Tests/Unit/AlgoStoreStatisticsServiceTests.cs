@@ -4,6 +4,7 @@ using AutoFixture;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
+using Lykke.AlgoStore.Service.Statistics.Client;
 using Lykke.AlgoStore.Services;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using Moq;
@@ -25,12 +26,29 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var statisticsRepo = Given_Correct_StatisticsRepository();
             var algoInstanceRepo = Given_Correct_AlgoClientInstanceRepository();
-            var statisticsClientUrl = "http://fake.host";
+            IStatisticsClient statisticsClientMock = Given_Correct_StatisticsClient();
+
             var statisticsService =
-                Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo, statisticsClientUrl);
+                Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo, statisticsClientMock);
 
             var result =
                 When_Invoke_GetStatisticsSummaryAsync(statisticsService, _clientId, _instanceId, out Exception ex);
+            Then_Exception_Should_BeNull(ex);
+            Then_Object_Should_NotBeNull(result);
+        }
+
+        [Test]
+        public void UpdateStatisticsSummary()
+        {
+            var statisticsRepo = Given_Correct_StatisticsRepository();
+            var algoInstanceRepo = Given_Correct_AlgoClientInstanceRepository();
+            IStatisticsClient statisticsClientMock = Given_Correct_StatisticsClient();
+
+            var statisticsService =
+                Given_Correct_AlgoStoreStatisticsService(statisticsRepo, algoInstanceRepo, statisticsClientMock);
+
+            var result =
+                When_Invoke_UpdateStatisticsSummaryAsync(statisticsService, _clientId, _instanceId, out Exception ex);
             Then_Exception_Should_BeNull(ex);
             Then_Object_Should_NotBeNull(result);
         }
@@ -39,10 +57,10 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static AlgoStoreStatisticsService Given_Correct_AlgoStoreStatisticsService(
             IStatisticsRepository statisticsRepository,
-            IAlgoClientInstanceRepository algoClientInstanceRepository, string statisticsClientUrl)
+            IAlgoClientInstanceRepository algoClientInstanceRepository, IStatisticsClient statisticsClient)
         {
             return new AlgoStoreStatisticsService(statisticsRepository, algoClientInstanceRepository,
-                statisticsClientUrl, new LogMock());
+                statisticsClient, new LogMock());
         }
 
         private static IStatisticsRepository Given_Correct_StatisticsRepository()
@@ -83,6 +101,17 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
+        private static IStatisticsClient Given_Correct_StatisticsClient()
+        {
+            var fixture = new Fixture();
+            var result = new Mock<IStatisticsClient>();
+
+            result.Setup(client => client.UpdateSummaryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
+            return result.Object;
+        }
+
         private static StatisticsSummary When_Invoke_GetStatisticsSummaryAsync(IAlgoStoreStatisticsService service,
             string clientId, string instanceId, out Exception exception)
         {
@@ -90,6 +119,21 @@ namespace Lykke.AlgoStore.Tests.Unit
             try
             {
                 return service.GetStatisticsSummaryAsync(clientId, instanceId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static StatisticsSummary When_Invoke_UpdateStatisticsSummaryAsync(IAlgoStoreStatisticsService service,
+            string clientId, string instanceId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.UpdateStatisticsSummaryAsync(clientId, instanceId).Result;
             }
             catch (Exception ex)
             {
