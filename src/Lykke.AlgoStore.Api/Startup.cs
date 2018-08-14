@@ -31,6 +31,7 @@ using Lykke.Service.Security.Client.AutorestClient.Models;
 using Lykke.AlgoStore.Api.RealTimeStreaming;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
+using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -68,8 +69,9 @@ namespace Lykke.AlgoStore.Api
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                     .AddJsonOptions(options =>
                     {
-                        options.SerializerSettings.ContractResolver =
+                        options.SerializerSettings.ContractResolver = 
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                        options.SerializerSettings.Converters.Add(new DefaultDateTimeConverter());
                     });
 
                 services.AddScoped<ValidateMimeMultipartContentFilter>();
@@ -157,10 +159,7 @@ namespace Lykke.AlgoStore.Api
 
             app.UseWebSockets(webSocketOptions);
 
-            app.Map("/live/dummy", (_app) => _app.UseMiddleware<WebSocketMiddleware<DummyWebSocketHandler>>());
-            app.Map("/live/candles", (_app) => _app.UseMiddleware<WebSocketMiddleware<CandlesWebSocketHandler>>());
-            app.Map("/live/trades", (_app) => _app.UseMiddleware<WebSocketMiddleware<WebSocketHandlerBase<TradeChartingUpdate>>>());
-            app.Map("/live/functions", (_app) => _app.UseMiddleware<WebSocketMiddleware<WebSocketHandlerBase<FunctionChartingUpdate>>>());
+            app.Map("/live", (_app) => _app.UseMiddleware<WebSocketMiddleware>());
         }
 
         private async Task StartApplication(ISecurityClient securityClient)

@@ -1,20 +1,21 @@
-﻿using System;
+﻿using Common.Log;
+using Lykke.AlgoStore.Algo.Charting;
+using Lykke.AlgoStore.Api.Infrastructure.Attributes;
+using Lykke.AlgoStore.Api.Infrastructure.Extensions;
+using Lykke.AlgoStore.Api.Models;
+using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Rest;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Log;
-using Lykke.AlgoStore.Algo.Charting;
-using Lykke.AlgoStore.Api.Infrastructure.Attributes;
-using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.Core.Services;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
-using Lykke.AlgoStore.Services.Utils;
-using Lykke.Common.Log;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -31,6 +32,98 @@ namespace Lykke.AlgoStore.Api.Controllers
             this._service = service;
             this._log = log;
         }
+
+        /// <summary>
+        /// Get history function values for instance
+        /// </summary>
+        /// <param name="instanceId">Instance ID</param>
+        /// <param name="fromMoment">From moment in ISO 8601</param>
+        /// <param name="toMoment">To moment in ISO 8601</param>
+        [HttpGet("functions")]
+        [SwaggerOperation("GetHistoryFunctions")]
+        [Description("Get history function values")]
+        [ProducesResponseType(typeof(IEnumerable<FunctionChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetHistoryFunctions([FromQuery][Required]string instanceId, [FromQuery]DateTime fromMoment, [FromQuery]DateTime toMoment)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                var functions = await _service.GetFunctionsAsync(instanceId, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), User.GetClientId(), ModelState);
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                if (functions == null)
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
+                }
+
+                return Ok(functions);
+            }
+            catch (HttpOperationException ex)
+            {
+                return StatusCode((int)ex.Response.StatusCode, ex.Response.ReasonPhrase);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryFunctions), ex);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        /// <summary>
+        /// Get history trades for instance
+        /// </summary>
+        /// <param name="instanceId">Instance ID</param>
+        /// <param name="tradedAssetId">Traded asset</param>
+        /// <param name="fromMoment">From moment in ISO 8601</param>
+        /// <param name="toMoment">To moment in ISO 8601</param>
+        [HttpGet("trades")]
+        [SwaggerOperation("GetHistoryTrades")]
+        [Description("Get history trades")]
+        [ProducesResponseType(typeof(IEnumerable<TradeChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetHistoryTrades([FromQuery][Required]string instanceId, [FromQuery][Required]string tradedAssetId, [FromQuery]DateTime fromMoment, [FromQuery]DateTime toMoment)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                var result = await _service.GetTradesAsync(instanceId, tradedAssetId, fromMoment, toMoment);
+
+                if (result.Error != null)
+                {
+                    foreach (var error in result.Error.modelErrors)
+                    {
+                        ModelState.AddModelError(error.Key, String.Join(",", error.Value));
+                    }
+                    var response = ErrorResponse.Create(ModelState);
+
+                    return StatusCode((int)result.Error.StatusCode, response);
+                }
+
+                var trades = result.Records.Select(AutoMapper.Mapper.Map<TradeChartingUpdate>);
+                return Ok(trades);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryTrades), ex);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
 
         /// <summary>
         /// Get history candles
@@ -59,22 +152,31 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
+                string assetPairName = await _service.GetAssetPairName(assetPairId);
+
                 if (candles == null)
                 {
-                    return StatusCode((int) HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
-                var result = candles.Select(c => c.ToCandleChartingUpdate()).ToList();
+
+                var result = AutoMapper.Mapper.Map<CandleChartingUpdate[]>(candles).Select(c =>
+                {
+                    c.AssetPair = assetPairName;
+                    c.CandleTimeInterval = timeInterval;
+                    return c;
+                }).ToList();
+
                 return Ok(result);
             }
             catch (OperationCanceledException ex)
             {
                 Response.Headers.Add("Retry-After", "60");
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryCandles), "Call to Lykke Candles service timed out. Requested data was too big or the service is unavailable", ex);
-                return StatusCode((int) HttpStatusCode.ServiceUnavailable);
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable);
             }
             catch (Exception ex)
             {
-                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController),nameof(GetHistoryCandles),ex);
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryCandles), ex);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }

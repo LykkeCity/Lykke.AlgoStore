@@ -1,16 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Common.Log;
+﻿using Common.Log;
+using JetBrains.Annotations;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Service.AlgoTrades.Client;
+using Lykke.AlgoStore.Service.AlgoTrades.Client.Models;
+using Lykke.AlgoStore.Service.History.Client;
 using Lykke.AlgoStore.Services.Utils;
+using Lykke.Service.Assets.Client;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.CodeAnalysis.Operations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Candle = Lykke.AlgoStore.Algo.Candle;
 using CandlePriceType = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandlePriceType;
 using CandleTimeInterval = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval;
@@ -20,10 +24,65 @@ namespace Lykke.AlgoStore.Services
     public class AlgoInstanceHistoryService : BaseAlgoStoreService, IAlgoInstanceHistoryService
     {
         private readonly ICandleshistoryservice _candlesHistoryService;
+        private readonly IAlgoTradesClient _tradesHistoryService;
+        private readonly IHistoryClient _functionHistoryService;
+        private readonly IAlgoInstancesService _algoInstancesService;
 
-        public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService, ILog log) : base (log, nameof(AlgoInstanceHistoryService))
+        private readonly IAssetsServiceWithCache _assetService;
+        private readonly AssetsValidator _assetsValidator;
+
+        public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService,
+                                          IAlgoTradesClient tradesHistoryService,
+                                          IHistoryClient functionHistoryService,
+                                          IAlgoInstancesService algoInstancesService,
+                                          ILog log, IAssetsServiceWithCache assetService,
+                                          [NotNull] AssetsValidator assetsValidator)
+                                            : base(log, nameof(AlgoInstanceHistoryService))
         {
             this._candlesHistoryService = candlesHistoryService;
+            this._tradesHistoryService = tradesHistoryService;
+            this._functionHistoryService = functionHistoryService;
+            _algoInstancesService = algoInstancesService;
+            _assetService = assetService;
+            _assetsValidator = assetsValidator;
+        }
+
+        public async Task<AlgoInstanceTradeResponse> GetTradesAsync(string instanceId, string tradedAssetId, DateTime fromMoment, DateTime toMoment/*, ModelStateDictionary errorsDictionary*/)
+        {
+            var result = await _tradesHistoryService.GetAlgoInstanceTradesByPeriod(instanceId, tradedAssetId, fromMoment, toMoment);
+            return result;
+        }
+
+        public async Task<string> GetAssetPairName(string assetPairId)
+        {
+            var assetPairResponse = await _assetService.TryGetAssetPairAsync(assetPairId);
+            _assetsValidator.ValidateAssetPair(assetPairId, assetPairResponse);
+
+            return assetPairResponse.Name;
+        }
+
+        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, string clientId, ModelStateDictionary errorsDictionary)
+        {
+            var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
+
+            if (String.IsNullOrEmpty(data?.AuthToken))
+            {
+                errorsDictionary.AddModelError("instanceId", "Invalid or not found");
+                await Log.WriteWarningAsync(nameof(AlgoInstanceHistoryService), nameof(GetFunctionsAsync), $"AuthToken not found for clientId {clientId} and instanceId {instanceId}");
+                return null;
+            }
+
+            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment, data.AuthToken);
+
+            if (functions == null)
+            {
+                errorsDictionary.AddModelError("ServiceError", "Unknown");
+                return null;
+            }
+
+            var result = functions.Select(AutoMapper.Mapper.Map<Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>);
+
+            return result;
         }
 
         public async Task<IEnumerable<Candle>> GetCandlesAsync(string assetPair, CandlePriceType priceType, CandleTimeInterval timeInterval, DateTime fromMoment, DateTime toMoment, ModelStateDictionary errorsDictionary, CancellationToken ctoken)
@@ -33,7 +92,7 @@ namespace Lykke.AlgoStore.Services
                 return null;
             }
 
-            var httpResponse= await _candlesHistoryService.GetCandlesHistoryOrErrorWithHttpMessagesAsync(assetPair, CandleDataTypeMapper.PriceType()[priceType], CandleDataTypeMapper.TimeInterval()[timeInterval], fromMoment, toMoment, null, ctoken);
+            var httpResponse = await _candlesHistoryService.GetCandlesHistoryOrErrorWithHttpMessagesAsync(assetPair, CandleDataTypeMapper.PriceType()[priceType], CandleDataTypeMapper.TimeInterval()[timeInterval], fromMoment, toMoment, null, ctoken);
 
             var response = httpResponse.ParseHttpResponse<CandlesHistoryResponseModel>(errorsDictionary);
 
@@ -42,7 +101,7 @@ namespace Lykke.AlgoStore.Services
                 return null;
             }
 
-            var candles = response.History.Select(c => c.ToAlgoCandle());
+            var candles = response.History.Select(AutoMapper.Mapper.Map<Candle>);
 
             return candles;
         }

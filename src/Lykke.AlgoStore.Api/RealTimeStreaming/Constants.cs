@@ -6,5 +6,6 @@
         public const int WebSocketKeepAliveIntervalSeconds = 5;
         public const string WebSocketErrorMessage = "Error while streaming data to socket";
         public const string InstanceIdIdentifier = "InstanceId";
+        public const string LogComponent = "WebSockets";
     }
 }

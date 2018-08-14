@@ -30,6 +30,7 @@ namespace Lykke.AlgoStore.Services.Utils
             {
                 [CSharp.AlgoTemplate.Models.Enumerators.CandlePriceType.Ask] = CandlePriceTypeLykkeService.Ask,
                 [CSharp.AlgoTemplate.Models.Enumerators.CandlePriceType.Bid] = CandlePriceTypeLykkeService.Bid,
+                [CSharp.AlgoTemplate.Models.Enumerators.CandlePriceType.Mid] = CandlePriceTypeLykkeService.Mid,
                 [CSharp.AlgoTemplate.Models.Enumerators.CandlePriceType.Trades] = CandlePriceTypeLykkeService.Trades
             };
 

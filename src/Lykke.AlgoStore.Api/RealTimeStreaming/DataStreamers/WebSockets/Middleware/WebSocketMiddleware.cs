@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
-using AzureStorage.Tables;
-using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
 using Microsoft.AspNetCore.Http;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware
 {
-    public class WebSocketMiddleware<T> where T : IWebSocketHandler
+    public class WebSocketMiddleware
     {
         private readonly RequestDelegate _next;
 
@@ -17,7 +14,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, T webSocketHandler)
+        public async Task Invoke(HttpContext context, IWebSocketHandler webSocketHandler)
         {
             var processed = await ProcessWebSocketRequest(context, webSocketHandler);
             if (!processed)
@@ -26,35 +23,18 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middlew
             }
         }
 
-        protected virtual async Task<bool> ProcessWebSocketRequest(HttpContext context, T webSocketHandler)
+        protected virtual async Task<bool> ProcessWebSocketRequest(
+            HttpContext context, 
+            IWebSocketHandler webSocketHandler)
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                try
+                var connected = await webSocketHandler.OnConnected(context);
+                if (connected)
                 {
-                    if (String.IsNullOrWhiteSpace(context.Request.Query[Constants.InstanceIdIdentifier]))
-                    {
-                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        await context.Response.WriteAsync("Incorrect InstanceId");
-                        return true;
-                    }
-
-                    var connected = await webSocketHandler.OnConnected(context);
-                    if (connected)
-                    {
-                        var outbandData = webSocketHandler.StreamData();
-                        var inboundData = webSocketHandler.ListenForClosure();
-
-                        await Task.WhenAny(outbandData, inboundData);
-                    }
-                    return true;
+                    await webSocketHandler.Listen();
                 }
-                catch (Exception ex)
-                {
-                    context.Response.StatusCode = 500;
-                    await context.Response.WriteAsync("Unable to process connection");
-                    throw;
-                }
+                return true;
             }
             return false;
         }
