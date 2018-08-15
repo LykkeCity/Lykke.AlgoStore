@@ -163,7 +163,7 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterType<Candleshistoryservice>()
                 .As<ICandleshistoryservice>()
-                .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
+                .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.AlgoStoreCandlesHistoryServiceClient.ServiceUrl)));
 
             builder.RegisterType<SecurityClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreSecurityServiceClient.ServiceUrl)
