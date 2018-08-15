@@ -199,7 +199,8 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data",
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-                if (instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Stopped)
+                if (instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Stopped &&
+                    instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Errored)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         string.Format(Phrases.InstanceMustBeStopped, instanceData.InstanceId),
                         string.Format(Phrases.InstanceMustBeStopped, $"\"{instanceData.InstanceName}\""));
