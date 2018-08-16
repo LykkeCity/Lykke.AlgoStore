@@ -43,6 +43,28 @@ namespace Lykke.AlgoStore.AzureRepositories.Mapper
             return result;
         }
 
+        public static List<AlgoCommentEntity> ToEntity(this List<AlgoCommentData> entities)
+        {
+            var result = new List<AlgoCommentEntity>();
+
+            foreach (var entity in entities)
+            {
+                var data = new AlgoCommentEntity
+                {
+                    PartitionKey = entity.AlgoId,
+                    RowKey = entity.CommentId,
+                    AuthorId = entity.Author,
+                    Content = entity.Content,
+                    CreatedOn = entity.CreatedOn,
+                    EditedOn = entity.EditedOn
+                };
+
+                result.Add(data);
+            }
+
+            return result;
+        }
+
         public static AlgoCommentEntity ToEntity(this AlgoCommentData data)
         {
             var result = new AlgoCommentEntity
