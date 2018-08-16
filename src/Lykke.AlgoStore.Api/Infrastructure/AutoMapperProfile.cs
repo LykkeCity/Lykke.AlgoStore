@@ -3,7 +3,7 @@ using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.Service.AlgoTrades.Client.AutorestClient.Models;
 using Lykke.Service.Security.Client.AutorestClient.Models;
@@ -16,28 +16,6 @@ namespace Lykke.AlgoStore.Api.Infrastructure
         {
             CreateMap<AlgoData, AlgoDataModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));
-
-            CreateMap<AlgoEntity, IAlgo>()
-                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
-
-            CreateMap<IAlgo, AlgoEntity>()
-                .ForMember(dest => dest.PartitionKey, opt => opt.Ignore())
-                .ForMember(dest => dest.RowKey, opt => opt.Ignore())
-                .ForMember(dest => dest.Timestamp, opt => opt.Ignore())
-                .ForMember(dest => dest.ETag, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoVisibilityValue, opt => opt.Ignore());
-
-            CreateMap<AlgoEntity, AlgoDataInformation>()
-                .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.RowKey))
-                .ForMember(dest => dest.Rating, opt => opt.Ignore())
-                .ForMember(dest => dest.RatedUsersCount, opt => opt.Ignore())
-                .ForMember(dest => dest.UsesCount, opt => opt.Ignore())
-                .ForMember(dest => dest.Author, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoMetaDataInformation, opt => opt.Ignore());
-
-            CreateMap<AlgoData, IAlgo>();
-
-            CreateMap<IAlgo, AlgoData>();
 
             CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 

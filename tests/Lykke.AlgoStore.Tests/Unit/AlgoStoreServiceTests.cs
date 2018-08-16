@@ -1,8 +1,9 @@
 ﻿using AutoFixture;
-using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Job.Stopping.Client;
 using Lykke.AlgoStore.Job.Stopping.Client.AutorestClient.Models;
