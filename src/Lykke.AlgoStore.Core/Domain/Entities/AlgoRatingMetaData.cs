@@ -1,4 +1,6 @@
-﻿namespace Lykke.AlgoStore.Core.Domain.Entities
+﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+
+namespace Lykke.AlgoStore.Core.Domain.Entities
 {
     public class AlgoRatingMetaData : AlgoData
     {

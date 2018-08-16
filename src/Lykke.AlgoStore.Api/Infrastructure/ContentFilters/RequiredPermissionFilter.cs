@@ -1,11 +1,11 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
+using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Service.Security.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Linq;
-using Lykke.AlgoStore.Service.Security.Client;
-using Lykke.AlgoStore.Core.Services;
 
 namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 {

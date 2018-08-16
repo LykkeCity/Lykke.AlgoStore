@@ -1,4 +1,4 @@
-﻿using Lykke.AlgoStore.Core.Domain.Entities;
+﻿using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

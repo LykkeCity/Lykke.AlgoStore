@@ -1,5 +1,5 @@
-﻿using Lykke.AlgoStore.Core.Enumerators;
-using Lykke.AlgoStore.Core.Utils;
+﻿using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Newtonsoft.Json;
 using System;
 
