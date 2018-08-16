@@ -6,6 +6,7 @@ namespace Lykke.AlgoStore.Core.Domain.Repositories
 {
     public interface IAlgoCommentsRepository
     {
+        Task<List<AlgoCommentData>> GetAllAsync();
         Task<List<AlgoCommentData>> GetCommentsForAlgoAsync(string algoId);
         Task<AlgoCommentData> GetCommentByIdAsync(string algoId, string commentId);
         Task<AlgoCommentData> SaveCommentAsync(AlgoCommentData data);

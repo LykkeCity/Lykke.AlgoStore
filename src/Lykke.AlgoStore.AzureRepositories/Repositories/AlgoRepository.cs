@@ -63,6 +63,15 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             await _table.InsertOrReplaceAsync(enitity);
         }
 
+        public async Task SaveAlgoWithNewPKAsync(IAlgo algo, string oldPK)
+        {
+            var enitity = AlgoEntity.Create(algo);
+
+            await _table.DeleteIfExistAsync(oldPK, enitity.RowKey);
+
+            await _table.InsertOrMergeAsync(enitity);            
+        }
+
         public async Task DeleteAlgoAsync(string clientId, string algoId)
         {
             await _table.DeleteAsync(clientId, algoId);

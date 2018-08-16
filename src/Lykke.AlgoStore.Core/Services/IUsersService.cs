@@ -6,6 +6,7 @@ namespace Lykke.AlgoStore.Core.Services
 {
     public interface IUsersService
     {
+        Task SeedAsync(string clientId);
         Task<UserData> GetByIdAsync(string clientId);
         Task SetGDPRConsentAsync(string clientId);
         Task SetCookieConsentAsync(string clientId);

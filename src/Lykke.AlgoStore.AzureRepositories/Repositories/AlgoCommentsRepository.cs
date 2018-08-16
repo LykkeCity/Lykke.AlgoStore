@@ -21,6 +21,21 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
             _table = table;
         }
 
+        public async Task<List<AlgoCommentData>> GetAllAsync()
+        {
+            var result = new List<AlgoCommentEntity>();
+            var query = new TableQuery<AlgoCommentEntity>()
+                .Take(1000);
+
+            await _table.ExecuteAsync(query, (comments) =>
+            {
+                result.AddRange(comments);
+
+            }, () => true);
+
+            return result?.ToList().ToModel();
+        } 
+
         public async Task<List<AlgoCommentData>> GetCommentsForAlgoAsync(string algoId)
         {
             var result = await _table.GetDataAsync(algoId);
@@ -36,7 +51,7 @@ namespace Lykke.AlgoStore.AzureRepositories.Repositories
         public async Task<AlgoCommentData> SaveCommentAsync(AlgoCommentData data)
         {
             var entity = data.ToEntity();
-
+           
             await _table.InsertOrReplaceAsync(entity);
 
             return entity.ToModel();

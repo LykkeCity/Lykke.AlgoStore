@@ -13,8 +13,7 @@ using Lykke.AlgoStore.Core.Services;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
-    [Authorize]
-    [RequirePermission]
+    [Authorize]    
     [Route("api/v1/users")]
     public class AlgoStoreUsersController: Controller
     {
@@ -27,8 +26,25 @@ namespace Lykke.AlgoStore.Api.Controllers
             _usersService = usersService;
         }
 
+        [HttpGet("verifyUser")]
+        [SwaggerOperation("VerifyUser")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> VerifyUser(string clientId)
+        {
+            if (string.IsNullOrEmpty(clientId))
+                clientId = User.GetClientId();
+
+            await _securityClient.VerifyUserRoleAsync(clientId);
+
+            await _usersService.SeedAsync(clientId);
+
+            return Ok();
+        }
+
         [HttpGet("getAllWithRoles")]
         [SwaggerOperation("GetAllUserRoles")]
+        [RequirePermission]
         [DescriptionAttribute("Allows users to see all available users and their roles")]
         [ProducesResponseType(typeof(List<AlgoStoreUserDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -41,6 +57,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getByIdWithRoles")]
         [SwaggerOperation("GetUserByIdWithRoles")]
+        [RequirePermission]
         [DescriptionAttribute("Allows users to see a specific user and his roles")]
         [ProducesResponseType(typeof(AlgoStoreUserDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -98,6 +115,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpPost("deactivateAccount")]
         [SwaggerOperation("DeactivateUserAccount")]
+        [RequirePermission]
         [DescriptionAttribute("Allows users to deactivate his account")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
