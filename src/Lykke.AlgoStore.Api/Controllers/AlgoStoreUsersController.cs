@@ -18,12 +18,10 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreUsersController : Controller
     {
         private readonly ISecurityClient _securityClient;
-        private readonly IUsersService _usersService;
 
-        public AlgoStoreUsersController(ISecurityClient securityClient, IUsersService usersService)
+        public AlgoStoreUsersController(ISecurityClient securityClient)
         {
             _securityClient = securityClient;
-            _usersService = usersService;
         }
 
         [HttpGet("verifyUser")]
@@ -37,7 +35,8 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             await _securityClient.VerifyUserRoleAsync(clientId);
 
-            await _usersService.SeedAsync(clientId);
+            //GDPR client should be used
+            //await _usersService.SeedAsync(clientId);
 
             return Ok();
         }
