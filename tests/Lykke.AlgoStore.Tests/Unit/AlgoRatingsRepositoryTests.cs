@@ -53,7 +53,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_UsersCount_ShouldNotBe_Null(AlgoRatingMetaData data)
         {
-            Assert.NotNull(data.UsersCount);
+            Assert.NotNull(data.UsesCount);
         }
     }
 }
