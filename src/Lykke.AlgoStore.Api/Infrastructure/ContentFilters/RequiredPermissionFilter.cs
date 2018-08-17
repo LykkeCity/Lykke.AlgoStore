@@ -12,19 +12,18 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
     public class PermissionFilter: IActionFilter
     {
         private readonly ISecurityClient _securityClient;
-        private readonly IUsersService _usersService;
  
-        public PermissionFilter(ISecurityClient securityClient, IUsersService usersService)
+        public PermissionFilter(ISecurityClient securityClient)
         {
             _securityClient = securityClient;
-            _usersService = usersService;
         }
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
             var clientId = context.HttpContext.User.GetClientId();
 
-            var user = _usersService.GetByIdAsync(clientId).Result;            
+
+           // var user = _usersService.GetByIdAsync(clientId).Result;            
 
             var requiredPermission = (context.ActionDescriptor as ControllerActionDescriptor)?.ActionName;
             var reflectedMethod = (context.ActionDescriptor as ControllerActionDescriptor)?.MethodInfo;
@@ -36,10 +35,10 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
             {
                 var hasPermission = _securityClient.HasPermissionAsync(clientId, requiredPermission).Result;
 
-                if (user == null || !user.GDPRConsent)
-                {
-                    context.Result = new StatusCodeResult(451);
-                }
+                //if (user == null || !user.GDPRConsent)
+                //{
+                //    context.Result = new StatusCodeResult(451);
+                //}
 
                 if (!hasPermission)
                 {
