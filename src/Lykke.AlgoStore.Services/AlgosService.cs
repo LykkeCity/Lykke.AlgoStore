@@ -134,7 +134,8 @@ namespace Lykke.AlgoStore.Services
                         ratingMetaData.RatedUsersCount = 0;
                     }
 
-                    ratingMetaData.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
+                    var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(currentAlgo.AlgoId);
+                    ratingMetaData.UsesCount = instances.Count;                     
                     result.Add(ratingMetaData);
                 }
 
@@ -479,7 +480,8 @@ namespace Lykke.AlgoStore.Services
                         algoInformation.RatedUsersCount = 0;
                     }
 
-                    algoInformation.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
+                    var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(algoInformation.AlgoId);
+                    algoInformation.UsesCount = instances.Count;
 
                     algoInformation.Author = (await _personalDataService.GetAsync(algoClientId))?.FullName;
 

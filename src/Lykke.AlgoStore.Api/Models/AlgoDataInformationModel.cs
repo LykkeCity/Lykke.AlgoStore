@@ -21,7 +21,7 @@ namespace Lykke.AlgoStore.Api.Models
 
         public double Rating { get; set; }
         public int RatedUsersCount { get; set; }
-        public int UsersCount { get; set; }      
+        public int UsesCount { get; set; }      
 
         public AlgoMetaDataInformationModel AlgoMetaDataInformation { get; set; }
     }
