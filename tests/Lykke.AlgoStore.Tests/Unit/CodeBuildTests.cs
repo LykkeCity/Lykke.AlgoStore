@@ -114,34 +114,40 @@ namespace Lykke.AlgoStore.Tests.Unit
             new AlgoMetaDataParameter
             {
                 Key = "AssetPair",
-                Type = "string"
+                Type = "string",
+                Description = "The asset pair that the algorithm will be using."
             },
             
             new AlgoMetaDataParameter
             {
                 Key = "StartFrom",
-                Type = "System.DateTime"
+                Type = "System.DateTime",
+                Description = "The starting date of the algorithm."
             },
             new AlgoMetaDataParameter
             {
                 Key = "EndOn",
-                Type = "System.DateTime"
+                Type = "System.DateTime",
+                Description = "The ending date of the algorithm."
             },
             new AlgoMetaDataParameter
             {
                 Key = "Volume",
-                Type = "double"
+                Type = "double",
+                Description = "The volume that your algorithm will trade."
             },
             new AlgoMetaDataParameter
             {
                 Key = "TradedAsset",
-                Type = "string"
+                Type = "string",
+                Description = "The asset that your algorithm will use for trading."
             },
             new AlgoMetaDataParameter
             {
                 Key = "CandleInterval",
                 Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                PredefinedValues = CandleTimeIntervalPredefinedValues
+                PredefinedValues = CandleTimeIntervalPredefinedValues,
+                Description = "The interval that the candles will be received."
             }
         };
 
@@ -163,35 +169,41 @@ namespace Lykke.AlgoStore.Tests.Unit
                        new AlgoMetaDataParameter
                         {
                             Key = "period",
-                            Type = "int"
+                            Type = "int",
+                            Description = "The amount of most recent values this indicator will operate on."
                         },
                        new AlgoMetaDataParameter
                         {
                             Key = "startingDate",
-                            Type = "System.DateTime"
+                            Type = "System.DateTime",
+                            Description = "The starting date of the indicator."
                         },
                         new AlgoMetaDataParameter
                         {
                             Key = "endingDate",
-                            Type = "System.DateTime"
+                            Type = "System.DateTime",
+                            Description = "The ending date of the indicator."
                         },
                         new AlgoMetaDataParameter
                         {
                             Key = "assetPair",
-                            Type = "string"
+                            Type = "string",
+                            Description = "The asset pair that the indicator will be using."
                         },
                         new AlgoMetaDataParameter
                         {
                             Key = "candleOperationMode",
                             Type =
                                 "Lykke.AlgoStore.Algo.CandleOperationMode",
-                            PredefinedValues = CandlePredefinedValues
+                            PredefinedValues = CandlePredefinedValues,
+                            Description = "The candle value on which the function is operating. The same function can be operating on Min/Max or Open/Close of a Candle."
                         },
                         new AlgoMetaDataParameter
                         {
                             Key = "candleTimeInterval",
                             Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                            PredefinedValues = CandleTimeIntervalPredefinedValues
+                            PredefinedValues = CandleTimeIntervalPredefinedValues,
+                            Description = "The interval that the candles will be received on."
                         }
                     }
                 };
@@ -423,7 +435,7 @@ namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
 }
 ";
 
-            var session = GetCSharpCodeBuildSession(code);
+         var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
 
             Assert.AreEqual(true, validationResult.IsSuccessful);
