@@ -187,6 +187,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} consent has already been given for clientId {1}.
+        /// </summary>
+        internal static string ConsentAlreadyGiven {
+            get {
+                return ResourceManager.GetString("ConsentAlreadyGiven", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo creation process failed due to code validation errors. Details: {0}.
         /// </summary>
         internal static string CreateAlgoFailedOnCodeValidationDisplayMessage {

@@ -9,13 +9,13 @@ using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.AlgoStore.Service.Security.Client;
+using Lykke.AlgoStore.Core.Services;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
     [Authorize]
-    [RequirePermission]
     [Route("api/v1/users")]
-    public class AlgoStoreUsersController: Controller
+    public class AlgoStoreUsersController : Controller
     {
         private readonly ISecurityClient _securityClient;
 
@@ -24,8 +24,26 @@ namespace Lykke.AlgoStore.Api.Controllers
             _securityClient = securityClient;
         }
 
+        [HttpGet("verifyUser")]
+        [SwaggerOperation("VerifyUser")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> VerifyUser(string clientId)
+        {
+            if (string.IsNullOrEmpty(clientId))
+                clientId = User.GetClientId();
+
+            await _securityClient.VerifyUserRoleAsync(clientId);
+
+            //GDPR client should be used
+            //await _usersService.SeedAsync(clientId);
+
+            return Ok();
+        }
+
         [HttpGet("getAllWithRoles")]
         [SwaggerOperation("GetAllUserRoles")]
+        [RequirePermission]
         [DescriptionAttribute("Allows users to see all available users and their roles")]
         [ProducesResponseType(typeof(List<AlgoStoreUserDataModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -38,6 +56,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
         [HttpGet("getByIdWithRoles")]
         [SwaggerOperation("GetUserByIdWithRoles")]
+        [RequirePermission]
         [DescriptionAttribute("Allows users to see a specific user and his roles")]
         [ProducesResponseType(typeof(AlgoStoreUserDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]

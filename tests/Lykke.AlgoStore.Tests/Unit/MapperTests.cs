@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoMapper;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.AzureRepositories.Mapper;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 using AlgoClientInstanceEntity = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities.AlgoClientInstanceEntity;
 
 namespace Lykke.AlgoStore.Tests.Unit

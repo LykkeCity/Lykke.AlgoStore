@@ -1,8 +1,8 @@
 ﻿using Common.Log;
-using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
-using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
 using Lykke.Service.PersonalData.Contract;
@@ -24,6 +24,16 @@ namespace Lykke.AlgoStore.Services
         {
             _algoCommentsRepository = algoCommentsRepository;
             _personalDataService = personalDataService;
+        }
+
+        public async Task<List<AlgoCommentData>> GetAllCommentsAsync()
+        {
+            return await LogTimedInfoAsync(nameof(GetAllCommentsAsync), null, async () =>
+            {   
+                var result = await _algoCommentsRepository.GetAllAsync();               
+
+                return result;
+            });
         }
 
         public async Task<List<AlgoCommentData>> GetAlgoCommentsAsync(string algoId, string clientId)
@@ -82,7 +92,7 @@ namespace Lykke.AlgoStore.Services
 
         public async Task<AlgoCommentData> SaveCommentAsync(AlgoCommentData data)
         {
-            return await LogTimedInfoAsync(nameof(GetCommentByIdAsync), data.Author, async () =>
+            return await LogTimedInfoAsync(nameof(SaveCommentAsync), data.Author, async () =>
             {
                 Check.IsEmpty(data.Author, "ClientID");
                 Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
@@ -103,6 +113,14 @@ namespace Lykke.AlgoStore.Services
                 }
 
                 return result;
+            });
+        }
+
+        public async Task UnlinkComment(AlgoCommentData data)
+        {
+            await LogTimedInfoAsync(nameof(UnlinkComment), null, async () =>
+            {
+                await _algoCommentsRepository.SaveCommentAsync(data);
             });
         }
 

@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.AlgoStore.Algo" Version="1.0.23" />
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.74" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.81" />
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Security.InstanceAuth" Version="1.0.5" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.8" />
@@ -45,6 +45,10 @@
     <PackageReference Include="Lykke.Service.PersonalData" Version="1.0.32" />
     <PackageReference Include="Lykke.Service.RateCalculator.Client" Version="1.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Enumerators\" />
   </ItemGroup>
 
 </Project>
