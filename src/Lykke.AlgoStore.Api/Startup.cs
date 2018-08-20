@@ -8,10 +8,15 @@ using Lykke.AlgoStore.Api.Infrastructure.Authentication;
 using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Managers;
 using Lykke.AlgoStore.Api.Infrastructure.OperationFilters;
+using Lykke.AlgoStore.Api.RealTimeStreaming;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Settings;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
+using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.Common.ApiLibrary.Swagger;
+using Lykke.Service.Security.Client.AutorestClient.Models;
 using Lykke.SettingsReader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,13 +30,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Lykke.AlgoStore.Algo.Charting;
-using Lykke.AlgoStore.Service.Security.Client;
-using Lykke.Service.Security.Client.AutorestClient.Models;
-using Lykke.AlgoStore.Api.RealTimeStreaming;
-using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
-using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
-using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -69,7 +67,7 @@ namespace Lykke.AlgoStore.Api
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                     .AddJsonOptions(options =>
                     {
-                        options.SerializerSettings.ContractResolver = 
+                        options.SerializerSettings.ContractResolver =
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
                         options.SerializerSettings.Converters.Add(new DefaultDateTimeConverter());
                     });

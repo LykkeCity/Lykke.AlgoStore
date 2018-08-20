@@ -1,12 +1,14 @@
 ﻿using AutoFixture;
 using AzureStorage.Tables;
 using Lykke.AlgoStore.AzureRepositories.Entities;
-using Lykke.AlgoStore.AzureRepositories.Repositories;
 using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Tests.Infrastructure;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
