@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.AlgoStore.Core.Settings.ServiceSettings.RealTimeDataStreamingSettings
+﻿namespace Lykke.AlgoStore.Core.Settings.ServiceSettings.RealTimeDataStreamingSettings
 {
     public class RabbitMqDataSources
     {
@@ -10,5 +6,6 @@ namespace Lykke.AlgoStore.Core.Settings.ServiceSettings.RealTimeDataStreamingSet
         public RabbitMqConfig Candles { get; set; }
         public RabbitMqConfig Trades { get; set; }
         public RabbitMqConfig Functions { get; set; }
+        public RabbitMqConfig Quotes { get; set; }
     }
 }
