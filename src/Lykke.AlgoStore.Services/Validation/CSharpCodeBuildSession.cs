@@ -324,37 +324,7 @@ namespace Lykke.AlgoStore.Services.Validation
                         PredefinedValues = ToEnumValues(prop.Type)
                     };
 
-                    var attributes = prop.GetAttributes();
-
-                    foreach (var attr in attributes)
-                    {
-                        // Only support attributes which come from our indicators assembly
-                        if (attr.AttributeClass.ContainingAssembly.Identity.Name != INDICATORS_ASSEMBLY) continue;
-
-                        switch (attr.AttributeClass.Name)
-                        {
-                            case "DescriptionAttribute":
-                                param.Description = attr.ConstructorArguments[0].Value?.ToString();
-                                break;
-                            case "DefaultValueAttribute":
-                                var argument = attr.ConstructorArguments[0];
-
-                                if (argument.Value == null) break;
-
-                                // Get the conversion type between what's in DefaultValue and the property type
-                                var conversion = _compilation.ClassifyConversion(argument.Type, prop.Type);
-
-                                // Either the type is the same or the conversion is implicit
-                                if (conversion.IsIdentity || conversion.IsImplicit)
-                                {
-                                    if (argument.Value.GetType().IsEnum)
-                                        param.Value = Convert.ChangeType(argument.Value, Enum.GetUnderlyingType(argument.Value.GetType())).ToString();
-                                    else
-                                        param.Value = argument.Value.ToString();
-                                }
-                                break;
-                        }
-                    }
+                    CheckAttribute(prop, param);
 
                     parameters.Add(param);
                 }
@@ -363,6 +333,41 @@ namespace Lykke.AlgoStore.Services.Validation
             }
 
             return parameters;
+        }
+
+        private void CheckAttribute(ISymbol prop, AlgoMetaDataParameter param)
+        {
+            var attributes = prop.GetAttributes();
+
+            foreach (var attr in attributes)
+            {
+                // Only support attributes which come from our indicators assembly
+                if (attr.AttributeClass.ContainingAssembly.Identity.Name != INDICATORS_ASSEMBLY) continue;
+
+                switch (attr.AttributeClass.Name)
+                {
+                    case "DescriptionAttribute":
+                        param.Description = attr.ConstructorArguments[0].Value?.ToString();
+                        break;
+                    case "DefaultValueAttribute":
+                        var argument = attr.ConstructorArguments[0];
+
+                        if (argument.Value == null) break;
+
+                        // Get the conversion type between what's in DefaultValue and the property type
+                        var conversion = _compilation.ClassifyConversion(argument.Type, prop.ContainingType);
+
+                        // Either the type is the same or the conversion is implicit
+                        if (conversion.IsIdentity || conversion.IsImplicit)
+                        {
+                            if (argument.Value.GetType().IsEnum)
+                                param.Value = Convert.ChangeType(argument.Value, Enum.GetUnderlyingType(argument.Value.GetType())).ToString();
+                            else
+                                param.Value = argument.Value.ToString();
+                        }
+                        break;
+                }
+            }
         }
 
         private List<AlgoMetaDataFunction> ExtractIndicators()
@@ -390,6 +395,8 @@ namespace Lykke.AlgoStore.Services.Validation
                         Type = param.Type.ToString().Replace("?", ""),
                         PredefinedValues = ToEnumValues(param.Type)
                     };
+
+                    CheckAttribute(param, metaDataParam);
 
                     // There is a constant in the place of the param - do not include it in the list of parameters
                     if (arg.Value.ConstantValue.HasValue || arg.ArgumentKind == ArgumentKind.DefaultValue)
