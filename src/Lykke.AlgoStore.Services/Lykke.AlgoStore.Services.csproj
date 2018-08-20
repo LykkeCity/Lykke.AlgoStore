@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Lykke.AlgoStore.Algo" Version="1.0.23" />
-    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.83" />
+    <PackageReference Include="Lykke.AlgoStore.CSharp.AlgoTemplate.Models" Version="1.0.84" />
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.8" />
     <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.6" />
