@@ -92,8 +92,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
             var publicAlgosRepository = Given_Correct_PublicAlgosRepositoryMock();
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
+            var instanceRepository = Correct_AlgoClientInstanceRepositoryMock();
 
-            var service = Given_AlgosService(repo, null, null, ratingsRepo, publicAlgosRepository, personalDataervice,
+            var service = Given_AlgosService(repo, null, instanceRepository.Object, ratingsRepo, publicAlgosRepository, personalDataervice,
                 null, null, null, null);
             var data = When_Invoke_GetAllAlgos(service, out Exception exception);
 
@@ -211,13 +212,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRepositoryMock();
             var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
+            var instanceRepository = Correct_AlgoClientInstanceRepositoryMock();
 
             var clientId = Guid.NewGuid().ToString();
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
             var assetService = Given_AssetsServiceWithCache();
 
-            var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
+            var service = Given_AlgosService(repo, null, instanceRepository.Object, ratingsRepo, null,
                 clientAccountService, null, null, null, assetService);
             var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
