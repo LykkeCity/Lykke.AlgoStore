@@ -60,36 +60,5 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             Assert.NotNull(data.UsesCount);
         }
-
-        [Test]
-        public async Task AlgoRating_TestSaveFakeAlgoRatingAsync_ReturnNull()
-        {
-            var storage = new Mock<INoSQLTableStorage<AlgoRatingEntity>>();
-
-            storage.Setup(s => s.InsertOrReplaceAsync(It.IsAny<AlgoRatingEntity>()))
-                .Returns((AlgoRatingEntity entity) =>
-                {
-                    Assert.AreEqual(entity.RowKey, "Deactivated");
-                    Assert.AreEqual(entity.PartitionKey, PartitionKey);
-
-                    return Task.CompletedTask;
-                });
-
-            storage.Setup(s => s.DeleteIfExistAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns((string algoId, string clientId) =>
-                {
-                    Assert.AreEqual(clientId, ClientId);
-                    Assert.AreEqual(algoId, PartitionKey);
-
-                    return Task.FromResult<bool>(true);
-                });
-
-            AlgoRatingsRepository repository = new AlgoRatingsRepository(storage.Object);
-            await repository.SaveAlgoRatingWithFakeIdAsync(new AlgoRatingData()
-            {
-                ClientId = ClientId,
-                AlgoId = PartitionKey
-            });
-        }
     }
 }
