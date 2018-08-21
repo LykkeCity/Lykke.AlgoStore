@@ -37,6 +37,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
         private readonly RealTimeDataSource<CandleChartingUpdate> _candleSource;
         private readonly RealTimeDataSource<FunctionChartingUpdate> _functionSource;
         private readonly RealTimeDataSource<TradeChartingUpdate> _tradeSource;
+        private readonly RealTimeDataSource<QuoteChartingUpdate> _quoteSource;
         
         private readonly IAlgoClientInstanceRepository _clientInstanceRepository;
         private readonly IClientSessionsClient _clientSessionsClient;
@@ -59,6 +60,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             RealTimeDataSource<CandleChartingUpdate> candleRealTimeSource,
             RealTimeDataSource<FunctionChartingUpdate> functionRealTimeSource,
             RealTimeDataSource<TradeChartingUpdate> tradeRealTimeSource,
+            RealTimeDataSource<QuoteChartingUpdate> quoteRealTimeSource,
             IClientSessionsClient clientSessionsClient,
             IAlgoClientInstanceRepository clientInstanceRepository,
             uint maxInstancesPerClient,
@@ -69,6 +71,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             _candleSource = candleRealTimeSource;
             _functionSource = functionRealTimeSource;
             _tradeSource = tradeRealTimeSource;
+            _quoteSource = quoteRealTimeSource;
 
             _clientSessionsClient = clientSessionsClient;
             _clientInstanceRepository = clientInstanceRepository;
@@ -237,6 +240,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 _candleSource.Subscribe(OnCandleReceived);
                 _functionSource.Subscribe(OnFunctionReceived);
                 _tradeSource.Subscribe(OnTradeReceived);
+                _quoteSource.Subscribe(OnQuoteReceived);
 
                 _dataSourceSubscribed = true;
             }
@@ -251,6 +255,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
                 _candleSource.Unsubscribe(OnCandleReceived);
                 _functionSource.Unsubscribe(OnFunctionReceived);
                 _tradeSource.Unsubscribe(OnTradeReceived);
+                _quoteSource.Unsubscribe(OnQuoteReceived);
 
                 _dataSourceSubscribed = false;
             }
@@ -275,6 +280,13 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handler
             if (!_subscribedQueues.TryGetValue((tradeUpdate.InstanceId, "trades"), out string queue)) return;
 
             await _stompSession.SendToQueueAsync(queue, tradeUpdate);
+        }
+
+        private async Task OnQuoteReceived(QuoteChartingUpdate quoteUpdate)
+        {
+            if (!_subscribedQueues.TryGetValue((quoteUpdate.InstanceId, "quotes"), out string queue)) return;
+
+            await _stompSession.SendToQueueAsync(queue, quoteUpdate);
         }
 
         private bool IncrementInstanceUsage(string clientId, string instanceId)

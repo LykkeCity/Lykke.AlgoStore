@@ -33,7 +33,7 @@
     <PackageReference Include="Lykke.AlgoStore.Job.Stopping.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Security.InstanceAuth" Version="1.0.5" />
     <PackageReference Include="Lykke.AlgoStore.Service.AlgoTrades.Client" Version="1.0.8" />
-    <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.5" />
+    <PackageReference Include="Lykke.AlgoStore.Service.History.Client" Version="1.0.6" />
     <PackageReference Include="Lykke.AlgoStore.Service.Logging.Client" Version="1.0.4" />
     <PackageReference Include="Lykke.AlgoStore.Service.Statistics.Client" Version="1.0.5" />
     <PackageReference Include="Lykke.Service.Assets.Client" Version="4.0.1" />
