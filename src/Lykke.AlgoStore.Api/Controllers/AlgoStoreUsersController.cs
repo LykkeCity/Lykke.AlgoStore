@@ -9,8 +9,8 @@ using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.AlgoStore.Service.Security.Client;
-using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Job.GDPR.Client;
+using Lykke.AlgoStore.Job.GDPR.Client.Model;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -70,6 +70,62 @@ namespace Lykke.AlgoStore.Api.Controllers
             var result = await _securityClient.GetUserByIdWithRolesAsync(clientId);
 
             return Ok(Mapper.Map<AlgoStoreUserDataModel>(result));
+        }
+
+        [HttpGet("getLegalConsents")]
+        [SwaggerOperation("GetLegalConsents")]
+        [ProducesResponseType(typeof(Subscriber), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetLegalConsents(string clientId)
+        {
+            if (string.IsNullOrEmpty(clientId))
+                clientId = User.GetClientId();
+
+            var result = await _gdprClient.GetLegalConsentsAsync(clientId);
+
+            return Ok(result);
+        }
+
+        [HttpPost("setGdprConsent")]
+        [SwaggerOperation("SetGdprConsent")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SetGdprConsent(string clientId)
+        {
+            if (string.IsNullOrEmpty(clientId))
+                clientId = User.GetClientId();
+
+            await _gdprClient.SetUserGdprConsentAsync(clientId);
+
+            return Ok();
+        }
+
+        [HttpPost("setCookieConsent")]
+        [SwaggerOperation("SetCookieConsent")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> SetCookieConsent(string clientId)
+        {
+            if (string.IsNullOrEmpty(clientId))
+                clientId = User.GetClientId();
+
+            await _gdprClient.SetUserCookieConsentAsync(clientId);
+
+            return Ok();
+        }
+
+        [HttpPost("deactivateAccount")]
+        [SwaggerOperation("DeactivateAccount")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> DeactivateAccount(string clientId)
+        {
+            if (string.IsNullOrEmpty(clientId))
+                clientId = User.GetClientId();
+
+            await _gdprClient.DeactivateUserAccountAsync(clientId);
+
+            return Ok();
         }
     }
 }

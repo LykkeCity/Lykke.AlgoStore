@@ -6,16 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Linq;
+using Lykke.AlgoStore.Job.GDPR.Client;
 
 namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 {
     public class PermissionFilter: IActionFilter
     {
         private readonly ISecurityClient _securityClient;
- 
-        public PermissionFilter(ISecurityClient securityClient)
+        private readonly IGdprClient _gdprClient;
+
+        public PermissionFilter(ISecurityClient securityClient, IGdprClient gdprClient)
         {
             _securityClient = securityClient;
+            _gdprClient = gdprClient;
         }
 
         public void OnActionExecuting(ActionExecutingContext context)
@@ -35,15 +38,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
             {
                 var hasPermission = _securityClient.HasPermissionAsync(clientId, requiredPermission).Result;
 
-                //if (user == null || !user.GDPRConsent)
-                //{
-                //    context.Result = new StatusCodeResult(451);
-                //}
-
                 if (!hasPermission)
                 {
                     context.Result = new StatusCodeResult(403);
-                }                
+                }
+
+                var legalConsent = _gdprClient.GetLegalConsentsAsync(clientId).Result;
+
+                if(legalConsent == null || !legalConsent.CookieConsent || !legalConsent.GdprConsent)
+                    context.Result = new StatusCodeResult(451);
             }
         }
 
