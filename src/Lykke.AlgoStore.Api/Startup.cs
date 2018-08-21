@@ -30,6 +30,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Lykke.Common;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -83,7 +84,9 @@ namespace Lykke.AlgoStore.Api
 
                 services.AddLykkeAuthentication();
 
-                var appSettings = Configuration.LoadSettings<AppSettings>();
+                var appSettings = Configuration.LoadSettings<AppSettings>(x => (
+                    x.SlackNotifications.AzureQueue.ConnectionString, x.SlackNotifications.AzureQueue.QueueName,
+                    $"{AppEnvironment.Name} {AppEnvironment.Version}"));
                 Log = LogManager.CreateLogWithSlack(services, appSettings);
 
                 ApplicationContainer = ContainerManager.RegisterAlgoApiModules(services, appSettings, Log);
@@ -152,7 +155,6 @@ namespace Lykke.AlgoStore.Api
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(Constants.WebSocketKeepAliveIntervalSeconds),
                 ReceiveBufferSize = Constants.WebSocketRecieveBufferSize
-
             };
 
             app.UseWebSockets(webSocketOptions);
@@ -164,9 +166,11 @@ namespace Lykke.AlgoStore.Api
         {
             try
             {
+#if !DEBUG
                 await SeedPermissions(securityClient);
 
                 await SeedRoles(securityClient);
+#endif
 
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
@@ -202,13 +206,15 @@ namespace Lykke.AlgoStore.Api
 
         private async Task SeedPermissions(ISecurityClient securityClient)
         {
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed started");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions),
+                "Permission seed started");
 
             ExtractPermissionsFromControllers();
 
             await securityClient.SeedPermissions(Permissions);
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions),
+                "Permission seed finished");
         }
 
         private void ExtractPermissionsFromControllers()
@@ -225,7 +231,8 @@ namespace Lykke.AlgoStore.Api
                     Id = i.Name,
                     Name = i.ReflectedType.Name,
                     DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart(),
-                    Description = (i.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute).Description
+                    Description = (i.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute)
+                        .Description
                 })
                 .ToList();
         }

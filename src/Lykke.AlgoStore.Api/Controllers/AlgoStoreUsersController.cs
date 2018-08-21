@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.AlgoStore.Core.Services;
+using Lykke.AlgoStore.Job.GDPR.Client;
 
 namespace Lykke.AlgoStore.Api.Controllers
 {
@@ -18,13 +19,15 @@ namespace Lykke.AlgoStore.Api.Controllers
     public class AlgoStoreUsersController : Controller
     {
         private readonly ISecurityClient _securityClient;
+        private readonly IGdprClient _gdprClient;
 
-        public AlgoStoreUsersController(ISecurityClient securityClient)
+        public AlgoStoreUsersController(ISecurityClient securityClient, IGdprClient gdprClient)
         {
             _securityClient = securityClient;
+            _gdprClient = gdprClient;
         }
 
-        [HttpGet("verifyUser")]
+        [HttpPost("verifyUser")]
         [SwaggerOperation("VerifyUser")]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
@@ -35,8 +38,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             await _securityClient.VerifyUserRoleAsync(clientId);
 
-            //GDPR client should be used
-            //await _usersService.SeedAsync(clientId);
+            await _gdprClient.SeedConsentAsync(clientId);
 
             return Ok();
         }
