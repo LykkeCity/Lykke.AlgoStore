@@ -1,6 +1,5 @@
 ﻿using Lykke.AlgoStore.Api.Infrastructure.Attributes;
 using Lykke.AlgoStore.Api.Infrastructure.Extensions;
-using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Service.Security.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -10,7 +9,7 @@ using Lykke.AlgoStore.Job.GDPR.Client;
 
 namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 {
-    public class PermissionFilter: IActionFilter
+    public class PermissionFilter : IActionFilter
     {
         private readonly ISecurityClient _securityClient;
         private readonly IGdprClient _gdprClient;
@@ -24,15 +23,12 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
         public void OnActionExecuting(ActionExecutingContext context)
         {
             var clientId = context.HttpContext.User.GetClientId();
-
-
-           // var user = _usersService.GetByIdAsync(clientId).Result;            
-
             var requiredPermission = (context.ActionDescriptor as ControllerActionDescriptor)?.ActionName;
             var reflectedMethod = (context.ActionDescriptor as ControllerActionDescriptor)?.MethodInfo;
             var needsPermission =
-                reflectedMethod?.GetCustomAttributes(typeof(RequirePermissionAttribute), false).FirstOrDefault() != null 
-                || reflectedMethod?.ReflectedType.GetCustomAttributes(typeof(RequirePermissionAttribute), false).FirstOrDefault() != null;
+                reflectedMethod?.GetCustomAttributes(typeof(RequirePermissionAttribute), false).FirstOrDefault() != null
+                || reflectedMethod?.ReflectedType.GetCustomAttributes(typeof(RequirePermissionAttribute), false)
+                    .FirstOrDefault() != null;
 
             if (needsPermission)
             {
@@ -45,14 +41,13 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 
                 var legalConsent = _gdprClient.GetLegalConsentsAsync(clientId).Result;
 
-                if(legalConsent == null || !legalConsent.CookieConsent || !legalConsent.GdprConsent)
+                if (legalConsent == null || !legalConsent.CookieConsent || !legalConsent.GdprConsent)
                     context.Result = new StatusCodeResult(451);
             }
         }
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            
         }
     }
 }

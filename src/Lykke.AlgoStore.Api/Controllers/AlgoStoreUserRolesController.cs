@@ -130,20 +130,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             return NoContent();
         }
 
-        [HttpGet("verifyRole")]
-        [SwaggerOperation("VerifyUserRole")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> VerifyUserRole(string clientId)
-        {
-            if (string.IsNullOrEmpty(clientId))
-                clientId = User.GetClientId();
-
-            await _securityClient.VerifyUserRoleAsync(clientId);
-
-            return Ok();
-        }
-
         [HttpDelete("deleteRole")]
         [RequirePermission]
         [SwaggerOperation("DeleteUserRole")]

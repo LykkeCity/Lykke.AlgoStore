@@ -9,7 +9,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Managers
     {
         public static ObjectResult CreateErrorResult(Exception ex)
         {
-            Exception temp = ex;
+            var temp = ex;
 
             var aggr = ex as AggregateException;
             if (aggr != null)
@@ -18,7 +18,11 @@ namespace Lykke.AlgoStore.Api.Infrastructure.Managers
             var exception = temp as AlgoStoreException;
 
             if (exception == null)
-                exception = new AlgoStoreException(AlgoStoreErrorCodes.Unhandled, ex);
+            {
+                exception = ex is Refit.ApiException
+                    ? ((Refit.ApiException) ex).ToAlgoStoreException()
+                    : new AlgoStoreException(AlgoStoreErrorCodes.Unhandled, ex);
+            }
 
             return exception.ToHttpStatusCode();
         }
