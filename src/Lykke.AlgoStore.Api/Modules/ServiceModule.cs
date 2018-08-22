@@ -20,7 +20,21 @@ using Lykke.Service.Session;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Lykke.AlgoStore.Algo.Charting;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Handlers;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Sources;
+using Lykke.AlgoStore.Api.RealTimeStreaming.Sources.RabbitMq;
+using Lykke.AlgoStore.Core.Constants;
+using Lykke.AlgoStore.Job.GDPR.Client;
 using Lykke.AlgoStore.Job.Stopping.Client;
+using Lykke.AlgoStore.Service.History.Client;
+using Lykke.AlgoStore.Service.Statistics.Client;
+using Lykke.Common.Log;
+using Lykke.Logs;
+using Lykke.Logs.Loggers.LykkeAzureTable;
+using Lykke.Logs.Loggers.LykkeConsole;
+using Lykke.RabbitMqBroker.Subscriber;
 
 namespace Lykke.AlgoStore.Api.Modules
 {
@@ -48,7 +62,89 @@ namespace Lykke.AlgoStore.Api.Modules
                 _log,
                 autoRefresh: true);
 
+            builder.RegisterInstance(_settings.CurrentValue.AlgoApi.RateLimitSettings)
+                .AsSelf()
+                .SingleInstance();
+
+            RegisterRealTimeDataStreamServices(builder);
+
             builder.Populate(_services);
+        }
+
+        private void RegisterRealTimeDataStreamServices(ContainerBuilder builder)
+        {
+            var logFactory = LogFactory.Create().AddAzureTable(_settings.Nested(x => x.AlgoApi.Db.LogsConnectionString),
+                AlgoStoreConstants.LogTableName).AddConsole();
+
+            builder.RegisterInstance(logFactory).As<ILogFactory>();
+
+
+            RabbitMqSubscriptionSettings rabbitMqDummyDataOrderBooks = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Dummy
+                    .ConnectionString,
+                ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Dummy.ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Dummy.QueueName
+            };
+
+            RabbitMqSubscriptionSettings rabbitMqCandles = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Candles
+                    .ConnectionString,
+                ExchangeName =
+                    _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Candles.ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Candles.QueueName
+            };
+
+            RabbitMqSubscriptionSettings rabbitMqTrades = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Trades
+                    .ConnectionString,
+                ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Trades.ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Trades.QueueName
+            };
+
+            RabbitMqSubscriptionSettings rabbitMqFunctions = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions
+                    .ConnectionString,
+                ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions
+                    .ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Functions.QueueName
+            };
+
+            RabbitMqSubscriptionSettings rabbitMqQuotes = new RabbitMqSubscriptionSettings()
+            {
+                ConnectionString = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Quotes
+                    .ConnectionString,
+                ExchangeName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Quotes.ExchangeName,
+                QueueName = _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.RabbitMqSources.Quotes.QueueName
+            };
+
+            RegisterRabbitMqConnection<CandleChartingUpdate>(builder, rabbitMqCandles, logFactory);
+            RegisterRabbitMqConnection<TradeChartingUpdate>(builder, rabbitMqTrades, logFactory);
+            RegisterRabbitMqConnection<FunctionChartingUpdate>(builder, rabbitMqFunctions, logFactory);
+            RegisterRabbitMqConnection<QuoteChartingUpdate>(builder, rabbitMqQuotes, logFactory);
+
+            builder.RegisterType<WebSocketMiddleware>().AsSelf().InstancePerDependency();
+            builder.RegisterType<WebSocketHandler>()
+                .As<IWebSocketHandler>()
+                .WithParameter(new NamedParameter("maxInstancesPerClient",
+                    _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.MaxInstancesPerClient))
+                .WithParameter(new NamedParameter("maxConnectionsPerClient",
+                    _settings.CurrentValue.AlgoApi.RealTimeDataStreaming.MaxConnectionsPerClient))
+                .InstancePerDependency();
+        }
+
+        private void RegisterRabbitMqConnection<T>(ContainerBuilder container,
+            RabbitMqSubscriptionSettings exchangeConfiguration, ILogFactory logFactory, string regKey = "")
+            where T : IChartingUpdate
+        {
+            container.RegisterType<RabbitMqDataSource<T>>()
+                .WithParameter("rabbitSettings", exchangeConfiguration)
+                .WithParameter("logFactory", logFactory)
+                .SingleInstance()
+                .As<RealTimeDataSource<T>>();
         }
 
         private void RegisterExternalServices(ContainerBuilder builder)
@@ -76,15 +172,18 @@ namespace Lykke.AlgoStore.Api.Modules
 
             builder.RegisterAlgoTradesClient(_settings.CurrentValue.AlgoTradesServiceClient, _log);
 
+            builder.RegisterHistoryClient(_settings.CurrentValue.AlgoStoreHistoryServiceClient);
+
             builder.RegisterInstance(new PersonalDataService(_settings.CurrentValue.PersonalDataServiceClient, null))
-             .As<IPersonalDataService>()
-             .SingleInstance();
+                .As<IPersonalDataService>()
+                .SingleInstance();
 
             builder.RegisterAlgoInstanceStoppingClient(_settings.CurrentValue.AlgoStoreStoppingClient.ServiceUrl, _log);
 
             builder.RegisterType<Candleshistoryservice>()
                 .As<ICandleshistoryservice>()
-                .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.CandlesHistoryServiceClient.ServiceUrl)));
+                .WithParameter(TypedParameter.From(new Uri(_settings.CurrentValue.AlgoStoreCandlesHistoryServiceClient
+                    .ServiceUrl)));
 
             builder.RegisterType<SecurityClient>()
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreSecurityServiceClient.ServiceUrl)
@@ -95,6 +194,12 @@ namespace Lykke.AlgoStore.Api.Modules
                 .WithParameter("serviceUrl", _settings.CurrentValue.AlgoStoreLoggingServiceClient.ServiceUrl)
                 .As<ILoggingClient>()
                 .SingleInstance();
+
+            builder.RegisterInstance(HttpClientGenerator.HttpClientGenerator
+                .BuildForUrl(_settings.CurrentValue.AlgoStoreGdprClient.ServiceUrl).Create()
+                .Generate<IGdprClient>()).As<IGdprClient>();
+
+            builder.RegisterStatisticsClient(_settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl);
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
@@ -135,6 +240,9 @@ namespace Lykke.AlgoStore.Api.Modules
             builder.RegisterType<AlgoStoreStatisticsService>()
                 .As<IAlgoStoreStatisticsService>()
                 .SingleInstance();
+
+            builder.RegisterType<AlgoInstanceHistoryService>()
+                .As<IAlgoInstanceHistoryService>().SingleInstance();
         }
     }
 }

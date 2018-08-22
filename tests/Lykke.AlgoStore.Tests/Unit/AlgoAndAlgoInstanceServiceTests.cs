@@ -2,12 +2,12 @@
 using AutoMapper;
 using JetBrains.Annotations;
 using Lykke.AlgoStore.Api.Infrastructure;
-using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
@@ -92,8 +92,9 @@ namespace Lykke.AlgoStore.Tests.Unit
             var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
             var publicAlgosRepository = Given_Correct_PublicAlgosRepositoryMock();
             var personalDataervice = Given_Customized_ClientAccountServiceMock(Guid.NewGuid().ToString());
+            var instanceRepository = Correct_AlgoClientInstanceRepositoryMock();
 
-            var service = Given_AlgosService(repo, null, null, ratingsRepo, publicAlgosRepository, personalDataervice,
+            var service = Given_AlgosService(repo, null, instanceRepository.Object, ratingsRepo, publicAlgosRepository, personalDataervice,
                 null, null, null, null);
             var data = When_Invoke_GetAllAlgos(service, out Exception exception);
 
@@ -211,13 +212,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var repo = Given_Correct_AlgoRepositoryMock();
             var ratingsRepo = Given_Correct_AlgoRatingsRepositoryMock();
+            var instanceRepository = Correct_AlgoClientInstanceRepositoryMock();
 
             var clientId = Guid.NewGuid().ToString();
 
             var clientAccountService = Given_Customized_ClientAccountServiceMock(clientId);
             var assetService = Given_AssetsServiceWithCache();
 
-            var service = Given_AlgosService(repo, null, null, ratingsRepo, null,
+            var service = Given_AlgosService(repo, null, instanceRepository.Object, ratingsRepo, null,
                 clientAccountService, null, null, null, assetService);
             var data = When_Invoke_GetAlgoInformation(service, clientId, clientId, Guid.NewGuid().ToString(), out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -1089,7 +1091,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoClientInstanceRepository>();
 
             result.Setup(repo => repo.GetAllAlgoInstancesByAlgoAsync(It.IsAny<string>()))
-                .Returns((string algoId, string clientId) =>
+                .Returns((string algoId) =>
                 {
                     return Task.FromResult(new List<AlgoClientInstanceData>
                     {
@@ -1452,13 +1454,13 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var startingDateParameter = fixture.Build<AlgoMetaDataParameter>()
                 .With(t => t.Type, dtType)
-                .With(k => k.Key, "StartingDate")
+                .With(k => k.Key, "startingDate")
                 .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
                 .Create();
 
             var endingDateParameter = fixture.Build<AlgoMetaDataParameter>()
                 .With(t => t.Type, dtType)
-                .With(k => k.Key, "EndingDate")
+                .With(k => k.Key, "endingDate")
                 .With(v => v.Value, areDatesCorrect ? StartFromDate.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ") :
                     StartFromDate.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
                 .Create();

@@ -1,6 +1,7 @@
 ﻿using Lykke.AlgoStore.Core.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 
 namespace Lykke.AlgoStore.Core.Services

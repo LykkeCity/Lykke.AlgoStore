@@ -187,6 +187,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} consent has already been given for clientId {1}.
+        /// </summary>
+        internal static string ConsentAlreadyGiven {
+            get {
+                return ResourceManager.GetString("ConsentAlreadyGiven", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo creation process failed due to code validation errors. Details: {0}.
         /// </summary>
         internal static string CreateAlgoFailedOnCodeValidationDisplayMessage {
@@ -223,7 +232,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}.
+        ///   Looks up a localized string similar to There was a problem while deleting the Kubernetes deployment.  Algo Instance Stopping client error: {0}.
         /// </summary>
         internal static string DeleteKubernetesDeploymentError {
             get {
@@ -295,11 +304,56 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using blacklisted namespaces is not allowed.
+        /// </summary>
+        internal static string ERROR_BLACKLISTED_NAMESPACE_USED {
+            get {
+                return ResourceManager.GetString("ERROR_BLACKLISTED_NAMESPACE_USED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Using blacklisted types is not allowed.
+        /// </summary>
+        internal static string ERROR_BLACKLISTED_TYPE_USED {
+            get {
+                return ResourceManager.GetString("ERROR_BLACKLISTED_TYPE_USED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Setting null as the default value is not allowed.
+        /// </summary>
+        internal static string ERROR_DEFAULT_VALUE_NULL {
+            get {
+                return ResourceManager.GetString("ERROR_DEFAULT_VALUE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Algo must override {0} and/or {1}.
         /// </summary>
         internal static string ERROR_EVENT_NOT_IMPLEMENTED {
             get {
                 return ResourceManager.GetString("ERROR_EVENT_NOT_IMPLEMENTED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate indicator names are not allowed.
+        /// </summary>
+        internal static string ERROR_INDICATOR_DUPLICATE_NAME {
+            get {
+                return ResourceManager.GetString("ERROR_INDICATOR_DUPLICATE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicator name must be a string literal.
+        /// </summary>
+        internal static string ERROR_INDICATOR_NAME_NOT_LITERAL {
+            get {
+                return ResourceManager.GetString("ERROR_INDICATOR_NAME_NOT_LITERAL", resourceCulture);
             }
         }
         
@@ -336,6 +390,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         internal static string ErrorGettingPod {
             get {
                 return ResourceManager.GetString("ErrorGettingPod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error has occurred, please contact an administrator.
+        /// </summary>
+        internal static string InstanceDeploymentGenericError {
+            get {
+                return ResourceManager.GetString("InstanceDeploymentGenericError", resourceCulture);
             }
         }
         
@@ -403,7 +466,7 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}.
+        ///   Looks up a localized string similar to The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}.
         /// </summary>
         internal static string NotAvailableCreationOfInstances {
             get {

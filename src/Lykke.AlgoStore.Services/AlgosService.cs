@@ -2,7 +2,6 @@
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
-using Lykke.AlgoStore.Core.Enumerators;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.Core.Validation;
@@ -14,7 +13,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
 using Lykke.Service.Assets.Client;
 using Lykke.Service.Assets.Client.Models;
@@ -56,7 +58,7 @@ namespace Lykke.AlgoStore.Services
             IAlgoClientInstanceRepository instanceRepository,
             IAlgoRatingsRepository ratingsRepository,
             IPublicAlgosRepository publicAlgosRepository,
-            IPersonalDataService personalDataService,           
+            IPersonalDataService personalDataService,
             IAlgoStoreService algoStoreService,
             IAlgoCommentsRepository commentsRepository,
             ILog log,
@@ -100,7 +102,7 @@ namespace Lykke.AlgoStore.Services
 
                     string authorName;
 
-                    if (String.IsNullOrEmpty(currentAlgo.ClientId))
+                    if (String.IsNullOrEmpty(currentAlgo.ClientId) || currentAlgo.ClientId == PublicAlgosRepository.DeactivatedFakeClientId)
                         authorName = "Administrator";
                     else
                     {
@@ -134,7 +136,8 @@ namespace Lykke.AlgoStore.Services
                         ratingMetaData.RatedUsersCount = 0;
                     }
 
-                    ratingMetaData.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
+                    var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(currentAlgo.AlgoId);
+                    ratingMetaData.UsesCount = instances.Count;
                     result.Add(ratingMetaData);
                 }
 
@@ -317,7 +320,7 @@ namespace Lykke.AlgoStore.Services
 
                 var res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
 
-                if(res == null)
+                if (res == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         string.Format(Phrases.NoAlgoData, data.ClientId, data.AlgoId),
                         Phrases.NoAlgoDataDisplayMessage);
@@ -366,7 +369,7 @@ namespace Lykke.AlgoStore.Services
 
                 await _algoRepository.SaveAlgoAsync(algoToSave);
 
-                if(isSourceUpdated)
+                if (isSourceUpdated)
                     await _blobRepository.SaveBlobAsync(data.AlgoId, algoContent);
 
                 res = await _algoRepository.GetAlgoAsync(data.ClientId, data.AlgoId);
@@ -386,14 +389,14 @@ namespace Lykke.AlgoStore.Services
                 var errorMessageBase = $"Cannot delete algo {algoId} -";
 
                 if (algoClientId != clientId)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         $"{errorMessageBase} Client {clientId} does not own the algo",
                         Phrases.UserCantSeeAlgo);
 
                 await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
 
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, algoId))
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         $"{errorMessageBase} Algo is public",
                         Phrases.AlgoMustNotBePublic);
 
@@ -413,7 +416,7 @@ namespace Lykke.AlgoStore.Services
                         string.Format(Phrases.AlgoInstancesExist, "delete", "running "));
                 }
 
-                foreach(var instance in algoInstances)
+                foreach (var instance in algoInstances)
                 {
                     await _algoStoreService.DeleteInstanceAsync(instance);
                 }
@@ -479,7 +482,8 @@ namespace Lykke.AlgoStore.Services
                         algoInformation.RatedUsersCount = 0;
                     }
 
-                    algoInformation.UsersCount = rnd.Next(1, 500); // TODO hardcoded until real count is displayed                        
+                    var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(algoInformation.AlgoId);
+                    algoInformation.UsesCount = instances.Count;
 
                     algoInformation.Author = (await _personalDataService.GetAsync(algoClientId))?.FullName;
 
@@ -663,12 +667,12 @@ namespace Lykke.AlgoStore.Services
                 Value = ap.Id
             }).ToList();
 
-            
+
             algoMetaDataInformation.Parameters.Single(p => p.Key == "AssetPair").PredefinedValues = assetPairsList;
 
             foreach (var function in algoMetaDataInformation.Functions)
             {
-                var assetPairParameter = function.Parameters.SingleOrDefault(p => p.Key == "AssetPair");
+                var assetPairParameter = function.Parameters.SingleOrDefault(p => p.Key == "assetPair");
                 if (assetPairParameter != null)
                     assetPairParameter.PredefinedValues = assetPairsList;
             }
@@ -676,10 +680,10 @@ namespace Lykke.AlgoStore.Services
 
         private void IsFieldMissing(AlgoMetaDataInformation algoMetaDataInformation, string field)
         {
-           if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == field) == null)
-               throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                   $"'{field}' field is missing from AlgoMetaData",
-                   string.Format(Phrases.MetadataFieldMissing, field));
+            if (algoMetaDataInformation.Parameters.SingleOrDefault(p => p.Key == field) == null)
+                throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
+                    $"'{field}' field is missing from AlgoMetaData",
+                    string.Format(Phrases.MetadataFieldMissing, field));
         }
 
         public async Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId, string clientId)

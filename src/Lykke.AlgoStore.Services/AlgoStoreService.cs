@@ -25,6 +25,13 @@ namespace Lykke.AlgoStore.Services
 {
     public class AlgoStoreService : BaseAlgoStoreService, IAlgoStoreService
     {
+        private const string TcBuildEventStarted = "buildStarted";
+        private const string TcBuildEventFinished = "buildFinished";
+        private const string TcBuildEventInterrupted = "buildInterrupted";
+        private const string TcBuildResultRunning = "running";
+        private const string TcBuildResultSuccess = "success";
+        private const string TcBuildResultFailure = "failure";
+
         private readonly ILoggingClient _loggingClient;
         private readonly IStatisticsRepository _statisticsRepository;
         private readonly IAlgoReadOnlyRepository _algoMetaDataRepository;
@@ -128,6 +135,9 @@ namespace Lykke.AlgoStore.Services
 
                 var response = await _teamCityClient.StartBuild(buildData);
 
+                instanceData.TcBuildId = response.Id.ToString();
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(instanceData);
+
                 return response.GetBuildState() != BuildStates.Undefined;
             });
         }
@@ -189,7 +199,8 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstanceDataNotFound, $"Bad instance data",
                         string.Format(Phrases.ParamNotFoundDisplayMessage, "algo instance"));
 
-                if (instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Stopped)
+                if (instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Stopped &&
+                    instanceData.AlgoInstanceStatus != AlgoInstanceStatus.Errored)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         string.Format(Phrases.InstanceMustBeStopped, instanceData.InstanceId),
                         string.Format(Phrases.InstanceMustBeStopped, $"\"{instanceData.InstanceName}\""));
@@ -221,6 +232,52 @@ namespace Lykke.AlgoStore.Services
 
                 var userLogs = await _loggingClient.GetTailLog(data.Tail, data.InstanceId, instanceData.AuthToken);
                 return userLogs.Select(l => $"[{l.Date.ToString(AlgoStoreConstants.CustomDateTimeFormat)}] {l.Message}").ToArray();
+            });
+        }
+
+        public async Task<bool> UpdateAlgoInstanceStatusAsync(TeamCityWebHookResponse payload)
+        {
+            return await LogTimedInfoAsync(nameof(UpdateAlgoInstanceStatusAsync), "TCWebHook", async () =>
+            {
+                await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Received TCWebHook payload with buildId {payload.BuildId.ToString()}");
+                             
+                var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildId.ToString());
+
+                if (teamCityInstanceEntity == null)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve TCBuild entity with TcBuildId {payload.BuildId.ToString()}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "TCBuild entity"));
+                }
+
+                var algoInstance = await _algoInstanceRepository.GetAlgoInstanceDataByClientIdAsync(teamCityInstanceEntity.ClientId, teamCityInstanceEntity.InstanceId);
+
+                if (algoInstance == null)
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"Could not retrieve algo instance with id {teamCityInstanceEntity.InstanceId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "Algo instance"));
+                }
+
+                if (payload.BuildEvent == TcBuildEventStarted && payload.BuildResult == TcBuildResultRunning)
+                    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Deploying;
+
+                //REMARK: This can be used to set the status to Started when deploy is successfull
+                //if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultSuccess)
+                //    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Started;
+
+                if (payload.BuildEvent == TcBuildEventFinished && payload.BuildResult == TcBuildResultFailure)
+                    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+
+                if (payload.BuildEvent == TcBuildEventInterrupted && payload.BuildResult == TcBuildResultFailure)
+                    algoInstance.AlgoInstanceStatus = AlgoInstanceStatus.Errored;
+
+                await _algoInstanceRepository.SaveAlgoInstanceDataAsync(algoInstance);
+
+                if (algoInstance.AlgoInstanceStatus == AlgoInstanceStatus.Errored)
+                    await _loggingClient.WriteAsync(algoInstance.InstanceId, Phrases.InstanceDeploymentGenericError, algoInstance.AuthToken);
+
+                await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Instance saved with status: {algoInstance.AlgoInstanceStatus.ToUpperText()} after TCWebHook request");
+
+                return true;
             });
         }
     }

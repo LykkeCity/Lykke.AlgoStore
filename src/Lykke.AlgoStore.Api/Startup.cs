@@ -8,10 +8,15 @@ using Lykke.AlgoStore.Api.Infrastructure.Authentication;
 using Lykke.AlgoStore.Api.Infrastructure.ContentFilters;
 using Lykke.AlgoStore.Api.Infrastructure.Managers;
 using Lykke.AlgoStore.Api.Infrastructure.OperationFilters;
+using Lykke.AlgoStore.Api.RealTimeStreaming;
+using Lykke.AlgoStore.Api.RealTimeStreaming.DataStreamers.WebSockets.Middleware;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Settings;
+using Lykke.AlgoStore.Core.Utils;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Mapper;
+using Lykke.AlgoStore.Service.Security.Client;
 using Lykke.Common.ApiLibrary.Swagger;
+using Lykke.Service.Security.Client.AutorestClient.Models;
 using Lykke.SettingsReader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,8 +30,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Lykke.AlgoStore.Service.Security.Client;
-using Lykke.Service.Security.Client.AutorestClient.Models;
+using Lykke.Common;
 
 namespace Lykke.AlgoStore.Api
 {
@@ -60,14 +64,14 @@ namespace Lykke.AlgoStore.Api
         {
             try
             {
-                services.AddMvc()
+                services.AddMvc(options => { options.Filters.Add(typeof(PermissionFilter)); })
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                     .AddJsonOptions(options =>
                     {
                         options.SerializerSettings.ContractResolver =
                             new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                        options.SerializerSettings.Converters.Add(new DefaultDateTimeConverter());
                     });
-
-                services.AddMvc(options => { options.Filters.Add(typeof(PermissionFilter)); });
 
                 services.AddScoped<ValidateMimeMultipartContentFilter>();
 
@@ -80,7 +84,9 @@ namespace Lykke.AlgoStore.Api
 
                 services.AddLykkeAuthentication();
 
-                var appSettings = Configuration.LoadSettings<AppSettings>();
+                var appSettings = Configuration.LoadSettings<AppSettings>(x => (
+                    x.SlackNotifications.AzureQueue.ConnectionString, x.SlackNotifications.AzureQueue.QueueName,
+                    $"{AppEnvironment.Name} {AppEnvironment.Version}"));
                 Log = LogManager.CreateLogWithSlack(services, appSettings);
 
                 ApplicationContainer = ContainerManager.RegisterAlgoApiModules(services, appSettings, Log);
@@ -131,6 +137,8 @@ namespace Lykke.AlgoStore.Api
                 });
                 app.UseStaticFiles();
 
+                RegisterWebSocketsForRealTimeData(app);
+
                 appLifetime.ApplicationStarted.Register(() => StartApplication(securityClient).Wait());
                 appLifetime.ApplicationStopped.Register(() => CleanUp().Wait());
             }
@@ -141,13 +149,28 @@ namespace Lykke.AlgoStore.Api
             }
         }
 
+        private void RegisterWebSocketsForRealTimeData(IApplicationBuilder app)
+        {
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(Constants.WebSocketKeepAliveIntervalSeconds),
+                ReceiveBufferSize = Constants.WebSocketRecieveBufferSize
+            };
+
+            app.UseWebSockets(webSocketOptions);
+
+            app.Map("/live", (_app) => _app.UseMiddleware<WebSocketMiddleware>());
+        }
+
         private async Task StartApplication(ISecurityClient securityClient)
         {
             try
             {
+#if !DEBUG
                 await SeedPermissions(securityClient);
 
                 await SeedRoles(securityClient);
+#endif
 
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
@@ -183,13 +206,15 @@ namespace Lykke.AlgoStore.Api
 
         private async Task SeedPermissions(ISecurityClient securityClient)
         {
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed started");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions),
+                "Permission seed started");
 
             ExtractPermissionsFromControllers();
 
             await securityClient.SeedPermissions(Permissions);
 
-            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions), "Permission seed finished");
+            await Log.WriteInfoAsync(AlgoStoreConstants.ProcessName, nameof(SeedPermissions),
+                "Permission seed finished");
         }
 
         private void ExtractPermissionsFromControllers()
@@ -202,11 +227,12 @@ namespace Lykke.AlgoStore.Api
                     (m.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null ||
                      m.DeclaringType.GetCustomAttribute(typeof(RequirePermissionAttribute)) != null)))
                 .Select(i => new UserPermissionData
-                    {
-                        Id = i.Name,
-                        Name = i.ReflectedType.Name,
-                        DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart(),
-                        Description = (i.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute).Description
+                {
+                    Id = i.Name,
+                    Name = i.ReflectedType.Name,
+                    DisplayName = Regex.Replace(i.Name, "([A-Z]{1,2}|[0-9]+)", " $1").TrimStart(),
+                    Description = (i.GetCustomAttribute(typeof(DescriptionAttribute)) as DescriptionAttribute)
+                        .Description
                 })
                 .ToList();
         }

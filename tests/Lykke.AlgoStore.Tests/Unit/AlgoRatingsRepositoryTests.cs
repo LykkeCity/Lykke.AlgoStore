@@ -1,9 +1,13 @@
-﻿using AutoFixture;
+﻿using System.Threading.Tasks;
+using AutoFixture;
+using AzureStorage;
 using AzureStorage.Tables;
-using Lykke.AlgoStore.AzureRepositories.Entities;
-using Lykke.AlgoStore.AzureRepositories.Repositories;
-using Lykke.AlgoStore.Core.Domain.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Entities;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Tests.Infrastructure;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Moq;
 using NUnit.Framework;
 
 namespace Lykke.AlgoStore.Tests.Unit
@@ -12,6 +16,7 @@ namespace Lykke.AlgoStore.Tests.Unit
     {
 
         private const string ClientId = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD623D";
+        private const string PartitionKey = "066ABDEF-F1CB-4B24-8EE6-6ACAF1FD6264";
 
         private readonly Fixture _fixture = new Fixture();
         private AlgoRatingMetaData _entity;
@@ -53,7 +58,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
         private static void Then_UsersCount_ShouldNotBe_Null(AlgoRatingMetaData data)
         {
-            Assert.NotNull(data.UsersCount);
+            Assert.NotNull(data.UsesCount);
         }
     }
 }

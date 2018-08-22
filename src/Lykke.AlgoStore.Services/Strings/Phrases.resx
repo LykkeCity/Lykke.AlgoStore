@@ -271,7 +271,7 @@
     <value>There was a problem getting pod information. Algo Instance Stopping client error: {0}</value>
   </data>
   <data name="DeleteKubernetesDeploymentError" xml:space="preserve">
-    <value>There was a problem while deleting the kuebrnetes deployment.  Algo Instance Stopping client error: {0}</value>
+    <value>There was a problem while deleting the Kubernetes deployment.  Algo Instance Stopping client error: {0}</value>
   </data>
   <data name="DatesValidationMessage" xml:space="preserve">
     <value>{0} Start Date cannot be later than or equal to the End Date</value>
@@ -286,9 +286,30 @@
     <value>Demo or BackTest instances are not allowed to run without fake trading.</value>
   </data>
   <data name="NotAvailableCreationOfInstances" xml:space="preserve">
-    <value>The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}  and AlgoId: {2}</value>
+    <value>The user currently has {0} running/deploying instances. The user is not allowed to create and deploy more instances. ClientId: {1}</value>
   </data>
   <data name="LimitOfRunningInsatcnesReached" xml:space="preserve">
     <value>You have reached the limit of running/deploying instances. You can't run more instances.</value>
+  </data>
+  <data name="ERROR_DEFAULT_VALUE_NULL" xml:space="preserve">
+    <value>Setting null as the default value is not allowed</value>
+  </data>
+  <data name="ERROR_INDICATOR_DUPLICATE_NAME" xml:space="preserve">
+    <value>Duplicate indicator names are not allowed</value>
+  </data>
+  <data name="ERROR_INDICATOR_NAME_NOT_LITERAL" xml:space="preserve">
+    <value>Indicator name must be a string literal</value>
+  </data>
+  <data name="ERROR_BLACKLISTED_NAMESPACE_USED" xml:space="preserve">
+    <value>Using blacklisted namespaces is not allowed</value>
+  </data>
+  <data name="ERROR_BLACKLISTED_TYPE_USED" xml:space="preserve">
+    <value>Using blacklisted types is not allowed</value>
+  </data>
+  <data name="InstanceDeploymentGenericError" xml:space="preserve">
+    <value>An error has occurred, please contact an administrator</value>
+  </data>
+  <data name="ConsentAlreadyGiven" xml:space="preserve">
+    <value>{0} consent has already been given for clientId {1}</value>
   </data>
 </root>

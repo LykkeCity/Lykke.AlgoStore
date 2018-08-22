@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Models;
 using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
-using Lykke.AlgoStore.Core.Enumerators;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
+using Lykke.AlgoStore.Service.AlgoTrades.Client.AutorestClient.Models;
 using Lykke.Service.Security.Client.AutorestClient.Models;
 
 namespace Lykke.AlgoStore.Api.Infrastructure
@@ -14,28 +16,6 @@ namespace Lykke.AlgoStore.Api.Infrastructure
         {
             CreateMap<AlgoData, AlgoDataModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AlgoId));
-
-            CreateMap<AlgoEntity, IAlgo>()
-                .ForMember(dest => dest.AlgoVisibility, opt => opt.Ignore());
-
-            CreateMap<IAlgo, AlgoEntity>()
-                .ForMember(dest => dest.PartitionKey, opt => opt.Ignore())
-                .ForMember(dest => dest.RowKey, opt => opt.Ignore())
-                .ForMember(dest => dest.Timestamp, opt => opt.Ignore())
-                .ForMember(dest => dest.ETag, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoVisibilityValue, opt => opt.Ignore());
-
-            CreateMap<AlgoEntity, AlgoDataInformation>()
-                .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.RowKey))
-                .ForMember(dest => dest.Rating, opt => opt.Ignore())
-                .ForMember(dest => dest.RatedUsersCount, opt => opt.Ignore())
-                .ForMember(dest => dest.UsersCount, opt => opt.Ignore())
-                .ForMember(dest => dest.Author, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoMetaDataInformation, opt => opt.Ignore());
-
-            CreateMap<AlgoData, IAlgo>();
-
-            CreateMap<IAlgo, AlgoData>();
 
             CreateMap<AlgoDataInformation, AlgoDataInformationModel>();
 
@@ -72,7 +52,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthToken, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoInstanceCreateDate, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
+                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore())
+                .ForMember(dest => dest.TcBuildId, opt => opt.Ignore());
 
             CreateMap<AlgoFakeTradingInstanceModel, AlgoClientInstanceData>()
                 .ForSourceMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore())
@@ -87,7 +68,8 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.OppositeAssetId, opt => opt.Ignore())
                 .ForMember(dest => dest.AuthToken, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoInstanceCreateDate, opt => opt.Ignore())
-                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore());
+                .ForMember(dest => dest.AlgoInstanceStopDate, opt => opt.Ignore())
+                .ForMember(dest => dest.TcBuildId, opt => opt.Ignore());
 
             CreateMap<AlgoRatingMetaDataModel, AlgoRatingMetaData>()
                 .IncludeBase<AlgoDataModel, AlgoData>()
@@ -120,12 +102,33 @@ namespace Lykke.AlgoStore.Api.Infrastructure
 
             CreateMap<AlgoStoreUserData, AlgoStoreUserDataModel>();
 
-            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserPermissionModel, Models.UserPermissionModel>();
+            CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserPermissionModel,
+                Models.UserPermissionModel>();
             CreateMap<Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel, Models.UserRoleModel>();
 
             CreateMap<UserRoleCreateModel, Lykke.Service.Security.Client.AutorestClient.Models.UserRoleModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Permissions, opt => opt.Ignore());
+
+            CreateMap<TeamCityWebHookResponseModel, TeamCityWebHookResponse>();
+
+            CreateMap<Lykke.Service.CandlesHistory.Client.Models.Candle, Lykke.AlgoStore.Algo.Candle>();
+            CreateMap<Lykke.AlgoStore.Algo.Candle, CandleChartingUpdate>()
+                .ForMember(dest => dest.InstanceId, opt => opt.Ignore())
+                .ForMember(dest => dest.AssetPair, opt => opt.Ignore())
+                .ForMember(dest => dest.CandleTimeInterval, opt => opt.Ignore());
+
+            CreateMap<AlgoInstanceTradeResponseModel, TradeChartingUpdate>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.AssetPairId, opt => opt.MapFrom(src => src.AssetPair))
+                .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName));
+
+            CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
+                Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>();
+
+            CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.QuoteChartingUpdate,
+                Lykke.AlgoStore.Algo.Charting.QuoteChartingUpdate>();
+
         }
     }
 }

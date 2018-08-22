@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Linq;
 using FluentAssertions;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
+using System;
 
 namespace Lykke.AlgoStore.Tests.Unit
 {
@@ -113,33 +114,40 @@ namespace Lykke.AlgoStore.Tests.Unit
             new AlgoMetaDataParameter
             {
                 Key = "AssetPair",
-                Type = "System.String"
+                Type = "string",
+                Description = "The asset pair that the algorithm will be using."
+            },
+            
+            new AlgoMetaDataParameter
+            {
+                Key = "StartFrom",
+                Type = "System.DateTime",
+                Description = "The starting date of the algorithm."
+            },
+            new AlgoMetaDataParameter
+            {
+                Key = "EndOn",
+                Type = "System.DateTime",
+                Description = "The ending date of the algorithm."
+            },
+            new AlgoMetaDataParameter
+            {
+                Key = "Volume",
+                Type = "double",
+                Description = "The volume that your algorithm will trade."
+            },
+            new AlgoMetaDataParameter
+            {
+                Key = "TradedAsset",
+                Type = "string",
+                Description = "The asset that your algorithm will use for trading."
             },
             new AlgoMetaDataParameter
             {
                 Key = "CandleInterval",
                 Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                PredefinedValues = CandleTimeIntervalPredefinedValues
-            },
-            new AlgoMetaDataParameter
-            {
-                Key = "StartFrom",
-                Type = "System.DateTime"
-            },
-            new AlgoMetaDataParameter
-            {
-                Key = "EndOn",
-                Type = "System.DateTime"
-            },
-            new AlgoMetaDataParameter
-            {
-                Key = "Volume",
-                Type = "System.Double"
-            },
-            new AlgoMetaDataParameter
-            {
-                Key = "TradedAsset",
-                Type = "System.String"
+                PredefinedValues = CandleTimeIntervalPredefinedValues,
+                Description = "The interval that the candles will be received."
             }
         };
 
@@ -155,49 +163,47 @@ namespace Lykke.AlgoStore.Tests.Unit
             {
                 return new AlgoMetaDataFunction
                 {
-                    FunctionParameterType =
-                        "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaParameters",
                     Id = "Sma",
-                    Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA.SmaFunction",
                     Parameters = new List<AlgoMetaDataParameter>
                     {
                        new AlgoMetaDataParameter
                         {
-                            Key = "Capacity",
-                            Type = "System.Int32"
+                            Key = "period",
+                            Type = "int",
+                            Description = "The amount of most recent values this indicator will operate on."
+                        },
+                       new AlgoMetaDataParameter
+                        {
+                            Key = "startingDate",
+                            Type = "System.DateTime",
+                            Description = "The starting date of the indicator."
                         },
                         new AlgoMetaDataParameter
                         {
-                            Key = "AssetPair",
-                            Type = "System.String"
+                            Key = "endingDate",
+                            Type = "System.DateTime",
+                            Description = "The ending date of the indicator."
                         },
                         new AlgoMetaDataParameter
                         {
-                            Key = "CandleOperationMode",
+                            Key = "assetPair",
+                            Type = "string",
+                            Description = "The asset pair that the indicator will be using."
+                        },
+                        new AlgoMetaDataParameter
+                        {
+                            Key = "candleOperationMode",
                             Type =
-                                "Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions.FunctionParamsBase+CandleValue",
-                            PredefinedValues = CandlePredefinedValues
+                                "Lykke.AlgoStore.Algo.CandleOperationMode",
+                            PredefinedValues = CandlePredefinedValues,
+                            Description = "The candle value on which the function is operating. The same function can be operating on Min/Max or Open/Close of a Candle."
                         },
                         new AlgoMetaDataParameter
                         {
-                            Key = "FunctionInstanceIdentifier",
-                            Type = "System.String"
-                        },
-                        new AlgoMetaDataParameter
-                        {
-                            Key = "StartingDate",
-                            Type = "System.DateTime"
-                        },
-                        new AlgoMetaDataParameter
-                        {
-                            Key = "EndingDate",
-                            Type = "System.DateTime"
-                        },
-                        new AlgoMetaDataParameter
-                        {
-                            Key = "CandleTimeInterval",
+                            Key = "candleTimeInterval",
                             Type = "Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators.CandleTimeInterval",
-                            PredefinedValues = CandleTimeIntervalPredefinedValues
+                            PredefinedValues = CandleTimeIntervalPredefinedValues,
+                            Description = "The interval that the candles will be received on."
                         }
                     }
                 };
@@ -336,13 +342,14 @@ namespace Lykke.AlgoStore.Tests.Unit
         [Test]
         public void SyntaxValidation_Succeeds_WhenAlgoProperlyImplemented()
         {
-            var code = @"using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
-                         namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
-                            sealed class A : BaseAlgo 
+            var code = @"using Lykke.AlgoStore.Algo; 
+                         namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
+                         {
+                             sealed class A : BaseAlgo 
                              { 
                                 public override void OnCandleReceived(ICandleContext context) {} 
                              }
-                        }";
+                         }";
 
             var result = When_Code_IsSyntaxValidated(code);
 
@@ -361,7 +368,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = When_Code_IsSyntaxValidated(code);
 
             Then_Result_MustFailAndContainMessages(result);
-            Then_Result_MustContainMessage(result, "AS0007");
+            Then_Result_MustContainMessage(result, "AS0010");
         }
 
         [Test]
@@ -378,7 +385,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = When_Code_IsSyntaxValidated(code);
 
             Then_Result_MustFailAndContainMessages(result);
-            Then_Result_MustContainMessage(result, "AS0006");
+            Then_Result_MustContainMessage(result, "AS0009");
         }
 
         [Test]
@@ -386,16 +393,22 @@ namespace Lykke.AlgoStore.Tests.Unit
             ExtractMetadata_Succeeds_WhenAlgoProperlyImplementedWithSmaFunctionAndNoAdditionalProperties()
         {
             var code = @"
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Functions.SMA;
-
-namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+using Lykke.AlgoStore.Algo;
+using Lykke.AlgoStore.Algo.Indicators;
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
+{
     sealed class Algo : BaseAlgo 
     { 
-        public SmaFunction Sma {get; set; }
+        public SMA Sma {get; set; }
+
+        public override void OnStartUp()
+        {
+            Sma = SMA(""Sma"");
+        }
         public override void OnCandleReceived(ICandleContext context) {} 
     }
-}";
+}
+";
 
             var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
@@ -412,16 +425,17 @@ namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
             ExtractMetadata_Succeeds_WhenAlgoProperlyImplementedAndHasNoAdditionalPropertiesAndFunctions()
         {
             var code = @"
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain; 
-
-namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
+using Lykke.AlgoStore.Algo;
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
+{
     sealed class Algo : BaseAlgo 
     { 
         public override void OnCandleReceived(ICandleContext context) {} 
     }
-}";
+}
+";
 
-            var session = GetCSharpCodeBuildSession(code);
+         var session = GetCSharpCodeBuildSession(code);
             var validationResult = session.Validate().Result;
 
             Assert.AreEqual(true, validationResult.IsSuccessful);
@@ -430,172 +444,39 @@ namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
 
             metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithNoFunctions);
         }
-
+        
         [Test]
-        public void
-            SyntaxValidation_Fails_WhenCustomFunctionIsNotProperlyImplementedFromAbstractFunction()
+        [TestCase("using System.Reflection;", "", "", "AS0012")]
+        [TestCase("using System;", "", "Type test = null;", "AS0011")]
+        [TestCase("using System;", "class c { Type f; }", "", "AS0011")]
+        [TestCase("using System;", "class c { Type p {get;} }", "", "AS0011")]
+        [TestCase("using System;", "class c { Type m() {return null;} }", "", "AS0011")]
+        [TestCase("", "class c { T m<T>(System.Type t) {return default(T);} }", "", "AS0011")]
+        [TestCase("", "class c {object m() {return System.Activator.CreateInstance(typeof(int));}}", "", "AS0011")]
+        public void SyntaxValidation_Fails_WhenUsingBlacklistedCode(
+            string usingToTest,
+            string classToTest,
+            string codeToTest,
+            string error)
         {
-            var code = @"
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
-sealed class Algo : BaseAlgo 
-{ 
-    public SmaFunction Sma {get; set; }
-    public override void OnCandleReceived(ICandleContext context) {} 
-}
-public class SmaFunction : AbstractFunction
-{
-}
-";
-
+            var code = $@"
+using Lykke.AlgoStore.Algo;
+{usingToTest}
+namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass
+{{
+    {classToTest}
+    sealed class Algo : BaseAlgo 
+    {{ 
+        public override void OnCandleReceived(ICandleContext context) 
+        {{
+            {codeToTest}
+        }}
+    }}
+}}";
             var result = When_Code_IsSyntaxValidated(code);
 
             Then_Result_MustFailAndContainMessages(result);
-        }
-
-        [Test]
-        public void
-            SyntaxValidation_Fails_WhenCustomFunctionIsNotProperlyImplementedFromFunctionInterface()
-        {
-            var code = @"
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.Algo.Core.Functions;
-sealed class Algo : BaseAlgo 
-{ 
-    public SmaFunction Sma {get; set; }
-    public override void OnCandleReceived(ICandleContext context) {} 
-}
-public class SmaFunction : IFunction
-{
-}
-";
-
-            var result = When_Code_IsSyntaxValidated(code);
-
-            Then_Result_MustFailAndContainMessages(result);
-        }
-
-        //REMARK: This test should fail on validation
-        [Test]
-        public void
-            ExtractMetadata_Succeeds_WhenAlgoImplementedWithCustomFunctionThatHasNoConstructor()
-        {
-            var code = @"
-using System.Collections.Generic;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Candles;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
-
-namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
-    sealed class Algo : BaseAlgo
-    {
-        public CustomFunction CustomFunc { get; set; }
-        public override void OnStartUp(IFunctionProvider functions) { }
-        public override void OnQuoteReceived(IQuoteContext context) { }
-        public override void OnCandleReceived(ICandleContext context) { }
-    }
-
-    public class CustomFunction : IFunction
-    {
-        public AlgoParameters AlgoParams { get; set; }
-        public FunctionParamsBase FunctionParameters => AlgoParams;
-        public double? Value => 43;
-        public bool IsReady => true;
-
-        public double? WarmUp(IEnumerable<Candle> values)
-        {
-            return 43;
-        }
-
-        public double? AddNewValue(Candle value)
-        {
-            return 43;
-        }
-    }
-
-    public class AlgoParameters : FunctionParamsBase
-    {
-        public int Period { get; set; }
-    }
-}";
-
-            var session = GetCSharpCodeBuildSession(code);
-            var validationResult = session.Validate().Result;
-
-            Assert.AreEqual(true, validationResult.IsSuccessful);
-
-            var metadata = session.ExtractMetadata().Result;
-
-            metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithNoFunctions);
-        }
-
-        [Test]
-        public void
-            ExtractMetadata_Succeeds_WhenAlgoImplementedWithCustomFunctionThatHasProperConstructor()
-        {
-            var code = @"
-using System.Collections.Generic;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Attributes;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Candles;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Domain;
-using Lykke.AlgoStore.CSharp.AlgoTemplate.Abstractions.Core.Functions;
-
-namespace Lykke.AlgoStore.CSharp.Algo.Implemention.ExecutableClass{
-    sealed class Algo : BaseAlgo
-    {
-        public CustomFunction CustomFunc { get; set; }
-
-        public override void OnStartUp(IFunctionProvider functions)
-        {
-        }
-
-        public override void OnQuoteReceived(IQuoteContext context)
-        {
-        }
-
-        public override void OnCandleReceived(ICandleContext context)
-        {
-        }
-    }
-
-    public class CustomFunction : IFunction
-    {
-        public AlgoParameters AlgoParams { get; set; }
-        public FunctionParamsBase FunctionParameters => AlgoParams;
-        public double? Value => 43;
-        public bool IsReady => true;
-
-        public double? WarmUp(IEnumerable<Candle> values)
-        {
-            return 43;
-        }
-
-        public double? AddNewValue(Candle value)
-        {
-            return 43;
-        }
-
-        public CustomFunction(AlgoParameters algoParameters)
-        {
-            AlgoParams = algoParameters;
-        }
-    }
-
-    public class AlgoParameters : FunctionParamsBase
-    {
-        [DefaultValue(5), Description(""test"")]
-        public int Period { get; set; }
-    }
-}";
-
-            var session = GetCSharpCodeBuildSession(code);
-            var validationResult = session.Validate().Result;
-
-            Assert.AreEqual(true, validationResult.IsSuccessful);
-
-            var metadata = session.ExtractMetadata().Result;
-
-            metadata.Should().BeEquivalentTo(BaseAlgoMetadataWithCustomFunction);
+            Then_Result_MustContainMessage(result, error);
         }
 
         private ICodeBuildSession GetCSharpCodeBuildSession(string code)
