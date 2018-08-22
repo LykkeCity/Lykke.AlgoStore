@@ -41,7 +41,7 @@ namespace Lykke.AlgoStore.Api.Infrastructure.ContentFilters
 
                 var legalConsent = _gdprClient.GetLegalConsentsAsync(clientId).Result;
 
-                if (legalConsent == null || !legalConsent.CookieConsent || !legalConsent.GdprConsent)
+                if (legalConsent == null || !legalConsent.GdprConsent)
                     context.Result = new StatusCodeResult(451);
             }
         }
