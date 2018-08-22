@@ -126,6 +126,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
                 Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>();
 
+            CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.QuoteChartingUpdate,
+                Lykke.AlgoStore.Algo.Charting.QuoteChartingUpdate>();
+
         }
     }
 }

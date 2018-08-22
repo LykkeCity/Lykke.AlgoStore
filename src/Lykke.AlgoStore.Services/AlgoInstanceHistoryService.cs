@@ -25,7 +25,7 @@ namespace Lykke.AlgoStore.Services
     {
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly IAlgoTradesClient _tradesHistoryService;
-        private readonly IHistoryClient _functionHistoryService;
+        private readonly IHistoryClient _historyService;
         private readonly IAlgoInstancesService _algoInstancesService;
 
         private readonly IAssetsServiceWithCache _assetService;
@@ -33,7 +33,7 @@ namespace Lykke.AlgoStore.Services
 
         public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService,
                                           IAlgoTradesClient tradesHistoryService,
-                                          IHistoryClient functionHistoryService,
+                                          IHistoryClient historyService,
                                           IAlgoInstancesService algoInstancesService,
                                           ILog log, IAssetsServiceWithCache assetService,
                                           [NotNull] AssetsValidator assetsValidator)
@@ -41,7 +41,7 @@ namespace Lykke.AlgoStore.Services
         {
             this._candlesHistoryService = candlesHistoryService;
             this._tradesHistoryService = tradesHistoryService;
-            this._functionHistoryService = functionHistoryService;
+            this._historyService = historyService;
             _algoInstancesService = algoInstancesService;
             _assetService = assetService;
             _assetsValidator = assetsValidator;
@@ -53,6 +53,25 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
+        public async Task<IEnumerable<QuoteChartingUpdate>> GetQuotesAsync(string instanceId, string asetPair, DateTime fromMoment, DateTime toMoment, bool? isBuy, string clientId,  ModelStateDictionary errorsDictionary)
+        {
+            var authToken = await GetAuthToken(instanceId, clientId, errorsDictionary);
+            if (String.IsNullOrWhiteSpace(authToken))
+                return null;
+
+            var quotes = await _historyService.GetQuotes(fromMoment, toMoment, asetPair, instanceId, authToken, isBuy);
+
+            if (quotes == null)
+            {
+                errorsDictionary.AddModelError("ServiceError", "Unknown");
+                return null;
+            }
+
+            var result = quotes.Select(AutoMapper.Mapper.Map<Lykke.AlgoStore.Algo.Charting.QuoteChartingUpdate>);
+
+            return result;
+        }
+
         public async Task<string> GetAssetPairName(string assetPairId)
         {
             var assetPairResponse = await _assetService.TryGetAssetPairAsync(assetPairId);
@@ -61,18 +80,25 @@ namespace Lykke.AlgoStore.Services
             return assetPairResponse.Name;
         }
 
-        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, string clientId, ModelStateDictionary errorsDictionary)
+        private async Task<string> GetAuthToken(string instanceId, string clientId, ModelStateDictionary errorsDictionary)
         {
             var data = await _algoInstancesService.GetAlgoInstanceDataAsync(clientId, instanceId);
-
             if (String.IsNullOrEmpty(data?.AuthToken))
             {
                 errorsDictionary.AddModelError("instanceId", "Invalid or not found");
                 await Log.WriteWarningAsync(nameof(AlgoInstanceHistoryService), nameof(GetFunctionsAsync), $"AuthToken not found for clientId {clientId} and instanceId {instanceId}");
                 return null;
             }
+            return data.AuthToken;
+        }
 
-            var functions = await _functionHistoryService.GetFunctionValues(instanceId, fromMoment, toMoment, data.AuthToken);
+        public async Task<IEnumerable<FunctionChartingUpdate>> GetFunctionsAsync(string instanceId, DateTime fromMoment, DateTime toMoment, string clientId, ModelStateDictionary errorsDictionary)
+        {
+            var authToken = await GetAuthToken(instanceId, clientId, errorsDictionary);
+            if (String.IsNullOrWhiteSpace(authToken))
+                return null;
+
+            var functions = await _historyService.GetFunctionValues(instanceId, fromMoment, toMoment, authToken);
 
             if (functions == null)
             {
