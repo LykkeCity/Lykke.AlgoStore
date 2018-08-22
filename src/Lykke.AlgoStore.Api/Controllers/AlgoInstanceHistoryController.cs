@@ -34,6 +34,79 @@ namespace Lykke.AlgoStore.Api.Controllers
         }
 
         /// <summary>
+        /// Get history quotes for instance
+        /// </summary>
+        /// <param name="instanceId">Instance ID</param>
+        /// <param name="fromMoment">From moment in ISO 8601</param>
+        /// <param name="toMoment">To moment in ISO 8601</param>
+        /// <param name="asetPair">AsetPair</param>
+        /// <param name="isBuy">True for Buy quotes, false for Sell. Empty for all</param> 
+        [HttpGet("quotes")]
+        [SwaggerOperation("GetHistoryQuotes")]
+        [Description("Get history quotes values")]
+        [ProducesResponseType(typeof(IEnumerable<QuoteChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetHistoryQuotes([FromQuery][Required]string instanceId, [FromQuery][Required] string asetPair, [FromQuery]DateTime fromMoment, [FromQuery]DateTime toMoment, [FromQuery]bool? isBuy = null)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                var functions = await _service.GetQuotesAsync(instanceId, asetPair, fromMoment.ToUniversalTime(), toMoment.ToUniversalTime(), isBuy, User.GetClientId(), ModelState);
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ErrorResponse.Create(ModelState));
+                }
+
+                if (functions == null)
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
+                }
+
+                return Ok(functions);
+            }
+            catch (HttpOperationException ex)
+            {
+                return StatusCode((int)ex.Response.StatusCode, ex.Response.ReasonPhrase);
+            }
+            catch (Exception ex)
+            {
+                await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryFunctions), ex);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
         /// Get history function values for instance
         /// </summary>
         /// <param name="instanceId">Instance ID</param>
