@@ -12,6 +12,7 @@
         Conflict = 409,
 
         //Data
+        BadRequest = 400,
         NotFound = 404,
         RuntimeSettingsExists = 500,
         AlgoNotFound = 501,
