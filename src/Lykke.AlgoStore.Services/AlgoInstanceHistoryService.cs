@@ -53,13 +53,13 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
-        public async Task<IEnumerable<QuoteChartingUpdate>> GetQuotesAsync(string instanceId, string asetPair, DateTime fromMoment, DateTime toMoment, bool? isBuy, string clientId,  ModelStateDictionary errorsDictionary)
+        public async Task<IEnumerable<QuoteChartingUpdate>> GetQuotesAsync(string instanceId, string assetPair, DateTime fromMoment, DateTime toMoment, bool? isBuy, string clientId,  ModelStateDictionary errorsDictionary)
         {
             var authToken = await GetAuthToken(instanceId, clientId, errorsDictionary);
             if (String.IsNullOrWhiteSpace(authToken))
                 return null;
 
-            var quotes = await _historyService.GetQuotes(fromMoment, toMoment, asetPair, instanceId, authToken, isBuy);
+            var quotes = await _historyService.GetQuotes(fromMoment, toMoment, assetPair, instanceId, authToken, isBuy);
 
             if (quotes == null)
             {
