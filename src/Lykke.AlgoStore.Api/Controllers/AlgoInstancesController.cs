@@ -152,7 +152,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
-            var result = await _algoInstancesService.SaveAlgoInstanceDataAsync(data, model.AlgoClientId);
+            var result = await _algoInstancesService.SaveAlgoInstanceDataAsync(data);
 
             var isDeployed = await DeployAlgoInstance(data, result.InstanceId);
 
@@ -181,9 +181,9 @@ namespace Lykke.AlgoStore.Api.Controllers
             data.InstanceName = model.Name;
 
             if (data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
-                await _algoInstancesService.SaveAlgoInstanceDataAsync(data, data.AlgoClientId);
+                await _algoInstancesService.SaveAlgoInstanceDataAsync(data);
             else
-                await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, data.AlgoClientId);
+                await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data);
 
             return Ok();
         }
@@ -210,7 +210,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             SetInstanceMetaDataProperties(data, model.AlgoMetaDataInformation);
 
-            var result = await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data, model.AlgoClientId);
+            var result = await _algoInstancesService.SaveAlgoFakeTradingInstanceDataAsync(data);
 
             var isDeployed = await DeployAlgoInstance(data, result.InstanceId);
 
@@ -260,8 +260,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             {
                 AlgoId = data.AlgoId,
                 ClientId = data.ClientId,
-                AlgoClientId = data.AlgoClientId,
-                InstanceId = instanceId
+               InstanceId = instanceId
             };
 
             return await _service.DeployImageAsync(dataToDeploy);

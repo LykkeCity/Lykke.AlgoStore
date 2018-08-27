@@ -33,8 +33,7 @@ namespace Lykke.AlgoStore.Services
         private const string TcBuildResultFailure = "failure";
 
         private readonly ILoggingClient _loggingClient;
-        private readonly IStatisticsRepository _statisticsRepository;
-        private readonly IAlgoReadOnlyRepository _algoMetaDataRepository;
+        private readonly IAlgoRepository _algoRepository;
         private readonly IAlgoBlobReadOnlyRepository _algoBlobRepository;
         private readonly IAlgoClientInstanceRepository _algoInstanceRepository;
 
@@ -50,35 +49,32 @@ namespace Lykke.AlgoStore.Services
         /// </summary>
         /// <param name="log">The log.</param>
         /// <param name="algoBlobRepository">The algo BLOB repository.</param>
-        /// <param name="algoMetaDataRepository">The algo meta data repository.</param>
         /// <param name="storageConnectionManager">The storage connection manager.</param>
         /// <param name="teamCityClient">The team city client.</param>
         /// <param name="algoInstanceStoppingClient">The algo instance stopping service client.</param>
         /// <param name="algoInstanceRepository">The algo instance repository.</param>
         /// <param name="publicAlgosRepository">The public algo repository.</param>
-        /// <param name="statisticsRepository">The statistics repository.</param>
+        /// <param name="algoRepository">The algo repository.</param>
         /// <param name="loggingClient">The user log repository.</param>
         public AlgoStoreService(
             ILog log,
             IAlgoBlobReadOnlyRepository algoBlobRepository,
-            IAlgoReadOnlyRepository algoMetaDataRepository,
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
             IAlgoInstanceStoppingClient algoInstanceStoppingClient,
             IAlgoClientInstanceRepository algoInstanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
-            IStatisticsRepository statisticsRepository,
+            IAlgoRepository algoRepository,
             ILoggingClient loggingClient) : base(log, nameof(AlgoStoreService))
         {
             _algoBlobRepository = algoBlobRepository;
-            _algoMetaDataRepository = algoMetaDataRepository;
             _storageConnectionManager = storageConnectionManager;
             _teamCityClient = teamCityClient;
             _algoInstanceStoppingClient = algoInstanceStoppingClient;
             _algoInstanceRepository = algoInstanceRepository;
             _publicAlgosRepository = publicAlgosRepository;
-            _statisticsRepository = statisticsRepository;
             _loggingClient = loggingClient;
+            _algoRepository = algoRepository;
         }
 
         /// <summary>
@@ -96,8 +92,8 @@ namespace Lykke.AlgoStore.Services
                 if (!await _algoBlobRepository.BlobExistsAsync(data.AlgoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoBinaryDataNotFound, "No blob for provided id");
 
-                await Check.Algo.Exists(_algoMetaDataRepository, data.AlgoClientId, data.AlgoId);
-                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, data.AlgoClientId);
+                await Check.Algo.Exists(_algoRepository, data.AlgoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, data.AlgoId, data.ClientId);
 
                 var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
@@ -156,8 +152,8 @@ namespace Lykke.AlgoStore.Services
 
                 var algoId = data.AlgoId;
 
-                await Check.Algo.Exists(_algoMetaDataRepository, data.AlgoClientId, algoId);
-                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, data.AlgoClientId);
+                await Check.Algo.Exists(_algoRepository, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, data.AlgoId, data.ClientId);
 
                 var instanceData = await _algoInstanceRepository.GetAlgoInstanceDataByAlgoIdAsync(data.AlgoId, data.InstanceId);
                 if (instanceData == null)
@@ -240,7 +236,7 @@ namespace Lykke.AlgoStore.Services
             return await LogTimedInfoAsync(nameof(UpdateAlgoInstanceStatusAsync), "TCWebHook", async () =>
             {
                 await Log.WriteInfoAsync("UpdateAlgoInstanceStatusAsync", "AlgoStoreService", $"Received TCWebHook payload with buildId {payload.BuildId.ToString()}");
-                             
+
                 var teamCityInstanceEntity = await _algoInstanceRepository.GetAlgoInstanceDataByTcBuildIdAsync(payload.BuildId.ToString());
 
                 if (teamCityInstanceEntity == null)

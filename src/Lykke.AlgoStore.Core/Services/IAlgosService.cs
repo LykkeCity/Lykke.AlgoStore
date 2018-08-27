@@ -20,7 +20,7 @@ namespace Lykke.AlgoStore.Core.Services
         Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel);
         Task<string> GetAlgoAsStringAsync(string clientId, string algoId);
 
-        Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId);
+        Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId);
         Task<AlgoRatingData> SaveAlgoRatingAsync(AlgoRatingData data);
         Task<AlgoRatingData> GetAlgoRatingForClientAsync(string algoId, string clientId);
         Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId);
