@@ -54,7 +54,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(AlgoDataModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> EditAlgo([FromBody] CreateAlgoModel model)
+        public async Task<IActionResult> EditAlgo([FromBody] EditAlgoModel model)
         {
             var data = Mapper.Map<AlgoData>(model);
             data.ClientId = User.GetClientId();
@@ -199,14 +199,11 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(AlgoDataInformationModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetAlgoInformation(string clientId, string algoId)
+        public async Task<IActionResult> GetAlgoInformation(string algoId)
         {
-            if (string.IsNullOrWhiteSpace(clientId))
-                clientId = User.GetClientId();
-
             var userClientId = User.GetClientId();
 
-            var result = await _algosService.GetAlgoDataInformationAsync(userClientId, clientId, algoId);
+            var result = await _algosService.GetAlgoDataInformationAsync(userClientId, algoId);
 
             if (result == null)
                 return NotFound();

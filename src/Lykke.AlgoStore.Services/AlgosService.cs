@@ -252,8 +252,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty,
                         Phrases.CreateAlgoFailedOnValidationDisplayMessage);
 
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    data.AlgoId = Guid.NewGuid().ToString();
+                data.AlgoId = Guid.NewGuid().ToString();
 
                 if (!data.ValidateData(out var exception))
                     throw exception.ToBaseException(Phrases.CreateAlgoFailedOnValidationDisplayMessage);
@@ -393,7 +392,7 @@ namespace Lykke.AlgoStore.Services
                         $"{errorMessageBase} Client {clientId} does not own the algo",
                         Phrases.UserCantSeeAlgo);
 
-                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
+                await Check.Algo.Exists(_algoRepository, algoId);
 
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
@@ -450,21 +449,19 @@ namespace Lykke.AlgoStore.Services
         /// Gets the information for an algo
         /// </summary>
         /// <param name="clientId">The client id</param>
-        /// <param name="algoClientId">The client id of the algo</param>
         /// <param name="algoId">The algo id</param>
         /// <returns></returns>
-        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
                 Check.IsEmpty(clientId, nameof(clientId));
-                Check.IsEmpty(algoClientId, nameof(algoClientId));
                 Check.IsEmpty(algoId, nameof(algoId));
 
-                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
-                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, algoId, clientId, algoClientId);
+                await Check.Algo.Exists(_algoRepository, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, algoId, clientId);
 
-                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(algoClientId, algoId);
+                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(algoId);
 
                 var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
@@ -485,7 +482,9 @@ namespace Lykke.AlgoStore.Services
                     var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(algoInformation.AlgoId);
                     algoInformation.UsesCount = instances.Count;
 
-                    algoInformation.Author = (await _personalDataService.GetAsync(algoClientId))?.FullName;
+                    var algo = await _algoRepository.GetAlgoByAlgoIdAsync(algoId);
+
+                    algoInformation.Author = (await _personalDataService.GetAsync(algo?.ClientId))?.FullName;
 
                     await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }

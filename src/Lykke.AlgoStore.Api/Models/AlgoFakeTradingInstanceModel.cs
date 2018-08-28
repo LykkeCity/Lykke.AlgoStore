@@ -9,7 +9,6 @@ namespace Lykke.AlgoStore.Api.Models
     {
         public string InstanceId { get; set; }
         public string AlgoId { get; set; }
-        public string AlgoClientId { get; set; }
         public string InstanceName { get; set; }        
         public double FakeTradingTradingAssetBalance { get; set; }
         public double FakeTradingAssetTwoBalance { get; set; }

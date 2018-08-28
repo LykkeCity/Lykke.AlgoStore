@@ -4,6 +4,5 @@
     {
         public string AlgoId { get; set; }
         public string InstanceId { get; set; }
-        public string AlgoClientId { get; set; }
     }
 }

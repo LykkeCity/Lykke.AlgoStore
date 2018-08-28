@@ -41,7 +41,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
             var service =
-                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, repo, null);
 
             var response = When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -59,7 +59,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
             var service =
-                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, null, null, null);
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, instanceDataRepository, connectionManager, teamCityClient, null, repo, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -76,7 +76,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
             var service =
-                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, null, null, null);
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, instanceDataRepository, connectionManager, teamCityClient, null, repo, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -95,7 +95,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
             var service =
-                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, repo, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -114,7 +114,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Queued");
             var service =
-                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, repo, null);
 
             When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_ServiceException(exception);
@@ -128,13 +128,14 @@ namespace Lykke.AlgoStore.Tests.Unit
             var publicRepo = Given_Correct_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
 
             var repo = Given_Correct_AlgoRepositoryMock();
+
             var blobRepo = Given_Correct_AlgoBlobRepositoryMock();
             var kubernetesApiClient = Given_Correct_KubernetesApiClientMock_WithLog(string.Empty);
             var instanceDataRepository = Given_Correct_AlgoInstanceDataRepositoryMock();
             var connectionManager = Given_Correct_StorageConnectionManager();
             var teamCityClient = Given_Correct_TeamCityClient_WithState("Random");
             var service =
-                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, repo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, null, null);
+                Given_Correct_AlgoStoreServiceMock(kubernetesApiClient, blobRepo, instanceDataRepository, connectionManager, teamCityClient, publicRepo, repo, null);
 
             bool res = When_Invoke_DeployImage(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -164,7 +165,7 @@ namespace Lykke.AlgoStore.Tests.Unit
 
             var userLogRepository = Given_Correct_UserLogRepositoryMock_WithLog(apiReturnedLog);
             var instanceRepo = Given_Correct_AlgoInstanceDataRepositoryMock();
-            var service = Given_Correct_AlgoStoreServiceMock(null, null, null, instanceRepo, null, null, null, null, userLogRepository);
+            var service = Given_Correct_AlgoStoreServiceMock(null, null, instanceRepo, null, null, null, null, userLogRepository);
 
             var response = When_Invoke_GetLog(service, data, out var exception);
             Then_Exception_ShouldBe_Null(exception);
@@ -224,16 +225,15 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static AlgoStoreService Given_Correct_AlgoStoreServiceMock(
             IAlgoInstanceStoppingClient algoInstanceStoppingClient,
             IAlgoBlobReadOnlyRepository blobRepo,
-            IAlgoReadOnlyRepository repo,
             IAlgoClientInstanceRepository instanceDataRepository,
             IStorageConnectionManager storageConnectionManager,
             ITeamCityClient teamCityClient,
             IPublicAlgosRepository publicAlgosRepository,
-            IStatisticsRepository statisticsRepository,
+            IAlgoRepository algoRepository,
             ILoggingClient loggingClient)
         {
-            return new AlgoStoreService(new LogMock(), blobRepo, repo, storageConnectionManager, teamCityClient,
-                algoInstanceStoppingClient, instanceDataRepository, publicAlgosRepository, statisticsRepository, loggingClient);
+            return new AlgoStoreService(new LogMock(), blobRepo, storageConnectionManager, teamCityClient,
+                algoInstanceStoppingClient, instanceDataRepository, publicAlgosRepository, algoRepository, loggingClient);
         }
 
         private static ManageImageData Given_ManageImageData()
@@ -346,21 +346,21 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
 
-        private static IAlgoReadOnlyRepository Given_Error_AlgoMetaDataRepositoryMock()
+        private static IAlgoRepository Given_Error_AlgoMetaDataRepositoryMock()
         {
-            var result = new Mock<IAlgoReadOnlyRepository>();
+            var result = new Mock<IAlgoRepository>();
 
             result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
 
             return result.Object;
         }
 
-        private static IAlgoReadOnlyRepository Given_Correct_AlgoRepositoryMock()
+        private static IAlgoRepository Given_Correct_AlgoRepositoryMock()
         {
-            var result = new Mock<IAlgoReadOnlyRepository>();
+            var result = new Mock<IAlgoRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
 
             result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns((string clientId, string id) =>
@@ -373,8 +373,22 @@ namespace Lykke.AlgoStore.Tests.Unit
                     return Task.FromResult(res as IAlgo);
                 });
 
+            string setUpclientId = "54606aa1-cf41-4b2d-ac46-63269008e6c0";
+
+            result.Setup(repo => repo.GetAlgoByAlgoIdAsync(It.IsAny<string>()))
+                .Returns((string algoId) =>
+                {
+                    var res = Fixture.Build<AlgoEntity>()
+                        .With(a => a.RowKey, algoId)
+                        .With(a => a.PartitionKey, setUpclientId)
+                        .Create();
+
+                    return Task.FromResult(res as IAlgo);
+                });
+
             return result.Object;
         }
+
 
         private static IStorageConnectionManager Given_Correct_StorageConnectionManager()
         {

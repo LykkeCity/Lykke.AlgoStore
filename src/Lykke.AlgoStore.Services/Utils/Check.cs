@@ -41,9 +41,9 @@ namespace Lykke.AlgoStore.Services.Utils
             /// <param name="clientId">The algo owner ID</param>
             /// <param name="algoId">The algo ID</param>
             /// <returns></returns>
-            public static async Task Exists(IAlgoReadOnlyRepository repository, string clientId, string algoId)
+            public static async Task Exists(IAlgoReadOnlyRepository repository, string algoId)
             {
-                if (!await repository.ExistsAlgoAsync(clientId, algoId))
+                if (!await repository.ExistsAlgoAsync(algoId))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                                                  $"No algo for id {algoId}",
@@ -55,25 +55,26 @@ namespace Lykke.AlgoStore.Services.Utils
             /// Verifies that a user can access a given algo
             /// </summary>
             /// <param name="repository">The repository to check for algo visibility</param>
+            /// <param name="algoRepository">The repository to get algo by algo id</param>
             /// <param name="algoId">The algo ID</param>
             /// <param name="clientId">The client ID to verify</param>
-            /// <param name="algoOwnerId">The algo owner ID</param>
             /// <returns></returns>
             public static async Task IsVisibleForClient(
                 IPublicAlgosRepository repository,
+                IAlgoRepository algoRepository,
                 string algoId,
-                string clientId,
-                string algoOwnerId)
+                string clientId)
             {
-                if (algoOwnerId != clientId && !await repository.ExistsPublicAlgoAsync(algoOwnerId, algoId))
+                var algo = await algoRepository.GetAlgoByAlgoIdAsync(algoId);
+
+                if (algo != null && algo.ClientId != clientId && !await repository.ExistsPublicAlgoAsync(algo.ClientId, algoId))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
-                        $"Algo {algoOwnerId} not public for client {clientId}",
+                        $"Algo {algo.ClientId} not public for client {clientId}",
                         Phrases.NotFoundAlgo);
                 }
             }
         }
-
 
         /// <summary>
         /// Contains common validations related to algo instances

@@ -10,8 +10,8 @@ namespace Lykke.AlgoStore.Core.Services
         Task<List<AlgoClientInstanceData>> GetAllAlgoInstanceDataByAlgoIdAndClientIdAsync(CSharp.AlgoTemplate.Models.Models.BaseAlgoData data);
         Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(BaseAlgoInstance data);
         Task<AlgoClientInstanceData> GetAlgoInstanceDataAsync(string clientId, string instanceId);
-        Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data, string algoClientId);
-        Task<AlgoClientInstanceData> SaveAlgoFakeTradingInstanceDataAsync(AlgoClientInstanceData data, string algoClientId);
+        Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data);
+        Task<AlgoClientInstanceData> SaveAlgoFakeTradingInstanceDataAsync(AlgoClientInstanceData data);
         Task<AlgoClientInstanceData> ValidateCascadeDeleteClientMetadataRequestAsync(ManageImageData data);
         Task<List<UserInstanceData>> GetUserInstancesAsync(string clientId);
         Task ValidateAlgoInstancesDeploymentLimits(string clientId);
