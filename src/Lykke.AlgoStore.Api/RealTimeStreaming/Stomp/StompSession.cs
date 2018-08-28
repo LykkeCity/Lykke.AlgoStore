@@ -8,6 +8,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.Core.Utils;
 
 namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
 {
@@ -39,6 +40,8 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         private readonly HashSet<Func<Task>> _disconnectCallbacks = new HashSet<Func<Task>>();
 
         private readonly CancellationTokenSource _taskCancellationSource = new CancellationTokenSource();
+
+        private readonly DefaultDateTimeConverter _dateTimeConverter = new DefaultDateTimeConverter();
 
         private static readonly object _sync = new object();
 
@@ -113,7 +116,7 @@ namespace Lykke.AlgoStore.Api.RealTimeStreaming.Stomp
         /// <returns>Task which completes when the message is sent</returns>
         public async Task SendToQueueAsync<T>(string queueName, T message)
         {
-            var msgBody = JsonConvert.SerializeObject(message);
+            var msgBody = JsonConvert.SerializeObject(message, _dateTimeConverter);
 
             var msg = new Message
             {
