@@ -161,15 +161,28 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Algos_ShouldHave_UsersCount(data);
         }
 
+        //[Test]
+        //public void CheckIsUserCreatorOfAlgo_ReturnTrue()
+        //{
+        //    var publicRepo = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+
+        //    var service =
+        //        Given_AlgosService(null, null, null, null, publicRepo, null, null, null, null, null);
+
+        //    var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
+
+        //    Assert.AreEqual(false, result.Result);
+        //}
+
         [Test]
-        public void CheckIsUserCreatorOfAlgo_Throws_Exception()
+        public void CheckIsUserCreatorOfAlgo_ReturnFalse()
         {
-            var publicRepo = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+            var repo = Given_Correct_AlgoRepositoryMock();
 
             var service =
-                Given_AlgosService(null, null, null, null, publicRepo, null, null, null, null, null);
+                Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
 
-            var result = service.GetIsLoggedUserCreatorOfAlgo("", "");
+            var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
 
             Assert.AreEqual(false, result.Result);
         }
