@@ -162,6 +162,19 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
+        public void CheckIsUserCreatorOfAlgo_Throws_Exception()
+        {
+            var publicRepo = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+
+            var service =
+                Given_AlgosService(null, null, null, null, publicRepo, null, null, null, null, null);
+
+            var result = service.GetIsLoggedUserCreatorOfAlgo("", "");
+
+            Assert.AreEqual(false, result.Result);
+        }
+
+        [Test]
         public void GetAlgoRatingsByWrongClientId_Returns_EmptyArray()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();

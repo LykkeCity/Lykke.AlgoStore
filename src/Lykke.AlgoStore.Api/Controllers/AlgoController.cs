@@ -165,13 +165,13 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var clientId = User.GetClientId();
             var data = Mapper.Map<PublicAlgoData>(model);
+            data.ClientId = clientId;
 
-            var result = await _algosService.AddToPublicAsync(data, clientId);
+            var result = await _algosService.AddToPublicAsync(data);
 
             var response = Mapper.Map<PublicAlgoDataModel>(result);
 
             return Ok(response);
-
         }
 
         [HttpPost("removeFromPublic")]
@@ -184,13 +184,13 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var clientId = User.GetClientId();
             var data = Mapper.Map<PublicAlgoData>(model);
+            data.ClientId = clientId;
 
-            var result = await _algosService.RemoveFromPublicAsync(data, clientId);
+            var result = await _algosService.RemoveFromPublicAsync(data);
 
             var response = Mapper.Map<PublicAlgoDataModel>(result);
 
             return Ok(response);
-
         }
 
         [HttpGet("getAlgoInformation")]
@@ -255,12 +255,11 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetUploadString(string clientId, string algoId)
+        public async Task<IActionResult> GetUploadString(string algoId)
         {
-            if (string.IsNullOrWhiteSpace(clientId))
-                clientId = User.GetClientId();
+            string loggedUserClientId = User.GetClientId();
 
-            var content = await _algosService.GetAlgoAsStringAsync(clientId, algoId);
+            var content = await _algosService.GetAlgoAsStringAsync(loggedUserClientId, algoId);
 
             return Ok(new ContentStringModel
             {
@@ -281,6 +280,19 @@ namespace Lykke.AlgoStore.Api.Controllers
 
             if (result.IsNullOrEmptyCollection())
                 return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpGet("getIsLoggedUserCreatorOfAlgo")]
+        [SwaggerOperation("GetIsLoggedUserCreatorOfAlgo")]
+        [DescriptionAttribute("Get information about algo creator and if the creator is the logged user")]
+        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetIsLoggedUserCreatorOfAlgo(string algoId)
+        {
+            var clientId = User.GetClientId();
+            var result = await _algosService.GetIsLoggedUserCreatorOfAlgo(algoId, clientId);
 
             return Ok(result);
         }
