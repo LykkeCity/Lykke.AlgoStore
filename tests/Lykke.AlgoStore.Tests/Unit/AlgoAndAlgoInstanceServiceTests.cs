@@ -161,23 +161,27 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Algos_ShouldHave_UsersCount(data);
         }
 
-        //[Test]
-        //public void CheckIsUserCreatorOfAlgo_ReturnTrue()
-        //{
-        //    var publicRepo = Given_NotPublic_ExistsPublicAlgoAsync_PublicAlgosRepositoryMock();
+        [Test]
+        public void CheckIsUserCreatorOfAlgo_ShouldThrowException()
+        {
+            var repo = Given_NoAlgoCreatorUser_AlgoRepositoryMock();
 
-        //    var service =
-        //        Given_AlgosService(null, null, null, null, publicRepo, null, null, null, null, null);
+            var service =
+                Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
 
-        //    var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
+            var result = When_Invoke_CheckIsUserCreatorOfAlgo(service, "", ClientId, out Exception exception);
 
-        //    Assert.AreEqual(false, result.Result);
-        //}
+            Then_Exception_ShouldNotBe_Null(exception);
+
+            result = When_Invoke_CheckIsUserCreatorOfAlgo(service, AlgoId, "", out Exception ex);
+
+            Then_Exception_ShouldNotBe_Null(ex);
+        }
 
         [Test]
         public void CheckIsUserCreatorOfAlgo_ReturnFalse()
         {
-            var repo = Given_Correct_AlgoRepositoryMock();
+            var repo = Given_NoAlgoCreatorUser_AlgoRepositoryMock();
 
             var service =
                 Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
@@ -185,6 +189,19 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
 
             Assert.AreEqual(false, result.Result);
+        }
+
+        [Test]
+        public void CheckIsUserCreatorOfAlgo_ReturnTrue()
+        {
+            var repo = Given_AlgoCreatorUser_AlgoRepositoryMock();
+
+            var service =
+                Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
+
+            var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
+
+            Assert.AreEqual(true, result.Result);
         }
 
         [Test]
@@ -743,6 +760,20 @@ namespace Lykke.AlgoStore.Tests.Unit
             }
         }
 
+        private static bool? When_Invoke_CheckIsUserCreatorOfAlgo(AlgosService service, string algoId, string clientId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetIsLoggedUserCreatorOfAlgo(algoId, clientId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
         private static AlgoRatingData When_Invoke_SaveAlgoRating(AlgosService service, AlgoRatingData data, out Exception exception)
         {
             exception = null;
@@ -916,6 +947,24 @@ namespace Lykke.AlgoStore.Tests.Unit
             var result = new Mock<IAlgoRepository>();
             result.Setup(repo => repo.GetAllClientAlgosAsync(It.IsAny<string>()))
                 .Returns((string clientId) => Task.FromResult<IEnumerable<IAlgo>>(new List<IAlgo>()));
+
+            return result.Object;
+        }
+
+        private static IAlgoRepository Given_NoAlgoCreatorUser_AlgoRepositoryMock()
+        {
+            var result = new Mock<IAlgoRepository>();
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) => Task.FromResult(false));
+
+            return result.Object;
+        }
+
+        private static IAlgoRepository Given_AlgoCreatorUser_AlgoRepositoryMock()
+        {
+            var result = new Mock<IAlgoRepository>();
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) => Task.FromResult(true));
 
             return result.Object;
         }
