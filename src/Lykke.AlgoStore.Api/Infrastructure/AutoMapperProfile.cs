@@ -33,6 +33,12 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
                 .ForMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore());
 
+            CreateMap<PublicAlgoData, PublicAlgoDataModel>()
+                .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
+
+            CreateMap<PublicAlgoDataModel, PublicAlgoData>()
+                .ForMember(src => src.ClientId, opt => opt.Ignore());
+
             CreateMap<AlgoClientInstanceData, AlgoFakeTradingInstanceModel>()
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
                 .ForMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore());

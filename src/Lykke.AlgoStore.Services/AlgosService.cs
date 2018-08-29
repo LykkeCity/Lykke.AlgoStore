@@ -496,17 +496,15 @@ namespace Lykke.AlgoStore.Services
         /// Adds algo to public algos asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="clientId">The id of the logget user</param>
-        /// <returns></returns>
-        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId)
+        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data)
         {
-            return await LogTimedInfoAsync(nameof(AddToPublicAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
             {
                 Check.IsEmpty(data.ClientId, nameof(data.ClientId));
                 Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
-                if (data.ClientId != clientId)
+                if (!await GetIsLoggedUserCreatorOfAlgo(data.AlgoId, data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
-                        $"User with id {clientId} cannot publish algo because he/she is not the author.",
+                        $"User with id {data.ClientId} cannot publish algo because he/she is not the author.",
                         Phrases.UserNotAuthorOfAlgo);
 
                 await _publicAlgosRepository.SavePublicAlgoAsync(data);
@@ -526,17 +524,15 @@ namespace Lykke.AlgoStore.Services
         /// Remove algo from public algos asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="clientId">The id of the logget user</param>
-        /// <returns></returns>
-        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId)
+        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data)
         {
-            return await LogTimedInfoAsync(nameof(RemoveFromPublicAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(RemoveFromPublicAsync), data.ClientId, async () =>
             {
                 Check.IsEmpty(data.ClientId, nameof(data.ClientId));
                 Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
-                if (data.ClientId != clientId)
+                if (!await GetIsLoggedUserCreatorOfAlgo(data.AlgoId, data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
-                        $"User with id {clientId} cannot unpublish algo because he/she is not the author.",
+                        $"User with id {data.ClientId} cannot unpublish algo because he/she is not the author.",
                         Phrases.UserNotAuthorOfAlgo);
 
                 bool algoExists = await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId);
@@ -643,7 +639,9 @@ namespace Lykke.AlgoStore.Services
                 Check.IsEmpty(clientId, nameof(clientId));
                 Check.IsEmpty(algoId, nameof(algoId));
 
-                var algo = await _algoRepository.GetAlgoAsync(clientId, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, algoId, clientId);
+
+                var algo = await _algoRepository.GetAlgoByAlgoIdAsync(algoId);
                 if (algo == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {algoId} is not found!",
@@ -652,7 +650,6 @@ namespace Lykke.AlgoStore.Services
                 return await _blobRepository.GetBlobStringAsync(algoId);
             });
         }
-
 
         private async Task PopulateAssetPairsAsync(AlgoMetaDataInformation algoMetaDataInformation)
         {
@@ -717,6 +714,23 @@ namespace Lykke.AlgoStore.Services
 
                 return result.ToList();
             });
+        }
+
+        /// <summary>
+        /// Get information if the algo is creator of the algo
+        /// </summary>
+        /// <param name="algoId">Algo Id to check</param>
+        /// <param name="clientId">Client Id of the logged user</param>
+        public async Task<bool> GetIsLoggedUserCreatorOfAlgo(string algoId, string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetIsLoggedUserCreatorOfAlgo), clientId,
+                   async () =>
+                   {
+                       Check.IsEmpty(clientId, nameof(clientId));
+                       Check.IsEmpty(algoId, nameof(algoId));
+
+                       return await _algoRepository.ExistsAlgoAsync(clientId, algoId);
+                   });
         }
     }
 }
