@@ -163,9 +163,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> AddToPublic([FromBody] PublicAlgoDataModel model)
         {
-            var clientId = User.GetClientId();
             var data = Mapper.Map<PublicAlgoData>(model);
-            data.ClientId = clientId;
+            data.ClientId = User.GetClientId();
 
             var result = await _algosService.AddToPublicAsync(data);
 
@@ -182,9 +181,8 @@ namespace Lykke.AlgoStore.Api.Controllers
         [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> RemoveFromPublic([FromBody] PublicAlgoDataModel model)
         {
-            var clientId = User.GetClientId();
             var data = Mapper.Map<PublicAlgoData>(model);
-            data.ClientId = clientId;
+            data.ClientId = User.GetClientId();
 
             var result = await _algosService.RemoveFromPublicAsync(data);
 
