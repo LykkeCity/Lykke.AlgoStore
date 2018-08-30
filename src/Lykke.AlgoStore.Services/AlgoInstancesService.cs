@@ -95,7 +95,7 @@ namespace Lykke.AlgoStore.Services
                     throw exception;
 
                 var algoInstanceData = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
-                var algo = await _algoRepository.GetAlgoDataInformationAsync(algoInstanceData.AlgoClientId, algoInstanceData.AlgoId);
+                var algo = await _algoRepository.GetAlgoDataInformationAsync(algoInstanceData.AlgoId);
 
                 foreach (var param in algoInstanceData.AlgoMetaDataInformation.Parameters)
                 {
@@ -138,24 +138,22 @@ namespace Lykke.AlgoStore.Services
         /// Saves the algo instance data asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="algoClientId">Algo client id.</param>
         /// <returns></returns>
-        public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
+        public async Task<AlgoClientInstanceData> SaveAlgoInstanceDataAsync(AlgoClientInstanceData data)
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoInstanceDataAsync), data.ClientId,
-                async () => await SaveInstanceDataAsync(data, algoClientId));
+                async () => await SaveInstanceDataAsync(data));
         }
 
         /// <summary>
         /// Saves the algo back-test instance data asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="algoClientId">Algo client id.</param>
         /// <returns></returns>
-        public async Task<AlgoClientInstanceData> SaveAlgoFakeTradingInstanceDataAsync(AlgoClientInstanceData data, string algoClientId)
+        public async Task<AlgoClientInstanceData> SaveAlgoFakeTradingInstanceDataAsync(AlgoClientInstanceData data)
         {
             return await LogTimedInfoAsync(nameof(SaveAlgoFakeTradingInstanceDataAsync), data.ClientId,
-                async () => await SaveInstanceDataAsync(data, algoClientId, true));
+                async () => await SaveInstanceDataAsync(data, true));
         }
 
         /// <summary>
@@ -170,7 +168,7 @@ namespace Lykke.AlgoStore.Services
                 if (!data.ValidateData(out var exception))
                     throw exception;
 
-                await Check.Algo.Exists(_algoRepository, data.AlgoClientId, data.AlgoId);
+                await Check.Algo.Exists(_algoRepository, data.AlgoId);
 
                 var result = await _instanceRepository.GetAlgoInstanceDataByClientIdAsync(data.ClientId, data.InstanceId);
                 if (result == null || result.AlgoId == null)
@@ -187,7 +185,6 @@ namespace Lykke.AlgoStore.Services
 
         private async Task<AlgoClientInstanceData> SaveInstanceDataAsync(
             AlgoClientInstanceData data,
-            string algoClientId,
             bool isFakeTradeInstance = false)
         {
             if (string.IsNullOrWhiteSpace(data.InstanceId))
@@ -229,8 +226,8 @@ namespace Lykke.AlgoStore.Services
                 }
             }
 
-            await Check.Algo.Exists(_algoRepository, algoClientId, data.AlgoId);
-            await Check.Algo.IsVisibleForClient(_publicAlgosRepository, data.AlgoId, data.ClientId, algoClientId);
+            await Check.Algo.Exists(_algoRepository, data.AlgoId);
+            await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, data.AlgoId, data.ClientId);
 
             var assetPairResponse = await _assetService.TryGetAssetPairAsync(data.AssetPairId);
             _assetsValidator.ValidateAssetPair(data.AssetPairId, assetPairResponse);
@@ -458,7 +455,6 @@ namespace Lykke.AlgoStore.Services
                 {
                     InstanceId = i.InstanceId,
                     InstanceName = i.InstanceName,
-                    AlgoClientId = i.AlgoClientId,
                     AlgoId = i.AlgoId,
                     CreateDate = i.AlgoInstanceCreateDate,
                     RunDate = i.AlgoInstanceRunDate,

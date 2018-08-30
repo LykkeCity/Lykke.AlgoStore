@@ -252,8 +252,7 @@ namespace Lykke.AlgoStore.Services
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, Phrases.AlgoContentEmpty,
                         Phrases.CreateAlgoFailedOnValidationDisplayMessage);
 
-                if (string.IsNullOrWhiteSpace(data.AlgoId))
-                    data.AlgoId = Guid.NewGuid().ToString();
+                data.AlgoId = Guid.NewGuid().ToString();
 
                 if (!data.ValidateData(out var exception))
                     throw exception.ToBaseException(Phrases.CreateAlgoFailedOnValidationDisplayMessage);
@@ -393,7 +392,7 @@ namespace Lykke.AlgoStore.Services
                         $"{errorMessageBase} Client {clientId} does not own the algo",
                         Phrases.UserCantSeeAlgo);
 
-                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
+                await Check.Algo.Exists(_algoRepository, algoId);
 
                 if (await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
@@ -450,21 +449,19 @@ namespace Lykke.AlgoStore.Services
         /// Gets the information for an algo
         /// </summary>
         /// <param name="clientId">The client id</param>
-        /// <param name="algoClientId">The client id of the algo</param>
         /// <param name="algoId">The algo id</param>
         /// <returns></returns>
-        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId)
+        public async Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId)
         {
             return await LogTimedInfoAsync(nameof(GetAlgoDataInformationAsync), clientId, async () =>
             {
                 Check.IsEmpty(clientId, nameof(clientId));
-                Check.IsEmpty(algoClientId, nameof(algoClientId));
                 Check.IsEmpty(algoId, nameof(algoId));
 
-                await Check.Algo.Exists(_algoRepository, algoClientId, algoId);
-                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, algoId, clientId, algoClientId);
+                await Check.Algo.Exists(_algoRepository, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, algoId, clientId);
 
-                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(algoClientId, algoId);
+                var algoInformation = await _algoRepository.GetAlgoDataInformationAsync(algoId);
 
                 var rating = await _ratingsRepository.GetAlgoRatingsAsync(algoId);
 
@@ -485,7 +482,9 @@ namespace Lykke.AlgoStore.Services
                     var instances = await _instanceRepository.GetAllAlgoInstancesByAlgoAsync(algoInformation.AlgoId);
                     algoInformation.UsesCount = instances.Count;
 
-                    algoInformation.Author = (await _personalDataService.GetAsync(algoClientId))?.FullName;
+                    var algo = await _algoRepository.GetAlgoByAlgoIdAsync(algoId);
+
+                    algoInformation.Author = (await _personalDataService.GetAsync(algo?.ClientId))?.FullName;
 
                     await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }
@@ -497,17 +496,15 @@ namespace Lykke.AlgoStore.Services
         /// Adds algo to public algos asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="clientId">The id of the logget user</param>
-        /// <returns></returns>
-        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId)
+        public async Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data)
         {
-            return await LogTimedInfoAsync(nameof(AddToPublicAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(AddToPublicAsync), data.ClientId, async () =>
             {
                 Check.IsEmpty(data.ClientId, nameof(data.ClientId));
                 Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
-                if (data.ClientId != clientId)
+                if (!await GetIsLoggedUserCreatorOfAlgo(data.AlgoId, data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
-                        $"User with id {clientId} cannot publish algo because he/she is not the author.",
+                        $"User with id {data.ClientId} cannot publish algo because he/she is not the author.",
                         Phrases.UserNotAuthorOfAlgo);
 
                 await _publicAlgosRepository.SavePublicAlgoAsync(data);
@@ -527,17 +524,15 @@ namespace Lykke.AlgoStore.Services
         /// Remove algo from public algos asynchronous.
         /// </summary>
         /// <param name="data">The data.</param>
-        /// <param name="clientId">The id of the logget user</param>
-        /// <returns></returns>
-        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId)
+        public async Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data)
         {
-            return await LogTimedInfoAsync(nameof(RemoveFromPublicAsync), clientId, async () =>
+            return await LogTimedInfoAsync(nameof(RemoveFromPublicAsync), data.ClientId, async () =>
             {
                 Check.IsEmpty(data.ClientId, nameof(data.ClientId));
                 Check.IsEmpty(data.AlgoId, nameof(data.AlgoId));
-                if (data.ClientId != clientId)
+                if (!await GetIsLoggedUserCreatorOfAlgo(data.AlgoId, data.ClientId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.Unauthorized,
-                        $"User with id {clientId} cannot unpublish algo because he/she is not the author.",
+                        $"User with id {data.ClientId} cannot unpublish algo because he/she is not the author.",
                         Phrases.UserNotAuthorOfAlgo);
 
                 bool algoExists = await _publicAlgosRepository.ExistsPublicAlgoAsync(data.ClientId, data.AlgoId);
@@ -644,7 +639,9 @@ namespace Lykke.AlgoStore.Services
                 Check.IsEmpty(clientId, nameof(clientId));
                 Check.IsEmpty(algoId, nameof(algoId));
 
-                var algo = await _algoRepository.GetAlgoAsync(clientId, algoId);
+                await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, algoId, clientId);
+
+                var algo = await _algoRepository.GetAlgoByAlgoIdAsync(algoId);
                 if (algo == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
                         $"Specified algo id {algoId} is not found!",
@@ -653,7 +650,6 @@ namespace Lykke.AlgoStore.Services
                 return await _blobRepository.GetBlobStringAsync(algoId);
             });
         }
-
 
         private async Task PopulateAssetPairsAsync(AlgoMetaDataInformation algoMetaDataInformation)
         {
@@ -718,6 +714,23 @@ namespace Lykke.AlgoStore.Services
 
                 return result.ToList();
             });
+        }
+
+        /// <summary>
+        /// Get information if the algo is creator of the algo
+        /// </summary>
+        /// <param name="algoId">Algo Id to check</param>
+        /// <param name="clientId">Client Id of the logged user</param>
+        public async Task<bool> GetIsLoggedUserCreatorOfAlgo(string algoId, string clientId)
+        {
+            return await LogTimedInfoAsync(nameof(GetIsLoggedUserCreatorOfAlgo), clientId,
+                   async () =>
+                   {
+                       Check.IsEmpty(clientId, nameof(clientId));
+                       Check.IsEmpty(algoId, nameof(algoId));
+
+                       return await _algoRepository.ExistsAlgoAsync(clientId, algoId);
+                   });
         }
     }
 }

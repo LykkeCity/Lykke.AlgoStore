@@ -334,7 +334,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var result = new Mock<IAlgoRepository>();
 
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>()))
                 .ReturnsAsync(exists);
             result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
 
@@ -449,11 +449,11 @@ namespace Lykke.AlgoStore.Tests.Unit
             IAlgoReadOnlyRepository algoMetaDataRepository,
             IAlgoClientInstanceRepository instanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
-            IStatisticsRepository statisticsRepository,
+            IAlgoRepository algosRepository,
             ILoggingClient loggingClient)
         {
-            var result = new AlgoStoreService(new LogMock(), algoBlobRepository, algoMetaDataRepository,
-                null, null, algoInstanceStoppingClient, instanceRepository, publicAlgosRepository, statisticsRepository, loggingClient);
+            var result = new AlgoStoreService(new LogMock(), algoBlobRepository,
+                null, null, algoInstanceStoppingClient, instanceRepository, publicAlgosRepository, algosRepository, loggingClient);
             return result;
         }
 

@@ -11,8 +11,8 @@ namespace Lykke.AlgoStore.Core.Services
         Task<List<AlgoRatingMetaData>> GetAllAlgosWithRatingAsync();
         Task<List<AlgoData>> GetAllUserAlgosAsync(string clientId);
 
-        Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data, string clientId);
-        Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data, string clientId);
+        Task<PublicAlgoData> AddToPublicAsync(PublicAlgoData data);
+        Task<PublicAlgoData> RemoveFromPublicAsync(PublicAlgoData data);
 
         Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel);
         Task DeleteAsync(ManageImageData data);
@@ -20,12 +20,13 @@ namespace Lykke.AlgoStore.Core.Services
         Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel);
         Task<string> GetAlgoAsStringAsync(string clientId, string algoId);
 
-        Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoClientId, string algoId);
+        Task<AlgoDataInformation> GetAlgoDataInformationAsync(string clientId, string algoId);
         Task<AlgoRatingData> SaveAlgoRatingAsync(AlgoRatingData data);
         Task<AlgoRatingData> GetAlgoRatingForClientAsync(string algoId, string clientId);
         Task<AlgoRatingData> GetAlgoRatingAsync(string algoId, string clientId);
         Task<AlgoData> CreateAlgoAsync(AlgoData data, string algoContent);
         Task<AlgoData> EditAlgoAsync(AlgoData data, string algoContent);
         Task<List<EnumValue>> GetAssetsForAssetPairAsync(string assetPairId, string clientId);
+        Task<bool> GetIsLoggedUserCreatorOfAlgo(string algoId, string clientId);
     }
 }

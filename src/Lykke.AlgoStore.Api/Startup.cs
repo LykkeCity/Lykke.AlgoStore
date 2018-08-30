@@ -171,7 +171,6 @@ namespace Lykke.AlgoStore.Api
 
                 await SeedRoles(securityClient);
 #endif
-
                 await Log.WriteMonitorAsync("", $"Env: {Program.EnvInfo}", "Started");
             }
             catch (Exception ex)

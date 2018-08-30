@@ -4,7 +4,6 @@ namespace Lykke.AlgoStore.Api.Models
 {
     public class CreateAlgoModel
     {
-        public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Content { get; set; } //Base64 encoded

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Lykke.AlgoStore.Algo.Charting;
 using Lykke.AlgoStore.Api.Models;
-using Lykke.AlgoStore.AzureRepositories.Entities;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -33,6 +32,12 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoClientInstanceData, AlgoClientInstanceModel>()
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
                 .ForMember(src => src.IsAlgoInstanceDeployed, opt => opt.Ignore());
+
+            CreateMap<PublicAlgoData, PublicAlgoDataModel>()
+                .ForSourceMember(src => src.ClientId, opt => opt.Ignore());
+
+            CreateMap<PublicAlgoDataModel, PublicAlgoData>()
+                .ForMember(src => src.ClientId, opt => opt.Ignore());
 
             CreateMap<AlgoClientInstanceData, AlgoFakeTradingInstanceModel>()
                 .ForSourceMember(src => src.ClientId, opt => opt.Ignore())
@@ -90,6 +95,15 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForSourceMember(src => src.Author, opt => opt.Ignore());
 
             CreateMap<CreateAlgoModel, AlgoData>()
+                .ForMember(dest => dest.AlgoId, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
+                .ForMember(dest => dest.AlgoVisibility, opt => opt.UseValue(AlgoVisibility.Private))
+                .ForMember(dest => dest.ClientId, opt => opt.Ignore())
+                .ForMember(dest => dest.DateCreated, opt => opt.Ignore())
+                .ForMember(dest => dest.DateModified, opt => opt.Ignore())
+                .ForMember(dest => dest.DatePublished, opt => opt.Ignore());
+
+            CreateMap<EditAlgoModel, AlgoData>()
                 .ForMember(dest => dest.AlgoId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AlgoMetaDataInformationJSON, opt => opt.Ignore())
                 .ForMember(dest => dest.AlgoVisibility, opt => opt.UseValue(AlgoVisibility.Private))
@@ -123,12 +137,11 @@ namespace Lykke.AlgoStore.Api.Infrastructure
                 .ForMember(dest => dest.AssetPairId, opt => opt.MapFrom(src => src.AssetPair))
                 .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName));
 
-            CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
-                Lykke.AlgoStore.Algo.Charting.FunctionChartingUpdate>();
+            CreateMap<Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
+               FunctionChartingUpdate>();
 
-            CreateMap<Lykke.AlgoStore.Service.History.Client.AutorestClient.Models.QuoteChartingUpdate,
-                Lykke.AlgoStore.Algo.Charting.QuoteChartingUpdate>();
-
+            CreateMap<Service.History.Client.AutorestClient.Models.QuoteChartingUpdate,
+                QuoteChartingUpdate>();
         }
     }
 }

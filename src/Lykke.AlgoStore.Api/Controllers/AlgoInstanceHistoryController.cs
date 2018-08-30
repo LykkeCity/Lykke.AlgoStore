@@ -179,7 +179,6 @@ namespace Lykke.AlgoStore.Api.Controllers
             }
         }
 
-
         /// <summary>
         /// Get history candles
         /// </summary>

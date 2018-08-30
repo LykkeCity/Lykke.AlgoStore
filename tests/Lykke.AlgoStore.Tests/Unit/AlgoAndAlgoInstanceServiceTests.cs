@@ -162,6 +162,49 @@ namespace Lykke.AlgoStore.Tests.Unit
         }
 
         [Test]
+        public void CheckIsUserCreatorOfAlgo_ShouldThrowException()
+        {
+            var repo = Given_NoAlgoCreatorUser_AlgoRepositoryMock();
+
+            var service =
+                Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
+
+            var result = When_Invoke_CheckIsUserCreatorOfAlgo(service, "", ClientId, out Exception exception);
+
+            Then_Exception_ShouldNotBe_Null(exception);
+
+            result = When_Invoke_CheckIsUserCreatorOfAlgo(service, AlgoId, "", out Exception ex);
+
+            Then_Exception_ShouldNotBe_Null(ex);
+        }
+
+        [Test]
+        public void CheckIsUserCreatorOfAlgo_ReturnFalse()
+        {
+            var repo = Given_NoAlgoCreatorUser_AlgoRepositoryMock();
+
+            var service =
+                Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
+
+            var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
+
+            Assert.AreEqual(false, result.Result);
+        }
+
+        [Test]
+        public void CheckIsUserCreatorOfAlgo_ReturnTrue()
+        {
+            var repo = Given_AlgoCreatorUser_AlgoRepositoryMock();
+
+            var service =
+                Given_AlgosService(repo, null, null, null, null, null, null, null, null, null);
+
+            var result = service.GetIsLoggedUserCreatorOfAlgo(AlgoId, ClientId);
+
+            Assert.AreEqual(true, result.Result);
+        }
+
+        [Test]
         public void GetAlgoRatingsByWrongClientId_Returns_EmptyArray()
         {
             var repo = Given_Correct_AlgoRatingsRepositoryMock();
@@ -570,7 +613,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             Then_Data_ShouldNotBe_Null(data);
             Then_Live_Instances_Have_Wallet(data);
             Then_Demo_Instances_Wallet_IsNull(data);
-        }        
+        }
 
         #region Private Methods
 
@@ -638,7 +681,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.GetAlgoDataInformationAsync(clientId, algoClientId, algoId).Result;
+                return service.GetAlgoDataInformationAsync(clientId, algoId).Result;
             }
             catch (Exception ex)
             {
@@ -709,6 +752,20 @@ namespace Lykke.AlgoStore.Tests.Unit
             try
             {
                 return service.GetAlgoRatingForClientAsync(algoId, clientId).Result;
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+                return null;
+            }
+        }
+
+        private static bool? When_Invoke_CheckIsUserCreatorOfAlgo(AlgosService service, string algoId, string clientId, out Exception exception)
+        {
+            exception = null;
+            try
+            {
+                return service.GetIsLoggedUserCreatorOfAlgo(algoId, clientId).Result;
             }
             catch (Exception ex)
             {
@@ -853,7 +910,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                 });
             result.Setup(repo => repo.SaveAlgoAsync(It.IsAny<IAlgo>())).Returns(Task.CompletedTask);
             result.Setup(repo => repo.DeleteAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(true));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>())).Returns(Task.FromResult(true));
 
             var metadataParameters = new List<AlgoMetaDataParameter>();
             fixture.Build<AlgoMetaDataParameter>()
@@ -868,8 +925,8 @@ namespace Lykke.AlgoStore.Tests.Unit
                 .Do(p => metadataParameters.Add(p))
                 .Create();
 
-            result.Setup(repo => repo.GetAlgoDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns((string clientid, string algoId) =>
+            result.Setup(repo => repo.GetAlgoDataInformationAsync(It.IsAny<string>()))
+                .Returns((string algoId) =>
                 {
                     var res = new AlgoDataInformation
                     {
@@ -894,16 +951,34 @@ namespace Lykke.AlgoStore.Tests.Unit
             return result.Object;
         }
 
+        private static IAlgoRepository Given_NoAlgoCreatorUser_AlgoRepositoryMock()
+        {
+            var result = new Mock<IAlgoRepository>();
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) => Task.FromResult(false));
+
+            return result.Object;
+        }
+
+        private static IAlgoRepository Given_AlgoCreatorUser_AlgoRepositoryMock()
+        {
+            var result = new Mock<IAlgoRepository>();
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns((string clientId, string algoId) => Task.FromResult(true));
+
+            return result.Object;
+        }
+
         private static IAlgoRepository Given_NoAlgoInfo_AlgoRepositoryMock()
         {
             var result = new Mock<IAlgoRepository>();
-            result.Setup(repo => repo.GetAlgoDataInformationAsync(It.IsAny<string>(), It.IsAny<string>()))
-                 .Returns((string clientid, string algoId) =>
+            result.Setup(repo => repo.GetAlgoDataInformationAsync(It.IsAny<string>()))
+                 .Returns((string algoId) =>
                  {
                      return Task.FromResult<AlgoDataInformation>(null);
                  });
 
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>()))
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>()))
                 .ReturnsAsync(true);
 
             return result.Object;
@@ -969,7 +1044,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         {
             var fixture = new Fixture();
             var result = new Mock<IAlgoRepository>(); ;
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(exists));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>())).Returns(Task.FromResult(exists));
 
             return result.Object;
         }
@@ -1011,7 +1086,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             result.Setup(repo => repo.GetAllClientAlgosAsync(It.IsAny<string>())).ThrowsAsync(new Exception("GetAll"));
             result.Setup(repo => repo.GetAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Get"));
             result.Setup(repo => repo.SaveAlgoAsync(It.IsAny<IAlgo>())).ThrowsAsync(new Exception("Save"));
-            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
+            result.Setup(repo => repo.ExistsAlgoAsync(It.IsAny<string>())).ThrowsAsync(new Exception("Exists"));
 
             return result.Object;
         }
@@ -1125,7 +1200,7 @@ namespace Lykke.AlgoStore.Tests.Unit
                     instances.AddRange(liveInstances);
                     instances.AddRange(demoInstances);
                     instances.AddRange(testInstances);
-                    
+
                     return Task.FromResult(instances);
                 });
 
@@ -1346,7 +1421,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.SaveAlgoInstanceDataAsync(data, algoClientId).Result;
+                return service.SaveAlgoInstanceDataAsync(data).Result;
             }
             catch (Exception ex)
             {
@@ -1359,7 +1434,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             exception = null;
             try
             {
-                return service.SaveAlgoFakeTradingInstanceDataAsync(data, algoClientId).Result;
+                return service.SaveAlgoFakeTradingInstanceDataAsync(data).Result;
             }
             catch (Exception ex)
             {
@@ -1442,7 +1517,7 @@ namespace Lykke.AlgoStore.Tests.Unit
             var startFromParameter = fixture.Build<AlgoMetaDataParameter>()
                 .With(t => t.Type, dtType)
                 .With(k => k.Key, "StartFrom")
-                .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))             
+                .With(v => v.Value, StartFromDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"))
                 .Create();
 
             var endOnParameter = fixture.Build<AlgoMetaDataParameter>()

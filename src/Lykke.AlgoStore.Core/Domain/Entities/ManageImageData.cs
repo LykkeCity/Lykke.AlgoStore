@@ -12,9 +12,6 @@ namespace Lykke.AlgoStore.Core.Domain.Entities
         public string ClientId { get; set; }
 
         [Required]
-        public string AlgoClientId { get; set; }
-
-        [Required]
         public string InstanceId { get; set; }
     }
 }
