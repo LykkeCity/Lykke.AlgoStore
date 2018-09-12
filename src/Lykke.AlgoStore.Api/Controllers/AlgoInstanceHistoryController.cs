@@ -58,7 +58,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                var functions = await _service.GetQuotesAsync(instanceId, assetPair, fromMoment.ToUniversalTime(),
+                var qoutes = await _service.GetQuotesAsync(instanceId, assetPair, fromMoment.ToUniversalTime(),
                     toMoment.ToUniversalTime(), isBuy, User.GetClientId(), ModelState);
 
                 if (!ModelState.IsValid)
@@ -66,12 +66,12 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                if (functions == null)
+                if (qoutes == null)
                 {
                     return StatusCode((int) HttpStatusCode.InternalServerError);
                 }
 
-                return Ok(functions);
+                return Ok(qoutes);
             }
             catch (HttpOperationException ex)
             {
