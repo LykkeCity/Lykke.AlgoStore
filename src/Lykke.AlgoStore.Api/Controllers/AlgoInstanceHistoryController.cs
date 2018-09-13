@@ -44,9 +44,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("quotes")]
         [SwaggerOperation("GetHistoryQuotes")]
         [Description("Get history quotes values")]
-        [ProducesResponseType(typeof(IEnumerable<QuoteChartingUpdate>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(IEnumerable<QuoteChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetHistoryQuotes([FromQuery] [Required] string instanceId,
             [FromQuery] [Required] string assetPair, [FromQuery] DateTime fromMoment, [FromQuery] DateTime toMoment,
             [FromQuery] bool? isBuy = null)
@@ -58,7 +58,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                var functions = await _service.GetQuotesAsync(instanceId, assetPair, fromMoment.ToUniversalTime(),
+                var quotes = await _service.GetQuotesAsync(instanceId, assetPair, fromMoment.ToUniversalTime(),
                     toMoment.ToUniversalTime(), isBuy, User.GetClientId(), ModelState);
 
                 if (!ModelState.IsValid)
@@ -66,21 +66,21 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                if (functions == null)
+                if (quotes == null)
                 {
-                    return StatusCode((int) HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
-                return Ok(functions);
+                return Ok(quotes);
             }
             catch (HttpOperationException ex)
             {
-                return StatusCode((int) ex.Response.StatusCode, ex.Response.ReasonPhrase);
+                return StatusCode((int)ex.Response.StatusCode, ex.Response.ReasonPhrase);
             }
             catch (Exception ex)
             {
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryFunctions), ex);
-                return StatusCode((int) HttpStatusCode.InternalServerError);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -93,9 +93,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("functions")]
         [SwaggerOperation("GetHistoryFunctions")]
         [Description("Get history function values")]
-        [ProducesResponseType(typeof(IEnumerable<FunctionChartingUpdate>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(IEnumerable<FunctionChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetHistoryFunctions([FromQuery] [Required] string instanceId,
             [FromQuery] DateTime fromMoment, [FromQuery] DateTime toMoment)
         {
@@ -116,19 +116,19 @@ namespace Lykke.AlgoStore.Api.Controllers
 
                 if (functions == null)
                 {
-                    return StatusCode((int) HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
                 return Ok(functions);
             }
             catch (HttpOperationException ex)
             {
-                return StatusCode((int) ex.Response.StatusCode, ex.Response.ReasonPhrase);
+                return StatusCode((int)ex.Response.StatusCode, ex.Response.ReasonPhrase);
             }
             catch (Exception ex)
             {
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryFunctions), ex);
-                return StatusCode((int) HttpStatusCode.InternalServerError);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -142,9 +142,9 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("trades")]
         [SwaggerOperation("GetHistoryTrades")]
         [Description("Get history trades")]
-        [ProducesResponseType(typeof(IEnumerable<TradeChartingUpdate>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(IEnumerable<TradeChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetHistoryTrades([FromQuery] [Required] string instanceId,
             [FromQuery] [Required] string tradedAssetId, [FromQuery] DateTime fromMoment, [FromQuery] DateTime toMoment)
         {
@@ -166,7 +166,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
                     var response = ErrorResponse.Create(ModelState);
 
-                    return StatusCode((int) result.Error.StatusCode, response);
+                    return StatusCode((int)result.Error.StatusCode, response);
                 }
 
                 var trades = result.Records.Select(AutoMapper.Mapper.Map<TradeChartingUpdate>);
@@ -175,7 +175,7 @@ namespace Lykke.AlgoStore.Api.Controllers
             catch (Exception ex)
             {
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryTrades), ex);
-                return StatusCode((int) HttpStatusCode.InternalServerError);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -190,10 +190,10 @@ namespace Lykke.AlgoStore.Api.Controllers
         [HttpGet("candles/{assetPairId}/{priceType}/{timeInterval}/{fromMoment:datetime}/{toMoment:datetime}")]
         [SwaggerOperation("GetHistoryCandles")]
         [Description("Get history candles")]
-        [ProducesResponseType(typeof(IEnumerable<CandleChartingUpdate>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(BaseErrorResponse), (int) HttpStatusCode.InternalServerError)]
-        [ProducesResponseType((int) HttpStatusCode.ServiceUnavailable)]
-        [ProducesResponseType(typeof(ErrorResponse), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(IEnumerable<CandleChartingUpdate>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(BaseErrorResponse), (int)HttpStatusCode.InternalServerError)]
+        [ProducesResponseType((int)HttpStatusCode.ServiceUnavailable)]
+        [ProducesResponseType(typeof(ErrorResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetHistoryCandles(string assetPairId, CandlePriceType priceType,
             CandleTimeInterval timeInterval, DateTime fromMoment, DateTime toMoment)
         {
@@ -212,7 +212,7 @@ namespace Lykke.AlgoStore.Api.Controllers
 
                 if (candles == null)
                 {
-                    return StatusCode((int) HttpStatusCode.InternalServerError);
+                    return StatusCode((int)HttpStatusCode.InternalServerError);
                 }
 
                 var result = AutoMapper.Mapper.Map<CandleChartingUpdate[]>(candles).Select(c =>
@@ -230,12 +230,12 @@ namespace Lykke.AlgoStore.Api.Controllers
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryCandles),
                     "Call to Lykke Candles service timed out. Requested data was too big or the service is unavailable",
                     ex);
-                return StatusCode((int) HttpStatusCode.ServiceUnavailable);
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable);
             }
             catch (Exception ex)
             {
                 await _log.WriteErrorAsync(nameof(AlgoInstanceHistoryController), nameof(GetHistoryCandles), ex);
-                return StatusCode((int) HttpStatusCode.InternalServerError);
+                return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
     }
