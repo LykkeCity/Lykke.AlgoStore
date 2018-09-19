@@ -135,7 +135,9 @@ namespace Lykke.AlgoStore.Api.Infrastructure
             CreateMap<AlgoInstanceTradeResponseModel, TradeChartingUpdate>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.AssetPairId, opt => opt.MapFrom(src => src.AssetPair))
-                .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName));
+                .ForMember(dest => dest.AssetId, opt => opt.MapFrom(src => src.TradedAssetName))
+                .ForMember(dest => dest.OrderType, opt => opt.Ignore())
+                .ForMember(dest => dest.OrderStatus, opt => opt.Ignore());
 
             CreateMap<Service.History.Client.AutorestClient.Models.FunctionChartingUpdate,
                FunctionChartingUpdate>();
