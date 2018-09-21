@@ -21,7 +21,8 @@ namespace Lykke.AlgoStore.Services.Validation
         private static readonly List<(string, string)> AllowedFxLibs = new List<(string, string)>
         {
             // Add framework libraries here
-            ("System.Runtime", "4.2.0.0")
+            ("System.Runtime", "4.2.0.0"),
+            ("System.Collections", "4.1.1.0")
         };
 
         private static readonly HashSet<string> BlacklistedPropertyNames = new HashSet<string>
