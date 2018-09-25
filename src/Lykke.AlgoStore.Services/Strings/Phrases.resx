@@ -312,4 +312,10 @@
   <data name="ConsentAlreadyGiven" xml:space="preserve">
     <value>{0} consent has already been given for clientId {1}</value>
   </data>
+  <data name="DateInThePast" xml:space="preserve">
+    <value>Provided {0} value is in the past.</value>
+  </data>
+  <data name="DateIsInThePast" xml:space="preserve">
+    <value>Provided {0} value ({1}) is in the past. You should use date that is in the future.</value>
+  </data>
 </root>
