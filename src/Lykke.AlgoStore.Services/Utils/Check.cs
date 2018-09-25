@@ -1,4 +1,5 @@
-﻿using Lykke.AlgoStore.Core.Constants;
+﻿using System;
+using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Errors;
 using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
@@ -24,8 +25,8 @@ namespace Lykke.AlgoStore.Services.Utils
             if (string.IsNullOrEmpty(parameter))
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                                             string.Format(Phrases.StringParameterMissing, parameterName),
-                                             Phrases.StringParameterMissingDisplayMessage);
+                    string.Format(Phrases.StringParameterMissing, parameterName),
+                    Phrases.StringParameterMissingDisplayMessage);
             }
         }
 
@@ -46,8 +47,8 @@ namespace Lykke.AlgoStore.Services.Utils
                 if (!await repository.ExistsAlgoAsync(algoId))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoNotFound,
-                                                 $"No algo for id {algoId}",
-                                                 string.Format(Phrases.ParamNotFoundDisplayMessage, "algo"));
+                        $"No algo for id {algoId}",
+                        string.Format(Phrases.ParamNotFoundDisplayMessage, "algo"));
                 }
             }
 
@@ -67,7 +68,8 @@ namespace Lykke.AlgoStore.Services.Utils
             {
                 var algo = await algoRepository.GetAlgoByAlgoIdAsync(algoId);
 
-                if (algo != null && algo.ClientId != clientId && !await repository.ExistsPublicAlgoAsync(algo.ClientId, algoId))
+                if (algo != null && algo.ClientId != clientId &&
+                    !await repository.ExistsPublicAlgoAsync(algo.ClientId, algoId))
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
                         $"Algo {algo.ClientId} not public for client {clientId}",
@@ -87,17 +89,31 @@ namespace Lykke.AlgoStore.Services.Utils
             /// <param name="repository">The repository to check for the algo instances</param>
             /// <param name="clientId">The algo owner ID</param>
             /// <param name="algoId">The algo ID</param>
-            public static async Task InstancesOverDeploymentLimit(IAlgoClientInstanceRepository repository, string clientId)
+            public static async Task InstancesOverDeploymentLimit(IAlgoClientInstanceRepository repository,
+                string clientId)
             {
-                var count = (await repository.GetAllAlgoInstancesByClientAsync(clientId)).Count(i => i.AlgoInstanceStatus == AlgoInstanceStatus.Started
-                                                                                                                      || i.AlgoInstanceStatus == AlgoInstanceStatus.Deploying);
+                var count = (await repository.GetAllAlgoInstancesByClientAsync(clientId)).Count(i =>
+                    i.AlgoInstanceStatus == AlgoInstanceStatus.Started
+                    || i.AlgoInstanceStatus == AlgoInstanceStatus.Deploying);
 
                 if (count >= AlgoStoreConstants.RunningAlgoInstancesCountLimit)
                 {
                     throw new AlgoStoreException(AlgoStoreErrorCodes.AlgoInstancesCountLimit,
-                        string.Format(Phrases.NotAvailableCreationOfInstances, count, clientId), Phrases.LimitOfRunningInsatcnesReached);
+                        string.Format(Phrases.NotAvailableCreationOfInstances, count, clientId),
+                        Phrases.LimitOfRunningInsatcnesReached);
                 }
             }
+        }
+
+        /// <summary>
+        /// Check if provided date is in the past
+        /// </summary>
+        /// <param name="dateToCheck">Date to check</param>
+        /// <param name="justCheckDatePart">If set to TRUE, ONLY date part is checked. Otherwise, both date and time parts of provided date are checked</param>
+        /// <returns>TRUE is provided date is in the past. otherwise FALSE</returns>
+        public static bool IsDateInThePast(DateTime dateToCheck, bool justCheckDatePart = true)
+        {
+            return justCheckDatePart ? DateTime.UtcNow.Date > dateToCheck.Date : DateTime.UtcNow > dateToCheck;
         }
     }
 }

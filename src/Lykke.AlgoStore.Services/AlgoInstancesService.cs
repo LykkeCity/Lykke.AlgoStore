@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -193,7 +195,7 @@ namespace Lykke.AlgoStore.Services
             if (!data.ValidateData(out var exception))
                 throw exception;
 
-            ValidateInstanceMetadataDates(data.AlgoMetaDataInformation);
+            ValidateInstanceMetadataDates(data.AlgoMetaDataInformation, data.AlgoInstanceType);
 
             if (isFakeTradeInstance &&
                 data.AlgoInstanceType == CSharp.AlgoTemplate.Models.Enumerators.AlgoInstanceType.Live)
@@ -392,7 +394,7 @@ namespace Lykke.AlgoStore.Services
             return algoInstances != null && algoInstances.Any();
         }
 
-        private void ValidateInstanceMetadataDates(AlgoMetaDataInformation instanceMetadata)
+        private void ValidateInstanceMetadataDates(AlgoMetaDataInformation instanceMetadata, AlgoInstanceType algoInstanceType)
         {
             var dtType = typeof(DateTime).FullName;
 
@@ -411,6 +413,23 @@ namespace Lykke.AlgoStore.Services
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                     "StartFrom date cannot be later than or equal to EndOn date",
                     string.Format(Phrases.DatesValidationMessage, "Algo"));
+            }
+
+            if (algoInstanceType == AlgoInstanceType.Demo || algoInstanceType == AlgoInstanceType.Live)
+            {
+                if (Check.IsDateInThePast(instanceStartFromDate))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        string.Format(Phrases.DateIsInThePast, "Start Date", instanceStartFromDate),
+                        string.Format(Phrases.DateInThePast, "Start Date"));
+                }
+
+                if (Check.IsDateInThePast(instanceEndOnDateDate))
+                {
+                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
+                        string.Format(Phrases.DateIsInThePast, "End Date", instanceEndOnDateDate),
+                        string.Format(Phrases.DateInThePast, "End Date"));
+                }
             }
 
             foreach (var function in instanceMetadata.Functions)
