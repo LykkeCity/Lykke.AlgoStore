@@ -111,7 +111,7 @@ namespace Lykke.AlgoStore.Services.Utils
         /// <param name="dateToCheck">Date to check</param>
         /// <param name="justCheckDatePart">If set to TRUE, ONLY date part is checked. Otherwise, both date and time parts of provided date are checked</param>
         /// <returns>TRUE is provided date is in the past. otherwise FALSE</returns>
-        public static bool IsDateInThePast(DateTime dateToCheck, bool justCheckDatePart = true)
+        public static bool IsDateInThePast(DateTime dateToCheck, bool justCheckDatePart = false)
         {
             return justCheckDatePart ? DateTime.UtcNow.Date > dateToCheck.Date : DateTime.UtcNow > dateToCheck;
         }

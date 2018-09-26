@@ -63,7 +63,7 @@ namespace Lykke.AlgoStore.Tests.Unit
         private static readonly Random rnd = new Random();
         private static readonly byte[] BlobBytes = Encoding.Unicode.GetBytes(BlobKey);
 
-        private static readonly DateTime StartFromDate = DateTime.UtcNow;
+        private static readonly DateTime StartFromDate = DateTime.UtcNow.AddMinutes(1);
 
         [SetUp]
         public void SetUp()
