@@ -475,27 +475,20 @@ namespace Lykke.AlgoStore.Services.Validation
                     {
                         var nameSpaceString = dtType.Namespace;
                         var dtInitializationText = arg.Value.Syntax.GetText().ToString();
-                        string objectInstantiationString;
+                        var objectInstantiationString = dtInitializationText;
 
                         if (!dtInitializationText.Contains(dtType.FullName))
                         {
-                            var dateTimePosition = dtInitializationText.IndexOf(dtType.Name);
+                            var dateTimePosition = dtInitializationText.IndexOf(dtType.Name, StringComparison.Ordinal);
 
-                            objectInstantiationString = dtInitializationText.Substring(0, dateTimePosition)
-                                + nameSpaceString + "." + dtInitializationText.Substring(dateTimePosition);
-                        }
-                        else
-                        {
-                            objectInstantiationString = dtInitializationText;
-                        }                       
+                            objectInstantiationString = $"{ dtInitializationText.Substring(0, dateTimePosition) }" +
+                                $"{ nameSpaceString }.{ dtInitializationText.Substring(dateTimePosition) }";
+                        }                     
 
                         var date = CSharpScript.EvaluateAsync<DateTime>(objectInstantiationString).Result;
-                        if (date != null)
-                        {
-                            metaDataParam.Value = date.ToUniversalTime().ToString(AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture);
-                            metaDataParam.Visible = false;
-                            indicator.Parameters.Add(metaDataParam);
-                        }                        
+                        metaDataParam.Value = date.ToUniversalTime().ToString(AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture);
+                        metaDataParam.Visible = false;
+                        indicator.Parameters.Add(metaDataParam);                       
                     }
 
                     var innerInvocation = arg.Value as IInvocationOperation;
