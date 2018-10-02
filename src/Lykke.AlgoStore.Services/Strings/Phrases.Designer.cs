@@ -394,6 +394,15 @@ namespace Lykke.AlgoStore.Services.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using local reference variable as indicator parameter is not allowed.
+        /// </summary>
+        public static string ERROR_PARAMETER_LOCAL_REFERENCE_USED {
+            get {
+                return ResourceManager.GetString("ERROR_PARAMETER_LOCAL_REFERENCE_USED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A type named BaseAlgo is not allowed.
         /// </summary>
         public static string ERROR_TYPE_NAMED_BASEALGO {

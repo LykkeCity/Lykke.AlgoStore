@@ -318,4 +318,7 @@
   <data name="DateIsInThePast" xml:space="preserve">
     <value>Provided {0} value ({1}) is in the past. You should use date that is in the future.</value>
   </data>
+  <data name="ERROR_PARAMETER_LOCAL_REFERENCE_USED" xml:space="preserve">
+    <value>Using local reference variable as indicator parameter is not allowed</value>
+  </data>
 </root>

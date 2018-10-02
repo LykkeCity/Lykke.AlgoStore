@@ -14,5 +14,6 @@
         public const string ERROR_NAMESPACE_NOT_FOUND = "AS0010";
         public const string ERROR_BLACKLISTED_TYPE_USED = "AS0011";
         public const string ERROR_BLACKLISTED_NAMESPACE_USED = "AS0012";
+        public const string ERROR_PARAMETER_LOCAL_REFERENCE_USED = "AS0013";
     }
 }
