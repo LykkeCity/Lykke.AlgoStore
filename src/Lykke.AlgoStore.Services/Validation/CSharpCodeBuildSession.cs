@@ -1,14 +1,17 @@
-﻿using Lykke.AlgoStore.Core.Domain.Validation;
+﻿using Lykke.AlgoStore.Core.Constants;
+using Lykke.AlgoStore.Core.Domain.Validation;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.Services.Strings;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -172,6 +175,27 @@ namespace Lykke.AlgoStore.Services.Validation
                     // Constant - we don't care about these
                     if (arg.Value.ConstantValue.HasValue) continue;
 
+                    if (arg.Value is ILocalReferenceOperation)
+                    {
+                        validationMessages.Add(CreateFromError(
+                            ValidationErrors.ERROR_PARAMETER_LOCAL_REFERENCE_USED,
+                            Phrases.ERROR_PARAMETER_LOCAL_REFERENCE_USED,
+                            arg.Syntax.GetLocation()));
+                        continue;
+                    }
+
+                    if (arg.Value is IConversionOperation)
+                    {
+                        if (((IConversionOperation)arg.Value).Operand is ILocalReferenceOperation)
+                        {
+                            validationMessages.Add(CreateFromError(
+                            ValidationErrors.ERROR_PARAMETER_LOCAL_REFERENCE_USED,
+                            Phrases.ERROR_PARAMETER_LOCAL_REFERENCE_USED,
+                            arg.Syntax.GetLocation()));
+                            continue;
+                        }
+                    }
+
                     var invocation = arg.Value as IInvocationOperation;
 
                     // We want to check for Default invocations here
@@ -183,6 +207,15 @@ namespace Lykke.AlgoStore.Services.Validation
 
                     // Make sure the argument is not null
                     var defaultArg = invocation.Arguments[0];
+
+                    if (defaultArg.Value is ILocalReferenceOperation)
+                    {
+                        validationMessages.Add(CreateFromError(
+                            ValidationErrors.ERROR_PARAMETER_LOCAL_REFERENCE_USED,
+                            Phrases.ERROR_PARAMETER_LOCAL_REFERENCE_USED,
+                            defaultArg.Syntax.GetLocation()));
+                        continue;
+                    }
 
                     if (defaultArg.Value.ConstantValue.HasValue && defaultArg.Value.ConstantValue.Value == null)
                     {
@@ -322,7 +355,8 @@ namespace Lykke.AlgoStore.Services.Validation
                     {
                         Key = prop.Name,
                         Type = prop.Type.ToString(),
-                        PredefinedValues = ToEnumValues(prop.Type)
+                        PredefinedValues = ToEnumValues(prop.Type),
+                        Visible = true
                     };
 
                     CheckAttribute(prop, param);
@@ -394,19 +428,74 @@ namespace Lykke.AlgoStore.Services.Validation
                     {
                         Key = param.Name,
                         Type = param.Type.ToString().Replace("?", ""),
-                        PredefinedValues = ToEnumValues(param.Type)
-                    };
+                        PredefinedValues = ToEnumValues(param.Type),
+                        Visible = true
+                    };                  
 
                     CheckAttribute(param, metaDataParam);
 
-                    // There is a constant in the place of the param - do not include it in the list of parameters
+                    // There is a constant in the place of the param - include it in the list of parameters
+                    // with Visibility set to false
                     if (arg.Value.ConstantValue.HasValue || arg.ArgumentKind == ArgumentKind.DefaultValue)
                     {
                         // If null is written in place of param - add it to list (since we need to fill in the value)
+                        //Else add it to list but mark it as not visible
                         if (arg.Value.ConstantValue.Value == null)
                             indicator.Parameters.Add(metaDataParam);
+                        else
+                        {
+                            metaDataParam.Value = arg.Value.ConstantValue.Value.ToString();
+                            metaDataParam.Visible = false;
+                            indicator.Parameters.Add(metaDataParam);
+                        }
 
                         continue;
+                    }
+
+                    // There is an enum constant in the place of the param - include it in the list of parameters
+                    // with Visibility set to false
+                    if (arg.Value.Children.Any() && arg.Value.Children.First().ConstantValue.HasValue)
+                    {
+                        // If null is written in place of param - add it to list (since we need to fill in the value)
+                        //Else add it to list but mark it as not visible
+                        if (arg.Value.Children.First().ConstantValue.Value == null)
+                            indicator.Parameters.Add(metaDataParam);
+                        else
+                        {
+                            metaDataParam.Value = arg.Value.Children.First().ConstantValue.Value.ToString();
+                            metaDataParam.Visible = false;
+                            indicator.Parameters.Add(metaDataParam);
+                        }
+
+                        continue;
+                    }
+
+                    var dtType = typeof(DateTime);
+                    if (metaDataParam.Type == dtType.FullName)
+                    {
+                        var nameSpaceString = dtType.Namespace;
+                        var dtInitializationText = arg.Value.Syntax.GetText().ToString();
+                        string objectInstantiationString;
+
+                        if (!dtInitializationText.Contains(dtType.FullName))
+                        {
+                            var dateTimePosition = dtInitializationText.IndexOf(dtType.Name);
+
+                            objectInstantiationString = dtInitializationText.Substring(0, dateTimePosition)
+                                + nameSpaceString + "." + dtInitializationText.Substring(dateTimePosition);
+                        }
+                        else
+                        {
+                            objectInstantiationString = dtInitializationText;
+                        }                       
+
+                        var date = CSharpScript.EvaluateAsync<DateTime>(objectInstantiationString).Result;
+                        if (date != null)
+                        {
+                            metaDataParam.Value = date.ToUniversalTime().ToString(AlgoStoreConstants.DateTimeFormat, CultureInfo.InvariantCulture);
+                            metaDataParam.Visible = false;
+                            indicator.Parameters.Add(metaDataParam);
+                        }                        
                     }
 
                     var innerInvocation = arg.Value as IInvocationOperation;
