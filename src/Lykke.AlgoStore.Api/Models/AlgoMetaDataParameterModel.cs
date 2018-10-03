@@ -25,6 +25,11 @@ namespace Lykke.AlgoStore.Api.Models
         public string Type { get; set; }
 
         /// <summary>
+        /// Is the parameter visible in the UI.
+        /// </summary>
+        public bool Visible { get; set; }
+
+        /// <summary>
         /// If parameter is enum, it has predefined values which will be used from front-end guys for visualization in dropdowns
         /// </summary>
         public IEnumerable<EnumValue> PredefinedValues { get; set; }
