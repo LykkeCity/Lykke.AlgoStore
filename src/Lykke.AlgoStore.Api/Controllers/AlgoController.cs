@@ -76,7 +76,7 @@ namespace Lykke.AlgoStore.Api.Controllers
         {
             var clientId = User.GetClientId();
 
-            await _algosService.DeleteAlgoAsync(model.AlgoClientId, model.AlgoId, model.ForceDelete, clientId);
+            await _algosService.DeleteAlgoAsync(clientId, model.AlgoId, model.ForceDelete);
 
             return Ok();
         }

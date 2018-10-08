@@ -6,9 +6,7 @@ namespace Lykke.AlgoStore.Api.Models
     {
         [Required]
         public string AlgoId { get; set; }
-        [Required]
-        public string AlgoClientId { get; set; }
-
+        
         public bool ForceDelete { get; set; }
     }
 }

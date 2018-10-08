@@ -377,24 +377,18 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        public async Task DeleteAlgoAsync(string algoClientId, string algoId, bool forceDelete, string clientId)
+        public async Task DeleteAlgoAsync(string clientId, string algoId, bool forceDelete)
         {
             await LogTimedInfoAsync(nameof(DeleteAlgoAsync), clientId, async () =>
             {
-                Check.IsEmpty(algoClientId, nameof(algoClientId));
-                Check.IsEmpty(algoId, nameof(algoId));
                 Check.IsEmpty(clientId, nameof(clientId));
+                Check.IsEmpty(algoId, nameof(algoId));
 
                 var errorMessageBase = $"Cannot delete algo {algoId} -";
 
-                if (algoClientId != clientId)
-                    throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
-                        $"{errorMessageBase} Client {clientId} does not own the algo",
-                        Phrases.UserCantSeeAlgo);
-
                 await Check.Algo.Exists(_algoRepository, algoId);
 
-                if (await _publicAlgosRepository.ExistsPublicAlgoAsync(algoClientId, algoId))
+                if (await _publicAlgosRepository.ExistsPublicAlgoAsync(clientId, algoId))
                     throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError,
                         $"{errorMessageBase} Algo is public",
                         Phrases.AlgoMustNotBePublic);
@@ -422,7 +416,7 @@ namespace Lykke.AlgoStore.Services
 
                 await _ratingsRepository.DeleteRatingsAsync(algoId);
                 await _commentsRepository.DeleteCommentsAsync(algoId);
-                await _algoRepository.DeleteAlgoAsync(algoClientId, algoId);
+                await _algoRepository.DeleteAlgoAsync(clientId, algoId);
             });
         }
 
