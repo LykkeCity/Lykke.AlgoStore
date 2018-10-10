@@ -6,7 +6,7 @@ using Lykke.AlgoStore.Service.AlgoTrades.Client;
 using Lykke.AlgoStore.Service.AlgoTrades.Client.Models;
 using Lykke.AlgoStore.Service.History.Client;
 using Lykke.AlgoStore.Services.Utils;
-using Lykke.Service.Assets.Client;
+using Lykke.Service.Assets.Client.ReadModels;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.CandlesHistory.Client.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -28,14 +28,14 @@ namespace Lykke.AlgoStore.Services
         private readonly IHistoryClient _historyService;
         private readonly IAlgoInstancesService _algoInstancesService;
 
-        private readonly IAssetsServiceWithCache _assetService;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
         private readonly AssetsValidator _assetsValidator;
 
         public AlgoInstanceHistoryService(ICandleshistoryservice candlesHistoryService,
                                           IAlgoTradesClient tradesHistoryService,
                                           IHistoryClient historyService,
                                           IAlgoInstancesService algoInstancesService,
-                                          ILog log, IAssetsServiceWithCache assetService,
+                                          ILog log, IAssetPairsReadModelRepository assetPairsReadModel,
                                           [NotNull] AssetsValidator assetsValidator)
                                             : base(log, nameof(AlgoInstanceHistoryService))
         {
@@ -43,7 +43,7 @@ namespace Lykke.AlgoStore.Services
             this._tradesHistoryService = tradesHistoryService;
             this._historyService = historyService;
             _algoInstancesService = algoInstancesService;
-            _assetService = assetService;
+            _assetPairsReadModel = assetPairsReadModel;
             _assetsValidator = assetsValidator;
         }
 
@@ -72,9 +72,9 @@ namespace Lykke.AlgoStore.Services
             return result;
         }
 
-        public async Task<string> GetAssetPairName(string assetPairId)
+        public string GetAssetPairName(string assetPairId)
         {
-            var assetPairResponse = await _assetService.TryGetAssetPairAsync(assetPairId);
+            var assetPairResponse = _assetPairsReadModel.TryGet(assetPairId);
             _assetsValidator.ValidateAssetPair(assetPairId, assetPairResponse);
 
             return assetPairResponse.Name;

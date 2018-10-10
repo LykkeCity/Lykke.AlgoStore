@@ -8,7 +8,7 @@ using Lykke.AlgoStore.Services.Strings;
 using Lykke.Service.Balances.AutorestClient.Models;
 using Lykke.Service.Balances.Client;
 using Lykke.Service.RateCalculator.Client;
-using AssetPair = Lykke.Service.Assets.Client.Models.AssetPair;
+using AssetPair = Lykke.Service.Assets.Client.Models.v3.AssetPair;
 
 
 namespace Lykke.AlgoStore.Services

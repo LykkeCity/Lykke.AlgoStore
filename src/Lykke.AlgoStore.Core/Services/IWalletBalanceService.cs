@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Lykke.Service.Balances.AutorestClient.Models;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
 
 namespace Lykke.AlgoStore.Core.Services
 {

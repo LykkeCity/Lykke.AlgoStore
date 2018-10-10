@@ -84,9 +84,12 @@ namespace Lykke.AlgoStore.Api
 
                 services.AddLykkeAuthentication();
 
-                var appSettings = Configuration.LoadSettings<AppSettings>(x => (
-                    x.SlackNotifications.AzureQueue.ConnectionString, x.SlackNotifications.AzureQueue.QueueName,
-                    $"{AppEnvironment.Name} {AppEnvironment.Version}"));
+                var appSettings = Configuration.LoadSettings<AppSettings>(options => {
+                    options.SetConnString(x => x.SlackNotifications.AzureQueue.ConnectionString);
+                    options.SetQueueName(x => x.SlackNotifications.AzureQueue.QueueName);
+                    options.SenderName = $"{AppEnvironment.Name} {AppEnvironment.Version}";
+                    });
+
                 Log = LogManager.CreateLogWithSlack(services, appSettings);
 
                 ApplicationContainer = ContainerManager.RegisterAlgoApiModules(services, appSettings, Log);

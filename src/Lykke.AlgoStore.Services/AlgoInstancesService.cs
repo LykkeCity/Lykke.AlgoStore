@@ -4,7 +4,6 @@ using JetBrains.Annotations;
 using Lykke.AlgoStore.Core.Constants;
 using Lykke.AlgoStore.Core.Domain.Entities;
 using Lykke.AlgoStore.Core.Domain.Errors;
-using Lykke.AlgoStore.Core.Domain.Repositories;
 using Lykke.AlgoStore.Core.Services;
 using Lykke.AlgoStore.Core.Validation;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
@@ -12,8 +11,7 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using Lykke.AlgoStore.Services.Strings;
 using Lykke.AlgoStore.Services.Utils;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
 using Lykke.Service.CandlesHistory.Client;
 using Lykke.Service.ClientAccount.Client;
 using Lykke.Service.ClientAccount.Client.Models;
@@ -23,7 +21,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Enumerators;
-using Microsoft.CodeAnalysis.Operations;
+using Lykke.Service.Assets.Client.ReadModels;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -33,7 +31,8 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoClientInstanceRepository _instanceRepository;
         private readonly IPublicAlgosRepository _publicAlgosRepository;
         private readonly IStatisticsRepository _statisticsRepository;
-        private readonly IAssetsServiceWithCache _assetService;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
+        private readonly IAssetsReadModelRepository _assetsReadModel;
         private readonly IClientAccountClient _clientAccountService;
         private readonly ICandleshistoryservice _candlesHistoryService;
         private readonly AssetsValidator _assetsValidator;
@@ -43,7 +42,8 @@ namespace Lykke.AlgoStore.Services
             IAlgoClientInstanceRepository instanceRepository,
             IPublicAlgosRepository publicAlgosRepository,
             IStatisticsRepository statisticsRepository,
-            IAssetsServiceWithCache assetService,
+            IAssetPairsReadModelRepository assetPairsReadModel,
+            IAssetsReadModelRepository assetsReadModel,
             IClientAccountClient clientAccountClient,
             ICandleshistoryservice candlesHistoryService,
             [NotNull] AssetsValidator assetsValidator,
@@ -56,7 +56,8 @@ namespace Lykke.AlgoStore.Services
             _instanceRepository = instanceRepository;
             _publicAlgosRepository = publicAlgosRepository;
             _statisticsRepository = statisticsRepository;
-            _assetService = assetService;
+            _assetPairsReadModel = assetPairsReadModel;
+            _assetsReadModel = assetsReadModel;
             _clientAccountService = clientAccountClient;
             _candlesHistoryService = candlesHistoryService;
             _assetsValidator = assetsValidator;
@@ -231,24 +232,24 @@ namespace Lykke.AlgoStore.Services
             await Check.Algo.Exists(_algoRepository, data.AlgoId);
             await Check.Algo.IsVisibleForClient(_publicAlgosRepository, _algoRepository, data.AlgoId, data.ClientId);
 
-            var assetPairResponse = await _assetService.TryGetAssetPairAsync(data.AssetPairId);
+            var assetPairResponse = _assetPairsReadModel.TryGet(data.AssetPairId);
             _assetsValidator.ValidateAssetPair(data.AssetPairId, assetPairResponse);
 
-            var baseAsset = await _assetService.TryGetAssetAsync(assetPairResponse.BaseAssetId);
+            var baseAsset = _assetsReadModel.TryGet(assetPairResponse.BaseAssetId);
             _assetsValidator.ValidateAssetResponse(baseAsset);
 
-            var quotingAsset = await _assetService.TryGetAssetAsync(assetPairResponse.QuotingAssetId);
+            var quotingAsset = _assetsReadModel.TryGet(assetPairResponse.QuotingAssetId);
             _assetsValidator.ValidateAssetResponse(quotingAsset);
             _assetsValidator.ValidateAsset(assetPairResponse, data.TradedAssetId, baseAsset, quotingAsset);
 
-            var straight = data.TradedAssetId == baseAsset.Id || data.TradedAssetId == baseAsset.Name;
+            var straight = data.TradedAssetId == baseAsset.Id || data.TradedAssetId == baseAsset.DisplayId;
 
             //get traded asset
             var tradedAsset = straight ? baseAsset : quotingAsset;
 
             _assetsValidator.ValidateAccuracy(data.Volume, tradedAsset.Accuracy);
 
-            var volume = data.Volume.TruncateDecimalPlaces(tradedAsset.Accuracy);
+            var volume = (decimal)data.Volume.TruncateDecimalPlaces(tradedAsset.Accuracy);
             var minVolume = straight ? assetPairResponse.MinVolume : assetPairResponse.MinInvertedVolume;
             _assetsValidator.ValidateVolume(volume, minVolume, tradedAsset.DisplayId);
 
@@ -320,7 +321,7 @@ namespace Lykke.AlgoStore.Services
             else
             {
                 var baseUserAssetId = await GetBaseAssetAsync(data.ClientId);
-                var assetResponse = await _assetService.TryGetAssetAsync(baseUserAssetId.BaseAssetId);
+                var assetResponse = _assetsReadModel.TryGet(baseUserAssetId.BaseAssetId);
 
                 if (assetResponse == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound, $"There is no asset with an id {baseUserAssetId.BaseAssetId}",
@@ -343,8 +344,8 @@ namespace Lykke.AlgoStore.Services
                 InitialAssetTwoBalance = clientAssetTwoBalance,
                 LastTradedAssetBalance = clientTradedAssetBalance,
                 LastAssetTwoBalance = clientAssetTwoBalance,
-                TradedAssetName = tradedAsset.Name,
-                AssetTwoName = assetTwo.Name,
+                TradedAssetName = tradedAsset.DisplayId,
+                AssetTwoName = assetTwo.DisplayId,
                 InstanceId = data.InstanceId,
                 LastWalletBalance = initialWalletBalance,
                 TotalNumberOfStarts = 0,

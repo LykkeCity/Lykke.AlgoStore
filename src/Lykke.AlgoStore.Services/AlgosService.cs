@@ -18,8 +18,8 @@ using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Models.AlgoMetaDataModels;
 using Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories;
 using IAlgoClientInstanceRepository = Lykke.AlgoStore.CSharp.AlgoTemplate.Models.Repositories.IAlgoClientInstanceRepository;
-using Lykke.Service.Assets.Client;
-using Lykke.Service.Assets.Client.Models;
+using Lykke.Service.Assets.Client.Models.v3;
+using Lykke.Service.Assets.Client.ReadModels;
 
 namespace Lykke.AlgoStore.Services
 {
@@ -34,7 +34,8 @@ namespace Lykke.AlgoStore.Services
         private readonly IAlgoStoreService _algoStoreService;
         private readonly IAlgoCommentsRepository _commentsRepository;
         private readonly ICodeBuildService _codeBuildService;
-        private readonly IAssetsServiceWithCache _assetsService;
+        private readonly IAssetPairsReadModelRepository _assetPairsReadModel;
+        private readonly IAssetsReadModelRepository _assetsReadModel;
 
         private static Random rnd = new Random();
 
@@ -63,7 +64,8 @@ namespace Lykke.AlgoStore.Services
             IAlgoCommentsRepository commentsRepository,
             ILog log,
             ICodeBuildService codeBuildService,
-            IAssetsServiceWithCache assetsService
+            IAssetPairsReadModelRepository assetPairsReadModel,
+            IAssetsReadModelRepository assetsReadModel
 ) : base(log, nameof(AlgosService))
         {
             _algoRepository = algoRepository;
@@ -75,7 +77,8 @@ namespace Lykke.AlgoStore.Services
             _algoStoreService = algoStoreService;
             _commentsRepository = commentsRepository;
             _codeBuildService = codeBuildService;
-            _assetsService = assetsService;
+            _assetPairsReadModel = assetPairsReadModel;
+            _assetsReadModel = assetsReadModel;
         }
 
         /// <summary>
@@ -486,7 +489,7 @@ namespace Lykke.AlgoStore.Services
 
                     algoInformation.Author = (await _personalDataService.GetAsync(algo?.ClientId))?.FullName;
 
-                    await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
+                    PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }
                 return algoInformation;
             });
@@ -651,11 +654,11 @@ namespace Lykke.AlgoStore.Services
             });
         }
 
-        private async Task PopulateAssetPairsAsync(AlgoMetaDataInformation algoMetaDataInformation)
+        private void PopulateAssetPairsAsync(AlgoMetaDataInformation algoMetaDataInformation)
         {
             IsFieldMissing(algoMetaDataInformation, "AssetPair");
 
-            var assetPairsCache = await _assetsService.GetAllAssetPairsAsync();
+            var assetPairsCache = _assetPairsReadModel.GetAll();
 
             var assetPairsList = assetPairsCache.Where(ap => !ap.IsDisabled).Select(ap => new EnumValue
             {
@@ -686,14 +689,14 @@ namespace Lykke.AlgoStore.Services
         {
             return await LogTimedInfoAsync(nameof(GetAssetsForAssetPairAsync), clientId, async () =>
             {
-                var assetPairCache = await _assetsService.TryGetAssetPairAsync(assetPairId);
+                var assetPairCache = _assetPairsReadModel.TryGet(assetPairId);
                 if (assetPairCache == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
                         $"Could not retrieve asset pair with id {assetPairId}",
                         string.Format(Phrases.AssetPairNotFound, assetPairId));
 
-                var baseAsset = await _assetsService.TryGetAssetAsync(assetPairCache.BaseAssetId);
-                var quotingAsset = await _assetsService.TryGetAssetAsync(assetPairCache.QuotingAssetId);
+                var baseAsset =  _assetsReadModel.TryGet(assetPairCache.BaseAssetId);
+                var quotingAsset = _assetsReadModel.TryGet(assetPairCache.QuotingAssetId);
 
                 if (baseAsset == null || quotingAsset == null)
                     throw new AlgoStoreException(AlgoStoreErrorCodes.NotFound,
@@ -708,7 +711,7 @@ namespace Lykke.AlgoStore.Services
 
                 var result = twoAssetsFromAssetPair.Select(a => new EnumValue
                 {
-                    Key = a.Name,
+                    Key = a.DisplayId,
                     Value = a.Id
                 });
 

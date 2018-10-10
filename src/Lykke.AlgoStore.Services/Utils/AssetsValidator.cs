@@ -1,4 +1,4 @@
-﻿using Lykke.Service.Assets.Client.Models;
+﻿using Lykke.Service.Assets.Client.Models.v3;
 using System;
 using System.Net;
 using Lykke.AlgoStore.Core.Domain.Errors;
@@ -31,9 +31,9 @@ namespace Lykke.AlgoStore.Services.Utils
             }
         }
 
-        public void ValidateVolume(double volume, double minVolume, string asset)
+        public void ValidateVolume(decimal volume, decimal minVolume, string asset)
         {
-            if (Math.Abs(volume) < double.Epsilon || Math.Abs(volume) < minVolume)
+            if (Math.Abs(volume) < minVolume)
             {
                 var errorMessage = string.Format(Phrases.TradeVolumeBelowMinimum, minVolume, asset);
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, errorMessage, errorMessage);
@@ -56,8 +56,8 @@ namespace Lykke.AlgoStore.Services.Utils
         public void ValidateAsset(AssetPair assetPair, string tradedAssetId,
             Asset baseAsset, Asset quotingAsset)
         {
-            if (tradedAssetId != baseAsset.Id && tradedAssetId != baseAsset.Name && tradedAssetId != quotingAsset.Id 
-                && tradedAssetId != quotingAsset.Name)
+            if (tradedAssetId != baseAsset.Id && tradedAssetId != baseAsset.DisplayId && tradedAssetId != quotingAsset.Id 
+                && tradedAssetId != quotingAsset.DisplayId)
             {
                 throw new AlgoStoreException(AlgoStoreErrorCodes.ValidationError, 
                     $"Asset <{tradedAssetId}> is not valid for asset pair <{assetPair.Id}>.",

@@ -208,7 +208,7 @@ namespace Lykke.AlgoStore.Api.Controllers
                     return BadRequest(ErrorResponse.Create(ModelState));
                 }
 
-                string assetPairName = await _service.GetAssetPairName(assetPairId);
+                string assetPairName = _service.GetAssetPairName(assetPairId);
 
                 if (candles == null)
                 {

@@ -56,12 +56,6 @@ namespace Lykke.AlgoStore.Api.Modules
             RegisterExternalServices(builder);
             RegisterLocalServices(builder);
 
-            _services.RegisterAssetsClient(AssetServiceSettings.Create(
-                    new Uri(_settings.CurrentValue.AssetsServiceClient.ServiceUrl),
-                    _settings.CurrentValue.AlgoApi.Dictionaries.CacheExpirationPeriod),
-                _log,
-                autoRefresh: true);
-
             builder.RegisterInstance(_settings.CurrentValue.AlgoApi.RateLimitSettings)
                 .AsSelf()
                 .SingleInstance();
@@ -200,6 +194,8 @@ namespace Lykke.AlgoStore.Api.Modules
                 .Generate<IGdprClient>()).As<IGdprClient>();
 
             builder.RegisterStatisticsClient(_settings.CurrentValue.AlgoStoreStatisticsClient.ServiceUrl);
+
+            builder.RegisterAssetsClient(_settings.CurrentValue.AssetsServiceClient.ServiceUrl);
         }
 
         private void RegisterLocalServices(ContainerBuilder builder)
