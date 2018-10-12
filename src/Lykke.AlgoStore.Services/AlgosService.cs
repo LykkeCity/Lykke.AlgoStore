@@ -478,7 +478,9 @@ namespace Lykke.AlgoStore.Services
 
                     var algo = await _algoRepository.GetAlgoByAlgoIdAsync(algoId);
 
-                    algoInformation.Author = (await _personalDataService.GetAsync(algo?.ClientId))?.FullName;
+                    algoInformation.Author = algo?.ClientId == "Deactivated"
+                        ? "Administrator"
+                        : (await _personalDataService.GetAsync(algo?.ClientId))?.FullName;
 
                     await PopulateAssetPairsAsync(algoInformation.AlgoMetaDataInformation);
                 }
