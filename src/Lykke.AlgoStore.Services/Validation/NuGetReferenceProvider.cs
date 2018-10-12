@@ -13,8 +13,8 @@ namespace Lykke.AlgoStore.Services.Validation
         private static readonly List<(string, string)> _allowedPackages = new List<(string, string)>
         {
             // Add allowed NuGet libraries here
-            ("Lykke.AlgoStore.Algo", "1.0.46"),
-            ("Lykke.AlgoStore.CSharp.AlgoTemplate.Models", "1.0.66")
+            ("Lykke.AlgoStore.Algo", "1.0.47"),
+            ("Lykke.AlgoStore.CSharp.AlgoTemplate.Models", "1.0.103")
         };
 
         private static readonly string _nuGetPackageBaseUrl = "https://api.nuget.org/v3-flatcontainer/";

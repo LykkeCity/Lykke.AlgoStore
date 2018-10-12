@@ -16,7 +16,7 @@ namespace Lykke.AlgoStore.Core.Services
 
         Task SaveAlgoAsBinaryAsync(string clientId, UploadAlgoBinaryData dataModel);
         Task DeleteAsync(ManageImageData data);
-        Task DeleteAlgoAsync(string algoClientId, string algoId, bool forceDelete, string clientId);
+        Task DeleteAlgoAsync(string clientId, string algoId, bool forceDelete);
         Task SaveAlgoAsStringAsync(string clientId, UploadAlgoStringData dataModel);
         Task<string> GetAlgoAsStringAsync(string clientId, string algoId);
 
